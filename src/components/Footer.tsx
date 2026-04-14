@@ -2,9 +2,10 @@ import { Zap } from 'lucide-react';
 
 interface FooterProps {
   onTerms?: () => void;
+  onPrivacy?: () => void;
 }
 
-export default function Footer({ onTerms }: FooterProps) {
+export default function Footer({ onTerms, onPrivacy }: FooterProps) {
   return (
     <footer className="border-t border-[#30363d] py-10 mt-12 bg-[#161b22]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,7 +24,12 @@ export default function Footer({ onTerms }: FooterProps) {
           </p>
 
           <div className="flex items-center gap-5">
-            <a href="#" className="text-[#6e7681] hover:text-[#8b949e] text-sm transition-colors">Privacy</a>
+            <button
+              onClick={onPrivacy}
+              className="text-[#6e7681] hover:text-[#8b949e] text-sm transition-colors"
+            >
+              Privacy
+            </button>
             <button
               onClick={onTerms}
               className="text-[#6e7681] hover:text-[#8b949e] text-sm transition-colors"

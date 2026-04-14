@@ -11,10 +11,11 @@ import DetailModal from './components/DetailModal';
 import ListSlotPage from './pages/ListSlotPage';
 import AdminPage from './pages/AdminPage';
 import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 import { useListings } from './hooks/useListings';
 import type { FilterState, Listing } from './types';
 
-type Page = 'home' | 'list-slot' | 'admin' | 'terms';
+type Page = 'home' | 'list-slot' | 'admin' | 'terms' | 'privacy';
 
 const DEFAULT_FILTERS: FilterState = {
   category: 'all',
@@ -75,6 +76,15 @@ export default function App() {
     );
   }
 
+  if (page === 'privacy') {
+    return (
+      <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+        <Header onListSlot={handleListSlot} onHome={() => setPage('home')} onAdmin={handleAdmin} />
+        <PrivacyPage onBack={() => setPage('home')} onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }} />
+      </div>
+    );
+  }
+
   if (page === 'list-slot') {
     return (
       <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
@@ -122,7 +132,10 @@ export default function App() {
         <HowItWorks />
       </main>
 
-      <Footer onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }} />
+      <Footer
+        onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }}
+        onPrivacy={() => { setPage('privacy'); window.scrollTo(0, 0); }}
+      />
 
       {secureTarget && (
         <SecureSlotFlow
