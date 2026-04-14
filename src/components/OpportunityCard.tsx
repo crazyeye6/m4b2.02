@@ -210,9 +210,9 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
               <p className="text-[#484f58] text-[10px]">Takes 10 seconds</p>
               <button
                 onClick={() => onDetails(listing)}
-                className="flex items-center gap-1 text-[#6e7681] hover:text-[#8b949e] text-[11px] font-medium transition-colors"
+                className="flex items-center gap-1.5 text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold transition-colors underline underline-offset-2"
               >
-                <Eye className="w-3 h-3" />
+                <Eye className="w-3.5 h-3.5" />
                 View details
               </button>
             </div>
