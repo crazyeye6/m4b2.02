@@ -84,8 +84,8 @@ export default function FilterBar({ filters, onChange, total }: FilterBarProps) 
   return (
     <div className="bg-[#161b22] border-b border-[#30363d] sticky top-14 z-40">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-0.5 bg-[#21262d] border border-[#30363d] rounded-md p-0.5">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin" style={{ scrollbarColor: '#484f58 #21262d' }}>
+          <div className="flex items-center gap-0.5 bg-[#21262d] border border-[#30363d] rounded-md p-0.5 flex-shrink-0">
             {CATEGORIES.map(c => (
               <button
                 key={c.value}
@@ -104,7 +104,7 @@ export default function FilterBar({ filters, onChange, total }: FilterBarProps) 
 
           <button
             onClick={() => onChange({ dateRange: isEndingThisWeek ? '' : 'this_week' })}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-all
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-all
               ${isEndingThisWeek
                 ? 'bg-[#f85149]/10 text-[#f85149] border-[#f85149]/30'
                 : 'text-[#8b949e] border-[#30363d] hover:border-[#484f58] hover:text-[#c9d1d9] hover:bg-[#21262d]'
@@ -116,7 +116,7 @@ export default function FilterBar({ filters, onChange, total }: FilterBarProps) 
 
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-all
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-all
               ${showAdvanced
                 ? 'bg-[#21262d] text-[#e6edf3] border-[#484f58]'
                 : 'text-[#8b949e] border-[#30363d] hover:border-[#484f58] hover:text-[#c9d1d9] hover:bg-[#21262d]'
@@ -128,7 +128,7 @@ export default function FilterBar({ filters, onChange, total }: FilterBarProps) 
             <ChevronDown className={`w-3 h-3 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
           </button>
 
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex-shrink-0 flex items-center gap-3">
             {hasActive && (
               <button
                 onClick={reset}
