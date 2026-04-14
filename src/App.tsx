@@ -10,10 +10,11 @@ import SecureSlotFlow from './components/SecureSlotFlow';
 import DetailModal from './components/DetailModal';
 import ListSlotPage from './pages/ListSlotPage';
 import AdminPage from './pages/AdminPage';
+import TermsPage from './pages/TermsPage';
 import { useListings } from './hooks/useListings';
 import type { FilterState, Listing } from './types';
 
-type Page = 'home' | 'list-slot' | 'admin';
+type Page = 'home' | 'list-slot' | 'admin' | 'terms';
 
 const DEFAULT_FILTERS: FilterState = {
   category: 'all',
@@ -65,6 +66,15 @@ export default function App() {
     }
   };
 
+  if (page === 'terms') {
+    return (
+      <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+        <Header onListSlot={handleListSlot} onHome={() => setPage('home')} onAdmin={handleAdmin} />
+        <TermsPage onBack={() => setPage('home')} />
+      </div>
+    );
+  }
+
   if (page === 'list-slot') {
     return (
       <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
@@ -112,7 +122,7 @@ export default function App() {
         <HowItWorks />
       </main>
 
-      <Footer />
+      <Footer onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }} />
 
       {secureTarget && (
         <SecureSlotFlow

@@ -1,6 +1,10 @@
 import { Zap } from 'lucide-react';
 
-export default function Footer() {
+interface FooterProps {
+  onTerms?: () => void;
+}
+
+export default function Footer({ onTerms }: FooterProps) {
   return (
     <footer className="border-t border-[#30363d] py-10 mt-12 bg-[#161b22]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -20,8 +24,13 @@ export default function Footer() {
 
           <div className="flex items-center gap-5">
             <a href="#" className="text-[#6e7681] hover:text-[#8b949e] text-sm transition-colors">Privacy</a>
-            <a href="#" className="text-[#6e7681] hover:text-[#8b949e] text-sm transition-colors">Terms</a>
-            <a href="#" className="text-[#6e7681] hover:text-[#8b949e] text-sm transition-colors">Contact</a>
+            <button
+              onClick={onTerms}
+              className="text-[#6e7681] hover:text-[#8b949e] text-sm transition-colors"
+            >
+              Terms
+            </button>
+            <a href="mailto:legal@endingthisweek.media" className="text-[#6e7681] hover:text-[#8b949e] text-sm transition-colors">Contact</a>
           </div>
         </div>
 
