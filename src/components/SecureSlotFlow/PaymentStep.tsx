@@ -65,7 +65,7 @@ export default function PaymentStep({ listing, form, slotsCount, depositAmount, 
           <div>
             <p className="text-emerald-400 text-xs uppercase tracking-wide font-semibold mb-1">Deposit due today</p>
             <p className="text-white text-3xl font-black">${depositAmount.toLocaleString()}</p>
-            <p className="text-gray-500 text-xs mt-1">10% of total slot price · Charged by EndingThisWeek.media</p>
+            <p className="text-gray-400 text-xs mt-1">10% of total slot price · Charged by EndingThisWeek.media</p>
           </div>
           <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-2.5 py-1.5">
             <Lock className="w-3.5 h-3.5 text-emerald-400" />
@@ -154,7 +154,7 @@ export default function PaymentStep({ listing, form, slotsCount, depositAmount, 
           <Shield className="w-3.5 h-3.5" />
           Demo mode
         </p>
-        <p className="text-gray-500 text-xs leading-relaxed">
+        <p className="text-gray-400 text-xs leading-relaxed">
           This is a demo using a simulated payment flow. In production, payments are processed securely via Stripe. No real charge will be made.
         </p>
       </div>
@@ -186,7 +186,7 @@ export default function PaymentStep({ listing, form, slotsCount, depositAmount, 
         </button>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 text-xs text-gray-600">
+      <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
         <Lock className="w-3 h-3" />
         <span>Secured by Stripe · 256-bit SSL encryption</span>
       </div>

@@ -73,7 +73,7 @@ export default function BookingConfirmation({ booking, listing, onClose }: Booki
         <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-xl overflow-hidden">
           <div className="px-4 py-3 border-b border-emerald-500/10">
             <p className="text-emerald-400 text-xs uppercase tracking-wide font-semibold">Creator / seller contact</p>
-            <p className="text-gray-500 text-xs mt-0.5">Released after deposit payment</p>
+            <p className="text-gray-400 text-xs mt-0.5">Released after deposit payment</p>
           </div>
           <div className="p-4 space-y-3">
             {booking.seller_name && (
@@ -113,20 +113,20 @@ export default function BookingConfirmation({ booking, listing, onClose }: Booki
 
       <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-2">
-          <Shield className="w-3.5 h-3.5 text-gray-500" />
-          <p className="text-gray-500 text-xs font-semibold">Platform role</p>
+          <Shield className="w-3.5 h-3.5 text-gray-400" />
+          <p className="text-gray-400 text-xs font-semibold">Platform role</p>
         </div>
-        <p className="text-gray-600 text-xs leading-relaxed">
+        <p className="text-gray-400 text-xs leading-relaxed">
           You have reserved this opportunity by paying a 10% deposit to EndingThisWeek.media. The remaining balance is arranged directly with the creator or seller. The creator will invoice you directly or follow standard commercial practice for their media niche.
         </p>
       </div>
 
       <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
-        <p className="text-gray-500 text-xs font-semibold mb-2">Refund policy</p>
-        <p className="text-gray-600 text-xs leading-relaxed mb-2">
+        <p className="text-gray-400 text-xs font-semibold mb-2">Refund policy</p>
+        <p className="text-gray-400 text-xs leading-relaxed mb-2">
           Deposit refunds are assessed case by case. You may be eligible if the seller cannot provide the opportunity, materially changes terms, or if the booking cannot proceed.
         </p>
-        <p className="text-gray-700 text-xs">
+        <p className="text-gray-400 text-xs">
           Refunds are not available if you change your mind, fail to respond, or request changes outside the original listing scope.
         </p>
       </div>
@@ -145,7 +145,7 @@ export default function BookingConfirmation({ booking, listing, onClose }: Booki
 function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-gray-500 text-xs">{label}</span>
+      <span className="text-gray-400 text-xs">{label}</span>
       <span className={`text-xs font-bold ${highlight ? 'text-emerald-400 text-sm' : 'text-white'}`}>{value}</span>
     </div>
   );

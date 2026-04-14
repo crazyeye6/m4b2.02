@@ -67,7 +67,7 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
             </div>
             <span className="text-[#e6edf3] font-bold text-sm">EndingThisWeek.media</span>
           </div>
-          <button onClick={onClose} className="text-[#6e7681] hover:text-[#e6edf3] transition-colors">
+          <button onClick={onClose} className="text-[#8b949e] hover:text-[#e6edf3] transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -80,7 +80,7 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
               className={`flex-1 py-3 text-sm font-semibold transition-colors ${
                 tab === t
                   ? 'text-[#e6edf3] border-b-2 border-emerald-500'
-                  : 'text-[#6e7681] hover:text-[#8b949e]'
+                  : 'text-[#8b949e] hover:text-[#8b949e]'
               }`}
             >
               {t === 'sign-in' ? 'Sign In' : 'Create Account'}
@@ -104,14 +104,14 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
                           ? r === 'buyer'
                             ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-400'
                             : 'bg-blue-600/20 border-blue-500/50 text-blue-400'
-                          : 'bg-[#21262d] border-[#30363d] text-[#6e7681] hover:border-[#484f58] hover:text-[#8b949e]'
+                          : 'bg-[#21262d] border-[#30363d] text-[#8b949e] hover:border-[#484f58] hover:text-[#8b949e]'
                       }`}
                     >
                       {r === 'buyer' ? 'Buyer (Advertiser)' : 'Seller (Creator)'}
                     </button>
                   ))}
                 </div>
-                <p className="text-[10px] text-[#6e7681] mt-1.5">
+                <p className="text-[10px] text-[#8b949e] mt-1.5">
                   {form.role === 'buyer'
                     ? 'Browse and secure media slots for your campaigns.'
                     : 'List your newsletter, podcast, or influencer slots.'}
@@ -153,7 +153,7 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
           <div>
             <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Password</label>
             <div className="relative">
-              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6e7681]">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b949e]">
                 <Lock className="w-3.5 h-3.5" />
               </div>
               <input
@@ -163,12 +163,12 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
                 placeholder={tab === 'sign-up' ? 'Min 8 characters' : '••••••••'}
                 minLength={tab === 'sign-up' ? 8 : undefined}
                 required
-                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg pl-9 pr-10 py-2.5 text-[#e6edf3] text-sm placeholder-[#484f58] outline-none transition-colors"
+                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg pl-9 pr-10 py-2.5 text-[#e6edf3] text-sm placeholder-[#6e7681] outline-none transition-colors"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6e7681] hover:text-[#8b949e]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8b949e] hover:text-[#8b949e]"
               >
                 {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
               </button>
@@ -190,7 +190,7 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
             {tab === 'sign-in' ? 'Sign In' : 'Create Account'}
           </button>
 
-          <p className="text-center text-[#6e7681] text-xs">
+          <p className="text-center text-[#8b949e] text-xs">
             {tab === 'sign-in' ? "Don't have an account? " : 'Already have an account? '}
             <button
               type="button"
@@ -221,14 +221,14 @@ function Field({
     <div>
       <label className="block text-xs text-[#8b949e] font-medium mb-1.5">{label}</label>
       <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#6e7681]">{icon}</div>
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b949e]">{icon}</div>
         <input
           type={type}
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           required={required}
-          className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg pl-9 pr-3 py-2.5 text-[#e6edf3] text-sm placeholder-[#484f58] outline-none transition-colors"
+          className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg pl-9 pr-3 py-2.5 text-[#e6edf3] text-sm placeholder-[#6e7681] outline-none transition-colors"
         />
       </div>
     </div>

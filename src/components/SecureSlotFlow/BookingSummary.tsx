@@ -49,14 +49,14 @@ export default function BookingSummary({ listing, slotsCount, onContinue }: Book
           <div className="flex items-center justify-between py-2 border-y border-white/5">
             <div>
               <span className="text-emerald-400 font-bold text-sm">Deposit due now (10%)</span>
-              <p className="text-gray-600 text-xs mt-0.5">Charged by EndingThisWeek.media</p>
+              <p className="text-gray-400 text-xs mt-0.5">Charged by EndingThisWeek.media</p>
             </div>
             <span className="text-emerald-400 font-black text-lg">${depositAmount.toLocaleString()}</span>
           </div>
           <div className="flex items-center justify-between">
             <div>
               <span className="text-gray-400 text-sm">Balance due direct to creator (90%)</span>
-              <p className="text-gray-600 text-xs mt-0.5">Invoiced directly by seller</p>
+              <p className="text-gray-400 text-xs mt-0.5">Invoiced directly by seller</p>
             </div>
             <span className="text-white font-bold text-sm">${balanceAmount.toLocaleString()}</span>
           </div>
@@ -86,10 +86,10 @@ export default function BookingSummary({ listing, slotsCount, onContinue }: Book
 
       <div className="bg-white/[0.03] border border-white/5 rounded-xl p-4">
         <div className="flex items-center gap-2 mb-2">
-          <Shield className="w-3.5 h-3.5 text-gray-500" />
-          <p className="text-gray-500 text-xs font-semibold uppercase tracking-wide">Refund policy</p>
+          <Shield className="w-3.5 h-3.5 text-gray-400" />
+          <p className="text-gray-400 text-xs font-semibold uppercase tracking-wide">Refund policy</p>
         </div>
-        <p className="text-gray-500 text-xs leading-relaxed">
+        <p className="text-gray-400 text-xs leading-relaxed">
           Deposit refunds are assessed case by case based on listing terms, seller obligations, and buyer actions. Seller contact details are released after payment.
         </p>
       </div>
@@ -103,7 +103,7 @@ export default function BookingSummary({ listing, slotsCount, onContinue }: Book
         </div>
       )}
 
-      <div className="flex items-center gap-2 text-xs text-gray-600">
+      <div className="flex items-center gap-2 text-xs text-gray-400">
         <Clock className="w-3.5 h-3.5" />
         <span>Slot hold period after payment: 48 hours pending seller confirmation</span>
       </div>
@@ -121,7 +121,7 @@ export default function BookingSummary({ listing, slotsCount, onContinue }: Book
 function Row({ label, value, wrap }: { label: string; value: string; wrap?: boolean }) {
   return (
     <div className={`flex ${wrap ? 'flex-col gap-0.5' : 'items-start justify-between gap-4'}`}>
-      <span className="text-gray-500 text-xs flex-shrink-0">{label}</span>
+      <span className="text-gray-400 text-xs flex-shrink-0">{label}</span>
       <span className={`text-white text-xs font-medium ${wrap ? '' : 'text-right'}`}>{value}</span>
     </div>
   );

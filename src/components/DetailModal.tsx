@@ -43,10 +43,10 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
             </div>
             <div>
               <h2 className="text-white font-bold text-lg leading-tight">{listing.property_name}</h2>
-              <p className="text-gray-500 text-sm">{listing.media_company_name}</p>
+              <p className="text-gray-400 text-sm">{listing.media_company_name}</p>
             </div>
           </div>
-          <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors ml-4 flex-shrink-0">
+          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors ml-4 flex-shrink-0">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -54,10 +54,10 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
         <div className="p-6 space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-white/[0.03] border border-white/8 rounded-xl p-4">
-              <p className="text-gray-500 text-xs uppercase tracking-wide font-medium mb-2">Price per slot</p>
+              <p className="text-gray-400 text-xs uppercase tracking-wide font-medium mb-2">Price per slot</p>
               <p className="text-white text-4xl font-black mb-1">${listing.discounted_price.toLocaleString()}</p>
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-gray-500 text-sm line-through">${listing.original_price.toLocaleString()}</span>
+                <span className="text-gray-400 text-sm line-through">${listing.original_price.toLocaleString()}</span>
                 <span className="bg-yellow-500 text-black text-xs font-black px-2 py-0.5 rounded">-{discount}%</span>
                 <span className="text-emerald-400 text-xs font-semibold">Save ${savings.toLocaleString()}</span>
               </div>
@@ -67,19 +67,19 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
                   <span className="text-emerald-400 font-bold text-sm">${depositAmount.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-500 text-xs">Balance direct to creator (90%)</span>
+                  <span className="text-gray-400 text-xs">Balance direct to creator (90%)</span>
                   <span className="text-white text-xs font-medium">${balanceAmount.toLocaleString()}</span>
                 </div>
               </div>
             </div>
 
             <div className="bg-white/[0.03] border border-white/8 rounded-xl p-4">
-              <p className="text-gray-500 text-xs uppercase tracking-wide font-medium mb-2">Time remaining</p>
+              <p className="text-gray-400 text-xs uppercase tracking-wide font-medium mb-2">Time remaining</p>
               <div className="mb-2">
                 <CountdownTimer deadline={listing.deadline_at} />
               </div>
-              <p className="text-gray-600 text-xs">Slot date: <span className="text-gray-400">{listing.date_label}</span></p>
-              <p className="text-gray-600 text-xs mt-1">Slots left: <span className={`font-semibold ${listing.slots_remaining === 1 ? 'text-yellow-400' : 'text-amber-400'}`}>{listing.slots_remaining}</span></p>
+              <p className="text-gray-400 text-xs">Slot date: <span className="text-gray-400">{listing.date_label}</span></p>
+              <p className="text-gray-400 text-xs mt-1">Slots left: <span className={`font-semibold ${listing.slots_remaining === 1 ? 'text-yellow-400' : 'text-amber-400'}`}>{listing.slots_remaining}</span></p>
             </div>
           </div>
 
@@ -107,13 +107,13 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
               )}
             </div>
             <div className="flex items-start gap-3 mt-3 pt-3 border-t border-white/5">
-              <MapPin className="w-3.5 h-3.5 text-gray-600 mt-0.5 flex-shrink-0" />
+              <MapPin className="w-3.5 h-3.5 text-gray-400 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-0.5">Geography</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-0.5">Geography</p>
                 <p className="text-white text-sm">{listing.location}</p>
               </div>
               <div className="ml-6">
-                <p className="text-xs text-gray-500 uppercase tracking-wide font-medium mb-0.5">Audience</p>
+                <p className="text-xs text-gray-400 uppercase tracking-wide font-medium mb-0.5">Audience</p>
                 <p className="text-white text-sm">{listing.audience}</p>
               </div>
             </div>
@@ -122,16 +122,16 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
           <Section title="Placement details" icon={<BarChart2 className="w-4 h-4 text-amber-400" />}>
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white/[0.03] border border-white/5 rounded-lg p-3">
-                <p className="text-xs text-gray-600 mb-1">Slot type</p>
+                <p className="text-xs text-gray-400 mb-1">Slot type</p>
                 <p className="text-white text-sm font-semibold">{listing.slot_type}</p>
               </div>
               <div className="bg-white/[0.03] border border-white/5 rounded-lg p-3">
-                <p className="text-xs text-gray-600 mb-1">Scheduled date</p>
+                <p className="text-xs text-gray-400 mb-1">Scheduled date</p>
                 <p className="text-white text-sm font-semibold">{listing.date_label}</p>
               </div>
             </div>
             <div className="bg-white/[0.03] border border-white/5 rounded-lg p-3 mt-3">
-              <p className="text-xs text-gray-600 mb-1">Booking terms</p>
+              <p className="text-xs text-gray-400 mb-1">Booking terms</p>
               <p className="text-gray-400 text-sm">Creative must be submitted within 24 hours of booking. Full payment required on confirmation. Hold period: {listing.status === 'securing' ? '6h' : '24h'}.</p>
             </div>
           </Section>
@@ -143,8 +143,8 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-semibold">{listing.media_owner_name}</p>
-                <p className="text-gray-500 text-sm">{listing.media_company_name}</p>
-                <p className="text-gray-600 text-xs mt-1">{listing.location}</p>
+                <p className="text-gray-400 text-sm">{listing.media_company_name}</p>
+                <p className="text-gray-400 text-xs mt-1">{listing.location}</p>
               </div>
               <button className="flex items-center gap-1 text-amber-500 text-xs font-medium hover:text-amber-400 transition-colors">
                 View profile <ExternalLink className="w-3 h-3" />
@@ -222,7 +222,7 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
               disabled={isSecured}
               className={`flex-1 font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2
                 ${isSecured
-                  ? 'bg-white/5 text-gray-600 cursor-not-allowed'
+                  ? 'bg-white/5 text-gray-400 cursor-not-allowed'
                   : 'bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_25px_rgba(245,158,11,0.25)]'
                 }`}
             >
@@ -235,8 +235,8 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
           </div>
           {!isSecured && (
             <div className="flex items-center justify-center gap-1.5 mt-2">
-              <Clock className="w-3 h-3 text-gray-600" />
-              <p className="text-gray-600 text-xs text-center">Reserve with 10% deposit · Balance paid direct to creator</p>
+              <Clock className="w-3 h-3 text-gray-400" />
+              <p className="text-gray-400 text-xs text-center">Reserve with 10% deposit · Balance paid direct to creator</p>
             </div>
           )}
         </div>
@@ -261,7 +261,7 @@ function StatCard({ label, value, highlight }: { label: string; value: string; h
   return (
     <div className="bg-white/[0.03] border border-white/5 rounded-lg p-3 text-center">
       <p className={`font-bold text-lg ${highlight ? 'text-amber-400' : 'text-white'}`}>{value}</p>
-      <p className="text-gray-600 text-xs mt-0.5 uppercase tracking-wide">{label}</p>
+      <p className="text-gray-400 text-xs mt-0.5 uppercase tracking-wide">{label}</p>
     </div>
   );
 }
@@ -298,9 +298,9 @@ function FaqItem({ q, a, open, onToggle }: { q: string; a: string; open: boolean
       >
         <span className="text-white text-sm font-medium pr-4">{q}</span>
         {open ? (
-          <ChevronUp className="w-4 h-4 text-gray-500 flex-shrink-0" />
+          <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" />
         ) : (
-          <ChevronDown className="w-4 h-4 text-gray-500 flex-shrink-0" />
+          <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
         )}
       </button>
       {open && (

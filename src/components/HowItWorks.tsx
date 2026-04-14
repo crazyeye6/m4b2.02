@@ -56,7 +56,7 @@ export default function HowItWorks() {
                   <div className="w-8 h-8 bg-[#21262d] border border-[#30363d] rounded-md flex items-center justify-center group-hover:border-[#484f58] transition-all">
                     {step.icon}
                   </div>
-                  <span className="text-3xl font-bold text-[#21262d] group-hover:text-[#30363d] transition-all tabular-nums select-none">
+                  <span className="text-3xl font-bold text-[#30363d] group-hover:text-[#484f58] transition-all tabular-nums select-none">
                     {step.number}
                   </span>
                 </div>
@@ -82,7 +82,7 @@ export default function HowItWorks() {
             <div key={i} className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 text-center">
               <p className="text-[#e3b341] font-bold text-xl mb-0.5">{item.value}</p>
               <p className="text-[#e6edf3] text-sm font-medium">{item.label}</p>
-              <p className="text-[#6e7681] text-xs mt-0.5">{item.sub}</p>
+              <p className="text-[#8b949e] text-xs mt-0.5">{item.sub}</p>
             </div>
           ))}
         </div>

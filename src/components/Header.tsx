@@ -76,7 +76,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                     <div className="absolute right-0 top-full mt-1.5 w-52 bg-[#161b22] border border-[#30363d] rounded-xl shadow-xl z-20 overflow-hidden">
                       <div className="px-3 py-2.5 border-b border-[#30363d]">
                         <p className="text-[#e6edf3] text-xs font-semibold truncate">{profile?.display_name || 'Account'}</p>
-                        <p className="text-[#484f58] text-[10px] truncate">{user.email}</p>
+                        <p className="text-[#8b949e] text-[10px] truncate">{user.email}</p>
                         {profile?.role && (
                           <span className={`inline-block mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded capitalize border ${
                             profile.role === 'seller'

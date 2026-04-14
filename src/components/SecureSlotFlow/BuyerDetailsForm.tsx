@@ -21,7 +21,7 @@ export default function BuyerDetailsForm({ form, onChange, onContinue, onBack, e
     <div className="space-y-5">
       <div>
         <h3 className="text-white text-sm font-semibold mb-1">Your details</h3>
-        <p className="text-gray-500 text-xs">Shared with the creator after deposit payment</p>
+        <p className="text-gray-400 text-xs">Shared with the creator after deposit payment</p>
       </div>
 
       {error && (
@@ -147,7 +147,7 @@ function Field({ label, required, optional, children }: {
       <label className="block text-xs text-gray-400 font-medium mb-1.5">
         {label}
         {required && <span className="text-amber-500 ml-1">*</span>}
-        {optional && <span className="text-gray-600 ml-1">(optional)</span>}
+        {optional && <span className="text-gray-400 ml-1">(optional)</span>}
       </label>
       {children}
     </div>

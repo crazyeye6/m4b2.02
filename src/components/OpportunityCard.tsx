@@ -102,7 +102,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
 
         {/* Title block */}
         <div className="mb-4">
-          <p className="text-[#6e7681] text-xs font-medium mb-0.5">{listing.media_company_name}</p>
+          <p className="text-[#8b949e] text-xs font-medium mb-0.5">{listing.media_company_name}</p>
           <h3 className="text-[#e6edf3] font-bold text-base leading-tight mb-1">{listing.property_name}</h3>
           <p className="text-[#8b949e] text-xs">{listing.media_owner_name}</p>
         </div>
@@ -110,10 +110,10 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         {/* Price block */}
         <div className="flex items-center justify-between mb-3 bg-[#0d1117] rounded-lg p-3 border border-[#30363d]">
           <div>
-            <p className="text-[#6e7681] text-[10px] font-medium uppercase tracking-wide mb-0.5">Price per slot</p>
+            <p className="text-[#8b949e] text-[10px] font-medium uppercase tracking-wide mb-0.5">Price per slot</p>
             <div className="flex items-baseline gap-2">
               <span className="text-[#e6edf3] text-2xl font-bold tracking-tight">${listing.discounted_price.toLocaleString()}</span>
-              <span className="text-[#6e7681] text-sm line-through">${listing.original_price.toLocaleString()}</span>
+              <span className="text-[#8b949e] text-sm line-through">${listing.original_price.toLocaleString()}</span>
             </div>
             <p className="text-emerald-400 text-xs font-semibold mt-0.5">Save ${savings.toLocaleString()}</p>
           </div>
@@ -126,11 +126,11 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         <div className="flex items-center justify-between mb-4 bg-emerald-500/5 border border-emerald-500/20 rounded-lg px-3 py-2.5">
           <div>
             <p className="text-emerald-400 text-xs font-semibold">Reserve with deposit</p>
-            <p className="text-[#6e7681] text-[10px] mt-0.5">Balance paid direct to creator</p>
+            <p className="text-[#8b949e] text-[10px] mt-0.5">Balance paid direct to creator</p>
           </div>
           <div className="text-right">
             <p className="text-emerald-400 text-lg font-bold">${depositAmount.toLocaleString()}</p>
-            <p className="text-[#6e7681] text-[10px]">10% now</p>
+            <p className="text-[#8b949e] text-[10px]">10% now</p>
           </div>
         </div>
 
@@ -160,7 +160,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         </div>
 
         {/* Context row */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[11px] text-[#6e7681]">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[11px] text-[#8b949e]">
           <span className="flex items-center gap-1">
             <MapPin className="w-3 h-3" />
             {listing.location}
@@ -175,8 +175,8 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         {/* Past advertisers */}
         {listing.past_advertisers.length > 0 && (
           <div className="flex items-center gap-1.5 mb-4">
-            <Shield className="w-3 h-3 text-[#6e7681] flex-shrink-0" />
-            <p className="text-[#6e7681] text-[11px]">Used by</p>
+            <Shield className="w-3 h-3 text-[#8b949e] flex-shrink-0" />
+            <p className="text-[#8b949e] text-[11px]">Used by</p>
             <div className="flex items-center gap-1 flex-wrap">
               {listing.past_advertisers.map(a => (
                 <span
@@ -197,7 +197,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             disabled={isSecured}
             className={`w-full font-semibold text-sm py-3 rounded-lg transition-all flex items-center justify-center gap-2 border
               ${isSecured
-                ? 'bg-[#21262d] text-[#6e7681] border-[#30363d] cursor-not-allowed'
+                ? 'bg-[#21262d] text-[#8b949e] border-[#30363d] cursor-not-allowed'
                 : 'bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border-emerald-500/30 shadow-md shadow-emerald-900/20'
               }`}
           >
@@ -207,7 +207,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           </button>
           {!isSecured && (
             <div className="flex items-center justify-between">
-              <p className="text-[#484f58] text-[10px]">Takes 10 seconds</p>
+              <p className="text-[#8b949e] text-[10px]">Takes 10 seconds</p>
               <button
                 onClick={() => onDetails(listing)}
                 className="flex items-center gap-1.5 text-[#8b949e] hover:text-[#e6edf3] text-xs font-semibold transition-colors underline underline-offset-2"
@@ -227,7 +227,7 @@ function StatPill({ label, value, accent }: { label: string; value: string; acce
   return (
     <div className="bg-[#21262d] rounded-lg p-2 border border-[#30363d] text-center">
       <p className={`text-xs font-bold ${accent ? 'text-blue-400' : 'text-[#e6edf3]'}`}>{value}</p>
-      <p className="text-[#6e7681] text-[9px] mt-0.5 uppercase tracking-wide font-medium leading-tight">{label}</p>
+      <p className="text-[#8b949e] text-[9px] mt-0.5 uppercase tracking-wide font-medium leading-tight">{label}</p>
     </div>
   );
 }

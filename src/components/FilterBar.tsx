@@ -170,7 +170,7 @@ export default function FilterBar({ filters, onChange, total }: FilterBarProps) 
                       {o.label}
                     </span>
                     {o.sublabel && (
-                      <span className="text-[10px] font-normal ml-3 flex-shrink-0 text-[#484f58]">
+                      <span className="text-[10px] font-normal ml-3 flex-shrink-0 text-[#8b949e]">
                         {o.sublabel}
                       </span>
                     )}

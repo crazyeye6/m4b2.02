@@ -19,29 +19,29 @@ export default function Footer({ onTerms, onPrivacy }: FooterProps) {
             </span>
           </div>
 
-          <p className="text-[#6e7681] text-sm text-center">
+          <p className="text-[#8b949e] text-sm text-center">
             Last-minute media slots. Priced to move.
           </p>
 
           <div className="flex items-center gap-5">
             <button
               onClick={onPrivacy}
-              className="text-[#6e7681] hover:text-[#8b949e] text-sm transition-colors"
+              className="text-[#8b949e] hover:text-[#8b949e] text-sm transition-colors"
             >
               Privacy
             </button>
             <button
               onClick={onTerms}
-              className="text-[#6e7681] hover:text-[#8b949e] text-sm transition-colors"
+              className="text-[#8b949e] hover:text-[#8b949e] text-sm transition-colors"
             >
               Terms
             </button>
-            <a href="mailto:legal@endingthisweek.media" className="text-[#6e7681] hover:text-[#8b949e] text-sm transition-colors">Contact</a>
+            <a href="mailto:legal@endingthisweek.media" className="text-[#8b949e] hover:text-[#8b949e] text-sm transition-colors">Contact</a>
           </div>
         </div>
 
         <div className="mt-6 pt-5 border-t border-[#21262d] text-center">
-          <p className="text-[#484f58] text-xs">
+          <p className="text-[#8b949e] text-xs">
             &copy; 2026 EndingThisWeek.media. All rights reserved.
           </p>
         </div>
