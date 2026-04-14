@@ -273,7 +273,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Who gets the deposit?',
-    a: 'The deposit is collected by EndingThisWeek.media / AvailableThisWeek. It is not paid directly to the creator at this stage.',
+    a: 'The deposit is collected by EndingThisWeek.media. It is not paid directly to the creator at this stage.',
   },
   {
     q: 'When do I pay the creator?',
