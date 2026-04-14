@@ -83,7 +83,7 @@ export default function PaymentStep({ listing, form, slotsCount, depositAmount, 
               <span className="text-[8px] font-black text-white">VISA</span>
             </div>
             <div className="w-6 h-4 bg-white/10 rounded-sm flex items-center justify-center">
-              <span className="text-[8px] font-black text-red-400">MC</span>
+              <span className="text-[8px] font-black text-yellow-400">MC</span>
             </div>
             <div className="w-6 h-4 bg-white/10 rounded-sm flex items-center justify-center">
               <span className="text-[8px] font-black text-blue-400">AMEX</span>
@@ -93,7 +93,7 @@ export default function PaymentStep({ listing, form, slotsCount, depositAmount, 
 
         <div className="p-4 space-y-3">
           {error && (
-            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-3 py-2.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm px-3 py-2.5 rounded-lg">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               {error}
             </div>

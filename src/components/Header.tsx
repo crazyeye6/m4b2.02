@@ -96,7 +96,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                         </button>
                         <button
                           onClick={() => { setDropdownOpen(false); signOut(); }}
-                          className="w-full text-left px-3 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-[#21262d] transition-colors"
+                          className="w-full text-left px-3 py-2 text-sm text-yellow-400 hover:text-yellow-300 hover:bg-[#21262d] transition-colors"
                         >
                           Sign out
                         </button>
@@ -141,7 +141,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
             {user ? (
               <>
                 <button onClick={() => { onDashboard(); setMobileOpen(false); }} className="flex-1 text-[#e6edf3] text-sm font-medium px-4 py-2 rounded-md border border-[#30363d] hover:bg-[#21262d] transition-all">Dashboard</button>
-                <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex-1 text-red-400 text-sm font-medium px-4 py-2 rounded-md border border-[#30363d] hover:bg-[#21262d] transition-all">Sign out</button>
+                <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex-1 text-yellow-400 text-sm font-medium px-4 py-2 rounded-md border border-[#30363d] hover:bg-[#21262d] transition-all">Sign out</button>
               </>
             ) : (
               <>

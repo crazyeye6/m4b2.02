@@ -476,7 +476,7 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
             {discount !== null && savings !== null && (
               <div className="mt-3 flex items-center gap-4 bg-emerald-500/8 border border-emerald-500/20 rounded-xl px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <span className="bg-red-500 text-white text-xs font-black px-2 py-0.5 rounded">-{discount}%</span>
+                  <span className="bg-yellow-500 text-black text-xs font-black px-2 py-0.5 rounded">-{discount}%</span>
                   <span className="text-emerald-400 text-sm font-semibold">Buyers save ${savings.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-gray-500 text-xs">
@@ -531,7 +531,7 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
           </Section>
 
           {Object.keys(errors).length > 0 && (
-            <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-xl">
+            <div className="flex items-center gap-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm px-4 py-3 rounded-xl">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               Please fix the errors above before submitting.
             </div>
@@ -629,7 +629,7 @@ function Field({
       </label>
       {children}
       {error && (
-        <p className="text-red-400 text-xs mt-1 flex items-center gap-1">
+        <p className="text-yellow-400 text-xs mt-1 flex items-center gap-1">
           <AlertTriangle className="w-3 h-3" />{error}
         </p>
       )}
@@ -638,7 +638,7 @@ function Field({
 }
 
 function inputCls(hasError: boolean): string {
-  return `w-full bg-white/5 border ${hasError ? 'border-red-500/50 focus:border-red-500/70' : 'border-white/10 focus:border-amber-500/50'} rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 outline-none transition-colors`;
+  return `w-full bg-white/5 border ${hasError ? 'border-yellow-500/50 focus:border-yellow-500/70' : 'border-white/10 focus:border-amber-500/50'} rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 outline-none transition-colors`;
 }
 
 function SelectField({
@@ -650,7 +650,7 @@ function SelectField({
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className={`w-full bg-[#0d0d14] border ${hasError ? 'border-red-500/50' : 'border-white/10 focus:border-amber-500/50'} rounded-lg px-3 py-2.5 text-sm outline-none transition-colors [color-scheme:dark] ${value ? 'text-white' : 'text-gray-600'}`}
+      className={`w-full bg-[#0d0d14] border ${hasError ? 'border-yellow-500/50' : 'border-white/10 focus:border-amber-500/50'} rounded-lg px-3 py-2.5 text-sm outline-none transition-colors [color-scheme:dark] ${value ? 'text-white' : 'text-gray-600'}`}
     >
       <option value="" disabled>{placeholder}</option>
       {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -693,7 +693,7 @@ function SelectOrCustom({
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className={`flex-1 bg-[#0d0d14] border ${hasError ? 'border-red-500/50' : 'border-white/10 focus:border-amber-500/50'} rounded-lg px-3 py-2.5 text-sm outline-none transition-colors [color-scheme:dark] ${value ? 'text-white' : 'text-gray-600'}`}
+        className={`flex-1 bg-[#0d0d14] border ${hasError ? 'border-yellow-500/50' : 'border-white/10 focus:border-amber-500/50'} rounded-lg px-3 py-2.5 text-sm outline-none transition-colors [color-scheme:dark] ${value ? 'text-white' : 'text-gray-600'}`}
       >
         <option value="" disabled>{placeholder}</option>
         {options.map(o => <option key={o} value={o}>{o}</option>)}

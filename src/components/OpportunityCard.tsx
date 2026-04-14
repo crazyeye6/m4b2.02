@@ -36,7 +36,7 @@ const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; topb
   pending_review: {
     label: 'Pending Review',
     icon: <AlertTriangle className="w-3 h-3" />,
-    topbar: 'bg-red-500',
+    topbar: 'bg-yellow-500',
   },
   secured: {
     label: 'Secured',
@@ -46,7 +46,7 @@ const STATUS_CONFIG: Record<string, { label: string; icon: React.ReactNode; topb
   expired: {
     label: 'Expired',
     icon: <AlertTriangle className="w-3 h-3" />,
-    topbar: 'bg-red-500',
+    topbar: 'bg-yellow-500',
   },
 };
 
@@ -71,9 +71,9 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
       className={`relative bg-[#161b22] rounded-xl border flex flex-col transition-all duration-200
         ${isLive ? 'border-[#30363d] hover:border-[#484f58] hover:shadow-lg hover:shadow-black/20' : ''}
         ${listing.status === 'securing' ? 'border-amber-400/30' : ''}
-        ${listing.status === 'pending_review' ? 'border-red-500/20' : ''}
+        ${listing.status === 'pending_review' ? 'border-yellow-500/20' : ''}
         ${listing.status === 'secured' ? 'border-emerald-500/20 opacity-60' : ''}
-        ${listing.status === 'expired' ? 'border-red-500/15 opacity-40' : ''}
+        ${listing.status === 'expired' ? 'border-yellow-500/15 opacity-40' : ''}
       `}
     >
       {listing.status !== 'live' && sc.topbar && (
@@ -90,7 +90,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           </span>
           <div className="flex items-center gap-2">
             {isScarce && (
-              <span className="text-[10px] font-bold text-red-400 bg-red-500/10 border border-red-500/20 px-2 py-1 rounded-md">
+              <span className="text-[10px] font-bold text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 px-2 py-1 rounded-md">
                 {listing.slots_remaining} left
               </span>
             )}
@@ -117,7 +117,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             </div>
             <p className="text-emerald-400 text-xs font-semibold mt-0.5">Save ${savings.toLocaleString()}</p>
           </div>
-          <div className="bg-red-500 text-white text-base font-bold px-3 py-1.5 rounded-lg tabular-nums">
+          <div className="bg-yellow-500 text-black text-base font-bold px-3 py-1.5 rounded-lg tabular-nums">
             -{discount}%
           </div>
         </div>

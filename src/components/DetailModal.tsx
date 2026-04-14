@@ -58,7 +58,7 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
               <p className="text-white text-4xl font-black mb-1">${listing.discounted_price.toLocaleString()}</p>
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-gray-500 text-sm line-through">${listing.original_price.toLocaleString()}</span>
-                <span className="bg-red-500 text-white text-xs font-black px-2 py-0.5 rounded">-{discount}%</span>
+                <span className="bg-yellow-500 text-black text-xs font-black px-2 py-0.5 rounded">-{discount}%</span>
                 <span className="text-emerald-400 text-xs font-semibold">Save ${savings.toLocaleString()}</span>
               </div>
               <div className="space-y-1.5 border-t border-white/5 pt-3">
@@ -79,7 +79,7 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
                 <CountdownTimer deadline={listing.deadline_at} />
               </div>
               <p className="text-gray-600 text-xs">Slot date: <span className="text-gray-400">{listing.date_label}</span></p>
-              <p className="text-gray-600 text-xs mt-1">Slots left: <span className={`font-semibold ${listing.slots_remaining === 1 ? 'text-red-400' : 'text-orange-400'}`}>{listing.slots_remaining}</span></p>
+              <p className="text-gray-600 text-xs mt-1">Slots left: <span className={`font-semibold ${listing.slots_remaining === 1 ? 'text-yellow-400' : 'text-amber-400'}`}>{listing.slots_remaining}</span></p>
             </div>
           </div>
 

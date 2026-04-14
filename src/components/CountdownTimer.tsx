@@ -39,7 +39,7 @@ export default function CountdownTimer({ deadline, compact = false }: CountdownT
 
   if (time.expired) {
     return (
-      <div className="flex items-center gap-1 bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-semibold px-2 py-1 rounded-md">
+      <div className="flex items-center gap-1 bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-semibold px-2 py-1 rounded-md">
         <Clock className="w-3 h-3" />
         Expired
       </div>
@@ -48,9 +48,9 @@ export default function CountdownTimer({ deadline, compact = false }: CountdownT
 
   if (compact) {
     const colorClass = isUrgent
-      ? 'bg-red-500/20 border-red-500/30 text-red-400'
+      ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-400'
       : isWarning
-      ? 'bg-orange-500/20 border-orange-500/30 text-orange-400'
+      ? 'bg-yellow-500/15 border-yellow-500/20 text-yellow-400'
       : 'bg-amber-500/15 border-amber-500/20 text-amber-400';
 
     const label = time.days > 0
@@ -68,7 +68,7 @@ export default function CountdownTimer({ deadline, compact = false }: CountdownT
   const pad = (n: number) => String(n).padStart(2, '0');
 
   return (
-    <div className={`flex items-center gap-1.5 ${isUrgent ? 'text-red-400' : isWarning ? 'text-orange-400' : 'text-amber-400'}`}>
+    <div className={`flex items-center gap-1.5 ${isUrgent ? 'text-yellow-400' : isWarning ? 'text-yellow-400' : 'text-amber-400'}`}>
       <Clock className="w-3.5 h-3.5 flex-shrink-0" />
       <div className="flex items-center gap-0.5 text-xs font-mono font-bold">
         {time.days > 0 && <><span>{time.days}d</span><span className="mx-0.5 opacity-50">:</span></>}

@@ -176,8 +176,8 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
           </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2.5">
-              <p className="text-red-400 text-xs">{error}</p>
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2.5">
+              <p className="text-yellow-400 text-xs">{error}</p>
             </div>
           )}
 

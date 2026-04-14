@@ -18,7 +18,7 @@ const LISTING_STATUS_CONFIG: Record<string, { label: string; color: string; bg: 
   secured: { label: 'Secured', color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
   in_progress: { label: 'In Progress', color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
   completed_off_platform: { label: 'Completed', color: 'text-[#6e7681]', bg: 'bg-[#21262d] border-[#30363d]' },
-  expired: { label: 'Expired', color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' },
+  expired: { label: 'Expired', color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20' },
   cancelled: { label: 'Cancelled', color: 'text-[#484f58]', bg: 'bg-[#21262d] border-[#30363d]' },
 };
 
@@ -28,7 +28,7 @@ const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: strin
   in_progress: { label: 'In Progress', color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
   completed_off_platform: { label: 'Completed', color: 'text-[#6e7681]', bg: 'bg-[#21262d] border-[#30363d]' },
   refund_requested: { label: 'Refund Requested', color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20' },
-  refunded: { label: 'Refunded', color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' },
+  refunded: { label: 'Refunded', color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20' },
   cancelled: { label: 'Cancelled', color: 'text-[#484f58]', bg: 'bg-[#21262d] border-[#30363d]' },
 };
 
@@ -103,7 +103,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
             </button>
             <button
               onClick={signOut}
-              className="flex items-center gap-1.5 text-[#6e7681] hover:text-red-400 text-sm transition-colors"
+              className="flex items-center gap-1.5 text-[#6e7681] hover:text-yellow-400 text-sm transition-colors"
             >
               <LogOut className="w-3.5 h-3.5" />
               Sign out
@@ -210,7 +210,7 @@ function ListingCard({ listing, onClick }: { listing: Listing; onClick: () => vo
             <span className={`inline-flex items-center gap-1 border text-[10px] font-semibold px-2 py-0.5 rounded-md ${sc.bg} ${sc.color}`}>
               {sc.label}
             </span>
-            <span className="bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
+            <span className="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
               -{discount}%
             </span>
           </div>
@@ -567,7 +567,7 @@ function InfoBlock({ label, value, green, red }: { label: string; value: string;
   return (
     <div className="bg-[#21262d] border border-[#30363d] rounded-lg p-3">
       <p className="text-[#484f58] text-xs mb-0.5">{label}</p>
-      <p className={`text-sm font-bold ${green ? 'text-emerald-400' : red ? 'text-red-400' : 'text-[#e6edf3]'}`}>{value}</p>
+      <p className={`text-sm font-bold ${green ? 'text-emerald-400' : red ? 'text-yellow-400' : 'text-[#e6edf3]'}`}>{value}</p>
     </div>
   );
 }
@@ -576,7 +576,7 @@ function Pill({ label, value, urgent }: { label: string; value: string; urgent?:
   return (
     <div>
       <p className="text-[9px] text-[#484f58] uppercase tracking-wide font-medium">{label}</p>
-      <p className={`text-xs font-medium ${urgent ? 'text-red-400' : 'text-[#6e7681]'}`}>{value}</p>
+      <p className={`text-xs font-medium ${urgent ? 'text-yellow-400' : 'text-[#6e7681]'}`}>{value}</p>
     </div>
   );
 }

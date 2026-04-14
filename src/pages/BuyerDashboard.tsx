@@ -16,7 +16,7 @@ const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: s
   in_progress: { label: 'In Progress', color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', icon: <Clock className="w-3.5 h-3.5" /> },
   completed_off_platform: { label: 'Completed', color: 'text-[#6e7681]', bg: 'bg-[#21262d] border-[#30363d]', icon: <CheckCircle className="w-3.5 h-3.5" /> },
   refund_requested: { label: 'Refund Requested', color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20', icon: <RotateCcw className="w-3.5 h-3.5" /> },
-  refunded: { label: 'Refunded', color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20', icon: <XCircle className="w-3.5 h-3.5" /> },
+  refunded: { label: 'Refunded', color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20', icon: <XCircle className="w-3.5 h-3.5" /> },
   cancelled: { label: 'Cancelled', color: 'text-[#484f58]', bg: 'bg-[#21262d] border-[#30363d]', icon: <XCircle className="w-3.5 h-3.5" /> },
 };
 
@@ -86,7 +86,7 @@ export default function BuyerDashboard({ onBack }: BuyerDashboardProps) {
             </button>
             <button
               onClick={signOut}
-              className="flex items-center gap-1.5 text-[#6e7681] hover:text-red-400 text-sm transition-colors"
+              className="flex items-center gap-1.5 text-[#6e7681] hover:text-yellow-400 text-sm transition-colors"
             >
               <LogOut className="w-3.5 h-3.5" />
               Sign out

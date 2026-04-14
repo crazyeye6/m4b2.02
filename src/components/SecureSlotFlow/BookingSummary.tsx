@@ -95,9 +95,9 @@ export default function BookingSummary({ listing, slotsCount, onContinue }: Book
       </div>
 
       {isScarce && (
-        <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2.5">
-          <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
-          <p className="text-red-400 text-xs font-medium">
+        <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2.5">
+          <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
+          <p className="text-yellow-400 text-xs font-medium">
             Only {listing.slots_remaining} slot{listing.slots_remaining !== 1 ? 's' : ''} remaining — reserve now before it closes
           </p>
         </div>

@@ -25,7 +25,7 @@ export default function BuyerDetailsForm({ form, onChange, onContinue, onBack, e
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 text-sm px-4 py-3 rounded-lg">
+        <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm px-4 py-3 rounded-lg">
           <AlertTriangle className="w-4 h-4 flex-shrink-0" />
           {error}
         </div>

@@ -18,7 +18,7 @@ const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: strin
   in_progress: { label: 'In Progress', color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
   completed_off_platform: { label: 'Completed', color: 'text-gray-400', bg: 'bg-gray-500/10 border-gray-500/20' },
   refund_requested: { label: 'Refund Requested', color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20' },
-  refunded: { label: 'Refunded', color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' },
+  refunded: { label: 'Refunded', color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20' },
   cancelled: { label: 'Cancelled', color: 'text-gray-600', bg: 'bg-gray-500/10 border-gray-500/20' },
 };
 
@@ -293,7 +293,7 @@ function RefundsTable({ refunds, bookings, onSelect }: {
   const STATUS_CFG: Record<RefundStatus, { label: string; color: string; bg: string }> = {
     pending: { label: 'Pending', color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20' },
     approved: { label: 'Approved', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' },
-    denied: { label: 'Denied', color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' },
+    denied: { label: 'Denied', color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20' },
   };
 
   return (
@@ -523,7 +523,7 @@ function RefundDetailPanel({ refund, decisionReason, onReasonChange, onDecision,
                 <button
                   onClick={() => onDecision('denied')}
                   disabled={updating || !decisionReason.trim()}
-                  className="flex-1 bg-red-600 hover:bg-red-500 disabled:bg-red-600/30 text-white font-bold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2"
+                  className="flex-1 bg-yellow-600 hover:bg-yellow-500 disabled:bg-yellow-600/30 text-black font-bold py-3 rounded-xl transition-all text-sm flex items-center justify-center gap-2"
                 >
                   <Ban className="w-4 h-4" />
                   Deny
@@ -533,8 +533,8 @@ function RefundDetailPanel({ refund, decisionReason, onReasonChange, onDecision,
           )}
 
           {refund.status !== 'pending' && (
-            <div className={`rounded-xl p-4 border ${refund.status === 'approved' ? 'bg-emerald-950/30 border-emerald-500/20' : 'bg-red-950/30 border-red-500/20'}`}>
-              <p className={`text-xs font-semibold mb-1 ${refund.status === 'approved' ? 'text-emerald-400' : 'text-red-400'}`}>
+            <div className={`rounded-xl p-4 border ${refund.status === 'approved' ? 'bg-emerald-950/30 border-emerald-500/20' : 'bg-yellow-950/30 border-yellow-500/20'}`}>
+              <p className={`text-xs font-semibold mb-1 ${refund.status === 'approved' ? 'text-emerald-400' : 'text-yellow-400'}`}>
                 {refund.status === 'approved' ? 'Refund Approved' : 'Refund Denied'}
               </p>
               {refund.admin_decision_reason && (

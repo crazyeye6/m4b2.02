@@ -16,7 +16,7 @@ const CATEGORIES = [
 ];
 
 const SORT_OPTIONS = [
-  { value: 'ending_soon', label: 'Ending soon', icon: <Flame className="w-3.5 h-3.5 text-[#f85149]" /> },
+  { value: 'ending_soon', label: 'Ending soon', icon: <Flame className="w-3.5 h-3.5 text-yellow-400" /> },
   { value: 'biggest_discount', label: 'Biggest discount', icon: <TrendingDown className="w-3.5 h-3.5 text-[#e3b341]" /> },
   { value: 'best_value', label: 'Best value', icon: <Star className="w-3.5 h-3.5 text-[#58a6ff]" /> },
 ];
@@ -106,7 +106,7 @@ export default function FilterBar({ filters, onChange, total }: FilterBarProps) 
             onClick={() => onChange({ dateRange: isEndingThisWeek ? '' : 'this_week' })}
             className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-all
               ${isEndingThisWeek
-                ? 'bg-[#f85149]/10 text-[#f85149] border-[#f85149]/30'
+                ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'
                 : 'text-[#8b949e] border-[#30363d] hover:border-[#484f58] hover:text-[#c9d1d9] hover:bg-[#21262d]'
               }`}
           >
@@ -159,13 +159,13 @@ export default function FilterBar({ filters, onChange, total }: FilterBarProps) 
                     className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-all
                       ${filters.dateRange === o.value
                         ? o.urgent
-                          ? 'bg-[#f85149]/10 text-[#f85149]'
+                          ? 'bg-yellow-500/10 text-yellow-400'
                           : 'bg-[#21262d] text-[#e6edf3]'
                         : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#c9d1d9]'
                       }`}
                   >
                     <span className="flex items-center gap-1.5">
-                      {o.urgent && <span className="w-1.5 h-1.5 rounded-full bg-[#f85149] flex-shrink-0" />}
+                      {o.urgent && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0" />}
                       {!o.urgent && o.value !== '' && <span className="w-1.5 h-1.5 rounded-full bg-[#30363d] flex-shrink-0" />}
                       {o.label}
                     </span>
