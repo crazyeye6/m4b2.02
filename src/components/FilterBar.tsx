@@ -16,10 +16,10 @@ interface FilterBarProps {
 }
 
 const CATEGORIES = [
-  { value: 'all', label: 'All', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
-  { value: 'newsletter', label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
-  { value: 'podcast', label: 'Podcast', icon: <Mic className="w-3.5 h-3.5" /> },
-  { value: 'influencer', label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" /> },
+  { value: 'all', label: 'All', icon: <LayoutGrid className="w-3.5 h-3.5" />, activeClass: 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.08]' },
+  { value: 'newsletter', label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" />, activeClass: 'bg-sky-50 text-sky-600 border border-sky-100 shadow-sm' },
+  { value: 'podcast', label: 'Podcast', icon: <Mic className="w-3.5 h-3.5" />, activeClass: 'bg-violet-50 text-violet-600 border border-violet-100 shadow-sm' },
+  { value: 'influencer', label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" />, activeClass: 'bg-rose-50 text-rose-500 border border-rose-100 shadow-sm' },
 ];
 
 const GEOGRAPHIES = ['', 'US', 'UK', 'Europe', 'Ireland', 'Global'];
@@ -132,7 +132,7 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
                 onClick={() => onChange({ category: c.value as FilterState['category'] })}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[13px] font-medium transition-all whitespace-nowrap
                   ${filters.category === c.value
-                    ? 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.08]'
+                    ? c.activeClass
                     : 'text-[#6e6e73] hover:text-[#1d1d1f]'
                   }`}
               >
