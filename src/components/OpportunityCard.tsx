@@ -95,7 +95,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             {/* Publish date */}
             <p className="text-white text-[10px] font-semibold leading-tight">
               {listing.posting_date_start
-                ? new Date(listing.posting_date_start).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                ? (() => { const d = new Date(listing.posting_date_start); const weekday = d.toLocaleDateString('en-GB', { weekday: 'long' }); const rest = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); return `${weekday} ${rest}`; })()
                 : listing.date_label}
             </p>
             {/* Deadline */}
