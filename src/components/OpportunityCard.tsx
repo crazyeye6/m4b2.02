@@ -1,6 +1,7 @@
 import { Users, MapPin, Mail, Instagram, Mic, Shield, AlertTriangle, CheckCircle, Clock, Eye, Lock, Zap, Calendar, CalendarClock } from 'lucide-react';
 import type { Listing } from '../types';
 import CountdownTimer from './CountdownTimer';
+import { resolvePublishDate } from '../lib/dateUtils';
 
 interface OpportunityCardProps {
   listing: Listing;
@@ -127,46 +128,9 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           </div>
         </div>
 
-        {/* Air Date — prominent hero block */}
+        {/* Publish Date */}
         {(() => {
-          const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
-          function nextDateForDayName(name: string): Date | null {
-            const idx = DAY_NAMES.indexOf(name.toLowerCase());
-            if (idx === -1) return null;
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const todayIdx = today.getDay();
-            const diff = (idx - todayIdx + 7) % 7 || 7;
-            const result = new Date(today);
-            result.setDate(today.getDate() + diff);
-            return result;
-          }
-
-          let resolvedDate: Date | null = null;
-          if (listing.posting_date_start) {
-            resolvedDate = new Date(listing.posting_date_start + 'T00:00:00');
-          } else if (listing.date_label) {
-            resolvedDate = nextDateForDayName(listing.date_label);
-          }
-
-          const weekday = resolvedDate
-            ? resolvedDate.toLocaleDateString('en-GB', { weekday: 'long' })
-            : null;
-
-          const calDate = resolvedDate
-            ? resolvedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-            : listing.date_label;
-
-          const timeStr = listing.posting_time
-            ? (() => {
-                const [h, m] = listing.posting_time.split(':').map(Number);
-                const ampm = h >= 12 ? 'PM' : 'AM';
-                const h12 = h % 12 || 12;
-                return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
-              })()
-            : null;
-
+          const { weekday, calDate } = resolvePublishDate(listing);
           return (
             <div className="mb-4 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl px-4 py-4 flex items-center gap-3.5 shadow-sm shadow-blue-600/20">
               <div className="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center flex-shrink-0">
