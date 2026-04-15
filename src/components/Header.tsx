@@ -16,34 +16,34 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#161b22]/95 backdrop-blur-md border-b border-[#30363d]">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-black/[0.06]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14">
-          <button onClick={onHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="w-7 h-7 bg-emerald-600 rounded-md flex items-center justify-center">
-              <Zap className="w-3.5 h-3.5 text-white fill-white" />
+        <div className="flex items-center justify-between h-[52px]">
+          <button onClick={onHome} className="flex items-center gap-2 hover:opacity-75 transition-opacity">
+            <div className="w-6 h-6 bg-[#1d1d1f] rounded-[6px] flex items-center justify-center">
+              <Zap className="w-3 h-3 text-white fill-white" />
             </div>
-            <span className="text-[#e6edf3] font-semibold text-sm tracking-tight">
-              EndingThisWeek<span className="text-emerald-400">.media</span>
+            <span className="text-[#1d1d1f] font-semibold text-[13px] tracking-[-0.01em]">
+              EndingThisWeek<span className="text-[#6e6e73]">.media</span>
             </span>
           </button>
 
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-0">
             <button
               onClick={onHome}
-              className="text-[#8b949e] hover:text-[#e6edf3] text-sm font-medium px-3 py-1.5 rounded-md hover:bg-[#21262d] transition-all"
+              className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
             >
               Opportunities
             </button>
             <a
               href="#how-it-works"
-              className="text-[#8b949e] hover:text-[#e6edf3] text-sm font-medium px-3 py-1.5 rounded-md hover:bg-[#21262d] transition-all"
+              className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
             >
               How it works
             </a>
             <button
               onClick={onListSlot}
-              className="text-[#8b949e] hover:text-[#e6edf3] text-sm font-medium px-3 py-1.5 rounded-md hover:bg-[#21262d] transition-all"
+              className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
             >
               For sellers
             </button>
@@ -53,7 +53,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
             {onAdmin && (
               <button
                 onClick={onAdmin}
-                className="text-[#8b949e] hover:text-[#e6edf3] text-xs font-medium px-3 py-1.5 rounded-md border border-[#30363d] hover:border-[#484f58] hover:bg-[#21262d] transition-all"
+                className="text-[#6e6e73] hover:text-[#1d1d1f] text-[12px] font-medium px-3 py-1.5 rounded-lg border border-[#d2d2d7] hover:border-[#86868b] transition-all"
               >
                 Admin
               </button>
@@ -62,41 +62,41 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
               <div className="relative">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex items-center gap-2 bg-[#21262d] border border-[#30363d] hover:border-[#484f58] text-[#e6edf3] text-sm font-medium px-3 py-1.5 rounded-md transition-all"
+                  className="flex items-center gap-2 bg-[#f5f5f7] border border-[#d2d2d7] hover:border-[#86868b] text-[#1d1d1f] text-[13px] font-medium px-3 py-1.5 rounded-xl transition-all"
                 >
-                  <div className="w-5 h-5 bg-emerald-600/30 border border-emerald-500/30 rounded-full flex items-center justify-center">
-                    <User className="w-3 h-3 text-emerald-400" />
+                  <div className="w-5 h-5 bg-[#1d1d1f] rounded-full flex items-center justify-center">
+                    <User className="w-2.5 h-2.5 text-white" />
                   </div>
                   <span className="max-w-[120px] truncate">{profile?.display_name || user.email}</span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-[#6e7681] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3 h-3 text-[#6e6e73] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {dropdownOpen && (
                   <>
                     <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-                    <div className="absolute right-0 top-full mt-1.5 w-52 bg-[#161b22] border border-[#30363d] rounded-xl shadow-xl z-20 overflow-hidden">
-                      <div className="px-3 py-2.5 border-b border-[#30363d]">
-                        <p className="text-[#e6edf3] text-xs font-semibold truncate">{profile?.display_name || 'Account'}</p>
-                        <p className="text-[#8b949e] text-[10px] truncate">{user.email}</p>
+                    <div className="absolute right-0 top-full mt-2 w-52 bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-2xl shadow-xl shadow-black/10 z-20 overflow-hidden">
+                      <div className="px-4 py-3 border-b border-black/[0.06]">
+                        <p className="text-[#1d1d1f] text-[12px] font-semibold truncate">{profile?.display_name || 'Account'}</p>
+                        <p className="text-[#6e6e73] text-[11px] truncate mt-0.5">{user.email}</p>
                         {profile?.role && (
-                          <span className={`inline-block mt-1 text-[9px] font-bold px-1.5 py-0.5 rounded capitalize border ${
-                            profile.role === 'seller'
-                              ? 'bg-blue-500/10 border-blue-500/20 text-blue-400'
-                              : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                          }`}>
+                          <span className={`inline-block mt-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize
+                            ${profile.role === 'seller'
+                              ? 'bg-blue-50 text-blue-600'
+                              : 'bg-green-50 text-green-600'
+                            }`}>
                             {profile.role}
                           </span>
                         )}
                       </div>
-                      <div className="py-1">
+                      <div className="py-1.5">
                         <button
                           onClick={() => { setDropdownOpen(false); onDashboard(); }}
-                          className="w-full text-left px-3 py-2 text-sm text-[#8b949e] hover:text-[#e6edf3] hover:bg-[#21262d] transition-colors"
+                          className="w-full text-left px-4 py-2 text-[13px] text-[#1d1d1f] hover:bg-[#f5f5f7] transition-colors"
                         >
                           Dashboard
                         </button>
                         <button
                           onClick={() => { setDropdownOpen(false); signOut(); }}
-                          className="w-full text-left px-3 py-2 text-sm text-yellow-400 hover:text-yellow-300 hover:bg-[#21262d] transition-colors"
+                          className="w-full text-left px-4 py-2 text-[13px] text-[#ff3b30] hover:bg-[#f5f5f7] transition-colors"
                         >
                           Sign out
                         </button>
@@ -109,13 +109,13 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
               <>
                 <button
                   onClick={onSignIn}
-                  className="text-[#8b949e] hover:text-[#e6edf3] text-sm font-medium px-3 py-1.5 rounded-md border border-[#30363d] hover:border-[#484f58] hover:bg-[#21262d] transition-all"
+                  className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-1.5 rounded-xl border border-[#d2d2d7] hover:border-[#86868b] transition-all"
                 >
                   Sign in
                 </button>
                 <button
                   onClick={onListSlot}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-1.5 rounded-md border border-emerald-500/30 transition-all"
+                  className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white text-[13px] font-semibold px-4 py-1.5 rounded-xl transition-all"
                 >
                   List a Slot
                 </button>
@@ -124,7 +124,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
           </div>
 
           <button
-            className="md:hidden text-[#8b949e] hover:text-[#e6edf3] p-1.5 rounded-md hover:bg-[#21262d] transition-all"
+            className="md:hidden text-[#1d1d1f] p-1.5 rounded-lg hover:bg-[#f5f5f7] transition-all"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             {mobileOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
@@ -133,20 +133,20 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden bg-[#161b22] border-t border-[#30363d] px-4 py-3 space-y-1">
-          <button onClick={() => { onHome(); setMobileOpen(false); }} className="block w-full text-left text-[#8b949e] hover:text-[#e6edf3] text-sm px-3 py-2 rounded-md hover:bg-[#21262d] transition-all">Opportunities</button>
-          <a href="#how-it-works" className="block text-[#8b949e] hover:text-[#e6edf3] text-sm px-3 py-2 rounded-md hover:bg-[#21262d] transition-all">How it works</a>
-          <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="block w-full text-left text-[#8b949e] hover:text-[#e6edf3] text-sm px-3 py-2 rounded-md hover:bg-[#21262d] transition-all">For sellers</button>
-          <div className="flex gap-2 pt-2 border-t border-[#30363d] mt-2">
+        <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-4 py-3 space-y-0.5">
+          <button onClick={() => { onHome(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">Opportunities</button>
+          <a href="#how-it-works" className="block text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">How it works</a>
+          <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">For sellers</button>
+          <div className="flex gap-2 pt-3 border-t border-black/[0.06] mt-2">
             {user ? (
               <>
-                <button onClick={() => { onDashboard(); setMobileOpen(false); }} className="flex-1 text-[#e6edf3] text-sm font-medium px-4 py-2 rounded-md border border-[#30363d] hover:bg-[#21262d] transition-all">Dashboard</button>
-                <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex-1 text-yellow-400 text-sm font-medium px-4 py-2 rounded-md border border-[#30363d] hover:bg-[#21262d] transition-all">Sign out</button>
+                <button onClick={() => { onDashboard(); setMobileOpen(false); }} className="flex-1 text-[#1d1d1f] text-[13px] font-medium px-4 py-2.5 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-all">Dashboard</button>
+                <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex-1 text-[#ff3b30] text-[13px] font-medium px-4 py-2.5 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-all">Sign out</button>
               </>
             ) : (
               <>
-                <button onClick={() => { onSignIn(); setMobileOpen(false); }} className="flex-1 text-[#e6edf3] text-sm font-medium px-4 py-2 rounded-md border border-[#30363d] hover:bg-[#21262d] transition-all">Sign in</button>
-                <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="flex-1 bg-emerald-600 text-white text-sm font-semibold px-4 py-2 rounded-md border border-emerald-500/30 transition-all">List a Slot</button>
+                <button onClick={() => { onSignIn(); setMobileOpen(false); }} className="flex-1 text-[#1d1d1f] text-[13px] font-medium px-4 py-2.5 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-all">Sign in</button>
+                <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="flex-1 bg-[#1d1d1f] text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl transition-all">List a Slot</button>
               </>
             )}
           </div>

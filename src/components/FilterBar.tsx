@@ -23,9 +23,9 @@ const CATEGORIES = [
 ];
 
 const SORT_OPTIONS = [
-  { value: 'ending_soon', label: 'Ending Soon', icon: <Flame className="w-3.5 h-3.5 text-yellow-400" /> },
-  { value: 'biggest_discount', label: 'Biggest Discount', icon: <TrendingDown className="w-3.5 h-3.5 text-emerald-400" /> },
-  { value: 'best_value', label: 'Best Value', icon: <Star className="w-3.5 h-3.5 text-sky-400" /> },
+  { value: 'ending_soon', label: 'Ending Soon', icon: <Flame className="w-3.5 h-3.5 text-orange-500" /> },
+  { value: 'biggest_discount', label: 'Biggest Discount', icon: <TrendingDown className="w-3.5 h-3.5 text-blue-500" /> },
+  { value: 'best_value', label: 'Best Value', icon: <Star className="w-3.5 h-3.5 text-[#1d1d1f]" /> },
 ];
 
 const GEOGRAPHIES = ['', 'US', 'UK', 'Europe', 'Ireland', 'Global'];
@@ -63,8 +63,8 @@ function FilterSection({ label, icon, children }: { label: string; icon: React.R
   return (
     <div>
       <div className="flex items-center gap-1.5 mb-2.5">
-        <span className="text-[#6e7681]">{icon}</span>
-        <span className="text-[10px] text-[#8b949e] font-semibold uppercase tracking-widest">{label}</span>
+        <span className="text-[#aeaeb2]">{icon}</span>
+        <span className="text-[11px] text-[#86868b] font-semibold uppercase tracking-widest">{label}</span>
       </div>
       <div className="flex flex-col gap-0.5">{children}</div>
     </div>
@@ -77,12 +77,12 @@ function OptionBtn({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-all w-full
+      className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[13px] font-medium text-left transition-all w-full
         ${active
           ? urgent
-            ? 'bg-yellow-500/15 text-yellow-300 ring-1 ring-yellow-500/30'
-            : 'bg-[#21262d] text-[#e6edf3] ring-1 ring-[#484f58]'
-          : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#c9d1d9]'
+            ? 'bg-orange-50 text-orange-600'
+            : 'bg-[#f5f5f7] text-[#1d1d1f]'
+          : 'text-[#6e6e73] hover:bg-[#f5f5f7] hover:text-[#1d1d1f]'
         }`}
     >
       {children}
@@ -147,22 +147,21 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
     });
 
   return (
-    <div className="bg-[#161b22] border-b border-[#30363d] sticky top-14 z-40">
+    <div className="bg-white border-b border-black/[0.06] sticky top-[52px] z-40">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* ── Top row ── */}
-        <div className="flex items-center gap-2 py-2.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        <div className="flex items-center gap-2 py-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
 
-          {/* Category tabs */}
-          <div className="flex items-center gap-0.5 bg-[#21262d] border border-[#30363d] rounded-lg p-0.5 flex-shrink-0">
+          {/* Segmented category control */}
+          <div className="flex items-center gap-0.5 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 flex-shrink-0">
             {CATEGORIES.map(c => (
               <button
                 key={c.value}
                 onClick={() => onChange({ category: c.value as FilterState['category'] })}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[13px] font-medium transition-all whitespace-nowrap
                   ${filters.category === c.value
-                    ? 'bg-[#30363d] text-[#e6edf3] shadow-sm'
-                    : 'text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d]/50'
+                    ? 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.08]'
+                    : 'text-[#6e6e73] hover:text-[#1d1d1f]'
                   }`}
               >
                 {c.icon}
@@ -171,16 +170,15 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
             ))}
           </div>
 
-          {/* Divider */}
-          <div className="w-px h-5 bg-[#30363d] flex-shrink-0" />
+          <div className="w-px h-5 bg-black/[0.08] flex-shrink-0" />
 
-          {/* Quick: Ending This Week */}
+          {/* Ending This Week quick filter */}
           <button
             onClick={() => onChange({ dateRange: filters.dateRange === 'this_week' ? '' : 'this_week' })}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-medium border transition-all whitespace-nowrap
               ${filters.dateRange === 'this_week'
-                ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'
-                : 'text-[#8b949e] border-[#30363d] hover:border-[#484f58] hover:text-[#c9d1d9] hover:bg-[#21262d]'
+                ? 'bg-orange-50 text-orange-600 border-orange-200'
+                : 'text-[#6e6e73] border-black/[0.08] hover:border-black/[0.15] hover:text-[#1d1d1f] bg-white'
               }`}
           >
             <Flame className="w-3.5 h-3.5" />
@@ -188,47 +186,45 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
             <span className="sm:hidden">This Week</span>
           </button>
 
-          {/* Sort dropdown (inline cycle) */}
-          <div className="flex-shrink-0 relative group">
-            <div className="flex items-center gap-0.5 bg-[#21262d] border border-[#30363d] rounded-lg overflow-hidden">
-              <span className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-[#6e7681] font-semibold uppercase tracking-wider whitespace-nowrap border-r border-[#30363d]">
-                Sort
-              </span>
-              {SORT_OPTIONS.map(o => (
-                <button
-                  key={o.value}
-                  onClick={() => onChange({ sortBy: o.value as FilterState['sortBy'] })}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition-all whitespace-nowrap
-                    ${filters.sortBy === o.value
-                      ? 'bg-[#30363d] text-[#e6edf3]'
-                      : 'text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d]/40'
-                    }`}
-                >
-                  {o.icon}
-                  <span className="hidden lg:inline">{o.label}</span>
-                </button>
-              ))}
-            </div>
+          {/* Sort */}
+          <div className="flex-shrink-0 flex items-center gap-0 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl overflow-hidden">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] text-[#aeaeb2] font-semibold uppercase tracking-wider whitespace-nowrap border-r border-black/[0.06]">
+              Sort
+            </span>
+            {SORT_OPTIONS.map(o => (
+              <button
+                key={o.value}
+                onClick={() => onChange({ sortBy: o.value as FilterState['sortBy'] })}
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-[13px] font-medium transition-all whitespace-nowrap
+                  ${filters.sortBy === o.value
+                    ? 'text-[#1d1d1f]'
+                    : 'text-[#6e6e73] hover:text-[#1d1d1f]'
+                  }`}
+              >
+                {o.icon}
+                <span className="hidden lg:inline">{o.label}</span>
+              </button>
+            ))}
           </div>
 
-          {/* Divider */}
-          <div className="w-px h-5 bg-[#30363d] flex-shrink-0" />
+          <div className="w-px h-5 bg-black/[0.08] flex-shrink-0" />
 
           {/* Advanced filters toggle */}
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-medium border transition-all whitespace-nowrap
               ${showAdvanced
-                ? 'bg-[#21262d] text-[#e6edf3] border-[#484f58]'
+                ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
                 : hasActive
-                  ? 'text-emerald-400 border-emerald-500/40 bg-emerald-500/5 hover:bg-emerald-500/10'
-                  : 'text-[#8b949e] border-[#30363d] hover:border-[#484f58] hover:text-[#c9d1d9] hover:bg-[#21262d]'
+                  ? 'text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100'
+                  : 'text-[#6e6e73] border-black/[0.08] hover:border-black/[0.15] hover:text-[#1d1d1f] bg-white'
               }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Filters</span>
             {hasActive && (
-              <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold leading-none">
+              <span className={`flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold leading-none
+                ${showAdvanced ? 'bg-white text-[#1d1d1f]' : 'bg-blue-600 text-white'}`}>
                 {activeChips.length}
               </span>
             )}
@@ -239,16 +235,16 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
           </button>
 
           {/* Layout toggle */}
-          <div className="flex-shrink-0 hidden sm:flex items-center gap-0.5 bg-[#21262d] border border-[#30363d] rounded-lg p-0.5 ml-auto">
+          <div className="flex-shrink-0 hidden sm:flex items-center gap-0.5 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 ml-auto">
             {COLUMN_OPTIONS.map(o => (
               <button
                 key={o.value}
                 onClick={() => onColumnsChange(o.value)}
                 title={o.title}
-                className={`flex items-center justify-center w-7 h-7 rounded-md transition-all
+                className={`flex items-center justify-center w-7 h-7 rounded-xl transition-all
                   ${columns === o.value
-                    ? 'bg-[#30363d] text-[#e6edf3] shadow-sm'
-                    : 'text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d]/50'
+                    ? 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.08]'
+                    : 'text-[#6e6e73] hover:text-[#1d1d1f]'
                   }`}
               >
                 {o.icon}
@@ -256,35 +252,35 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
             ))}
           </div>
 
-          {/* Spacer + result count */}
+          {/* Result count + clear */}
           <div className="flex-shrink-0 sm:ml-0 ml-auto flex items-center gap-3">
             {hasActive && (
               <button
                 onClick={reset}
-                className="flex items-center gap-1 text-xs text-[#6e7681] hover:text-[#e6edf3] transition-colors whitespace-nowrap"
+                className="flex items-center gap-1 text-[12px] text-[#86868b] hover:text-[#1d1d1f] transition-colors whitespace-nowrap"
               >
                 <X className="w-3 h-3" />
                 Clear all
               </button>
             )}
-            <span className="text-[#8b949e] text-xs whitespace-nowrap">
-              <span className="text-[#e6edf3] font-semibold">{total}</span> results
+            <span className="text-[#6e6e73] text-[12px] whitespace-nowrap">
+              <span className="text-[#1d1d1f] font-semibold">{total}</span> results
             </span>
           </div>
         </div>
 
-        {/* ── Active filter chips ── */}
+        {/* Active chips */}
         {hasActive && !showAdvanced && (
-          <div className="flex items-center gap-1.5 pb-2.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex items-center gap-1.5 pb-3 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {activeChips.map(chip => (
               <span
                 key={chip.label}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#21262d] border border-[#30363d] text-[11px] text-[#c9d1d9] whitespace-nowrap flex-shrink-0"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#f5f5f7] border border-black/[0.06] text-[12px] text-[#1d1d1f] whitespace-nowrap flex-shrink-0"
               >
                 {chip.label}
                 <button
                   onClick={chip.clear}
-                  className="text-[#6e7681] hover:text-[#e6edf3] transition-colors ml-0.5"
+                  className="text-[#aeaeb2] hover:text-[#1d1d1f] transition-colors ml-0.5"
                 >
                   <X className="w-2.5 h-2.5" />
                 </button>
@@ -293,12 +289,11 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
           </div>
         )}
 
-        {/* ── Advanced panel ── */}
+        {/* Advanced panel */}
         {showAdvanced && (
-          <div className="border-t border-[#30363d] pt-4 pb-1">
+          <div className="border-t border-black/[0.06] pt-5 pb-2">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-5">
 
-              {/* Date Range */}
               <FilterSection label="Date Range" icon={<Calendar className="w-3 h-3" />}>
                 {dateOptions.map(o => (
                   <OptionBtn
@@ -309,15 +304,15 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
                   >
                     <span className="flex items-center gap-1.5 flex-1 min-w-0">
                       {o.urgent
-                        ? <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0" />
+                        ? <span className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0" />
                         : o.value !== ''
-                          ? <span className="w-1.5 h-1.5 rounded-full bg-[#30363d] flex-shrink-0" />
+                          ? <span className="w-1.5 h-1.5 rounded-full bg-[#d2d2d7] flex-shrink-0" />
                           : null
                       }
                       <span className="truncate">{o.label}</span>
                     </span>
                     {o.sublabel && (
-                      <span className="text-[9px] text-[#6e7681] font-normal flex-shrink-0 ml-2">
+                      <span className="text-[10px] text-[#aeaeb2] font-normal flex-shrink-0 ml-2">
                         {o.sublabel}
                       </span>
                     )}
@@ -325,7 +320,6 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
                 ))}
               </FilterSection>
 
-              {/* Min Discount */}
               <FilterSection label="Min Discount" icon={<TrendingDown className="w-3 h-3" />}>
                 {DISCOUNT_OPTIONS.map(v => (
                   <OptionBtn
@@ -338,7 +332,6 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
                 ))}
               </FilterSection>
 
-              {/* Max Price */}
               <FilterSection label="Max Price" icon={<DollarSign className="w-3 h-3" />}>
                 {PRICE_MAX_OPTIONS.map(v => (
                   <OptionBtn
@@ -351,7 +344,6 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
                 ))}
               </FilterSection>
 
-              {/* Geography */}
               <FilterSection label="Geography" icon={<MapPin className="w-3 h-3" />}>
                 {GEOGRAPHIES.map(v => (
                   <OptionBtn
@@ -364,7 +356,6 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
                 ))}
               </FilterSection>
 
-              {/* Niche */}
               <FilterSection label="Niche" icon={<Tag className="w-3 h-3" />}>
                 {NICHES.map(v => (
                   <OptionBtn
@@ -378,19 +369,18 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
               </FilterSection>
             </div>
 
-            {/* Active chips inside panel */}
             {hasActive && (
-              <div className="flex items-center gap-1.5 mt-4 flex-wrap">
-                <span className="text-[10px] text-[#6e7681] font-medium uppercase tracking-wider mr-1">Active:</span>
+              <div className="flex items-center gap-1.5 mt-5 flex-wrap">
+                <span className="text-[11px] text-[#aeaeb2] font-medium uppercase tracking-wider mr-1">Active:</span>
                 {activeChips.map(chip => (
                   <span
                     key={chip.label}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-300"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-[12px] text-blue-600"
                   >
                     {chip.label}
                     <button
                       onClick={chip.clear}
-                      className="text-emerald-500/60 hover:text-emerald-300 transition-colors"
+                      className="text-blue-400 hover:text-blue-600 transition-colors"
                     >
                       <X className="w-2.5 h-2.5" />
                     </button>
@@ -398,22 +388,21 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
                 ))}
                 <button
                   onClick={reset}
-                  className="text-[11px] text-[#6e7681] hover:text-[#e6edf3] transition-colors ml-1 underline underline-offset-2"
+                  className="text-[12px] text-[#86868b] hover:text-[#1d1d1f] transition-colors ml-1 underline underline-offset-2"
                 >
                   Clear all
                 </button>
               </div>
             )}
 
-            {/* Collapse button */}
-            <div className="flex justify-center mt-4 mb-1">
+            <div className="flex justify-center mt-5 mb-2">
               <button
                 onClick={() => setShowAdvanced(false)}
-                className="flex items-center gap-2 px-5 py-2 rounded-lg bg-[#21262d] border border-[#30363d] hover:border-[#484f58] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-medium transition-all group"
+                className="flex items-center gap-2 px-6 py-2 rounded-full bg-[#f5f5f7] border border-black/[0.06] hover:border-black/[0.12] text-[#6e6e73] hover:text-[#1d1d1f] text-[13px] font-medium transition-all"
               >
-                <ChevronUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
-                Collapse filters — view {total} results
-                <ChevronUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
+                <ChevronUp className="w-3.5 h-3.5" />
+                Collapse — view {total} results
+                <ChevronUp className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>

@@ -173,7 +173,7 @@ export default function App() {
 
   if (page === 'terms') {
     return (
-      <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+      <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={goHome} />
         <TermsPage onBack={goHome} />
       </div>
@@ -182,7 +182,7 @@ export default function App() {
 
   if (page === 'privacy') {
     return (
-      <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+      <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={goHome} />
         <PrivacyPage onBack={goHome} onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }} />
       </div>
@@ -191,7 +191,7 @@ export default function App() {
 
   if (page === 'list-slot') {
     return (
-      <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+      <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={goHome} />
         <ListSlotPage
           onBack={() => { goHome(); refetch(); }}
@@ -204,16 +204,16 @@ export default function App() {
   if (page === 'admin') {
     if (profile?.role !== 'admin') {
       return (
-        <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+        <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
           <Header {...sharedHeaderProps} onHome={goHome} />
           <div className="flex items-center justify-center min-h-[80vh]">
             <div className="text-center max-w-sm">
-              <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-6V7m0 0a4 4 0 10-8 0 4 4 0 008 0z" /></svg>
+              <div className="w-14 h-14 bg-red-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-6V7m0 0a4 4 0 10-8 0 4 4 0 008 0z" /></svg>
               </div>
-              <h2 className="text-[#e6edf3] font-bold text-xl mb-2">Access Denied</h2>
-              <p className="text-[#8b949e] text-sm mb-6">You don't have permission to access the admin panel.</p>
-              <button onClick={goHome} className="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] font-semibold px-5 py-2.5 rounded-lg text-sm transition-all border border-[#30363d]">
+              <h2 className="text-[#1d1d1f] font-semibold text-xl mb-2">Access Denied</h2>
+              <p className="text-[#6e6e73] text-[14px] mb-6">You don't have permission to access the admin panel.</p>
+              <button onClick={goHome} className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-5 py-2.5 rounded-2xl text-[14px] transition-all">
                 Go home
               </button>
             </div>
@@ -227,14 +227,14 @@ export default function App() {
   if (page === 'dashboard') {
     if (!profile) {
       return (
-        <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+        <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
           <Header {...sharedHeaderProps} onHome={goHome} />
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center">
-              <p className="text-[#6e7681] text-sm mb-4">Please sign in to access your dashboard.</p>
+              <p className="text-[#6e6e73] text-[14px] mb-4">Please sign in to access your dashboard.</p>
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-all"
+                className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-6 py-2.5 rounded-2xl text-[14px] transition-all"
               >
                 Sign in
               </button>
@@ -263,7 +263,7 @@ export default function App() {
 
   if (page === 'not-found') {
     return (
-      <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+      <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={() => { setListingInUrl(null); setPage('home'); }} />
         <NotFoundPage onHome={() => { setListingInUrl(null); setPage('home'); }} onBrowse={() => { setListingInUrl(null); setPage('home'); }} />
       </div>
@@ -302,7 +302,7 @@ export default function App() {
 
   if (page === 'listing' && listingId) {
     return (
-      <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+      <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={() => { setListingInUrl(null); setPage('home'); }} />
         <ListingPage
           listingId={listingId}
@@ -315,7 +315,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
       <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
 
       <main>
@@ -332,8 +332,8 @@ export default function App() {
           <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h2 className="text-xl font-bold text-[#e6edf3]">Live Opportunities</h2>
-                <p className="text-[#8b949e] text-sm mt-0.5">Secure expiring opportunities before they disappear.</p>
+                <h2 className="text-[20px] font-semibold text-[#1d1d1f] tracking-[-0.01em]">Live Opportunities</h2>
+                <p className="text-[#6e6e73] text-[13px] mt-0.5">Secure expiring opportunities before they disappear.</p>
               </div>
             </div>
             <ListingsGrid

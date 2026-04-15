@@ -2,28 +2,28 @@ import { Search, CreditCard, MessageSquare, TrendingDown } from 'lucide-react';
 
 const STEPS = [
   {
-    icon: <Search className="w-4 h-4 text-[#58a6ff]" />,
+    icon: <Search className="w-4 h-4 text-blue-500" />,
     number: '01',
     title: 'Browse available slots',
     description: 'Filter by channel, niche, geography, and budget. Each listing shows real audience data, the ad slot date, and a countdown to the claim deadline.',
     note: null,
   },
   {
-    icon: <TrendingDown className="w-4 h-4 text-[#e3b341]" />,
+    icon: <TrendingDown className="w-4 h-4 text-[#1d1d1f]" />,
     number: '02',
     title: 'Find a deal worth taking',
     description: 'Sellers discount unsold inventory to fill it fast. You get access to premium placements at 20–50% below standard rate.',
     note: null,
   },
   {
-    icon: <CreditCard className="w-4 h-4 text-[#3fb950]" />,
+    icon: <CreditCard className="w-4 h-4 text-green-600" />,
     number: '03',
     title: 'Pay 10% to reserve',
     description: 'Pay a 10% deposit to lock in your slot immediately. Your details and a booking reference are sent to the creator straight away.',
     note: '90% paid direct to creator',
   },
   {
-    icon: <MessageSquare className="w-4 h-4 text-[#f78166]" />,
+    icon: <MessageSquare className="w-4 h-4 text-orange-500" />,
     number: '04',
     title: 'Finalise with the creator',
     description: "The creator's contact details are released after deposit. You settle the balance directly and finalise your campaign brief together.",
@@ -33,14 +33,14 @@ const STEPS = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20 border-t border-[#30363d]">
+    <section id="how-it-works" className="py-24 border-t border-black/[0.06] bg-white">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mb-12">
-          <p className="text-[#3fb950] text-[10px] font-semibold uppercase tracking-widest mb-3">How it works</p>
-          <h2 className="text-3xl font-bold text-[#e6edf3] mb-3 leading-tight">
+        <div className="max-w-2xl mb-14">
+          <p className="text-[12px] font-semibold uppercase tracking-widest text-[#86868b] mb-4">How it works</p>
+          <h2 className="text-4xl font-semibold text-[#1d1d1f] mb-4 leading-tight tracking-[-0.02em]">
             Reserve a slot in minutes,<br />pay the creator directly.
           </h2>
-          <p className="text-[#8b949e] text-base leading-relaxed">
+          <p className="text-[#6e6e73] text-[17px] leading-relaxed font-light">
             A 10% deposit locks in your listing. The remaining 90% is settled directly between you and the creator — fast, flexible, and commercial.
           </p>
         </div>
@@ -49,22 +49,22 @@ export default function HowItWorks() {
           {STEPS.map((step, i) => (
             <div key={i} className="relative">
               {i < STEPS.length - 1 && (
-                <div className="hidden lg:block absolute top-5 left-full w-full h-px bg-gradient-to-r from-[#30363d] to-transparent z-0" />
+                <div className="hidden lg:block absolute top-6 left-full w-full h-px bg-gradient-to-r from-black/[0.08] to-transparent z-0" />
               )}
-              <div className="relative bg-[#161b22] border border-[#30363d] rounded-lg p-5 hover:border-[#484f58] transition-all group">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-8 h-8 bg-[#21262d] border border-[#30363d] rounded-md flex items-center justify-center group-hover:border-[#484f58] transition-all">
+              <div className="relative bg-[#f5f5f7] rounded-3xl p-6 hover:bg-white hover:shadow-md hover:shadow-black/[0.06] transition-all duration-200 border border-transparent hover:border-black/[0.06]">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="w-9 h-9 bg-white rounded-2xl flex items-center justify-center shadow-sm shadow-black/[0.06]">
                     {step.icon}
                   </div>
-                  <span className="text-3xl font-bold text-[#30363d] group-hover:text-[#484f58] transition-all tabular-nums select-none">
+                  <span className="text-3xl font-bold text-black/10 tabular-nums select-none">
                     {step.number}
                   </span>
                 </div>
-                <h3 className="text-[#e6edf3] font-semibold text-sm mb-1.5">{step.title}</h3>
-                <p className="text-[#8b949e] text-xs leading-relaxed">{step.description}</p>
+                <h3 className="text-[#1d1d1f] font-semibold text-[14px] mb-2 tracking-[-0.01em]">{step.title}</h3>
+                <p className="text-[#6e6e73] text-[13px] leading-relaxed">{step.description}</p>
                 {step.note && (
-                  <p className="mt-3 text-[10px] text-[#3fb950] font-semibold flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#3fb950] flex-shrink-0" />
+                  <p className="mt-3 text-[11px] text-green-600 font-semibold flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0" />
                     {step.note}
                   </p>
                 )}
@@ -73,26 +73,26 @@ export default function HowItWorks() {
           ))}
         </div>
 
-        <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
           {[
             { label: 'Deposit only', value: '10%', sub: 'Charged by platform to reserve' },
             { label: 'Balance paid', value: 'Direct', sub: 'Creator invoices you separately' },
             { label: 'Seller contact', value: 'Instant', sub: 'Released after deposit confirmed' },
           ].map((item, i) => (
-            <div key={i} className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 text-center">
-              <p className="text-[#e3b341] font-bold text-xl mb-0.5">{item.value}</p>
-              <p className="text-[#e6edf3] text-sm font-medium">{item.label}</p>
-              <p className="text-[#8b949e] text-xs mt-0.5">{item.sub}</p>
+            <div key={i} className="bg-[#f5f5f7] rounded-3xl p-5 text-center">
+              <p className="text-[#1d1d1f] font-bold text-[22px] tracking-[-0.02em] mb-0.5">{item.value}</p>
+              <p className="text-[#1d1d1f] text-[14px] font-semibold">{item.label}</p>
+              <p className="text-[#6e6e73] text-[12px] mt-1">{item.sub}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-4 bg-[#161b22] border border-[#30363d] rounded-lg p-6 flex flex-col sm:flex-row items-center justify-between gap-5">
+        <div className="mt-4 bg-[#f5f5f7] rounded-3xl p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
-            <h3 className="text-[#e6edf3] font-semibold text-base mb-1">Are you a publisher or creator?</h3>
-            <p className="text-[#8b949e] text-sm">List your unsold ad slots and set a claim deadline — giving buyers time to get their copy ready before the slot runs.</p>
+            <h3 className="text-[#1d1d1f] font-semibold text-[17px] mb-1 tracking-[-0.01em]">Are you a publisher or creator?</h3>
+            <p className="text-[#6e6e73] text-[14px]">List your unsold ad slots and set a claim deadline — giving buyers time to get their copy ready before the slot runs.</p>
           </div>
-          <button className="flex-shrink-0 bg-[#238636] hover:bg-[#2ea043] text-white font-medium px-5 py-2 rounded-md text-sm border border-[#2ea043]/40 transition-all whitespace-nowrap">
+          <button className="flex-shrink-0 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap">
             List a Slot Free
           </button>
         </div>

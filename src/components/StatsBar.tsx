@@ -9,19 +9,19 @@ interface StatsBarProps {
 export default function StatsBar({ liveCount, avgDiscount, totalSavings }: StatsBarProps) {
   const stats = [
     {
-      icon: <Activity className="w-4 h-4 text-[#3fb950]" />,
+      icon: <Activity className="w-4 h-4 text-green-600" />,
       value: liveCount.toString(),
       label: 'Live opportunities',
       pulse: true,
     },
     {
-      icon: <TrendingDown className="w-4 h-4 text-[#58a6ff]" />,
+      icon: <TrendingDown className="w-4 h-4 text-blue-500" />,
       value: `${avgDiscount}%`,
       label: 'Avg discount',
       pulse: false,
     },
     {
-      icon: <DollarSign className="w-4 h-4 text-[#e3b341]" />,
+      icon: <DollarSign className="w-4 h-4 text-[#1d1d1f]" />,
       value: `$${(totalSavings).toLocaleString()}`,
       label: 'Total buyer savings',
       pulse: false,
@@ -29,22 +29,22 @@ export default function StatsBar({ liveCount, avgDiscount, totalSavings }: Stats
   ];
 
   return (
-    <section className="py-6 border-y border-[#30363d] bg-[#161b22]">
+    <section className="py-8 border-y border-black/[0.06] bg-white">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-0 divide-y sm:divide-y-0 sm:divide-x divide-[#30363d]">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-0 divide-y sm:divide-y-0 sm:divide-x divide-black/[0.06]">
           {stats.map((stat, i) => (
-            <div key={i} className="flex items-center gap-3 px-10 py-3 sm:py-0">
-              <div className="w-8 h-8 rounded-md bg-[#21262d] border border-[#30363d] flex items-center justify-center">
+            <div key={i} className="flex items-center gap-4 px-12 py-4 sm:py-0">
+              <div className="w-9 h-9 rounded-2xl bg-[#f5f5f7] flex items-center justify-center">
                 {stat.icon}
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold text-[#e6edf3]">{stat.value}</span>
+                  <span className="text-[22px] font-semibold text-[#1d1d1f] tracking-[-0.02em]">{stat.value}</span>
                   {stat.pulse && (
-                    <span className="w-1.5 h-1.5 bg-[#3fb950] rounded-full animate-pulse" />
+                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                   )}
                 </div>
-                <p className="text-[#8b949e] text-xs font-medium">{stat.label}</p>
+                <p className="text-[#6e6e73] text-[12px] font-medium mt-0.5">{stat.label}</p>
               </div>
             </div>
           ))}
