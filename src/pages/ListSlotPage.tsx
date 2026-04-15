@@ -27,6 +27,7 @@ interface FormData {
   deliverable: string;
   slot_type: string;
   date_label: string;
+  posting_date_start: string;
   posting_time: string;
   deadline_at: string;
   original_price: string;
@@ -64,6 +65,7 @@ const INITIAL: FormData = {
   deliverable: '',
   slot_type: '',
   date_label: '',
+  posting_date_start: '',
   posting_time: '',
   deadline_at: '',
   original_price: '',
@@ -96,7 +98,6 @@ const PODCAST_SLOT_TYPES = ['Pre-roll', 'Mid-roll host read', 'Mid-roll produced
 const INFLUENCER_DELIVERABLES = ['Reel + Stories', 'TikTok video', 'Post + Stories', 'YouTube integration', 'Instagram post', 'Dedicated reel', 'Story series'];
 const INFLUENCER_SLOT_TYPES = ['Reel + Stories', 'TikTok video', 'Post + Stories', 'YouTube integration', 'Instagram post', 'Dedicated reel', 'Story series'];
 
-const DATE_LABELS = ['Today', 'Tomorrow', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'This weekend', 'This week', 'Next 3 days'];
 
 const LOCATIONS = ['US', 'UK', 'US / UK', 'Ireland / UK / US', 'UK / Europe', 'Europe', 'Global', 'APAC', 'LATAM'];
 
@@ -215,6 +216,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
       deliverable: form.media_type === 'influencer' && form.deliverable ? form.deliverable : null,
       slot_type: form.slot_type,
       date_label: form.date_label,
+      posting_date_start: form.posting_date_start || null,
       posting_time: form.posting_time || null,
       deadline_at: new Date(form.deadline_at).toISOString(),
       original_price: parseInt(form.original_price),
@@ -480,17 +482,27 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                 </Field>
               )}
 
-              <Field label="Ad slot date" required error={errors.date_label} hint="When the ad actually runs or publishes">
-                <SelectOrCustom
-                  value={form.date_label}
-                  onChange={v => set('date_label', v)}
-                  options={DATE_LABELS}
-                  placeholder="e.g. Friday, This week..."
-                  hasError={!!errors.date_label}
+              <Field label="Air date" required error={errors.date_label} hint="The exact date your ad will publish" className="sm:col-span-2">
+                <input
+                  type="date"
+                  value={form.posting_date_start}
+                  onChange={e => {
+                    const v = e.target.value;
+                    set('posting_date_start', v);
+                    if (v) {
+                      const d = new Date(v + 'T00:00:00');
+                      const label = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+                      set('date_label', label);
+                    } else {
+                      set('date_label', '');
+                    }
+                  }}
+                  min={new Date().toISOString().slice(0, 10)}
+                  className={inputCls(!!errors.date_label) + ' [color-scheme:light]'}
                 />
               </Field>
 
-              <Field label="Time of day" hint="Optional — shown on listing card">
+              <Field label="Time of day" hint="Optional — time your ad goes live">
                 <input
                   type="time"
                   value={form.posting_time}

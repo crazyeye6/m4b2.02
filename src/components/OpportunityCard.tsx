@@ -129,10 +129,35 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
 
         {/* Air Date — prominent hero block */}
         {(() => {
-          const hasDate = !!listing.posting_date_start;
-          const d = hasDate ? new Date(listing.posting_date_start! + 'T00:00:00') : null;
-          const weekday = d ? d.toLocaleDateString('en-GB', { weekday: 'long' }) : null;
-          const calDate = d ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : listing.date_label;
+          const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+          function nextDateForDayName(name: string): Date | null {
+            const idx = DAY_NAMES.indexOf(name.toLowerCase());
+            if (idx === -1) return null;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayIdx = today.getDay();
+            const diff = (idx - todayIdx + 7) % 7 || 7;
+            const result = new Date(today);
+            result.setDate(today.getDate() + diff);
+            return result;
+          }
+
+          let resolvedDate: Date | null = null;
+          if (listing.posting_date_start) {
+            resolvedDate = new Date(listing.posting_date_start + 'T00:00:00');
+          } else if (listing.date_label) {
+            resolvedDate = nextDateForDayName(listing.date_label);
+          }
+
+          const weekday = resolvedDate
+            ? resolvedDate.toLocaleDateString('en-GB', { weekday: 'long' })
+            : null;
+
+          const calDate = resolvedDate
+            ? resolvedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+            : listing.date_label;
+
           const timeStr = listing.posting_time
             ? (() => {
                 const [h, m] = listing.posting_time.split(':').map(Number);
@@ -143,18 +168,18 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             : null;
 
           return (
-            <div className="mb-4 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl px-4 py-3.5 flex items-center gap-3 shadow-sm shadow-blue-600/20">
-              <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="mb-4 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl px-4 py-4 flex items-center gap-3.5 shadow-sm shadow-blue-600/20">
+              <div className="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Calendar className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-blue-200 text-[9px] font-bold uppercase tracking-widest leading-none mb-1">Air Date</p>
+                <p className="text-blue-200 text-[9px] font-bold uppercase tracking-widest leading-none mb-1.5">Air Date</p>
                 {weekday && (
-                  <p className="text-white/70 text-[11px] font-medium leading-none mb-0.5">{weekday}</p>
+                  <p className="text-white/75 text-[12px] font-semibold leading-none mb-1">{weekday}</p>
                 )}
-                <p className="text-white text-[15px] font-bold leading-tight tracking-[-0.01em] truncate">{calDate}</p>
+                <p className="text-white text-[16px] font-bold leading-tight tracking-[-0.02em] truncate">{calDate}</p>
                 {timeStr && (
-                  <p className="text-blue-200 text-[11px] font-semibold leading-none mt-1">{timeStr}</p>
+                  <p className="text-blue-200 text-[12px] font-semibold leading-none mt-1.5">{timeStr}</p>
                 )}
               </div>
             </div>
