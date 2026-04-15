@@ -1,4 +1,3 @@
-import { Zap } from 'lucide-react';
 
 interface FooterProps {
   onTerms?: () => void;
@@ -10,12 +9,20 @@ export default function Footer({ onTerms, onPrivacy }: FooterProps) {
     <footer className="border-t border-black/[0.06] py-10 mt-0 bg-white">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 bg-[#1d1d1f] rounded-[5px] flex items-center justify-center">
-              <Zap className="w-2.5 h-2.5 text-green-400 fill-green-400" />
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-0.5">
+              <div className="w-[16px] h-[16px] bg-[#1d1d1f] rounded-[3px] flex items-center justify-center flex-shrink-0">
+                <svg width="9" height="9" viewBox="0 0 10 10" fill="none">
+                  <rect x="1" y="1" width="3.5" height="8" rx="1" fill="white" opacity="0.9"/>
+                  <rect x="5.5" y="1" width="3.5" height="5" rx="1" fill="#4ade80"/>
+                </svg>
+              </div>
             </div>
-            <span className="text-[#1d1d1f] font-semibold text-[13px] tracking-[-0.01em]">
-              EndingThisWeek<span className="text-[#6e6e73]">.media</span>
+            <span className="text-[#1d1d1f] font-bold text-[12px] tracking-[-0.03em] leading-none">
+              EndingThisWeek
+            </span>
+            <span className="text-[10px] font-semibold text-white bg-[#1d1d1f] px-1.5 py-0.5 rounded-[3px] tracking-[-0.01em] leading-none">
+              .media
             </span>
           </div>
 
