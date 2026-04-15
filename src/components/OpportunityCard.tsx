@@ -125,7 +125,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         {/* Publisher + Publish Date: two-panel branded strip */}
         <div className="grid grid-cols-2 gap-2 mb-4">
           {/* Publisher panel */}
-          <div className="bg-white border border-black/[0.08] rounded-2xl p-3.5 relative overflow-hidden">
+          <div className="bg-white rounded-2xl p-3.5 relative overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-[2px] bg-black/10" />
             <p className="text-[#86868b] text-[8px] font-bold uppercase tracking-widest leading-none mb-2">Publisher</p>
             <p className="text-[#1d1d1f] text-[13px] font-bold leading-tight truncate mb-0.5">{listing.property_name}</p>
@@ -133,7 +133,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           </div>
 
           {/* Publish Date panel */}
-          <div className="bg-gradient-to-br from-[#1d1d1f] to-[#2c2c2e] rounded-2xl p-3.5 relative overflow-hidden">
+          <div className="bg-gradient-to-br from-[#1d1d1f] to-[#2c2c2e] rounded-2xl p-3.5 relative overflow-hidden border-0">
             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-green-400 to-teal-400" />
             <p className="text-white/35 text-[8px] font-bold uppercase tracking-widest leading-none mb-2">Publish Date</p>
             {weekday ? (
@@ -152,11 +152,6 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           <CalendarClock className={`w-3.5 h-3.5 flex-shrink-0 ${isLive ? 'text-orange-500' : 'text-[#86868b]'}`} />
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#86868b] flex-shrink-0">Book By</p>
           <p className={`text-[12px] font-bold ml-auto ${isLive ? 'text-orange-600' : 'text-[#1d1d1f]'}`}>{deadlineFormatted}</p>
-        </div>
-
-        {/* Title block — owner name only now, property + company shown in panel */}
-        <div className="mb-4">
-          <p className="text-[#6e6e73] text-[12px]">{listing.media_owner_name}</p>
         </div>
 
         {/* Price block */}
