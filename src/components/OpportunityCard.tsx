@@ -82,19 +82,31 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
 
       <div className="p-5 flex flex-col h-full">
 
-        {/* Header: type badge + urgency + timer */}
-        <div className="flex items-center justify-between mb-4">
-          <span className={`inline-flex items-center gap-2 border text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider ${mc.color}`}>
+        {/* Header: type badge (left) + info block (right) */}
+        <div className="flex items-start justify-between mb-4 gap-3">
+          <span className={`inline-flex items-center gap-2 border text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider flex-shrink-0 ${mc.color}`}>
             {mc.icon}
             {mc.label}
           </span>
-          <div className="flex items-center gap-2">
-            {isScarce && (
-              <span className="text-[10px] font-bold text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 px-2 py-1 rounded-md">
-                {listing.slots_remaining} left
+
+          <div className="text-right flex-shrink-0">
+            {/* Publish date */}
+            <p className="text-white text-[10px] font-semibold leading-tight">
+              {listing.posting_date_start
+                ? new Date(listing.posting_date_start).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                : listing.date_label}
+            </p>
+            {/* Deadline */}
+            <p className="text-white/70 text-[10px] mt-0.5 leading-tight">
+              Deadline: {new Date(listing.deadline_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+            </p>
+            {/* Slots + countdown */}
+            <div className="flex items-center justify-end gap-2 mt-1.5">
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isScarce ? 'text-yellow-300 bg-yellow-500/10' : 'text-white'}`}>
+                {listing.slots_remaining} slot{listing.slots_remaining !== 1 ? 's' : ''} left
               </span>
-            )}
-            <CountdownTimer deadline={listing.deadline_at} compact />
+              <CountdownTimer deadline={listing.deadline_at} compact />
+            </div>
           </div>
         </div>
 
@@ -155,24 +167,6 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
               <StatPill label="Deliverable" value={listing.deliverable || '—'} />
             </>
           )}
-        </div>
-
-        {/* Dates row */}
-        <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-2">
-            <p className="text-[#6e7681] text-[9px] uppercase tracking-wide font-medium mb-0.5">Deadline for interest</p>
-            <p className="text-[#e6edf3] text-xs font-semibold">{new Date(listing.deadline_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-          </div>
-          <div className="bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-2">
-            <p className="text-[#6e7681] text-[9px] uppercase tracking-wide font-medium mb-0.5">Publish date</p>
-            {listing.posting_date_start ? (
-              <p className="text-[#e6edf3] text-xs font-semibold leading-tight">
-                {new Date(listing.posting_date_start).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-              </p>
-            ) : (
-              <p className="text-[#e6edf3] text-xs font-semibold">{listing.date_label}</p>
-            )}
-          </div>
         </div>
 
         {/* Context row */}
