@@ -125,11 +125,11 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         {/* Publisher + Publish Date: two-panel branded strip */}
         <div className="grid grid-cols-2 gap-2 mb-4">
           {/* Publisher panel */}
-          <div className="bg-gradient-to-br from-[#1d1d1f] to-[#2c2c2e] rounded-2xl p-3.5 relative overflow-hidden">
-            <div className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r ${mc.accent}`} />
-            <p className="text-white/35 text-[8px] font-bold uppercase tracking-widest leading-none mb-2">Publisher</p>
+          <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-2xl p-3.5 relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-white/30" />
+            <p className="text-white/60 text-[8px] font-bold uppercase tracking-widest leading-none mb-2">Publisher</p>
             <p className="text-white text-[13px] font-bold leading-tight truncate mb-0.5">{listing.property_name}</p>
-            <p className="text-white/50 text-[10px] font-medium leading-none truncate">{listing.media_company_name || listing.media_owner_name}</p>
+            <p className="text-white/65 text-[10px] font-medium leading-none truncate">{listing.media_company_name || listing.media_owner_name}</p>
           </div>
 
           {/* Publish Date panel */}
