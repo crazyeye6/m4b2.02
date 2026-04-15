@@ -24,8 +24,8 @@ const CATEGORIES = [
 
 const SORT_OPTIONS = [
   { value: 'ending_soon', label: 'Ending Soon', icon: <Flame className="w-3.5 h-3.5 text-orange-500" /> },
-  { value: 'biggest_discount', label: 'Biggest Discount', icon: <TrendingDown className="w-3.5 h-3.5 text-blue-500" /> },
-  { value: 'best_value', label: 'Best Value', icon: <Star className="w-3.5 h-3.5 text-[#1d1d1f]" /> },
+  { value: 'biggest_discount', label: 'Biggest Discount', icon: <TrendingDown className="w-3.5 h-3.5 text-sky-500" /> },
+  { value: 'best_value', label: 'Best Value', icon: <Star className="w-3.5 h-3.5 text-orange-400" /> },
 ];
 
 const GEOGRAPHIES = ['', 'US', 'UK', 'Europe', 'Ireland', 'Global'];
@@ -216,7 +216,7 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
               ${showAdvanced
                 ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
                 : hasActive
-                  ? 'text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100'
+                  ? 'text-teal-600 border-teal-200 bg-teal-50 hover:bg-teal-100'
                   : 'text-[#6e6e73] border-black/[0.08] hover:border-black/[0.15] hover:text-[#1d1d1f] bg-white'
               }`}
           >
@@ -224,7 +224,7 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
             <span>Filters</span>
             {hasActive && (
               <span className={`flex items-center justify-center w-4 h-4 rounded-full text-[10px] font-bold leading-none
-                ${showAdvanced ? 'bg-white text-[#1d1d1f]' : 'bg-blue-600 text-white'}`}>
+                ${showAdvanced ? 'bg-white text-[#1d1d1f]' : 'bg-teal-600 text-white'}`}>
                 {activeChips.length}
               </span>
             )}
@@ -375,12 +375,12 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
                 {activeChips.map(chip => (
                   <span
                     key={chip.label}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-100 text-[12px] text-blue-600"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-teal-50 border border-teal-100 text-[12px] text-teal-600"
                   >
                     {chip.label}
                     <button
                       onClick={chip.clear}
-                      className="text-blue-400 hover:text-blue-600 transition-colors"
+                      className="text-teal-400 hover:text-teal-600 transition-colors"
                     >
                       <X className="w-2.5 h-2.5" />
                     </button>

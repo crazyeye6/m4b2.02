@@ -12,7 +12,7 @@ export default function Footer({ onTerms, onPrivacy }: FooterProps) {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 bg-[#1d1d1f] rounded-[5px] flex items-center justify-center">
-              <Zap className="w-2.5 h-2.5 text-white fill-white" />
+              <Zap className="w-2.5 h-2.5 text-green-400 fill-green-400" />
             </div>
             <span className="text-[#1d1d1f] font-semibold text-[13px] tracking-[-0.01em]">
               EndingThisWeek<span className="text-[#6e6e73]">.media</span>

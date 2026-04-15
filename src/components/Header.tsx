@@ -21,7 +21,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
         <div className="flex items-center justify-between h-[52px]">
           <button onClick={onHome} className="flex items-center gap-2 hover:opacity-75 transition-opacity">
             <div className="w-6 h-6 bg-[#1d1d1f] rounded-[6px] flex items-center justify-center">
-              <Zap className="w-3 h-3 text-white fill-white" />
+              <Zap className="w-3 h-3 text-green-400 fill-green-400" />
             </div>
             <span className="text-[#1d1d1f] font-semibold text-[13px] tracking-[-0.01em]">
               EndingThisWeek<span className="text-[#6e6e73]">.media</span>
@@ -115,7 +115,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                 </button>
                 <button
                   onClick={onListSlot}
-                  className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white text-[13px] font-semibold px-4 py-1.5 rounded-xl transition-all"
+                  className="bg-green-500 hover:bg-green-400 active:bg-green-600 text-white text-[13px] font-semibold px-4 py-1.5 rounded-xl transition-all shadow-sm shadow-green-500/20"
                 >
                   List a Slot
                 </button>
@@ -146,7 +146,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
             ) : (
               <>
                 <button onClick={() => { onSignIn(); setMobileOpen(false); }} className="flex-1 text-[#1d1d1f] text-[13px] font-medium px-4 py-2.5 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-all">Sign in</button>
-                <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="flex-1 bg-[#1d1d1f] text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl transition-all">List a Slot</button>
+                <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="flex-1 bg-green-500 hover:bg-green-400 text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl transition-all">List a Slot</button>
               </>
             )}
           </div>

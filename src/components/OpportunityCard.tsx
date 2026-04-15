@@ -13,12 +13,12 @@ const MEDIA_CONFIG = {
   newsletter: {
     icon: <Mail className="w-3.5 h-3.5" />,
     label: 'Newsletter',
-    color: 'bg-blue-50 text-blue-600 border-blue-100',
+    color: 'bg-sky-50 text-sky-600 border-sky-100',
   },
   podcast: {
     icon: <Mic className="w-3.5 h-3.5" />,
     label: 'Podcast',
-    color: 'bg-green-50 text-green-600 border-green-100',
+    color: 'bg-violet-50 text-violet-600 border-violet-100',
   },
   influencer: {
     icon: <Instagram className="w-3.5 h-3.5" />,
@@ -132,12 +132,12 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         {(() => {
           const { weekday, calDate } = resolvePublishDate(listing);
           return (
-            <div className="mb-4 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl px-4 py-4 flex items-center gap-3.5 shadow-sm shadow-blue-600/20">
-              <div className="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-5 h-5 text-white" />
+            <div className="mb-4 bg-gradient-to-br from-[#1d1d1f] to-[#3a3a3c] rounded-2xl px-4 py-4 flex items-center gap-3.5 shadow-sm shadow-black/20">
+              <div className="w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-5 h-5 text-green-400" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-blue-200 text-[9px] font-bold uppercase tracking-widest leading-none mb-2">Publish Date</p>
+                <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest leading-none mb-2">Publish Date</p>
                 {weekday && (
                   <p className="text-white text-[14px] font-semibold leading-none mb-1">{weekday}</p>
                 )}
@@ -164,7 +164,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             </div>
             <p className="text-green-600 text-[11px] font-semibold mt-0.5">Save ${savings.toLocaleString()}</p>
           </div>
-          <div className="bg-[#1d1d1f] text-white text-[15px] font-bold px-3 py-1.5 rounded-2xl tabular-nums">
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-[15px] font-bold px-3 py-1.5 rounded-2xl tabular-nums shadow-sm shadow-orange-500/25">
             -{discount}%
           </div>
         </div>
@@ -273,7 +273,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
 function StatPill({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="bg-[#f5f5f7] rounded-2xl p-2.5 text-center">
-      <p className={`text-[12px] font-semibold ${accent ? 'text-blue-600' : 'text-[#1d1d1f]'}`}>{value}</p>
+      <p className={`text-[12px] font-semibold ${accent ? 'text-teal-600' : 'text-[#1d1d1f]'}`}>{value}</p>
       <p className="text-[#aeaeb2] text-[9px] mt-0.5 uppercase tracking-wide font-medium leading-tight">{label}</p>
     </div>
   );

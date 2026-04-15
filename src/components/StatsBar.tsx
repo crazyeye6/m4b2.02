@@ -10,18 +10,21 @@ export default function StatsBar({ liveCount, avgDiscount, totalSavings }: Stats
   const stats = [
     {
       icon: <Activity className="w-4 h-4 text-green-600" />,
+      iconBg: 'bg-green-50',
       value: liveCount.toString(),
       label: 'Live opportunities',
       pulse: true,
     },
     {
-      icon: <TrendingDown className="w-4 h-4 text-blue-500" />,
+      icon: <TrendingDown className="w-4 h-4 text-sky-600" />,
+      iconBg: 'bg-sky-50',
       value: `${avgDiscount}%`,
       label: 'Avg discount',
       pulse: false,
     },
     {
-      icon: <DollarSign className="w-4 h-4 text-[#1d1d1f]" />,
+      icon: <DollarSign className="w-4 h-4 text-orange-500" />,
+      iconBg: 'bg-orange-50',
       value: `$${(totalSavings).toLocaleString()}`,
       label: 'Total buyer savings',
       pulse: false,
@@ -34,7 +37,7 @@ export default function StatsBar({ liveCount, avgDiscount, totalSavings }: Stats
         <div className="flex flex-col sm:flex-row items-center justify-center gap-0 divide-y sm:divide-y-0 sm:divide-x divide-black/[0.06]">
           {stats.map((stat, i) => (
             <div key={i} className="flex items-center gap-4 px-12 py-4 sm:py-0">
-              <div className="w-9 h-9 rounded-2xl bg-[#f5f5f7] flex items-center justify-center">
+              <div className={`w-9 h-9 rounded-2xl ${stat.iconBg} flex items-center justify-center`}>
                 {stat.icon}
               </div>
               <div>
