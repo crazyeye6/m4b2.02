@@ -15,6 +15,7 @@ interface SecureSlotFlowProps {
   listing: Listing;
   onClose: () => void;
   onSuccess: (listing: Listing) => void;
+  inline?: boolean;
 }
 
 export type Step = 'entry' | 'details' | 'booking' | 'summary' | 'payment' | 'confirmation';
@@ -54,7 +55,7 @@ function generateReference(): string {
   return `ETW-${year}-${rand}`;
 }
 
-export default function SecureSlotFlow({ listing, onClose, onSuccess }: SecureSlotFlowProps) {
+export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = false }: SecureSlotFlowProps) {
   const [step, setStep] = useState<Step>('entry');
   const [form, setForm] = useState<BuyerFormData>(INITIAL_FORM);
   const [vatNumberValid, setVatNumberValid] = useState<boolean | null>(null);
@@ -148,6 +149,58 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess }: SecureSl
 
   const stepIndex = STEPS.findIndex(s => s.key === step);
   const isConfirmed = step === 'confirmation';
+
+  if (inline) {
+    return (
+      <div className="bg-[#0d1117] border border-[#30363d] rounded-2xl w-full shadow-xl flex flex-col">
+        <div className="border-b border-[#30363d] px-6 pt-5 pb-4">
+          <div className="flex items-center mb-5">
+            {STEPS.map((s, i) => {
+              const done = i < stepIndex;
+              const active = i === stepIndex;
+              return (
+                <div key={s.key} className="flex items-center flex-1 min-w-0">
+                  <div className="flex items-center gap-1 min-w-0">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all
+                      ${done ? 'bg-emerald-500 text-black' : active ? 'bg-amber-500 text-black' : 'bg-[#21262d] border border-[#30363d] text-[#6e7681]'}`}
+                    >
+                      {done ? <Check className="w-3 h-3" /> : i + 1}
+                    </div>
+                    <span className={`text-[10px] font-medium hidden sm:block whitespace-nowrap ${active ? 'text-[#e6edf3]' : done ? 'text-emerald-400' : 'text-[#6e7681]'}`}>
+                      {s.label}
+                    </span>
+                  </div>
+                  {i < STEPS.length - 1 && (
+                    <div className={`h-px flex-1 mx-1.5 transition-colors ${done ? 'bg-emerald-500/40' : 'bg-[#30363d]'}`} />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div className="p-6 flex-1">
+          {step === 'entry' && (
+            <FastEntry form={form} onChange={updateForm} onContinue={() => setStep('details')} />
+          )}
+          {step === 'details' && (
+            <BuyerDetails form={form} onChange={updateForm} vatNumberValid={vatNumberValid} onVatValidation={setVatNumberValid} onContinue={() => setStep('booking')} onBack={() => setStep('entry')} />
+          )}
+          {step === 'booking' && (
+            <BookingInfo form={form} onChange={updateForm} listing={listing} onContinue={() => setStep('summary')} onBack={() => setStep('details')} />
+          )}
+          {step === 'summary' && (
+            <SummaryPanel listing={listing} form={form} vat={vat} depositSubtotal={depositSubtotal} depositTotal={depositTotal} balanceAmount={balanceAmount} totalPrice={totalPrice} onContinue={() => setStep('payment')} onBack={() => setStep('booking')} />
+          )}
+          {step === 'payment' && (
+            <PaymentStep listing={listing} form={form} vat={vat} depositSubtotal={depositSubtotal} depositTotal={depositTotal} onSuccess={handlePaymentSuccess} onBack={() => setStep('summary')} />
+          )}
+          {step === 'confirmation' && booking && (
+            <BookingConfirmation booking={booking} listing={listing} depositTotal={depositTotal} onClose={onClose} />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

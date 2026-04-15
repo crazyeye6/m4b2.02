@@ -6,7 +6,6 @@ import FilterBar from './components/FilterBar';
 import ListingsGrid from './components/ListingsGrid';
 import HowItWorks from './components/HowItWorks';
 import Footer from './components/Footer';
-import SecureSlotFlow from './components/SecureSlotFlow';
 import AuthModal from './components/AuthModal';
 import ListSlotPage from './pages/ListSlotPage';
 import ListingPage from './pages/ListingPage';
@@ -16,16 +15,22 @@ import SellerDashboard from './pages/SellerDashboard';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import NotFoundPage from './pages/NotFoundPage';
+import CheckoutPage from './pages/CheckoutPage';
 import { useListings } from './hooks/useListings';
 import { useAuth } from './context/AuthContext';
 import type { FilterState, Listing } from './types';
 import type { GridColumns } from './components/ListingsGrid';
 
-type Page = 'home' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing';
+type Page = 'home' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout';
 
 function getListingIdFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
   return params.get('listing');
+}
+
+function getCheckoutIdFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('checkout');
 }
 
 function setListingInUrl(id: string | null) {
@@ -35,6 +40,18 @@ function setListingInUrl(id: string | null) {
   } else {
     url.searchParams.delete('listing');
   }
+  url.searchParams.delete('checkout');
+  window.history.pushState({}, '', url.toString());
+}
+
+function setCheckoutInUrl(listingId: string | null) {
+  const url = new URL(window.location.href);
+  if (listingId) {
+    url.searchParams.set('checkout', listingId);
+  } else {
+    url.searchParams.delete('checkout');
+  }
+  url.searchParams.delete('listing');
   window.history.pushState({}, '', url.toString());
 }
 
@@ -51,14 +68,18 @@ const DEFAULT_FILTERS: FilterState = {
 };
 
 export default function App() {
-  const [page, setPage] = useState<Page>(() => getListingIdFromUrl() ? 'listing' : 'home');
+  const [page, setPage] = useState<Page>(() => {
+    if (getCheckoutIdFromUrl()) return 'checkout';
+    if (getListingIdFromUrl()) return 'listing';
+    return 'home';
+  });
   const [listingId, setListingId] = useState<string | null>(() => getListingIdFromUrl());
+  const [checkoutListingId, setCheckoutListingId] = useState<string | null>(() => getCheckoutIdFromUrl());
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [columns, setColumns] = useState<GridColumns>(() => {
     const saved = localStorage.getItem('etw_grid_columns');
     return (saved === '1' || saved === '2' || saved === '3') ? (Number(saved) as GridColumns) : 2;
   });
-  const [secureTarget, setSecureTarget] = useState<Listing | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const opportunitiesRef = useRef<HTMLDivElement>(null);
 
@@ -67,12 +88,17 @@ export default function App() {
 
   useEffect(() => {
     const handlePopState = () => {
-      const id = getListingIdFromUrl();
-      if (id) {
-        setListingId(id);
+      const checkoutId = getCheckoutIdFromUrl();
+      const listId = getListingIdFromUrl();
+      if (checkoutId) {
+        setCheckoutListingId(checkoutId);
+        setPage('checkout');
+      } else if (listId) {
+        setListingId(listId);
         setPage('listing');
       } else {
         setListingId(null);
+        setCheckoutListingId(null);
         setPage('home');
       }
     };
@@ -91,6 +117,13 @@ export default function App() {
 
   const handleSecureSuccess = (listing: Listing) => {
     updateListingStatus(listing.id, 'secured');
+  };
+
+  const handleSecure = (listing: Listing) => {
+    setCheckoutListingId(listing.id);
+    setCheckoutInUrl(listing.id);
+    setPage('checkout');
+    window.scrollTo(0, 0);
   };
 
   const handleBrowse = () => {
@@ -136,7 +169,7 @@ export default function App() {
     onSignIn: () => setShowAuthModal(true),
   };
 
-  const goHome = () => { setListingInUrl(null); setListingId(null); setPage('home'); };
+  const goHome = () => { setListingInUrl(null); setListingId(null); setCheckoutListingId(null); setPage('home'); };
 
   if (page === 'terms') {
     return (
@@ -237,6 +270,36 @@ export default function App() {
     );
   }
 
+  if (page === 'checkout' && checkoutListingId) {
+    const fromListingId = listingId;
+    return (
+      <CheckoutPage
+        listingId={checkoutListingId}
+        onBack={() => {
+          if (fromListingId) {
+            setCheckoutListingId(null);
+            setListingInUrl(fromListingId);
+            setPage('listing');
+          } else {
+            setCheckoutListingId(null);
+            setListingInUrl(null);
+            setPage('home');
+          }
+          window.scrollTo(0, 0);
+        }}
+        onHome={goHome}
+        onListSlot={handleListSlot}
+        onAdmin={handleAdmin}
+        onDashboard={handleDashboard}
+        onSignIn={() => setShowAuthModal(true)}
+        onSuccess={(listing) => {
+          handleSecureSuccess(listing);
+          refetch();
+        }}
+      />
+    );
+  }
+
   if (page === 'listing' && listingId) {
     return (
       <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
@@ -244,15 +307,8 @@ export default function App() {
         <ListingPage
           listingId={listingId}
           onBack={handleBackFromListing}
-          onSecure={(listing) => setSecureTarget(listing)}
+          onSecure={handleSecure}
         />
-        {secureTarget && (
-          <SecureSlotFlow
-            listing={secureTarget}
-            onClose={() => { setSecureTarget(null); }}
-            onSuccess={handleSecureSuccess}
-          />
-        )}
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </div>
     );
@@ -283,7 +339,7 @@ export default function App() {
             <ListingsGrid
               listings={listings}
               loading={loading}
-              onSecure={setSecureTarget}
+              onSecure={handleSecure}
               onDetails={handleViewListing}
               columns={columns}
             />
@@ -297,14 +353,6 @@ export default function App() {
         onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }}
         onPrivacy={() => { setPage('privacy'); window.scrollTo(0, 0); }}
       />
-
-      {secureTarget && (
-        <SecureSlotFlow
-          listing={secureTarget}
-          onClose={() => { setSecureTarget(null); refetch(); }}
-          onSuccess={handleSecureSuccess}
-        />
-      )}
 
       {showAuthModal && (
         <AuthModal onClose={() => setShowAuthModal(false)} />
