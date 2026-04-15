@@ -1,4 +1,7 @@
-import { SlidersHorizontal, Mail, Mic, Instagram, Flame, TrendingDown, Star, ChevronDown, X, Calendar } from 'lucide-react';
+import {
+  SlidersHorizontal, Mail, Mic, Instagram, Flame, TrendingDown, Star,
+  ChevronUp, X, Calendar, MapPin, Tag, DollarSign, ChevronDown, LayoutGrid,
+} from 'lucide-react';
 import { useState, useMemo } from 'react';
 import type { FilterState, DateRangeOption } from '../types';
 
@@ -9,17 +12,22 @@ interface FilterBarProps {
 }
 
 const CATEGORIES = [
-  { value: 'all', label: 'All', icon: null },
+  { value: 'all', label: 'All Types', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
   { value: 'newsletter', label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
   { value: 'podcast', label: 'Podcast', icon: <Mic className="w-3.5 h-3.5" /> },
   { value: 'influencer', label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" /> },
 ];
 
 const SORT_OPTIONS = [
-  { value: 'ending_soon', label: 'Ending soon', icon: <Flame className="w-3.5 h-3.5 text-yellow-400" /> },
-  { value: 'biggest_discount', label: 'Biggest discount', icon: <TrendingDown className="w-3.5 h-3.5 text-[#e3b341]" /> },
-  { value: 'best_value', label: 'Best value', icon: <Star className="w-3.5 h-3.5 text-[#58a6ff]" /> },
+  { value: 'ending_soon', label: 'Ending Soon', icon: <Flame className="w-3.5 h-3.5 text-yellow-400" /> },
+  { value: 'biggest_discount', label: 'Biggest Discount', icon: <TrendingDown className="w-3.5 h-3.5 text-emerald-400" /> },
+  { value: 'best_value', label: 'Best Value', icon: <Star className="w-3.5 h-3.5 text-sky-400" /> },
 ];
+
+const GEOGRAPHIES = ['', 'US', 'UK', 'Europe', 'Ireland', 'Global'];
+const NICHES = ['', 'SaaS', 'eCommerce', 'Fintech', 'Startup', 'Marketing', 'Fitness', 'Beauty', 'Travel'];
+const DISCOUNT_OPTIONS = [0, 20, 30, 40, 50];
+const PRICE_MAX_OPTIONS = [0, 500, 1000, 2500, 5000];
 
 function getWeekLabel(offsetWeeks: number): string {
   const now = new Date();
@@ -47,6 +55,37 @@ function getMonthRangeLabel(): string {
   return `${fmt(s)} – ${fmt(e)}`;
 }
 
+function FilterSection({ label, icon, children }: { label: string; icon: React.ReactNode; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="flex items-center gap-1.5 mb-2.5">
+        <span className="text-[#6e7681]">{icon}</span>
+        <span className="text-[10px] text-[#8b949e] font-semibold uppercase tracking-widest">{label}</span>
+      </div>
+      <div className="flex flex-col gap-0.5">{children}</div>
+    </div>
+  );
+}
+
+function OptionBtn({
+  active, urgent, onClick, children,
+}: { active: boolean; urgent?: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-all w-full
+        ${active
+          ? urgent
+            ? 'bg-yellow-500/15 text-yellow-300 ring-1 ring-yellow-500/30'
+            : 'bg-[#21262d] text-[#e6edf3] ring-1 ring-[#484f58]'
+          : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#c9d1d9]'
+        }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export default function FilterBar({ filters, onChange, total }: FilterBarProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -61,14 +100,30 @@ export default function FilterBar({ filters, onChange, total }: FilterBarProps) 
     { value: 'this_month', label: 'Next 30 days', sublabel: getMonthRangeLabel() },
   ], []);
 
-  const isEndingThisWeek = filters.dateRange === 'this_week';
+  const activeChips: Array<{ label: string; clear: () => void }> = [];
 
-  const hasActive =
-    filters.category !== 'all' ||
-    filters.dateRange !== '' ||
-    filters.discountMin > 0 ||
-    !!filters.niche ||
-    !!filters.geography;
+  if (filters.category !== 'all') {
+    const cat = CATEGORIES.find(c => c.value === filters.category);
+    activeChips.push({ label: cat?.label ?? filters.category, clear: () => onChange({ category: 'all' }) });
+  }
+  if (filters.dateRange) {
+    const d = dateOptions.find(o => o.value === filters.dateRange);
+    activeChips.push({ label: d?.label ?? filters.dateRange, clear: () => onChange({ dateRange: '' }) });
+  }
+  if (filters.discountMin > 0) {
+    activeChips.push({ label: `${filters.discountMin}%+ off`, clear: () => onChange({ discountMin: 0 }) });
+  }
+  if (filters.priceMax > 0) {
+    activeChips.push({ label: `Up to $${filters.priceMax.toLocaleString()}`, clear: () => onChange({ priceMax: 0 }) });
+  }
+  if (filters.geography) {
+    activeChips.push({ label: filters.geography, clear: () => onChange({ geography: '' }) });
+  }
+  if (filters.niche) {
+    activeChips.push({ label: filters.niche, clear: () => onChange({ niche: '' }) });
+  }
+
+  const hasActive = activeChips.length > 0;
 
   const reset = () =>
     onChange({
@@ -83,175 +138,255 @@ export default function FilterBar({ filters, onChange, total }: FilterBarProps) 
 
   return (
     <div className="bg-[#161b22] border-b border-[#30363d] sticky top-14 z-40">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin" style={{ scrollbarColor: '#484f58 #21262d' }}>
-          <div className="flex items-center gap-0.5 bg-[#21262d] border border-[#30363d] rounded-md p-0.5 flex-shrink-0">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* ── Top row ── */}
+        <div className="flex items-center gap-2 py-2.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+
+          {/* Category tabs */}
+          <div className="flex items-center gap-0.5 bg-[#21262d] border border-[#30363d] rounded-lg p-0.5 flex-shrink-0">
             {CATEGORIES.map(c => (
               <button
                 key={c.value}
                 onClick={() => onChange({ category: c.value as FilterState['category'] })}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap
                   ${filters.category === c.value
                     ? 'bg-[#30363d] text-[#e6edf3] shadow-sm'
                     : 'text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d]/50'
                   }`}
               >
                 {c.icon}
-                {c.label}
+                <span className="hidden sm:inline">{c.label}</span>
               </button>
             ))}
           </div>
 
+          {/* Divider */}
+          <div className="w-px h-5 bg-[#30363d] flex-shrink-0" />
+
+          {/* Quick: Ending This Week */}
           <button
-            onClick={() => onChange({ dateRange: isEndingThisWeek ? '' : 'this_week' })}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-all
-              ${isEndingThisWeek
+            onClick={() => onChange({ dateRange: filters.dateRange === 'this_week' ? '' : 'this_week' })}
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap
+              ${filters.dateRange === 'this_week'
                 ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'
                 : 'text-[#8b949e] border-[#30363d] hover:border-[#484f58] hover:text-[#c9d1d9] hover:bg-[#21262d]'
               }`}
           >
             <Flame className="w-3.5 h-3.5" />
-            Ending This Week
+            <span className="hidden sm:inline">Ending This Week</span>
+            <span className="sm:hidden">This Week</span>
           </button>
 
+          {/* Sort dropdown (inline cycle) */}
+          <div className="flex-shrink-0 relative group">
+            <div className="flex items-center gap-0.5 bg-[#21262d] border border-[#30363d] rounded-lg overflow-hidden">
+              <span className="flex items-center gap-1.5 px-2.5 py-1.5 text-[10px] text-[#6e7681] font-semibold uppercase tracking-wider whitespace-nowrap border-r border-[#30363d]">
+                Sort
+              </span>
+              {SORT_OPTIONS.map(o => (
+                <button
+                  key={o.value}
+                  onClick={() => onChange({ sortBy: o.value as FilterState['sortBy'] })}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium transition-all whitespace-nowrap
+                    ${filters.sortBy === o.value
+                      ? 'bg-[#30363d] text-[#e6edf3]'
+                      : 'text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d]/40'
+                    }`}
+                >
+                  {o.icon}
+                  <span className="hidden lg:inline">{o.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-[#30363d] flex-shrink-0" />
+
+          {/* Advanced filters toggle */}
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium border transition-all
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap
               ${showAdvanced
                 ? 'bg-[#21262d] text-[#e6edf3] border-[#484f58]'
-                : 'text-[#8b949e] border-[#30363d] hover:border-[#484f58] hover:text-[#c9d1d9] hover:bg-[#21262d]'
+                : hasActive
+                  ? 'text-emerald-400 border-emerald-500/40 bg-emerald-500/5 hover:bg-emerald-500/10'
+                  : 'text-[#8b949e] border-[#30363d] hover:border-[#484f58] hover:text-[#c9d1d9] hover:bg-[#21262d]'
               }`}
           >
             <SlidersHorizontal className="w-3.5 h-3.5" />
-            Filters
-            {hasActive && <span className="w-1.5 h-1.5 rounded-full bg-[#3fb950] ml-0.5" />}
-            <ChevronDown className={`w-3 h-3 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} />
+            <span>Filters</span>
+            {hasActive && (
+              <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold leading-none">
+                {activeChips.length}
+              </span>
+            )}
+            {showAdvanced
+              ? <ChevronUp className="w-3 h-3" />
+              : <ChevronDown className="w-3 h-3" />
+            }
           </button>
 
+          {/* Spacer + result count */}
           <div className="ml-auto flex-shrink-0 flex items-center gap-3">
             {hasActive && (
               <button
                 onClick={reset}
-                className="flex items-center gap-1 text-xs text-[#8b949e] hover:text-[#e6edf3] transition-colors"
+                className="flex items-center gap-1 text-xs text-[#6e7681] hover:text-[#e6edf3] transition-colors whitespace-nowrap"
               >
                 <X className="w-3 h-3" />
-                Clear
+                Clear all
               </button>
             )}
-            <span className="text-[#8b949e] text-xs">
-              <span className="text-[#e6edf3] font-semibold">{total}</span> opportunities
+            <span className="text-[#8b949e] text-xs whitespace-nowrap">
+              <span className="text-[#e6edf3] font-semibold">{total}</span> results
             </span>
           </div>
         </div>
 
+        {/* ── Active filter chips ── */}
+        {hasActive && !showAdvanced && (
+          <div className="flex items-center gap-1.5 pb-2.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            {activeChips.map(chip => (
+              <span
+                key={chip.label}
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#21262d] border border-[#30363d] text-[11px] text-[#c9d1d9] whitespace-nowrap flex-shrink-0"
+              >
+                {chip.label}
+                <button
+                  onClick={chip.clear}
+                  className="text-[#6e7681] hover:text-[#e6edf3] transition-colors ml-0.5"
+                >
+                  <X className="w-2.5 h-2.5" />
+                </button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* ── Advanced panel ── */}
         {showAdvanced && (
-          <div className="mt-3 pt-3 border-t border-[#30363d] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div>
-              <label className="flex items-center gap-1.5 text-[10px] text-[#8b949e] font-semibold mb-2 uppercase tracking-widest">
-                <Calendar className="w-3 h-3" />
-                Date range
-              </label>
-              <div className="flex flex-col gap-0.5">
+          <div className="border-t border-[#30363d] pt-4 pb-1">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-5">
+
+              {/* Date Range */}
+              <FilterSection label="Date Range" icon={<Calendar className="w-3 h-3" />}>
                 {dateOptions.map(o => (
-                  <button
+                  <OptionBtn
                     key={o.value}
+                    active={filters.dateRange === o.value}
+                    urgent={o.urgent}
                     onClick={() => onChange({ dateRange: o.value })}
-                    className={`flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-all
-                      ${filters.dateRange === o.value
-                        ? o.urgent
-                          ? 'bg-yellow-500/10 text-yellow-400'
-                          : 'bg-[#21262d] text-[#e6edf3]'
-                        : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#c9d1d9]'
-                      }`}
                   >
-                    <span className="flex items-center gap-1.5">
-                      {o.urgent && <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0" />}
-                      {!o.urgent && o.value !== '' && <span className="w-1.5 h-1.5 rounded-full bg-[#30363d] flex-shrink-0" />}
-                      {o.label}
+                    <span className="flex items-center gap-1.5 flex-1 min-w-0">
+                      {o.urgent
+                        ? <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0" />
+                        : o.value !== ''
+                          ? <span className="w-1.5 h-1.5 rounded-full bg-[#30363d] flex-shrink-0" />
+                          : null
+                      }
+                      <span className="truncate">{o.label}</span>
                     </span>
                     {o.sublabel && (
-                      <span className="text-[10px] font-normal ml-3 flex-shrink-0 text-[#8b949e]">
+                      <span className="text-[9px] text-[#6e7681] font-normal flex-shrink-0 ml-2">
                         {o.sublabel}
                       </span>
                     )}
-                  </button>
+                  </OptionBtn>
                 ))}
-              </div>
-            </div>
+              </FilterSection>
 
-            <div>
-              <label className="block text-[10px] text-[#8b949e] font-semibold mb-2 uppercase tracking-widest">Sort by</label>
-              <div className="flex flex-col gap-0.5">
-                {SORT_OPTIONS.map(o => (
-                  <button
-                    key={o.value}
-                    onClick={() => onChange({ sortBy: o.value as FilterState['sortBy'] })}
-                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-all
-                      ${filters.sortBy === o.value
-                        ? 'bg-[#21262d] text-[#e6edf3]'
-                        : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#c9d1d9]'
-                      }`}
-                  >
-                    {o.icon}
-                    {o.label}
-                  </button>
-                ))}
-              </div>
-
-              <label className="block text-[10px] text-[#8b949e] font-semibold mb-2 mt-5 uppercase tracking-widest">Min discount</label>
-              <div className="flex flex-col gap-0.5">
-                {[0, 20, 30, 40].map(v => (
-                  <button
+              {/* Min Discount */}
+              <FilterSection label="Min Discount" icon={<TrendingDown className="w-3 h-3" />}>
+                {DISCOUNT_OPTIONS.map(v => (
+                  <OptionBtn
                     key={v}
+                    active={filters.discountMin === v}
                     onClick={() => onChange({ discountMin: v })}
-                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-all
-                      ${filters.discountMin === v
-                        ? 'bg-[#21262d] text-[#e6edf3]'
-                        : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#c9d1d9]'
-                      }`}
                   >
                     {v === 0 ? 'Any discount' : `${v}%+ off`}
-                  </button>
+                  </OptionBtn>
                 ))}
-              </div>
-            </div>
+              </FilterSection>
 
-            <div>
-              <label className="block text-[10px] text-[#8b949e] font-semibold mb-2 uppercase tracking-widest">Geography</label>
-              <div className="flex flex-col gap-0.5">
-                {['', 'US', 'UK', 'Europe', 'Ireland', 'Global'].map(v => (
-                  <button
+              {/* Max Price */}
+              <FilterSection label="Max Price" icon={<DollarSign className="w-3 h-3" />}>
+                {PRICE_MAX_OPTIONS.map(v => (
+                  <OptionBtn
                     key={v}
+                    active={filters.priceMax === v}
+                    onClick={() => onChange({ priceMax: v })}
+                  >
+                    {v === 0 ? 'Any price' : `Up to $${v.toLocaleString()}`}
+                  </OptionBtn>
+                ))}
+              </FilterSection>
+
+              {/* Geography */}
+              <FilterSection label="Geography" icon={<MapPin className="w-3 h-3" />}>
+                {GEOGRAPHIES.map(v => (
+                  <OptionBtn
+                    key={v}
+                    active={filters.geography === v}
                     onClick={() => onChange({ geography: v })}
-                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-all
-                      ${filters.geography === v
-                        ? 'bg-[#21262d] text-[#e6edf3]'
-                        : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#c9d1d9]'
-                      }`}
                   >
                     {v || 'Any location'}
-                  </button>
+                  </OptionBtn>
                 ))}
-              </div>
-            </div>
+              </FilterSection>
 
-            <div>
-              <label className="block text-[10px] text-[#8b949e] font-semibold mb-2 uppercase tracking-widest">Niche</label>
-              <div className="flex flex-col gap-0.5">
-                {['', 'SaaS', 'eCommerce', 'Fintech', 'Startup', 'Marketing', 'Fitness', 'Beauty', 'Travel'].map(v => (
-                  <button
+              {/* Niche */}
+              <FilterSection label="Niche" icon={<Tag className="w-3 h-3" />}>
+                {NICHES.map(v => (
+                  <OptionBtn
                     key={v}
+                    active={filters.niche === v}
                     onClick={() => onChange({ niche: v })}
-                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs font-medium text-left transition-all
-                      ${filters.niche === v
-                        ? 'bg-[#21262d] text-[#e6edf3]'
-                        : 'text-[#8b949e] hover:bg-[#21262d] hover:text-[#c9d1d9]'
-                      }`}
                   >
                     {v || 'Any niche'}
-                  </button>
+                  </OptionBtn>
                 ))}
+              </FilterSection>
+            </div>
+
+            {/* Active chips inside panel */}
+            {hasActive && (
+              <div className="flex items-center gap-1.5 mt-4 flex-wrap">
+                <span className="text-[10px] text-[#6e7681] font-medium uppercase tracking-wider mr-1">Active:</span>
+                {activeChips.map(chip => (
+                  <span
+                    key={chip.label}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-300"
+                  >
+                    {chip.label}
+                    <button
+                      onClick={chip.clear}
+                      className="text-emerald-500/60 hover:text-emerald-300 transition-colors"
+                    >
+                      <X className="w-2.5 h-2.5" />
+                    </button>
+                  </span>
+                ))}
+                <button
+                  onClick={reset}
+                  className="text-[11px] text-[#6e7681] hover:text-[#e6edf3] transition-colors ml-1 underline underline-offset-2"
+                >
+                  Clear all
+                </button>
               </div>
+            )}
+
+            {/* Collapse button */}
+            <div className="flex justify-center mt-4 mb-1">
+              <button
+                onClick={() => setShowAdvanced(false)}
+                className="flex items-center gap-2 px-5 py-2 rounded-lg bg-[#21262d] border border-[#30363d] hover:border-[#484f58] hover:bg-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-xs font-medium transition-all group"
+              >
+                <ChevronUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
+                Collapse filters — view {total} results
+                <ChevronUp className="w-3.5 h-3.5 transition-transform group-hover:-translate-y-0.5" />
+              </button>
             </div>
           </div>
         )}
