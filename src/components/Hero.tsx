@@ -18,15 +18,10 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
             Live opportunities available now
           </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-semibold text-white leading-[1.05] tracking-[-0.03em] mb-6">
-            <span className="relative inline-block">
-              <span className="relative z-10 bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent">media deals</span>
-            </span>
-            <br className="hidden sm:block" />
-            <span className="relative inline-block mt-1">
-              <span className="relative z-10 text-white/35 italic font-light tracking-[-0.01em]">ending this week</span>
-              <span className="absolute bottom-1 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            </span>
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-semibold text-white leading-[1.05] tracking-[-0.03em] mb-6 italic">
+            media deals
+            <br />
+            ending this week
           </h1>
 
           <p className="text-lg sm:text-xl text-white/55 max-w-xl mx-auto mb-10 leading-relaxed font-light">
