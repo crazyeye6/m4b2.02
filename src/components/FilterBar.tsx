@@ -149,8 +149,8 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
             onClick={() => onChange({ endingThisWeek: !filters.endingThisWeek })}
             className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-medium border transition-all whitespace-nowrap
               ${filters.endingThisWeek
-                ? 'bg-amber-500 text-white border-amber-500'
-                : 'text-[#6e6e73] border-black/[0.08] hover:border-amber-300 hover:text-amber-600 bg-white'
+                ? 'bg-green-600 text-white border-green-600'
+                : 'text-[#6e6e73] border-black/[0.08] hover:border-green-300 hover:text-green-600 bg-white'
               }`}
           >
             <Clock className="w-3.5 h-3.5" />
