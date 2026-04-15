@@ -19,19 +19,17 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-black/[0.06]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-[52px]">
-          <button onClick={onHome} className="flex items-center gap-1.5 hover:opacity-80 transition-opacity group">
-            <div className="flex items-center gap-0.5">
-              <div className="w-[18px] h-[18px] bg-[#1d1d1f] rounded-[4px] flex items-center justify-center flex-shrink-0">
-                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <rect x="1" y="1" width="3.5" height="8" rx="1" fill="white" opacity="0.9"/>
-                  <rect x="5.5" y="1" width="3.5" height="5" rx="1" fill="#4ade80"/>
-                </svg>
-              </div>
+          <button onClick={onHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity group">
+            <div className="w-[22px] h-[22px] bg-[#1d1d1f] rounded-[5px] flex items-center justify-center flex-shrink-0">
+              <svg width="13" height="13" viewBox="0 0 10 10" fill="none">
+                <rect x="1" y="1" width="3.5" height="8" rx="1" fill="white" opacity="0.9"/>
+                <rect x="5.5" y="1" width="3.5" height="5" rx="1" fill="#4ade80"/>
+              </svg>
             </div>
-            <span className="text-[#1d1d1f] font-bold text-[13px] tracking-[-0.03em] leading-none">
+            <span className="text-[#1d1d1f] font-bold text-[16px] tracking-[-0.03em] leading-none">
               EndingThisWeek
             </span>
-            <span className="text-[11px] font-semibold text-white bg-[#1d1d1f] px-1.5 py-0.5 rounded-[4px] tracking-[-0.01em] leading-none">
+            <span className="text-[13px] font-semibold text-white bg-green-500 px-2 py-0.5 rounded-[5px] tracking-[-0.01em] leading-none">
               .media
             </span>
           </button>
