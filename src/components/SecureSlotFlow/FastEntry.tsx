@@ -90,7 +90,7 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
             <Globe className="inline w-3.5 h-3.5 mr-1 mb-0.5 text-[#aeaeb2]" />
             Country <span className="text-red-500">*</span>
             {(countryInfo.isEU || countryInfo.isGBR) && (
-              <span className="ml-2 text-[10px] text-blue-600 font-normal normal-case">· VAT territory</span>
+              <span className="ml-2 text-[10px] text-[#6e6e73] font-normal normal-case">· VAT territory</span>
             )}
           </label>
           <div className="relative">

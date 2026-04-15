@@ -83,8 +83,8 @@ export default function SummaryPanel({
           )}
           {vat.reverseCharge && (
             <div className="flex justify-between text-xs">
-              <span className="text-blue-600">Reverse charge (0% VAT)</span>
-              <span className="text-blue-600">$0.00</span>
+              <span className="text-[#6e6e73]">Reverse charge (0% VAT)</span>
+              <span className="text-[#6e6e73]">$0.00</span>
             </div>
           )}
           <div className="flex justify-between border-t border-black/[0.06] pt-2.5">

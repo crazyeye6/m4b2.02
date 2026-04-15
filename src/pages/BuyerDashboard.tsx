@@ -13,7 +13,7 @@ type DashTab = 'bookings' | 'profile';
 const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
   pending_payment: { label: 'Pending Payment', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200', icon: <Clock className="w-3.5 h-3.5" /> },
   secured: { label: 'Secured', color: 'text-green-700', bg: 'bg-green-50 border-green-200', icon: <CheckCircle className="w-3.5 h-3.5" /> },
-  in_progress: { label: 'In Progress', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', icon: <Clock className="w-3.5 h-3.5" /> },
+  in_progress: { label: 'In Progress', color: 'text-green-700', bg: 'bg-green-50 border-green-200', icon: <Clock className="w-3.5 h-3.5" /> },
   completed_off_platform: { label: 'Completed', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]', icon: <CheckCircle className="w-3.5 h-3.5" /> },
   refund_requested: { label: 'Refund Requested', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200', icon: <RotateCcw className="w-3.5 h-3.5" /> },
   refunded: { label: 'Refunded', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]', icon: <XCircle className="w-3.5 h-3.5" /> },
@@ -256,7 +256,7 @@ function BookingDetailModal({ booking, onClose, onRequestRefund }: {
               <div className="space-y-1.5">
                 {booking.seller_name && <p className="text-[#1d1d1f] text-sm font-medium">{booking.seller_name}</p>}
                 {booking.seller_email && (
-                  <a href={`mailto:${booking.seller_email}`} className="flex items-center gap-1.5 text-[#6e6e73] hover:text-blue-600 text-sm transition-colors">
+                  <a href={`mailto:${booking.seller_email}`} className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-colors">
                     <Mail className="w-3.5 h-3.5" />
                     {booking.seller_email}
                   </a>
@@ -268,7 +268,7 @@ function BookingDetailModal({ booking, onClose, onRequestRefund }: {
                   </p>
                 )}
                 {booking.seller_website && (
-                  <a href={booking.seller_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[#6e6e73] hover:text-blue-600 text-sm transition-colors">
+                  <a href={booking.seller_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-colors">
                     <Globe className="w-3.5 h-3.5" />
                     {booking.seller_website}
                   </a>

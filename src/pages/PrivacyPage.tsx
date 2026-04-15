@@ -86,7 +86,7 @@ export default function PrivacyPage({ onBack, onTerms }: PrivacyPageProps) {
 
           <SubSection title="2.3 Payment Information">
             <p>
-              Payment processing on the platform is handled by Stripe, a third-party provider. We do not store, collect, or have access to your full card number, CVV, or other sensitive payment credentials. Stripe processes payments directly and provides us with a transaction reference and status confirmation only. Your use of Stripe is also subject to <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Stripe's Privacy Policy</a>.
+              Payment processing on the platform is handled by Stripe, a third-party provider. We do not store, collect, or have access to your full card number, CVV, or other sensitive payment credentials. Stripe processes payments directly and provides us with a transaction reference and status confirmation only. Your use of Stripe is also subject to <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#1d1d1f] hover:underline">Stripe's Privacy Policy</a>.
             </p>
           </SubSection>
 
@@ -275,7 +275,7 @@ export default function PrivacyPage({ onBack, onTerms }: PrivacyPageProps) {
               This Privacy Policy should be read alongside our{' '}
               <button
                 onClick={onTerms}
-                className="text-blue-600 hover:underline font-medium"
+                className="text-[#1d1d1f] hover:underline font-medium"
               >
                 Terms of Service
               </button>

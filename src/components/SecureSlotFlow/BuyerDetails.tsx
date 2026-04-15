@@ -147,11 +147,11 @@ export default function BuyerDetails({
                   </div>
                 )}
 
-                <div className="bg-blue-50 border border-blue-100 rounded-2xl p-3 mt-2">
+                <div className="bg-[#f5f5f7] border border-black/[0.08] rounded-2xl p-3 mt-2">
                   <div className="flex items-start gap-2">
-                    <Info className="w-3.5 h-3.5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <Info className="w-3.5 h-3.5 text-[#6e6e73] flex-shrink-0 mt-0.5" />
                     <div className="text-xs text-[#6e6e73] leading-relaxed">
-                      <span className="text-blue-600 font-medium">VAT reverse charge: </span>
+                      <span className="text-[#1d1d1f] font-medium">VAT reverse charge: </span>
                       If you have a valid {countryInfo.isGBR ? 'UK' : 'EU'} VAT number and are buying as a business, reverse charge applies — you account for VAT yourself and we charge 0%.
                     </div>
                   </div>

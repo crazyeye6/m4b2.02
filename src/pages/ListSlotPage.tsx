@@ -293,7 +293,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
         </div>
 
         <div className="space-y-8">
-          <Section title="Media type" icon={<Tag className="w-4 h-4 text-amber-400" />}>
+          <Section title="Media type" icon={<Tag className="w-4 h-4 text-[#6e6e73]" />}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {MEDIA_TYPES.map(t => (
                 <button
@@ -317,11 +317,11 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             </div>
           </Section>
 
-          <Section title="About you" icon={<Users className="w-4 h-4 text-amber-400" />}>
+          <Section title="About you" icon={<Users className="w-4 h-4 text-[#6e6e73]" />}>
             {profile && (
-              <div className="flex items-center gap-2 text-[12px] text-[#6e6e73] bg-blue-50 border border-blue-100 rounded-2xl px-3 py-2.5 mb-4">
-                <UserCircle className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
-                <span>Pre-filled from your account profile. <button type="button" onClick={onEditProfile} className="text-blue-600 hover:text-blue-700 underline transition-colors">Edit profile</button> to update.</span>
+              <div className="flex items-center gap-2 text-[12px] text-[#6e6e73] bg-[#f5f5f7] border border-black/[0.08] rounded-2xl px-3 py-2.5 mb-4">
+                <UserCircle className="w-3.5 h-3.5 text-[#6e6e73] flex-shrink-0" />
+                <span>Pre-filled from your account profile. <button type="button" onClick={onEditProfile} className="text-[#1d1d1f] hover:text-[#3a3a3c] underline transition-colors">Edit profile</button> to update.</span>
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -355,7 +355,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             </div>
           </Section>
 
-          <Section title="Audience" icon={<Users className="w-4 h-4 text-amber-400" />}>
+          <Section title="Audience" icon={<Users className="w-4 h-4 text-[#6e6e73]" />}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Audience description" required error={errors.audience} className="sm:col-span-2">
                 <input
@@ -468,7 +468,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             </div>
           </Section>
 
-          <Section title="Slot details" icon={<BarChart2 className="w-4 h-4 text-amber-400" />}>
+          <Section title="Slot details" icon={<BarChart2 className="w-4 h-4 text-[#6e6e73]" />}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {form.media_type !== 'influencer' && (
                 <Field label="Slot type" required error={errors.slot_type}>
@@ -536,7 +536,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             </div>
           </Section>
 
-          <Section title="Pricing" icon={<DollarSign className="w-4 h-4 text-amber-400" />}>
+          <Section title="Pricing" icon={<DollarSign className="w-4 h-4 text-[#6e6e73]" />}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Original / standard rate ($)" required error={errors.original_price} hint="Your regular published rate">
                 <div className="relative">
@@ -580,7 +580,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             )}
           </Section>
 
-          <Section title="Past advertisers" icon={<Shield className="w-4 h-4 text-amber-400" />} optional>
+          <Section title="Past advertisers" icon={<Shield className="w-4 h-4 text-[#6e6e73]" />} optional>
             <p className="text-gray-500 text-sm mb-3">Add recognizable brand names to build trust with buyers.</p>
             <div className="flex gap-2 mb-3">
               <input
@@ -640,14 +640,14 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                   <button
                     type="button"
                     onClick={onEditProfile}
-                    className="flex-shrink-0 text-[12px] text-blue-600 hover:text-blue-700 border border-blue-100 hover:border-blue-200 px-3 py-1.5 rounded-xl transition-all font-medium bg-blue-50"
+                    className="flex-shrink-0 text-[12px] text-[#6e6e73] hover:text-[#1d1d1f] border border-black/[0.08] hover:border-black/[0.15] px-3 py-1.5 rounded-xl transition-all font-medium bg-[#f5f5f7]"
                   >
                     Edit profile
                   </button>
                 )}
               </div>
               <div className="mt-4 pt-4 border-t border-black/[0.06]">
-                <p className="text-[#aeaeb2] text-[11px]">Your contact info, bio, and social links are pulled from your account profile and shown on all your listings. <span className="text-blue-600 font-medium">Update them once in your profile — they apply everywhere.</span></p>
+                <p className="text-[#aeaeb2] text-[11px]">Your contact info, bio, and social links are pulled from your account profile and shown on all your listings. <span className="text-[#1d1d1f] font-medium">Update them once in your profile — they apply everywhere.</span></p>
               </div>
 
               <div className="mt-4">
@@ -796,9 +796,9 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
           )}
 
           <Section title="Geographic reach" icon={<MapPin className="w-4 h-4 text-[#1d1d1f]" />}>
-            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-start gap-3">
-              <Info className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-              <div className="text-[13px] text-blue-700 leading-relaxed">
+            <div className="bg-[#f5f5f7] border border-black/[0.08] rounded-2xl p-4 flex items-start gap-3">
+              <Info className="w-4 h-4 text-[#6e6e73] flex-shrink-0 mt-0.5" />
+              <div className="text-[13px] text-[#6e6e73] leading-relaxed">
                 Your listing will be live immediately after submission and visible to all buyers on the marketplace. Once a buyer secures your slot, you'll be notified to review their brief and confirm the booking.
               </div>
             </div>

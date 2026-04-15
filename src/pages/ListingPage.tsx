@@ -11,8 +11,8 @@ interface ListingPageProps {
 }
 
 const MEDIA_CONFIG = {
-  newsletter: { icon: <Mail className="w-4 h-4" />, label: 'Newsletter', color: 'text-blue-600', bg: 'bg-blue-50 border-blue-100' },
-  podcast: { icon: <Mic className="w-4 h-4" />, label: 'Podcast', color: 'text-green-600', bg: 'bg-green-50 border-green-100' },
+  newsletter: { icon: <Mail className="w-4 h-4" />, label: 'Newsletter', color: 'text-sky-600', bg: 'bg-sky-50 border-sky-100' },
+  podcast: { icon: <Mic className="w-4 h-4" />, label: 'Podcast', color: 'text-violet-600', bg: 'bg-violet-50 border-violet-100' },
   influencer: { icon: <Instagram className="w-4 h-4" />, label: 'Influencer', color: 'text-rose-500', bg: 'bg-rose-50 border-rose-100' },
 };
 
@@ -164,7 +164,7 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
               </div>
             </div>
 
-            <PageSection title="Audience breakdown" icon={<Users className="w-4 h-4 text-blue-500" />}>
+            <PageSection title="Audience breakdown" icon={<Users className="w-4 h-4 text-[#6e6e73]" />}>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
                 {listing.media_type === 'newsletter' && (
                   <>
@@ -264,9 +264,9 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
                           href={link}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-[13px] text-[#3a3a3c] hover:text-blue-600 bg-[#f5f5f7] hover:bg-blue-50 border border-black/[0.06] hover:border-blue-100 rounded-2xl px-4 py-2.5 transition-all group"
+                          className="flex items-center gap-2 text-[13px] text-[#3a3a3c] hover:text-[#1d1d1f] bg-[#f5f5f7] hover:bg-white border border-black/[0.06] hover:border-black/[0.12] rounded-2xl px-4 py-2.5 transition-all group"
                         >
-                          <ExternalLink className="w-3.5 h-3.5 text-[#aeaeb2] group-hover:text-blue-500 flex-shrink-0 transition-colors" />
+                          <ExternalLink className="w-3.5 h-3.5 text-[#aeaeb2] group-hover:text-[#6e6e73] flex-shrink-0 transition-colors" />
                           <span className="truncate">{link.replace(/^https?:\/\//, '')}</span>
                         </a>
                       ))}
@@ -292,10 +292,10 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
               </PageSection>
             )}
 
-            <PageSection title="How booking works" icon={<Info className="w-4 h-4 text-blue-500" />}>
-              <div className="bg-blue-50 border border-blue-100 rounded-3xl p-5 space-y-4">
+            <PageSection title="How booking works" icon={<Info className="w-4 h-4 text-[#6e6e73]" />}>
+              <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-3xl p-5 space-y-4">
                 <div>
-                  <p className="text-blue-700 text-[12px] font-semibold mb-2">Pay 10% deposit today</p>
+                  <p className="text-[#1d1d1f] text-[12px] font-semibold mb-2">Pay 10% deposit today</p>
                   <ul className="space-y-1.5">
                     {[
                       'Your deposit is collected by EndingThisWeek.media',
@@ -303,23 +303,23 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
                       'The seller will invoice you after confirmation',
                       'Seller contact details released after deposit',
                     ].map((item, i) => (
-                      <li key={i} className="text-[12px] text-blue-600/80 flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0 mt-1.5" />
+                      <li key={i} className="text-[12px] text-[#6e6e73] flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#aeaeb2] flex-shrink-0 mt-1.5" />
                         {item}
                       </li>
                     ))}
                   </ul>
                 </div>
-                <div className="border-t border-blue-100 pt-3">
-                  <p className="text-blue-700 text-[12px] font-semibold mb-2">Why this works</p>
+                <div className="border-t border-black/[0.06] pt-3">
+                  <p className="text-[#1d1d1f] text-[12px] font-semibold mb-2">Why this works</p>
                   <ul className="space-y-1.5">
                     {[
                       'Fast way to reserve time-sensitive opportunities',
                       'Prevents losing the slot while details are finalized',
                       'Keeps final campaign handling direct and flexible',
                     ].map((item, i) => (
-                      <li key={i} className="text-[12px] text-blue-600/80 flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-300 flex-shrink-0 mt-1.5" />
+                      <li key={i} className="text-[12px] text-[#6e6e73] flex items-start gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#d2d2d7] flex-shrink-0 mt-1.5" />
                         {item}
                       </li>
                     ))}
@@ -413,7 +413,7 @@ function PageSection({ title, icon, children }: { title: string; icon: React.Rea
 function StatTile({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div className="bg-[#f5f5f7] rounded-2xl p-3 text-center">
-      <p className={`font-semibold text-[16px] tracking-[-0.01em] ${highlight ? 'text-blue-600' : 'text-[#1d1d1f]'}`}>{value}</p>
+      <p className={`font-semibold text-[16px] tracking-[-0.01em] ${highlight ? 'text-green-600' : 'text-[#1d1d1f]'}`}>{value}</p>
       <p className="text-[#aeaeb2] text-[10px] mt-0.5 uppercase tracking-wide font-medium">{label}</p>
     </div>
   );

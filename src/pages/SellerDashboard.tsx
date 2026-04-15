@@ -15,8 +15,8 @@ const LISTING_STATUS_CONFIG: Record<string, { label: string; color: string; bg: 
   live: { label: 'Live', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
   securing: { label: 'Being Secured', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
   pending_review: { label: 'Pending Review', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
-  secured: { label: 'Secured', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
-  in_progress: { label: 'In Progress', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+  secured: { label: 'Secured', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
+  in_progress: { label: 'In Progress', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
   completed_off_platform: { label: 'Completed', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]' },
   expired: { label: 'Expired', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]' },
   cancelled: { label: 'Cancelled', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]' },
@@ -25,7 +25,7 @@ const LISTING_STATUS_CONFIG: Record<string, { label: string; color: string; bg: 
 const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string }> = {
   pending_payment: { label: 'Pending Payment', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
   secured: { label: 'Secured', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
-  in_progress: { label: 'In Progress', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+  in_progress: { label: 'In Progress', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
   completed_off_platform: { label: 'Completed', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]' },
   refund_requested: { label: 'Refund Requested', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
   refunded: { label: 'Refunded', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]' },
@@ -116,7 +116,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <StatCard icon={<Package className="w-4 h-4 text-[#86868b]" />} label="Total Listings" value={stats.totalListings} />
           <StatCard icon={<BarChart2 className="w-4 h-4 text-green-600" />} label="Live Now" value={stats.liveListings} green />
-          <StatCard icon={<CheckCircle className="w-4 h-4 text-blue-600" />} label="Bookings Received" value={stats.totalBookings} blue />
+          <StatCard icon={<CheckCircle className="w-4 h-4 text-green-600" />} label="Bookings Received" value={stats.totalBookings} green />
           <StatCard icon={<DollarSign className="w-4 h-4 text-[#86868b]" />} label="Pending Payouts" value={`$${stats.pendingPayouts.toLocaleString()}`} />
         </div>
 
@@ -375,7 +375,7 @@ function SellerBookingCard({ booking }: { booking: DepositBooking }) {
 
       <div className="mt-3 pt-3 border-t border-black/[0.04] flex items-center gap-2">
         <Mail className="w-3 h-3 text-[#aeaeb2]" />
-        <a href={`mailto:${booking.buyer_email}`} className="text-xs text-[#6e6e73] hover:text-blue-600 transition-colors">
+        <a href={`mailto:${booking.buyer_email}`} className="text-xs text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">
           Contact buyer: {booking.buyer_email}
         </a>
         {booking.buyer_phone && (
@@ -453,12 +453,12 @@ function SellerProfilePanel({ profile, userEmail, onSaved }: {
       <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-blue-50 border border-blue-200 rounded-2xl flex items-center justify-center">
-              <User className="w-6 h-6 text-blue-600" />
+            <div className="w-12 h-12 bg-green-50 border border-green-200 rounded-2xl flex items-center justify-center">
+              <User className="w-6 h-6 text-green-600" />
             </div>
             <div>
               <h3 className="text-[#1d1d1f] font-semibold">{profile.display_name || 'Your Profile'}</h3>
-              <span className="inline-block bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-semibold px-2 py-0.5 rounded-lg capitalize">
+              <span className="inline-block bg-green-50 border border-green-200 text-green-700 text-[10px] font-semibold px-2 py-0.5 rounded-lg capitalize">
                 Seller
               </span>
             </div>
@@ -627,17 +627,16 @@ function ProfileField({ label, icon, value, editing, onChange, type = 'text', pl
   );
 }
 
-function StatCard({ icon, label, value, green, blue }: {
+function StatCard({ icon, label, value, green }: {
   icon: React.ReactNode;
   label: string;
   value: string | number;
   green?: boolean;
-  blue?: boolean;
 }) {
   return (
     <div className="bg-white border border-black/[0.06] rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-2">{icon}<p className="text-[#6e6e73] text-xs">{label}</p></div>
-      <p className={`text-2xl font-bold tracking-[-0.02em] ${green ? 'text-green-600' : blue ? 'text-blue-600' : 'text-[#1d1d1f]'}`}>
+      <p className={`text-2xl font-bold tracking-[-0.02em] ${green ? 'text-green-600' : 'text-[#1d1d1f]'}`}>
         {value}
       </p>
     </div>

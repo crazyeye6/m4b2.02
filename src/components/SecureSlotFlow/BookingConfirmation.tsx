@@ -93,8 +93,8 @@ export default function BookingConfirmation({ booking, listing, depositTotal, on
         </div>
       )}
 
-      <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">
-        <p className="text-blue-700 text-xs font-semibold uppercase tracking-wide mb-3">Next steps</p>
+      <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
+        <p className="text-[#1d1d1f] text-xs font-semibold uppercase tracking-wide mb-3">Next steps</p>
         <div className="space-y-3">
           {[
             'Contact the creator using the details above',
@@ -103,7 +103,7 @@ export default function BookingConfirmation({ booking, listing, depositTotal, on
             'Pay the remaining balance directly to the creator',
           ].map((step, i) => (
             <div key={i} className="flex items-start gap-3">
-              <div className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">
+              <div className="w-5 h-5 bg-[#1d1d1f] text-white rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">
                 {i + 1}
               </div>
               <p className="text-[#6e6e73] text-xs leading-relaxed">{step}</p>

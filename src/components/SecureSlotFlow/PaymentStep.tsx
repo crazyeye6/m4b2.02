@@ -85,8 +85,8 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
           )}
           {vat.reverseCharge && (
             <div className="flex justify-between">
-              <span className="text-blue-600">Reverse charge (0% VAT)</span>
-              <span className="text-blue-600">$0.00</span>
+              <span className="text-[#6e6e73]">Reverse charge (0% VAT)</span>
+              <span className="text-[#6e6e73]">$0.00</span>
             </div>
           )}
         </div>
