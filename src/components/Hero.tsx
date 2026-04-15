@@ -20,9 +20,8 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-semibold text-white leading-[1.05] tracking-[-0.03em] mb-6">
             <span className="relative inline-block">
-              <span className="relative z-10 bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent">Last-minute</span>
+              <span className="relative z-10 bg-gradient-to-r from-green-400 via-emerald-300 to-teal-400 bg-clip-text text-transparent">media deals</span>
             </span>
-            {' '}media deals{' '}
             <br className="hidden sm:block" />
             <span className="relative inline-block mt-1">
               <span className="relative z-10 text-white/35 italic font-light tracking-[-0.01em]">ending this week</span>
