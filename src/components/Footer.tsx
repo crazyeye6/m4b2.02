@@ -19,7 +19,7 @@ export default function Footer({ onTerms, onPrivacy }: FooterProps) {
             <span className="text-[#1d1d1f] font-bold text-[15px] tracking-[-0.03em] leading-none">
               EndingThisWeek
             </span>
-            <span className="text-[12px] font-semibold text-white bg-green-500 px-2 py-0.5 rounded-[4px] tracking-[-0.01em] leading-none">
+            <span className="text-[12px] font-semibold text-white bg-[#6e6e73] px-2 py-0.5 rounded-[4px] tracking-[-0.01em] leading-none">
               .media
             </span>
           </div>
