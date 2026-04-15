@@ -29,7 +29,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
             <span className="text-[#1d1d1f] font-bold text-[16px] tracking-[-0.03em] leading-none">
               EndingThisWeek
             </span>
-            <span className="text-[13px] font-semibold text-[#1d1d1f] tracking-[-0.01em] leading-none">
+            <span className="text-[16px] font-bold text-white bg-[#1d1d1f] px-1.5 py-0.5 rounded-[4px] tracking-[-0.03em] leading-none">
               .media
             </span>
           </button>
