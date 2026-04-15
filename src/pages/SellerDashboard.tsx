@@ -226,8 +226,8 @@ function ListingCard({ listing, onClick }: { listing: Listing; onClick: () => vo
 
       <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#21262d]">
         <Pill label="Slots remaining" value={`${listing.slots_remaining}/${listing.slots_total || '?'}`} />
-        <Pill label="Audience" value={listing.audience} />
-        <Pill label="Closes" value={hoursLeft < 24 ? `${hoursLeft}h left` : listing.date_label} urgent={hoursLeft < 24} />
+        <Pill label="Ad slot date" value={listing.date_label} />
+        <Pill label="Claim deadline" value={hoursLeft < 24 ? `${hoursLeft}h left` : `${Math.floor(hoursLeft / 24)}d left`} urgent={hoursLeft < 24} />
         <Pill label="Location" value={listing.location} />
       </div>
     </button>

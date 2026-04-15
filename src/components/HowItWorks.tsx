@@ -4,8 +4,8 @@ const STEPS = [
   {
     icon: <Search className="w-4 h-4 text-[#58a6ff]" />,
     number: '01',
-    title: 'Browse expiring slots',
-    description: 'Filter by channel, niche, geography, and budget. Every listing shows real audience data and live countdown timers.',
+    title: 'Browse available slots',
+    description: 'Filter by channel, niche, geography, and budget. Each listing shows real audience data, the ad slot date, and a countdown to the claim deadline.',
     note: null,
   },
   {
@@ -90,7 +90,7 @@ export default function HowItWorks() {
         <div className="mt-4 bg-[#161b22] border border-[#30363d] rounded-lg p-6 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
             <h3 className="text-[#e6edf3] font-semibold text-base mb-1">Are you a publisher or creator?</h3>
-            <p className="text-[#8b949e] text-sm">List your unsold slots and fill your inventory before the deadline.</p>
+            <p className="text-[#8b949e] text-sm">List your unsold ad slots and set a claim deadline — giving buyers time to get their copy ready before the slot runs.</p>
           </div>
           <button className="flex-shrink-0 bg-[#238636] hover:bg-[#2ea043] text-white font-medium px-5 py-2 rounded-md text-sm border border-[#2ea043]/40 transition-all whitespace-nowrap">
             List a Slot Free

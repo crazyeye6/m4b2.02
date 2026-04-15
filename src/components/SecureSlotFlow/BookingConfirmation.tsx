@@ -66,7 +66,7 @@ export default function BookingConfirmation({ booking, listing, depositTotal, on
           <Row label="Platform" value={listing.media_company_name} />
           <Row label="Opportunity" value={listing.property_name} />
           <Row label="Content type" value={listing.slot_type} />
-          <Row label="Posting date" value={listing.date_label} />
+          <Row label="Ad slot date" value={listing.date_label} />
         </div>
       </div>
 
@@ -98,9 +98,9 @@ export default function BookingConfirmation({ booking, listing, depositTotal, on
         <div className="space-y-3">
           {[
             'Contact the creator using the details above',
-            'Confirm final campaign details with the creator',
+            'Confirm final campaign details and the ad slot date',
+            'Prepare and send your ad copy — allow lead time before the slot date',
             'Pay the remaining balance directly to the creator',
-            'Complete the campaign booking and brief handover',
           ].map((step, i) => (
             <div key={i} className="flex items-start gap-3">
               <div className="w-5 h-5 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5">

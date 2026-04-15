@@ -74,11 +74,12 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
             </div>
 
             <div className="bg-white/[0.03] border border-white/8 rounded-xl p-4">
-              <p className="text-gray-400 text-xs uppercase tracking-wide font-medium mb-2">Time remaining</p>
+              <p className="text-gray-400 text-xs uppercase tracking-wide font-medium mb-1">Time to claim this slot</p>
+              <p className="text-gray-500 text-[10px] mb-2">Interest must be registered before this closes. The ad runs on the date below.</p>
               <div className="mb-2">
                 <CountdownTimer deadline={listing.deadline_at} />
               </div>
-              <p className="text-gray-400 text-xs">Slot date: <span className="text-gray-400">{listing.date_label}</span></p>
+              <p className="text-gray-400 text-xs">Ad slot date: <span className="text-white font-medium">{listing.date_label}</span></p>
               <p className="text-gray-400 text-xs mt-1">Slots left: <span className={`font-semibold ${listing.slots_remaining === 1 ? 'text-yellow-400' : 'text-amber-400'}`}>{listing.slots_remaining}</span></p>
             </div>
           </div>
@@ -126,13 +127,13 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
                 <p className="text-white text-sm font-semibold">{listing.slot_type}</p>
               </div>
               <div className="bg-white/[0.03] border border-white/5 rounded-lg p-3">
-                <p className="text-xs text-gray-400 mb-1">Scheduled date</p>
+                <p className="text-xs text-gray-400 mb-1">Ad runs</p>
                 <p className="text-white text-sm font-semibold">{listing.date_label}</p>
               </div>
             </div>
             <div className="bg-white/[0.03] border border-white/5 rounded-lg p-3 mt-3">
               <p className="text-xs text-gray-400 mb-1">Booking terms</p>
-              <p className="text-gray-400 text-sm">Creative must be submitted within 24 hours of booking. Full payment required on confirmation. Hold period: {listing.status === 'securing' ? '6h' : '24h'}.</p>
+              <p className="text-gray-400 text-sm">Claim your interest before the deadline closes. Ad copy must be submitted to the creator once your slot is confirmed — allow lead time before the ad slot date. Hold period: {listing.status === 'securing' ? '6h' : '24h'}.</p>
             </div>
           </Section>
 

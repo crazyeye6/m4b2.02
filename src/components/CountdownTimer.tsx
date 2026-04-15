@@ -41,7 +41,7 @@ export default function CountdownTimer({ deadline, compact = false }: CountdownT
     return (
       <div className="flex items-center gap-1 bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-semibold px-2 py-1 rounded-md">
         <Clock className="w-3 h-3" />
-        Expired
+        Claiming closed
       </div>
     );
   }
@@ -54,8 +54,8 @@ export default function CountdownTimer({ deadline, compact = false }: CountdownT
       : 'bg-amber-500/15 border-amber-500/20 text-amber-400';
 
     const label = time.days > 0
-      ? `${time.days}d ${time.hours}h left`
-      : `${time.hours}h ${time.minutes}m left`;
+      ? `${time.days}d ${time.hours}h to claim`
+      : `${time.hours}h ${time.minutes}m to claim`;
 
     return (
       <div className={`flex items-center gap-1.5 border text-xs font-bold px-2.5 py-1.5 rounded-lg ${colorClass}`}>

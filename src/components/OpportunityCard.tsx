@@ -169,7 +169,9 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             <Users className="w-3 h-3" />
             <span className="truncate">{listing.audience}</span>
           </span>
-          <span>{listing.date_label}</span>
+          <span className="flex items-center gap-1">
+            Ad slot: <span className="text-[#e6edf3] font-medium">{listing.date_label}</span>
+          </span>
         </div>
 
         {/* Past advertisers */}

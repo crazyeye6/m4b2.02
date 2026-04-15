@@ -43,7 +43,7 @@ export default function SummaryPanel({
           <Row label="Media owner" value={listing.media_owner_name} />
           <Row label="Slot" value={listing.property_name} />
           <Row label="Type" value={listing.slot_type} />
-          <Row label="Date" value={listing.date_label} />
+          <Row label="Ad slot date" value={listing.date_label} />
         </div>
       </div>
 

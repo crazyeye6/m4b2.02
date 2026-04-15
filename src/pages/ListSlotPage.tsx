@@ -477,7 +477,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                 </Field>
               )}
 
-              <Field label="Slot runs" required error={errors.date_label} hint="When does this ad run?">
+              <Field label="Ad slot date" required error={errors.date_label} hint="When the ad actually runs or publishes">
                 <SelectOrCustom
                   value={form.date_label}
                   onChange={v => set('date_label', v)}
@@ -487,7 +487,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                 />
               </Field>
 
-              <Field label="Listing deadline" required error={errors.deadline_at} hint="When does this offer expire?" className="sm:col-span-2">
+              <Field label="Claim deadline" required error={errors.deadline_at} hint="Last chance for buyers to register interest" className="sm:col-span-2">
                 <input
                   type="datetime-local"
                   value={form.deadline_at}
@@ -496,7 +496,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                   max={getMaxDeadline()}
                   className={inputCls(!!errors.deadline_at) + ' [color-scheme:dark]'}
                 />
-                <p className="text-gray-600 text-xs mt-1.5">Buyers can secure the slot up until this date and time.</p>
+                <p className="text-gray-600 text-xs mt-1.5">Buyers must claim their interest before this date. This is not the ad publish date — set it early enough to allow time for ad copy handover.</p>
               </Field>
 
               <Field label="Slots available" required error={errors.slots_remaining}>
