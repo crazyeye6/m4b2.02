@@ -5,6 +5,8 @@ import {
   Tag, Shield, Zap, Plus, X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { sendSlotListedEmail } from '../lib/email';
+import { useAuth } from '../context/AuthContext';
 import type { MediaType } from '../types';
 
 interface ListSlotPageProps {
@@ -90,6 +92,7 @@ function getMaxDeadline(): string {
 }
 
 export default function ListSlotPage({ onBack }: ListSlotPageProps) {
+  const { user, profile } = useAuth();
   const [form, setForm] = useState<FormData>(INITIAL);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -190,6 +193,22 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
       setErrors({ media_owner_name: error.message });
       return;
     }
+
+    if (user?.email) {
+      const originalPrice = parseInt(form.original_price);
+      const discountedPrice = parseInt(form.discounted_price);
+      const discountPct = Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
+      sendSlotListedEmail(user.email, {
+        property_name: payload.property_name,
+        media_type: payload.media_type,
+        discounted_price: discountedPrice,
+        discount: discountPct,
+        deadline_at: payload.deadline_at,
+        slots_remaining: payload.slots_remaining,
+        seller_name: profile?.display_name || form.media_owner_name,
+      });
+    }
+
     setSubmitted(true);
   };
 

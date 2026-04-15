@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { sendBookingConfirmationEmails } from '../../lib/email';
 import type { Listing, BuyerFormData, DepositBooking } from '../../types';
 import BookingSummary from './BookingSummary';
 import BuyerDetailsForm from './BuyerDetailsForm';
@@ -112,6 +113,26 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess }: SecureSl
           slots_remaining: Math.max(0, listing.slots_remaining - slotsCount),
         })
         .eq('id', listing.id);
+
+      sendBookingConfirmationEmails(form.buyer_email, listing.seller_email || '', {
+        reference_number: referenceNumber,
+        property_name: listing.property_name,
+        media_owner_name: listing.media_owner_name,
+        date_label: listing.date_label,
+        slot_type: listing.slot_type,
+        deposit_amount: depositAmount,
+        balance_amount: balanceAmount,
+        total_price: totalPrice,
+        seller_name: listing.media_owner_name,
+        seller_email: listing.seller_email || '',
+        buyer_name: form.buyer_name,
+        buyer_email: form.buyer_email,
+        buyer_company: form.buyer_company,
+        buyer_phone: form.buyer_phone || '',
+        buyer_website: form.buyer_website || '',
+        buyer_country: form.buyer_country,
+        message_to_creator: form.message_to_creator || '',
+      });
 
       setBooking({ ...data, listing });
       setStep('confirmation');

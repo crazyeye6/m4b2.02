@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { sendWelcomeEmail } from '../lib/email';
 
 export interface UserProfile {
   id: string;
@@ -93,6 +94,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       display_name: displayName,
       company,
     });
+
+    if (!profileError) {
+      sendWelcomeEmail(email, role, displayName);
+    }
 
     return { error: profileError };
   };
