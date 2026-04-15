@@ -10,17 +10,17 @@ interface OpportunityCardProps {
 
 const MEDIA_CONFIG = {
   newsletter: {
-    icon: <Mail className="w-3 h-3" />,
+    icon: <Mail className="w-4 h-4" />,
     label: 'Newsletter',
     color: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
   },
   podcast: {
-    icon: <Mic className="w-3 h-3" />,
+    icon: <Mic className="w-4 h-4" />,
     label: 'Podcast',
     color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   },
   influencer: {
-    icon: <Instagram className="w-3 h-3" />,
+    icon: <Instagram className="w-4 h-4" />,
     label: 'Influencer',
     color: 'bg-pink-100/20 text-pink-300 border-pink-300/20',
   },
@@ -84,7 +84,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
 
         {/* Header: type badge + urgency + timer */}
         <div className="flex items-center justify-between mb-4">
-          <span className={`inline-flex items-center gap-1.5 border text-[10px] font-semibold px-2 py-1 rounded-md uppercase tracking-wide ${mc.color}`}>
+          <span className={`inline-flex items-center gap-2 border text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider ${mc.color}`}>
             {mc.icon}
             {mc.label}
           </span>
