@@ -22,7 +22,7 @@ const MEDIA_CONFIG = {
   influencer: {
     icon: <Instagram className="w-3 h-3" />,
     label: 'Influencer',
-    color: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
+    color: 'bg-pink-100/20 text-pink-300 border-pink-300/20',
   },
 };
 
