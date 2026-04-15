@@ -105,11 +105,6 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
                       })()
                     : listing.date_label}
                 </p>
-                {listing.posting_date_start && (
-                  <p className="text-[#86868b] text-[9px] leading-none mt-0.5">
-                    {new Date(listing.posting_date_start + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long' })}
-                  </p>
-                )}
               </div>
             </div>
 
