@@ -1,4 +1,4 @@
-import { Users, MapPin, Mail, Instagram, Mic, Shield, AlertTriangle, CheckCircle, Clock, Eye, Lock, Zap, Calendar, CalendarClock } from 'lucide-react';
+import { Users, MapPin, Mail, Instagram, Mic, Shield, AlertTriangle, CheckCircle, Clock, Eye, Lock, Zap, CalendarClock } from 'lucide-react';
 import type { Listing } from '../types';
 import CountdownTimer from './CountdownTimer';
 import { resolvePublishDate } from '../lib/dateUtils';
@@ -14,16 +14,22 @@ const MEDIA_CONFIG = {
     icon: <Mail className="w-3.5 h-3.5" />,
     label: 'Newsletter',
     color: 'bg-sky-50 text-sky-600 border-sky-100',
+    accent: 'from-sky-500 to-sky-600',
+    glow: 'shadow-sky-900/30',
   },
   podcast: {
     icon: <Mic className="w-3.5 h-3.5" />,
     label: 'Podcast',
     color: 'bg-violet-50 text-violet-600 border-violet-100',
+    accent: 'from-violet-500 to-violet-600',
+    glow: 'shadow-violet-900/30',
   },
   influencer: {
     icon: <Instagram className="w-3.5 h-3.5" />,
     label: 'Influencer',
     color: 'bg-rose-50 text-rose-500 border-rose-100',
+    accent: 'from-rose-500 to-rose-600',
+    glow: 'shadow-rose-900/30',
   },
 };
 
@@ -68,6 +74,9 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
   const isSecured = listing.status === 'secured' || listing.status === 'expired' || listing.status === 'cancelled' || deadlinePassed;
   const isScarce = listing.slots_remaining <= 2;
 
+  const { weekday, calDate } = resolvePublishDate(listing);
+  const deadlineFormatted = new Date(listing.deadline_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
   return (
     <div
       className={`relative bg-white rounded-3xl flex flex-col transition-all duration-200 overflow-hidden
@@ -85,72 +94,68 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
 
       <div className="p-5 flex flex-col h-full">
 
-        {/* Header: type badge + Book By */}
-        <div className="flex items-start justify-between mb-3 gap-3">
+        {/* Header: type badge + slot dots */}
+        <div className="flex items-center justify-between mb-3 gap-3">
           <span className={`inline-flex items-center gap-1.5 border text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide flex-shrink-0 ${mc.color}`}>
             {mc.icon}
             {mc.label}
           </span>
 
-          <div className="flex-shrink-0 text-right space-y-1.5">
-            {/* Booking Deadline */}
-            <div className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5
-              ${isLive ? 'bg-orange-50' : 'bg-[#f5f5f7]'}`}>
-              <CalendarClock className={`w-3 h-3 flex-shrink-0 ${isLive ? 'text-orange-500' : 'text-[#86868b]'}`} />
-              <div className="text-left">
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-[#86868b] leading-none mb-0.5">Book By</p>
-                <p className={`text-[11px] font-semibold leading-none ${isLive ? 'text-orange-600' : 'text-[#1d1d1f]'}`}>
-                  {new Date(listing.deadline_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </p>
+          {isLive && (
+            <div className="flex items-center gap-1.5 flex-shrink-0">
+              <span className={`text-[10px] font-semibold ${isScarce ? 'text-orange-500' : 'text-[#6e6e73]'}`}>
+                {listing.slots_remaining} {listing.slots_remaining === 1 ? 'slot' : 'slots'}
+              </span>
+              <div className="flex gap-0.5">
+                {Array.from({ length: Math.min(listing.slots_total || 5, 5) }).map((_, i) => (
+                  <span
+                    key={i}
+                    className={`block w-2 h-2 rounded-full ${
+                      i < listing.slots_remaining
+                        ? isScarce ? 'bg-orange-400' : 'bg-green-500'
+                        : 'bg-[#e5e5ea]'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
+          )}
+        </div>
 
-            {/* Slot availability */}
-            {isLive && (
-              <div className="flex items-center justify-end gap-1.5">
-                <span className={`text-[10px] font-semibold ${isScarce ? 'text-orange-500' : 'text-[#6e6e73]'}`}>
-                  {listing.slots_remaining} {listing.slots_remaining === 1 ? 'slot' : 'slots'}
-                </span>
-                <div className="flex gap-0.5">
-                  {Array.from({ length: Math.min(listing.slots_total || 5, 5) }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={`block w-2 h-2 rounded-full ${
-                        i < listing.slots_remaining
-                          ? isScarce ? 'bg-orange-400' : 'bg-green-500'
-                          : 'bg-[#e5e5ea]'
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
+        {/* Publisher + Publish Date: two-panel branded strip */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          {/* Publisher panel */}
+          <div className="bg-gradient-to-br from-[#1d1d1f] to-[#2c2c2e] rounded-2xl p-3.5 relative overflow-hidden">
+            <div className={`absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r ${mc.accent}`} />
+            <p className="text-white/35 text-[8px] font-bold uppercase tracking-widest leading-none mb-2">Publisher</p>
+            <p className="text-white text-[13px] font-bold leading-tight truncate mb-0.5">{listing.property_name}</p>
+            <p className="text-white/50 text-[10px] font-medium leading-none truncate">{listing.media_company_name || listing.media_owner_name}</p>
+          </div>
+
+          {/* Publish Date panel */}
+          <div className="bg-gradient-to-br from-[#1d1d1f] to-[#2c2c2e] rounded-2xl p-3.5 relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-green-400 to-teal-400" />
+            <p className="text-white/35 text-[8px] font-bold uppercase tracking-widest leading-none mb-2">Publish Date</p>
+            {weekday ? (
+              <>
+                <p className="text-white text-[13px] font-bold leading-tight truncate mb-0.5">{weekday}</p>
+                <p className="text-white/50 text-[10px] font-medium leading-none truncate">{calDate}</p>
+              </>
+            ) : (
+              <p className="text-white text-[13px] font-bold leading-tight truncate">{calDate || '—'}</p>
             )}
           </div>
         </div>
 
-        {/* Publish Date */}
-        {(() => {
-          const { weekday, calDate } = resolvePublishDate(listing);
-          return (
-            <div className="mb-4 bg-gradient-to-br from-[#1d1d1f] to-[#3a3a3c] rounded-2xl px-4 py-4 flex items-center gap-3.5 shadow-sm shadow-black/20">
-              <div className="w-11 h-11 bg-white/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-5 h-5 text-green-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest leading-none mb-2">Publish Date</p>
-                {weekday && (
-                  <p className="text-white text-[14px] font-semibold leading-none mb-1">{weekday}</p>
-                )}
-                <p className="text-white text-[14px] font-semibold leading-tight truncate">{calDate}</p>
-              </div>
-            </div>
-          );
-        })()}
+        {/* Book By strip */}
+        <div className={`flex items-center gap-2 mb-4 rounded-xl px-3 py-2 ${isLive ? 'bg-orange-50' : 'bg-[#f5f5f7]'}`}>
+          <CalendarClock className={`w-3.5 h-3.5 flex-shrink-0 ${isLive ? 'text-orange-500' : 'text-[#86868b]'}`} />
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#86868b] flex-shrink-0">Book By</p>
+          <p className={`text-[12px] font-bold ml-auto ${isLive ? 'text-orange-600' : 'text-[#1d1d1f]'}`}>{deadlineFormatted}</p>
+        </div>
 
-        {/* Title block */}
+        {/* Title block — owner name only now, property + company shown in panel */}
         <div className="mb-4">
-          <p className="text-[#86868b] text-[11px] font-medium mb-0.5">{listing.media_company_name}</p>
-          <h3 className="text-[#1d1d1f] font-semibold text-[16px] leading-tight tracking-[-0.01em] mb-1">{listing.property_name}</h3>
           <p className="text-[#6e6e73] text-[12px]">{listing.media_owner_name}</p>
         </div>
 
