@@ -1,9 +1,5 @@
 import { useState, useMemo } from 'react';
-import {
-  Mail, Mic, Instagram, ChevronLeft, CheckCircle, AlertTriangle,
-  Loader2, Info, DollarSign, Users, MapPin, BarChart2,
-  Tag, Shield, Zap, Plus, X, UserCircle,
-} from 'lucide-react';
+import { Mail, Mic, Instagram, ChevronLeft, CheckCircle, AlertTriangle, Loader2, Info, DollarSign, Users, MapPin, BarChart2, Tag, Shield, Zap, Plus, X, CircleUser as UserCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { sendSlotListedEmail } from '../lib/email';
 import { useAuth } from '../context/AuthContext';
