@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import StatsBar from './components/StatsBar';
@@ -7,9 +7,9 @@ import ListingsGrid from './components/ListingsGrid';
 import HowItWorks from './components/HowItWorks';
 import Footer from './components/Footer';
 import SecureSlotFlow from './components/SecureSlotFlow';
-import DetailModal from './components/DetailModal';
 import AuthModal from './components/AuthModal';
 import ListSlotPage from './pages/ListSlotPage';
+import ListingPage from './pages/ListingPage';
 import AdminPage from './pages/AdminPage';
 import BuyerDashboard from './pages/BuyerDashboard';
 import SellerDashboard from './pages/SellerDashboard';
@@ -20,7 +20,22 @@ import { useListings } from './hooks/useListings';
 import { useAuth } from './context/AuthContext';
 import type { FilterState, Listing } from './types';
 
-type Page = 'home' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found';
+type Page = 'home' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing';
+
+function getListingIdFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('listing');
+}
+
+function setListingInUrl(id: string | null) {
+  const url = new URL(window.location.href);
+  if (id) {
+    url.searchParams.set('listing', id);
+  } else {
+    url.searchParams.delete('listing');
+  }
+  window.history.pushState({}, '', url.toString());
+}
 
 const DEFAULT_FILTERS: FilterState = {
   category: 'all',
@@ -35,15 +50,30 @@ const DEFAULT_FILTERS: FilterState = {
 };
 
 export default function App() {
-  const [page, setPage] = useState<Page>('home');
+  const [page, setPage] = useState<Page>(() => getListingIdFromUrl() ? 'listing' : 'home');
+  const [listingId, setListingId] = useState<string | null>(() => getListingIdFromUrl());
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [secureTarget, setSecureTarget] = useState<Listing | null>(null);
-  const [detailTarget, setDetailTarget] = useState<Listing | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const opportunitiesRef = useRef<HTMLDivElement>(null);
 
   const { profile } = useAuth();
   const { listings, loading, stats, updateListingStatus, refetch } = useListings(filters);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const id = getListingIdFromUrl();
+      if (id) {
+        setListingId(id);
+        setPage('listing');
+      } else {
+        setListingId(null);
+        setPage('home');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   const updateFilters = (partial: Partial<FilterState>) => {
     setFilters(prev => ({ ...prev, ...partial }));
@@ -58,25 +88,35 @@ export default function App() {
   };
 
   const handleListSlot = () => {
+    setListingInUrl(null);
     setPage('list-slot');
     window.scrollTo(0, 0);
   };
 
   const handleAdmin = () => {
+    setListingInUrl(null);
     setPage('admin');
     window.scrollTo(0, 0);
   };
 
   const handleDashboard = () => {
+    setListingInUrl(null);
     setPage('dashboard');
     window.scrollTo(0, 0);
   };
 
-  const handleSecureFromDetail = () => {
-    if (detailTarget) {
-      setDetailTarget(null);
-      setSecureTarget(detailTarget);
-    }
+  const handleViewListing = (listing: Listing) => {
+    setListingId(listing.id);
+    setListingInUrl(listing.id);
+    setPage('listing');
+    window.scrollTo(0, 0);
+  };
+
+  const handleBackFromListing = () => {
+    setListingId(null);
+    setListingInUrl(null);
+    setPage('home');
+    window.scrollTo(0, 0);
   };
 
   const sharedHeaderProps = {
@@ -86,11 +126,13 @@ export default function App() {
     onSignIn: () => setShowAuthModal(true),
   };
 
+  const goHome = () => { setListingInUrl(null); setListingId(null); setPage('home'); };
+
   if (page === 'terms') {
     return (
       <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
-        <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
-        <TermsPage onBack={() => setPage('home')} />
+        <Header {...sharedHeaderProps} onHome={goHome} />
+        <TermsPage onBack={goHome} />
       </div>
     );
   }
@@ -98,8 +140,8 @@ export default function App() {
   if (page === 'privacy') {
     return (
       <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
-        <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
-        <PrivacyPage onBack={() => setPage('home')} onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }} />
+        <Header {...sharedHeaderProps} onHome={goHome} />
+        <PrivacyPage onBack={goHome} onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }} />
       </div>
     );
   }
@@ -107,9 +149,9 @@ export default function App() {
   if (page === 'list-slot') {
     return (
       <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
-        <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
+        <Header {...sharedHeaderProps} onHome={goHome} />
         <ListSlotPage
-          onBack={() => { setPage('home'); refetch(); }}
+          onBack={() => { goHome(); refetch(); }}
           onEditProfile={() => { setPage('dashboard'); window.scrollTo(0, 0); }}
         />
       </div>
@@ -120,7 +162,7 @@ export default function App() {
     if (profile?.role !== 'admin') {
       return (
         <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
-          <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
+          <Header {...sharedHeaderProps} onHome={goHome} />
           <div className="flex items-center justify-center min-h-[80vh]">
             <div className="text-center max-w-sm">
               <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
@@ -128,7 +170,7 @@ export default function App() {
               </div>
               <h2 className="text-[#e6edf3] font-bold text-xl mb-2">Access Denied</h2>
               <p className="text-[#8b949e] text-sm mb-6">You don't have permission to access the admin panel.</p>
-              <button onClick={() => setPage('home')} className="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] font-semibold px-5 py-2.5 rounded-lg text-sm transition-all border border-[#30363d]">
+              <button onClick={goHome} className="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] font-semibold px-5 py-2.5 rounded-lg text-sm transition-all border border-[#30363d]">
                 Go home
               </button>
             </div>
@@ -136,14 +178,14 @@ export default function App() {
         </div>
       );
     }
-    return <AdminPage onBack={() => setPage('home')} />;
+    return <AdminPage onBack={goHome} />;
   }
 
   if (page === 'dashboard') {
     if (!profile) {
       return (
         <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
-          <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
+          <Header {...sharedHeaderProps} onHome={goHome} />
           <div className="flex items-center justify-center min-h-screen">
             <div className="text-center">
               <p className="text-[#6e7681] text-sm mb-4">Please sign in to access your dashboard.</p>
@@ -163,7 +205,7 @@ export default function App() {
     if (profile.role === 'seller') {
       return (
         <SellerDashboard
-          onBack={() => { setPage('home'); window.scrollTo(0, 0); }}
+          onBack={() => { goHome(); window.scrollTo(0, 0); }}
           onListSlot={() => { setPage('list-slot'); window.scrollTo(0, 0); }}
         />
       );
@@ -171,7 +213,7 @@ export default function App() {
 
     return (
       <BuyerDashboard
-        onBack={() => { setPage('home'); window.scrollTo(0, 0); }}
+        onBack={() => { goHome(); window.scrollTo(0, 0); }}
       />
     );
   }
@@ -179,8 +221,29 @@ export default function App() {
   if (page === 'not-found') {
     return (
       <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
-        <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
-        <NotFoundPage onHome={() => setPage('home')} onBrowse={() => setPage('home')} />
+        <Header {...sharedHeaderProps} onHome={() => { setListingInUrl(null); setPage('home'); }} />
+        <NotFoundPage onHome={() => { setListingInUrl(null); setPage('home'); }} onBrowse={() => { setListingInUrl(null); setPage('home'); }} />
+      </div>
+    );
+  }
+
+  if (page === 'listing' && listingId) {
+    return (
+      <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+        <Header {...sharedHeaderProps} onHome={() => { setListingInUrl(null); setPage('home'); }} />
+        <ListingPage
+          listingId={listingId}
+          onBack={handleBackFromListing}
+          onSecure={(listing) => setSecureTarget(listing)}
+        />
+        {secureTarget && (
+          <SecureSlotFlow
+            listing={secureTarget}
+            onClose={() => { setSecureTarget(null); }}
+            onSuccess={handleSecureSuccess}
+          />
+        )}
+        {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </div>
     );
   }
@@ -211,7 +274,7 @@ export default function App() {
               listings={listings}
               loading={loading}
               onSecure={setSecureTarget}
-              onDetails={setDetailTarget}
+              onDetails={handleViewListing}
             />
           </section>
         </div>
@@ -229,14 +292,6 @@ export default function App() {
           listing={secureTarget}
           onClose={() => { setSecureTarget(null); refetch(); }}
           onSuccess={handleSecureSuccess}
-        />
-      )}
-
-      {detailTarget && (
-        <DetailModal
-          listing={detailTarget}
-          onClose={() => setDetailTarget(null)}
-          onSecure={handleSecureFromDetail}
         />
       )}
 
