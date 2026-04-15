@@ -84,44 +84,23 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
 
       <div className="p-5 flex flex-col h-full">
 
-        {/* Header: type badge + date info */}
-        <div className="flex items-start justify-between mb-4 gap-3">
+        {/* Header: type badge + Book By */}
+        <div className="flex items-start justify-between mb-3 gap-3">
           <span className={`inline-flex items-center gap-1.5 border text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide flex-shrink-0 ${mc.color}`}>
             {mc.icon}
             {mc.label}
           </span>
 
           <div className="flex-shrink-0 text-right space-y-1.5">
-            {/* Air Date */}
-            <div className="inline-flex items-center gap-1.5 bg-[#f5f5f7] rounded-xl px-2.5 py-1.5">
-              <Calendar className="w-3 h-3 text-blue-500 flex-shrink-0" />
-              <div className="text-left">
-                <p className="text-[9px] font-semibold uppercase tracking-widest text-[#86868b] leading-none mb-0.5">Air Date</p>
-                <p className="text-[#1d1d1f] text-[11px] font-semibold leading-none">
-                  {listing.posting_date_start
-                    ? (() => {
-                        const d = new Date(listing.posting_date_start + 'T00:00:00');
-                        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-                      })()
-                    : listing.date_label}
-                </p>
-              </div>
-            </div>
-
             {/* Booking Deadline */}
-            <div>
-              <div className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5
-                ${isLive
-                  ? 'bg-orange-50'
-                  : 'bg-[#f5f5f7]'
-                }`}>
-                <CalendarClock className={`w-3 h-3 flex-shrink-0 ${isLive ? 'text-orange-500' : 'text-[#86868b]'}`} />
-                <div className="text-left">
-                  <p className="text-[9px] font-semibold uppercase tracking-widest text-[#86868b] leading-none mb-0.5">Book By</p>
-                  <p className={`text-[11px] font-semibold leading-none ${isLive ? 'text-orange-600' : 'text-[#1d1d1f]'}`}>
-                    {new Date(listing.deadline_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                  </p>
-                </div>
+            <div className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5
+              ${isLive ? 'bg-orange-50' : 'bg-[#f5f5f7]'}`}>
+              <CalendarClock className={`w-3 h-3 flex-shrink-0 ${isLive ? 'text-orange-500' : 'text-[#86868b]'}`} />
+              <div className="text-left">
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-[#86868b] leading-none mb-0.5">Book By</p>
+                <p className={`text-[11px] font-semibold leading-none ${isLive ? 'text-orange-600' : 'text-[#1d1d1f]'}`}>
+                  {new Date(listing.deadline_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </p>
               </div>
             </div>
 
@@ -147,6 +126,40 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             )}
           </div>
         </div>
+
+        {/* Air Date — prominent hero block */}
+        {(() => {
+          const hasDate = !!listing.posting_date_start;
+          const d = hasDate ? new Date(listing.posting_date_start! + 'T00:00:00') : null;
+          const weekday = d ? d.toLocaleDateString('en-GB', { weekday: 'long' }) : null;
+          const calDate = d ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : listing.date_label;
+          const timeStr = listing.posting_time
+            ? (() => {
+                const [h, m] = listing.posting_time.split(':').map(Number);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                const h12 = h % 12 || 12;
+                return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+              })()
+            : null;
+
+          return (
+            <div className="mb-4 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl px-4 py-3.5 flex items-center gap-3 shadow-sm shadow-blue-600/20">
+              <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-blue-200 text-[9px] font-bold uppercase tracking-widest leading-none mb-1">Air Date</p>
+                {weekday && (
+                  <p className="text-white/70 text-[11px] font-medium leading-none mb-0.5">{weekday}</p>
+                )}
+                <p className="text-white text-[15px] font-bold leading-tight tracking-[-0.01em] truncate">{calDate}</p>
+                {timeStr && (
+                  <p className="text-blue-200 text-[11px] font-semibold leading-none mt-1">{timeStr}</p>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Title block */}
         <div className="mb-4">

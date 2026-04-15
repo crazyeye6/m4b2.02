@@ -62,6 +62,7 @@ export interface Listing {
   seller_website?: string | null;
   posting_date_start?: string | null;
   posting_date_end?: string | null;
+  posting_time?: string | null;
   deliverables_detail?: string | null;
   refund_notes?: string | null;
   response_time?: string | null;

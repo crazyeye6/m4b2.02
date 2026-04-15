@@ -27,6 +27,7 @@ interface FormData {
   deliverable: string;
   slot_type: string;
   date_label: string;
+  posting_time: string;
   deadline_at: string;
   original_price: string;
   discounted_price: string;
@@ -63,6 +64,7 @@ const INITIAL: FormData = {
   deliverable: '',
   slot_type: '',
   date_label: '',
+  posting_time: '',
   deadline_at: '',
   original_price: '',
   discounted_price: '',
@@ -213,6 +215,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
       deliverable: form.media_type === 'influencer' && form.deliverable ? form.deliverable : null,
       slot_type: form.slot_type,
       date_label: form.date_label,
+      posting_time: form.posting_time || null,
       deadline_at: new Date(form.deadline_at).toISOString(),
       original_price: parseInt(form.original_price),
       discounted_price: parseInt(form.discounted_price),
@@ -484,6 +487,15 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                   options={DATE_LABELS}
                   placeholder="e.g. Friday, This week..."
                   hasError={!!errors.date_label}
+                />
+              </Field>
+
+              <Field label="Time of day" hint="Optional — shown on listing card">
+                <input
+                  type="time"
+                  value={form.posting_time}
+                  onChange={e => set('posting_time', e.target.value)}
+                  className={inputCls(false) + ' [color-scheme:light]'}
                 />
               </Field>
 
