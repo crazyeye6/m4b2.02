@@ -245,7 +245,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             className={`w-full font-semibold text-[14px] py-3 rounded-2xl transition-all flex items-center justify-center gap-2
               ${isSecured
                 ? 'bg-[#f5f5f7] text-[#aeaeb2] cursor-not-allowed'
-                : 'bg-[#1d1d1f] hover:bg-[#3a3a3c] active:bg-[#000] text-white shadow-sm'
+                : 'bg-green-600 hover:bg-green-700 active:bg-green-800 text-white shadow-sm'
               }`}
           >
             {!isSecured && <Lock className="w-3.5 h-3.5" />}
