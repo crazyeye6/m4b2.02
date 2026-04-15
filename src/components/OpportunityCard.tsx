@@ -173,14 +173,11 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
                 <Calendar className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-blue-200 text-[9px] font-bold uppercase tracking-widest leading-none mb-1.5">Air Date</p>
+                <p className="text-blue-200 text-[9px] font-bold uppercase tracking-widest leading-none mb-2">Publish Date</p>
                 {weekday && (
-                  <p className="text-white/75 text-[12px] font-semibold leading-none mb-1">{weekday}</p>
+                  <p className="text-white text-[14px] font-semibold leading-none mb-1">{weekday}</p>
                 )}
-                <p className="text-white text-[16px] font-bold leading-tight tracking-[-0.02em] truncate">{calDate}</p>
-                {timeStr && (
-                  <p className="text-blue-200 text-[12px] font-semibold leading-none mt-1.5">{timeStr}</p>
-                )}
+                <p className="text-white text-[14px] font-semibold leading-tight truncate">{calDate}</p>
               </div>
             </div>
           );
