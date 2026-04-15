@@ -15,11 +15,12 @@ import BuyerDashboard from './pages/BuyerDashboard';
 import SellerDashboard from './pages/SellerDashboard';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
+import NotFoundPage from './pages/NotFoundPage';
 import { useListings } from './hooks/useListings';
 import { useAuth } from './context/AuthContext';
 import type { FilterState, Listing } from './types';
 
-type Page = 'home' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard';
+type Page = 'home' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found';
 
 const DEFAULT_FILTERS: FilterState = {
   category: 'all',
@@ -113,6 +114,25 @@ export default function App() {
   }
 
   if (page === 'admin') {
+    if (profile?.role !== 'admin') {
+      return (
+        <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+          <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
+          <div className="flex items-center justify-center min-h-[80vh]">
+            <div className="text-center max-w-sm">
+              <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <svg className="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-6V7m0 0a4 4 0 10-8 0 4 4 0 008 0z" /></svg>
+              </div>
+              <h2 className="text-[#e6edf3] font-bold text-xl mb-2">Access Denied</h2>
+              <p className="text-[#8b949e] text-sm mb-6">You don't have permission to access the admin panel.</p>
+              <button onClick={() => setPage('home')} className="bg-[#21262d] hover:bg-[#30363d] text-[#e6edf3] font-semibold px-5 py-2.5 rounded-lg text-sm transition-all border border-[#30363d]">
+                Go home
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
     return <AdminPage onBack={() => setPage('home')} />;
   }
 
@@ -150,6 +170,15 @@ export default function App() {
       <BuyerDashboard
         onBack={() => { setPage('home'); window.scrollTo(0, 0); }}
       />
+    );
+  }
+
+  if (page === 'not-found') {
+    return (
+      <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+        <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
+        <NotFoundPage onHome={() => setPage('home')} onBrowse={() => setPage('home')} />
+      </div>
     );
   }
 

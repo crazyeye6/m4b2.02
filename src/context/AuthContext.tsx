@@ -5,7 +5,7 @@ import { sendWelcomeEmail } from '../lib/email';
 
 export interface UserProfile {
   id: string;
-  role: 'buyer' | 'seller';
+  role: 'buyer' | 'seller' | 'admin';
   display_name: string;
   company: string;
   phone: string;
