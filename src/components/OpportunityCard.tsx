@@ -1,4 +1,4 @@
-import { Users, MapPin, Mail, Instagram, Mic, Shield, AlertTriangle, CheckCircle, Clock, Eye, Lock, Zap } from 'lucide-react';
+import { Users, MapPin, Mail, Instagram, Mic, Shield, AlertTriangle, CheckCircle, Clock, Eye, Lock, Zap, Calendar, CalendarClock } from 'lucide-react';
 import type { Listing } from '../types';
 import CountdownTimer from './CountdownTimer';
 
@@ -91,24 +91,65 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             {mc.label}
           </span>
 
-          <div className="text-right flex-shrink-0">
-            {/* Publish date */}
-            <p className="text-white text-[10px] font-semibold leading-tight">
-              {listing.posting_date_start
-                ? (() => { const d = new Date(listing.posting_date_start + 'T00:00:00'); const weekday = d.toLocaleDateString('en-GB', { weekday: 'long' }); const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); return `${weekday}, ${date}`; })()
-                : listing.date_label}
-            </p>
-            {/* Deadline */}
-            <p className="text-white/70 text-[10px] mt-0.5 leading-tight">
-              Deadline: {new Date(listing.deadline_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-            </p>
-            {/* Slots + countdown */}
-            <div className="flex items-center justify-end gap-2 mt-1.5">
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isScarce ? 'text-yellow-300 bg-yellow-500/10' : 'text-white'}`}>
-                {listing.slots_remaining} slot{listing.slots_remaining !== 1 ? 's' : ''} left
-              </span>
-              <CountdownTimer deadline={listing.deadline_at} compact />
+          <div className="flex-shrink-0 text-right space-y-1.5">
+            {/* Air Date */}
+            <div className="inline-flex items-center gap-1.5 bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-1.5">
+              <Calendar className="w-3 h-3 text-blue-400 flex-shrink-0" />
+              <div className="text-left">
+                <p className="text-[9px] font-semibold uppercase tracking-widest text-[#8b949e] leading-none mb-0.5">Air Date</p>
+                <p className="text-[#e6edf3] text-[11px] font-bold leading-none">
+                  {listing.posting_date_start
+                    ? (() => {
+                        const d = new Date(listing.posting_date_start + 'T00:00:00');
+                        return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                      })()
+                    : listing.date_label}
+                </p>
+                {listing.posting_date_start && (
+                  <p className="text-[#8b949e] text-[9px] leading-none mt-0.5">
+                    {new Date(listing.posting_date_start + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'long' })}
+                  </p>
+                )}
+              </div>
             </div>
+
+            {/* Booking Deadline */}
+            <div>
+              <div className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 border
+                ${isLive
+                  ? 'bg-amber-500/10 border-amber-500/25'
+                  : 'bg-[#0d1117] border-[#30363d]'
+                }`}>
+                <CalendarClock className={`w-3 h-3 flex-shrink-0 ${isLive ? 'text-amber-400' : 'text-[#8b949e]'}`} />
+                <div className="text-left">
+                  <p className="text-[9px] font-semibold uppercase tracking-widest text-[#8b949e] leading-none mb-0.5">Book By</p>
+                  <p className={`text-[11px] font-bold leading-none ${isLive ? 'text-amber-300' : 'text-[#e6edf3]'}`}>
+                    {new Date(listing.deadline_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Availability dots */}
+            {isLive && (
+              <div className="flex items-center justify-end gap-1.5">
+                <span className={`text-[10px] font-semibold ${isScarce ? 'text-yellow-400' : 'text-[#8b949e]'}`}>
+                  {listing.slots_remaining} {listing.slots_remaining === 1 ? 'slot' : 'slots'}
+                </span>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: Math.min(listing.slots_total || 5, 5) }).map((_, i) => (
+                    <span
+                      key={i}
+                      className={`block w-2 h-2 rounded-full ${
+                        i < listing.slots_remaining
+                          ? isScarce ? 'bg-yellow-400' : 'bg-emerald-400'
+                          : 'bg-[#30363d]'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -203,6 +244,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
 
         {/* CTA */}
         <div className="mt-auto pt-2 flex flex-col gap-2">
+          {isLive && <CountdownTimer deadline={listing.deadline_at} compact />}
           <button
             onClick={() => !isSecured && onSecure(listing)}
             disabled={isSecured}
