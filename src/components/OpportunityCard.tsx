@@ -133,16 +133,16 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           </div>
 
           {/* Publish Date panel */}
-          <div className="bg-gradient-to-br from-[#1d1d1f] to-[#2c2c2e] rounded-2xl p-3.5 relative overflow-hidden border-0">
+          <div className="bg-green-50 rounded-2xl p-3.5 relative overflow-hidden border-0">
             <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-green-400 to-teal-400" />
-            <p className="text-white/35 text-[8px] font-bold uppercase tracking-widest leading-none mb-2">Publish Date</p>
+            <p className="text-green-700/60 text-[8px] font-bold uppercase tracking-widest leading-none mb-2">Publish Date</p>
             {weekday ? (
               <>
-                <p className="text-white text-[13px] font-bold leading-tight truncate mb-0.5">{weekday}</p>
-                <p className="text-white/50 text-[10px] font-medium leading-none truncate">{calDate}</p>
+                <p className="text-green-800 text-[13px] font-bold leading-tight truncate mb-0.5">{weekday}</p>
+                <p className="text-green-700/60 text-[10px] font-medium leading-none truncate">{calDate}</p>
               </>
             ) : (
-              <p className="text-white text-[13px] font-bold leading-tight truncate">{calDate || '—'}</p>
+              <p className="text-green-800 text-[13px] font-bold leading-tight truncate">{calDate || '—'}</p>
             )}
           </div>
         </div>
