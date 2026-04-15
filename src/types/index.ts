@@ -65,6 +65,14 @@ export interface Listing {
   deliverables_detail?: string | null;
   refund_notes?: string | null;
   response_time?: string | null;
+  seller_bio?: string | null;
+  seller_website_url?: string | null;
+  seller_linkedin_url?: string | null;
+  seller_twitter_url?: string | null;
+  seller_instagram_url?: string | null;
+  seller_youtube_url?: string | null;
+  seller_tiktok_url?: string | null;
+  seller_podcast_url?: string | null;
   created_at: string;
 }
 

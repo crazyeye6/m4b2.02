@@ -1,4 +1,4 @@
-import { X, MapPin, Users, BarChart2, Shield, Mail, Mic, Instagram, ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, MapPin, Users, BarChart2, Shield, Mail, Mic, Instagram, ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe, Linkedin, Twitter, Youtube } from 'lucide-react';
 import { useState } from 'react';
 import type { Listing } from '../types';
 import CountdownTimer from './CountdownTimer';
@@ -136,19 +136,54 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
             </div>
           </Section>
 
-          <Section title="Seller" icon={<Shield className="w-4 h-4 text-amber-400" />}>
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-                {listing.media_owner_name[0]}
+          <Section title="About the seller" icon={<Shield className="w-4 h-4 text-amber-400" />}>
+            <div className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
+                  {listing.media_owner_name[0]}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold">{listing.media_owner_name}</p>
+                  <p className="text-gray-400 text-sm">{listing.media_company_name}</p>
+                  <p className="text-gray-400 text-xs mt-1">{listing.location}</p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold">{listing.media_owner_name}</p>
-                <p className="text-gray-400 text-sm">{listing.media_company_name}</p>
-                <p className="text-gray-400 text-xs mt-1">{listing.location}</p>
-              </div>
-              <button className="flex items-center gap-1 text-amber-500 text-xs font-medium hover:text-amber-400 transition-colors">
-                View profile <ExternalLink className="w-3 h-3" />
-              </button>
+
+              {listing.seller_bio && (
+                <p className="text-gray-300 text-sm leading-relaxed bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3">
+                  {listing.seller_bio}
+                </p>
+              )}
+
+              {(listing.seller_website_url || listing.seller_linkedin_url || listing.seller_twitter_url || listing.seller_instagram_url || listing.seller_youtube_url || listing.seller_tiktok_url || listing.seller_podcast_url) && (
+                <div className="flex flex-wrap gap-2">
+                  {listing.seller_website_url && (
+                    <SellerLink href={listing.seller_website_url} icon={<Globe className="w-3.5 h-3.5" />} label="Website" />
+                  )}
+                  {listing.seller_linkedin_url && (
+                    <SellerLink href={listing.seller_linkedin_url} icon={<Linkedin className="w-3.5 h-3.5" />} label="LinkedIn" />
+                  )}
+                  {listing.seller_twitter_url && (
+                    <SellerLink href={listing.seller_twitter_url} icon={<Twitter className="w-3.5 h-3.5" />} label="X / Twitter" />
+                  )}
+                  {listing.seller_instagram_url && (
+                    <SellerLink href={listing.seller_instagram_url} icon={<Instagram className="w-3.5 h-3.5" />} label="Instagram" />
+                  )}
+                  {listing.seller_youtube_url && (
+                    <SellerLink href={listing.seller_youtube_url} icon={<Youtube className="w-3.5 h-3.5" />} label="YouTube" />
+                  )}
+                  {listing.seller_tiktok_url && (
+                    <SellerLink href={listing.seller_tiktok_url} icon={<ExternalLink className="w-3.5 h-3.5" />} label="TikTok" />
+                  )}
+                  {listing.seller_podcast_url && (
+                    <SellerLink href={listing.seller_podcast_url} icon={<Mic className="w-3.5 h-3.5" />} label="Podcast" />
+                  )}
+                </div>
+              )}
+
+              {!listing.seller_bio && !listing.seller_website_url && !listing.seller_linkedin_url && !listing.seller_twitter_url && !listing.seller_instagram_url && !listing.seller_youtube_url && !listing.seller_tiktok_url && !listing.seller_podcast_url && (
+                <p className="text-gray-600 text-xs italic">No additional profile information provided by this seller.</p>
+              )}
             </div>
           </Section>
 
@@ -288,6 +323,21 @@ const FAQ_ITEMS = [
     a: 'You receive a booking confirmation with the creator\'s contact details. You then contact the creator directly, finalise campaign details, and arrange the remaining balance.',
   },
 ];
+
+function SellerLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-300 bg-white/[0.04] border border-white/10 hover:border-white/20 hover:text-white hover:bg-white/[0.07] px-3 py-1.5 rounded-lg transition-all"
+    >
+      {icon}
+      {label}
+      <ExternalLink className="w-2.5 h-2.5 text-gray-500" />
+    </a>
+  );
+}
 
 function FaqItem({ q, a, open, onToggle }: { q: string; a: string; open: boolean; onToggle: () => void }) {
   return (

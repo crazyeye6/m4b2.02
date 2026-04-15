@@ -36,6 +36,14 @@ interface FormData {
   slots_remaining: string;
   past_advertisers: string[];
   advertiser_input: string;
+  seller_bio: string;
+  seller_website_url: string;
+  seller_linkedin_url: string;
+  seller_twitter_url: string;
+  seller_instagram_url: string;
+  seller_youtube_url: string;
+  seller_tiktok_url: string;
+  seller_podcast_url: string;
 }
 
 const INITIAL: FormData = {
@@ -61,6 +69,14 @@ const INITIAL: FormData = {
   slots_remaining: '1',
   past_advertisers: [],
   advertiser_input: '',
+  seller_bio: '',
+  seller_website_url: '',
+  seller_linkedin_url: '',
+  seller_twitter_url: '',
+  seller_instagram_url: '',
+  seller_youtube_url: '',
+  seller_tiktok_url: '',
+  seller_podcast_url: '',
 };
 
 const MEDIA_TYPES: Array<{ value: MediaType; label: string; icon: React.ReactNode; desc: string }> = [
@@ -185,6 +201,14 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
       slots_remaining: parseInt(form.slots_remaining),
       past_advertisers: form.past_advertisers,
       status: 'live',
+      seller_bio: form.seller_bio.trim() || null,
+      seller_website_url: form.seller_website_url.trim() || null,
+      seller_linkedin_url: form.seller_linkedin_url.trim() || null,
+      seller_twitter_url: form.seller_twitter_url.trim() || null,
+      seller_instagram_url: form.seller_instagram_url.trim() || null,
+      seller_youtube_url: form.seller_youtube_url.trim() || null,
+      seller_tiktok_url: form.seller_tiktok_url.trim() || null,
+      seller_podcast_url: form.seller_podcast_url.trim() || null,
     };
 
     const { error } = await supabase.from('listings').insert(payload);
@@ -538,6 +562,98 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
                 ))}
               </div>
             )}
+          </Section>
+
+          <Section title="Your profile" icon={<Shield className="w-4 h-4 text-amber-400" />} optional>
+            <p className="text-gray-500 text-sm mb-4">Help buyers verify your credibility. Add a short bio and links to your online presence.</p>
+            <div className="space-y-4">
+              <Field label="Short bio / about" hint="1–2 sentences about you or your publication">
+                <textarea
+                  value={form.seller_bio}
+                  onChange={e => set('seller_bio', e.target.value)}
+                  placeholder={
+                    form.media_type === 'newsletter'
+                      ? 'SaaS Growth Weekly is a twice-weekly newsletter for B2B founders, curated by Rachel Byrne since 2020.'
+                      : form.media_type === 'podcast'
+                      ? 'The Commerce Playbook covers eCommerce strategy with 28k downloads per episode across 4 years.'
+                      : 'Lifestyle creator with 320k followers across Instagram and TikTok, focused on sustainable travel.'
+                  }
+                  rows={3}
+                  className="w-full bg-white/5 border border-white/10 focus:border-amber-500/50 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 outline-none transition-colors resize-none"
+                />
+              </Field>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Website / company page" hint="e.g. https://yoursite.com">
+                  <input
+                    type="url"
+                    value={form.seller_website_url}
+                    onChange={e => set('seller_website_url', e.target.value)}
+                    placeholder="https://yoursite.com"
+                    className={inputCls(false)}
+                  />
+                </Field>
+                <Field label="LinkedIn" hint="Profile or company page">
+                  <input
+                    type="url"
+                    value={form.seller_linkedin_url}
+                    onChange={e => set('seller_linkedin_url', e.target.value)}
+                    placeholder="https://linkedin.com/in/yourname"
+                    className={inputCls(false)}
+                  />
+                </Field>
+                <Field label="Twitter / X">
+                  <input
+                    type="url"
+                    value={form.seller_twitter_url}
+                    onChange={e => set('seller_twitter_url', e.target.value)}
+                    placeholder="https://x.com/yourhandle"
+                    className={inputCls(false)}
+                  />
+                </Field>
+                {form.media_type === 'influencer' && (
+                  <>
+                    <Field label="Instagram">
+                      <input
+                        type="url"
+                        value={form.seller_instagram_url}
+                        onChange={e => set('seller_instagram_url', e.target.value)}
+                        placeholder="https://instagram.com/yourhandle"
+                        className={inputCls(false)}
+                      />
+                    </Field>
+                    <Field label="TikTok">
+                      <input
+                        type="url"
+                        value={form.seller_tiktok_url}
+                        onChange={e => set('seller_tiktok_url', e.target.value)}
+                        placeholder="https://tiktok.com/@yourhandle"
+                        className={inputCls(false)}
+                      />
+                    </Field>
+                    <Field label="YouTube">
+                      <input
+                        type="url"
+                        value={form.seller_youtube_url}
+                        onChange={e => set('seller_youtube_url', e.target.value)}
+                        placeholder="https://youtube.com/@yourchannel"
+                        className={inputCls(false)}
+                      />
+                    </Field>
+                  </>
+                )}
+                {form.media_type === 'podcast' && (
+                  <Field label="Podcast page" hint="Apple, Spotify, etc." className="sm:col-span-2">
+                    <input
+                      type="url"
+                      value={form.seller_podcast_url}
+                      onChange={e => set('seller_podcast_url', e.target.value)}
+                      placeholder="https://open.spotify.com/show/..."
+                      className={inputCls(false)}
+                    />
+                  </Field>
+                )}
+              </div>
+            </div>
           </Section>
 
           <Section title="Geographic reach" icon={<MapPin className="w-4 h-4 text-amber-400" />}>
