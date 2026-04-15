@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { DepositBooking, RefundRequest, BookingStatus, RefundStatus } from '../types';
 import {
-  Shield, AlertTriangle, CheckCircle, Clock, RefreshCw, X, ChevronDown, Users,
-  DollarSign, FileText, RotateCcw, Ban, Play, Award, Loader2, Eye,
+  Shield, AlertTriangle, CheckCircle, RefreshCw, X, ChevronDown, Users,
+  DollarSign, FileText, RotateCcw, Ban, Play, Loader2, Eye,
 } from 'lucide-react';
 
 interface AdminPageProps {
@@ -366,7 +366,6 @@ function BookingDetailPanel({ booking, adminNotes, onNotesChange, onStatusChange
   updating: boolean;
 }) {
   const [statusSelect, setStatusSelect] = useState<BookingStatus>(booking.status);
-  const sc = BOOKING_STATUS_CONFIG[booking.status];
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">

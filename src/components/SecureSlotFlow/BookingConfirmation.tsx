@@ -5,10 +5,11 @@ import type { DepositBooking, Listing } from '../../types';
 interface BookingConfirmationProps {
   booking: DepositBooking;
   listing: Listing;
+  depositTotal: number;
   onClose: () => void;
 }
 
-export default function BookingConfirmation({ booking, listing, onClose }: BookingConfirmationProps) {
+export default function BookingConfirmation({ booking, listing, depositTotal, onClose }: BookingConfirmationProps) {
   const [copied, setCopied] = useState(false);
 
   const copyRef = () => {
@@ -50,7 +51,7 @@ export default function BookingConfirmation({ booking, listing, onClose }: Booki
           <p className="text-gray-400 text-xs uppercase tracking-wide font-semibold">Payment summary</p>
         </div>
         <div className="p-4 space-y-2.5">
-          <Row label="Deposit paid" value={`$${booking.deposit_amount.toLocaleString()}`} highlight />
+          <Row label="Deposit paid" value={`$${depositTotal.toLocaleString()}`} highlight />
           <Row label="Balance due to creator" value={`$${booking.balance_amount.toLocaleString()}`} />
           <Row label="Total campaign value" value={`$${booking.total_price.toLocaleString()}`} />
         </div>

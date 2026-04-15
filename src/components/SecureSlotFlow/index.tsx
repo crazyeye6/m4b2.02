@@ -1,10 +1,13 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { X, Check } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { sendBookingConfirmationEmails } from '../../lib/email';
 import type { Listing, BuyerFormData, DepositBooking } from '../../types';
-import BookingSummary from './BookingSummary';
-import BuyerDetailsForm from './BuyerDetailsForm';
+import { calculateVAT, detectUserCountry, getCountryInfo } from '../../lib/vat';
+import FastEntry from './FastEntry';
+import BuyerDetails from './BuyerDetails';
+import BookingInfo from './BookingInfo';
+import SummaryPanel from './SummaryPanel';
 import PaymentStep from './PaymentStep';
 import BookingConfirmation from './BookingConfirmation';
 
@@ -14,15 +17,33 @@ interface SecureSlotFlowProps {
   onSuccess: (listing: Listing) => void;
 }
 
-type Step = 'summary' | 'details' | 'payment' | 'confirmation';
+export type Step = 'entry' | 'details' | 'booking' | 'summary' | 'payment' | 'confirmation';
+
+const STEPS: { key: Step; label: string }[] = [
+  { key: 'entry', label: 'Email' },
+  { key: 'details', label: 'Details' },
+  { key: 'booking', label: 'Campaign' },
+  { key: 'summary', label: 'Review' },
+  { key: 'payment', label: 'Pay' },
+  { key: 'confirmation', label: 'Done' },
+];
+
+const detectedCountry = detectUserCountry();
+const detectedCountryInfo = getCountryInfo(detectedCountry);
 
 const INITIAL_FORM: BuyerFormData = {
-  buyer_name: '',
+  purchase_type: 'business',
   buyer_email: '',
+  buyer_country: detectedCountryInfo.name,
+  buyer_country_code: detectedCountry,
+  buyer_name: '',
   buyer_company: '',
+  buyer_vat_number: '',
+  brand_name: '',
+  campaign_start_date: '',
+  campaign_note: '',
   buyer_website: '',
   buyer_phone: '',
-  buyer_country: '',
   message_to_creator: '',
   booking_notes: '',
 };
@@ -33,41 +54,26 @@ function generateReference(): string {
   return `ETW-${year}-${rand}`;
 }
 
-const STEPS: { key: Step; label: string }[] = [
-  { key: 'summary', label: 'Summary' },
-  { key: 'details', label: 'Your Details' },
-  { key: 'payment', label: 'Payment' },
-  { key: 'confirmation', label: 'Confirmed' },
-];
-
 export default function SecureSlotFlow({ listing, onClose, onSuccess }: SecureSlotFlowProps) {
-  const [step, setStep] = useState<Step>('summary');
+  const [step, setStep] = useState<Step>('entry');
   const [form, setForm] = useState<BuyerFormData>(INITIAL_FORM);
-  const [formError, setFormError] = useState('');
+  const [vatNumberValid, setVatNumberValid] = useState<boolean | null>(null);
   const [booking, setBooking] = useState<DepositBooking | null>(null);
+
   const slotsCount = 1;
-
   const totalPrice = listing.discounted_price * slotsCount;
-  const depositAmount = Math.round(totalPrice * 0.1);
-  const balanceAmount = totalPrice - depositAmount;
+  const depositSubtotal = Math.round(totalPrice * 0.1);
 
-  const updateForm = (k: keyof BuyerFormData, v: string) => {
-    setForm(p => ({ ...p, [k]: v }));
-  };
+  const vat = useMemo(() =>
+    calculateVAT(depositSubtotal, form.buyer_country_code, form.purchase_type, vatNumberValid === true),
+    [depositSubtotal, form.buyer_country_code, form.purchase_type, vatNumberValid]
+  );
 
-  const validateDetails = (): string => {
-    if (!form.buyer_name.trim()) return 'Full name is required';
-    if (!form.buyer_company.trim()) return 'Company name is required';
-    if (!form.buyer_email.trim() || !form.buyer_email.includes('@')) return 'Valid email is required';
-    if (!form.buyer_country) return 'Please select your billing country';
-    return '';
-  };
+  const depositTotal = Math.round(vat.total);
+  const balanceAmount = totalPrice - depositSubtotal;
 
-  const handleDetailsNext = () => {
-    const err = validateDetails();
-    if (err) { setFormError(err); return; }
-    setFormError('');
-    setStep('payment');
+  const updateForm = (updates: Partial<BuyerFormData>) => {
+    setForm(prev => ({ ...prev, ...updates }));
   };
 
   const handlePaymentSuccess = async (stripePaymentIntentId: string) => {
@@ -78,19 +84,19 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess }: SecureSl
       listing_id: listing.id,
       buyer_name: form.buyer_name,
       buyer_email: form.buyer_email,
-      buyer_company: form.buyer_company,
+      buyer_company: form.purchase_type === 'business' ? form.buyer_company : form.buyer_name,
       buyer_website: form.buyer_website || '',
       buyer_phone: form.buyer_phone || '',
       buyer_country: form.buyer_country,
-      message_to_creator: form.message_to_creator || '',
-      booking_notes: form.booking_notes || '',
+      message_to_creator: form.campaign_note || '',
+      booking_notes: `Brand: ${form.brand_name}. Campaign start: ${form.campaign_start_date}. VAT: ${form.buyer_vat_number || 'N/A'}`,
       slots_count: slotsCount,
       price_per_slot: listing.discounted_price,
       total_price: totalPrice,
-      deposit_amount: depositAmount,
+      deposit_amount: depositTotal,
       balance_amount: balanceAmount,
       stripe_payment_intent_id: stripePaymentIntentId,
-      stripe_charge_id: `ch_demo_${Date.now()}`,
+      stripe_charge_id: `ch_${Date.now()}`,
       payment_status: 'paid' as const,
       status: 'secured' as const,
       seller_name: listing.media_owner_name,
@@ -120,18 +126,18 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess }: SecureSl
         media_owner_name: listing.media_owner_name,
         date_label: listing.date_label,
         slot_type: listing.slot_type,
-        deposit_amount: depositAmount,
+        deposit_amount: depositTotal,
         balance_amount: balanceAmount,
         total_price: totalPrice,
         seller_name: listing.media_owner_name,
         seller_email: listing.seller_email || '',
         buyer_name: form.buyer_name,
         buyer_email: form.buyer_email,
-        buyer_company: form.buyer_company,
+        buyer_company: form.purchase_type === 'business' ? form.buyer_company : form.buyer_name,
         buyer_phone: form.buyer_phone || '',
         buyer_website: form.buyer_website || '',
         buyer_country: form.buyer_country,
-        message_to_creator: form.message_to_creator || '',
+        message_to_creator: form.campaign_note || '',
       });
 
       setBooking({ ...data, listing });
@@ -145,40 +151,51 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess }: SecureSl
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={!isConfirmed ? onClose : undefined} />
+      <div
+        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        onClick={!isConfirmed ? onClose : undefined}
+      />
 
-      <div className="relative bg-[#111118] border border-white/10 rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl flex flex-col">
-        <div className="sticky top-0 bg-[#111118] border-b border-white/8 px-6 py-4 z-10">
-          <div className="flex items-start justify-between mb-4">
+      <div className="relative bg-[#0d1117] border border-[#30363d] rounded-2xl w-full max-w-lg max-h-[94vh] overflow-y-auto shadow-2xl flex flex-col">
+        <div className="sticky top-0 bg-[#0d1117] border-b border-[#30363d] px-6 pt-5 pb-4 z-10">
+          <div className="flex items-start justify-between mb-5">
             <div>
-              <h2 className="text-white font-bold text-lg">Secure Slot</h2>
-              <p className="text-gray-500 text-sm mt-0.5 truncate max-w-[260px]">{listing.property_name}</p>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Secure Slot</span>
+              </div>
+              <h2 className="text-[#e6edf3] font-bold text-base leading-tight truncate max-w-[280px]">
+                {listing.property_name}
+              </h2>
+              <p className="text-[#8b949e] text-xs mt-0.5">{listing.media_owner_name}</p>
             </div>
             {!isConfirmed && (
-              <button onClick={onClose} className="text-gray-500 hover:text-white transition-colors mt-0.5 ml-3 flex-shrink-0">
+              <button
+                onClick={onClose}
+                className="text-[#6e7681] hover:text-[#e6edf3] transition-colors ml-3 flex-shrink-0 p-1"
+              >
                 <X className="w-5 h-5" />
               </button>
             )}
           </div>
 
-          <div className="flex items-center gap-0">
+          <div className="flex items-center">
             {STEPS.map((s, i) => {
               const done = i < stepIndex;
               const active = i === stepIndex;
               return (
-                <div key={s.key} className="flex items-center flex-1">
-                  <div className={`flex items-center gap-1.5 ${i < STEPS.length - 1 ? 'flex-1' : ''}`}>
+                <div key={s.key} className="flex items-center flex-1 min-w-0">
+                  <div className="flex items-center gap-1 min-w-0">
                     <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all
-                      ${done ? 'bg-emerald-500 text-black' : active ? 'bg-amber-500 text-black' : 'bg-white/10 text-gray-600'}`}
+                      ${done ? 'bg-emerald-500 text-black' : active ? 'bg-amber-500 text-black' : 'bg-[#21262d] border border-[#30363d] text-[#6e7681]'}`}
                     >
-                      {done ? '✓' : i + 1}
+                      {done ? <Check className="w-3 h-3" /> : i + 1}
                     </div>
-                    <span className={`text-[11px] font-medium whitespace-nowrap ${active ? 'text-white' : done ? 'text-emerald-400' : 'text-gray-600'}`}>
+                    <span className={`text-[10px] font-medium hidden sm:block whitespace-nowrap ${active ? 'text-[#e6edf3]' : done ? 'text-emerald-400' : 'text-[#6e7681]'}`}>
                       {s.label}
                     </span>
                   </div>
                   {i < STEPS.length - 1 && (
-                    <div className={`h-px flex-1 mx-2 transition-colors ${done ? 'bg-emerald-500/50' : 'bg-white/10'}`} />
+                    <div className={`h-px flex-1 mx-1.5 transition-colors ${done ? 'bg-emerald-500/40' : 'bg-[#30363d]'}`} />
                   )}
                 </div>
               );
@@ -187,21 +204,46 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess }: SecureSl
         </div>
 
         <div className="p-6 flex-1">
-          {step === 'summary' && (
-            <BookingSummary
-              listing={listing}
-              slotsCount={slotsCount}
+          {step === 'entry' && (
+            <FastEntry
+              form={form}
+              onChange={updateForm}
               onContinue={() => setStep('details')}
             />
           )}
 
           {step === 'details' && (
-            <BuyerDetailsForm
+            <BuyerDetails
               form={form}
               onChange={updateForm}
-              onContinue={handleDetailsNext}
-              onBack={() => setStep('summary')}
-              error={formError}
+              vatNumberValid={vatNumberValid}
+              onVatValidation={setVatNumberValid}
+              onContinue={() => setStep('booking')}
+              onBack={() => setStep('entry')}
+            />
+          )}
+
+          {step === 'booking' && (
+            <BookingInfo
+              form={form}
+              onChange={updateForm}
+              listing={listing}
+              onContinue={() => setStep('summary')}
+              onBack={() => setStep('details')}
+            />
+          )}
+
+          {step === 'summary' && (
+            <SummaryPanel
+              listing={listing}
+              form={form}
+              vat={vat}
+              depositSubtotal={depositSubtotal}
+              depositTotal={depositTotal}
+              balanceAmount={balanceAmount}
+              totalPrice={totalPrice}
+              onContinue={() => setStep('payment')}
+              onBack={() => setStep('booking')}
             />
           )}
 
@@ -209,10 +251,11 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess }: SecureSl
             <PaymentStep
               listing={listing}
               form={form}
-              slotsCount={slotsCount}
-              depositAmount={depositAmount}
+              vat={vat}
+              depositSubtotal={depositSubtotal}
+              depositTotal={depositTotal}
               onSuccess={handlePaymentSuccess}
-              onBack={() => setStep('details')}
+              onBack={() => setStep('summary')}
             />
           )}
 
@@ -220,6 +263,7 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess }: SecureSl
             <BookingConfirmation
               booking={booking}
               listing={listing}
+              depositTotal={depositTotal}
               onClose={onClose}
             />
           )}

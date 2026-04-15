@@ -157,13 +157,32 @@ export interface FilterState {
   sortBy: 'ending_soon' | 'biggest_discount' | 'best_value';
 }
 
+export type PurchaseType = 'business' | 'individual';
+
+export interface VatInfo {
+  applies: boolean;
+  rate: number;
+  reverseCharge: boolean;
+  vatNumber: string;
+  vatValid: boolean | null;
+  countryCode: string;
+  currency: string;
+  currencySymbol: string;
+}
+
 export interface BuyerFormData {
-  buyer_name: string;
+  purchase_type: PurchaseType;
   buyer_email: string;
+  buyer_country: string;
+  buyer_country_code: string;
+  buyer_name: string;
   buyer_company: string;
+  buyer_vat_number: string;
+  brand_name: string;
+  campaign_start_date: string;
+  campaign_note: string;
   buyer_website: string;
   buyer_phone: string;
-  buyer_country: string;
   message_to_creator: string;
   booking_notes: string;
 }

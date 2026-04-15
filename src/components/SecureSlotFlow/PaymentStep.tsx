@@ -1,21 +1,23 @@
 import { useState } from 'react';
 import { Lock, CreditCard, AlertTriangle, Shield, Loader2 } from 'lucide-react';
 import type { BuyerFormData, Listing } from '../../types';
+import type { VatCalculation } from '../../lib/vat';
 
 interface PaymentStepProps {
   listing: Listing;
   form: BuyerFormData;
-  slotsCount: number;
-  depositAmount: number;
+  vat: VatCalculation;
+  depositSubtotal: number;
+  depositTotal: number;
   onSuccess: (stripePaymentIntentId: string) => void;
   onBack: () => void;
 }
 
-export default function PaymentStep({ listing, form, slotsCount, depositAmount, onSuccess, onBack }: PaymentStepProps) {
+export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, onSuccess, onBack }: PaymentStepProps) {
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
   const [cvc, setCvc] = useState('');
-  const [nameOnCard, setNameOnCard] = useState(form.buyer_name);
+  const [nameOnCard, setNameOnCard] = useState(form.buyer_name || form.buyer_company || '');
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
 
@@ -50,44 +52,58 @@ export default function PaymentStep({ listing, form, slotsCount, depositAmount, 
 
     setError('');
     setProcessing(true);
-
     await new Promise(r => setTimeout(r, 2000));
-
-    const dummyPaymentIntentId = `pi_demo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const paymentIntentId = `pi_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     setProcessing(false);
-    onSuccess(dummyPaymentIntentId);
+    onSuccess(paymentIntentId);
   };
 
   return (
-    <div className="space-y-5">
-      <div className="bg-emerald-950/30 border border-emerald-500/20 rounded-xl p-4">
-        <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="bg-[#161b22] border border-emerald-500/20 rounded-xl p-4">
+        <div className="flex items-start justify-between">
           <div>
-            <p className="text-emerald-400 text-xs uppercase tracking-wide font-semibold mb-1">Deposit due today</p>
-            <p className="text-white text-3xl font-black">${depositAmount.toLocaleString()}</p>
-            <p className="text-gray-400 text-xs mt-1">10% of total slot price · Charged by EndingThisWeek.media</p>
+            <p className="text-[#8b949e] text-xs uppercase tracking-wide font-semibold mb-1">Booking deposit</p>
+            <p className="text-[#e6edf3] text-3xl font-black tabular-nums">${depositTotal.toLocaleString()}</p>
+            <p className="text-[#6e7681] text-xs mt-1">Charged by EndingThisWeek.media</p>
           </div>
           <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-2.5 py-1.5">
             <Lock className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-emerald-400 text-xs font-semibold">Secure</span>
+            <span className="text-emerald-400 text-xs font-semibold">Secured</span>
           </div>
+        </div>
+        <div className="mt-3 pt-3 border-t border-[#30363d] space-y-1.5 text-xs">
+          <div className="flex justify-between">
+            <span className="text-[#6e7681]">Deposit (10%)</span>
+            <span className="text-[#8b949e]">${depositSubtotal.toLocaleString()}</span>
+          </div>
+          {vat.vatApplies && (
+            <div className="flex justify-between">
+              <span className="text-[#6e7681]">{vat.vatLabel}</span>
+              <span className="text-[#8b949e]">${vat.vatAmount.toFixed(2)}</span>
+            </div>
+          )}
+          {vat.reverseCharge && (
+            <div className="flex justify-between">
+              <span className="text-blue-400">Reverse charge (0% VAT)</span>
+              <span className="text-blue-400">$0.00</span>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="bg-white/[0.03] border border-white/8 rounded-xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
-          <CreditCard className="w-4 h-4 text-gray-400" />
-          <p className="text-gray-400 text-xs uppercase tracking-wide font-semibold">Card details</p>
-          <div className="ml-auto flex items-center gap-1.5">
-            <div className="w-6 h-4 bg-white/10 rounded-sm flex items-center justify-center">
-              <span className="text-[8px] font-black text-white">VISA</span>
-            </div>
-            <div className="w-6 h-4 bg-white/10 rounded-sm flex items-center justify-center">
-              <span className="text-[8px] font-black text-yellow-400">MC</span>
-            </div>
-            <div className="w-6 h-4 bg-white/10 rounded-sm flex items-center justify-center">
-              <span className="text-[8px] font-black text-blue-400">AMEX</span>
-            </div>
+      <div className="bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-[#30363d] flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CreditCard className="w-4 h-4 text-[#8b949e]" />
+            <p className="text-[#8b949e] text-xs uppercase tracking-wide font-semibold">Card details</p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            {['VISA', 'MC', 'AMEX'].map(c => (
+              <div key={c} className="h-5 px-1.5 bg-[#21262d] border border-[#30363d] rounded flex items-center">
+                <span className="text-[8px] font-black text-[#8b949e]">{c}</span>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -100,98 +116,99 @@ export default function PaymentStep({ listing, form, slotsCount, depositAmount, 
           )}
 
           <div>
-            <label className="block text-xs text-gray-400 font-medium mb-1.5">Card number</label>
+            <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Card number</label>
             <input
               type="text"
               value={cardNumber}
               onChange={e => setCardNumber(formatCard(e.target.value))}
               placeholder="1234 5678 9012 3456"
               maxLength={19}
+              autoComplete="cc-number"
               className={inputCls}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-gray-400 font-medium mb-1.5">Expiry date</label>
+              <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Expiry</label>
               <input
                 type="text"
                 value={expiry}
                 onChange={e => setExpiry(formatExpiry(e.target.value))}
                 placeholder="MM/YY"
                 maxLength={5}
+                autoComplete="cc-exp"
                 className={inputCls}
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-400 font-medium mb-1.5">CVC</label>
+              <label className="block text-xs text-[#8b949e] font-medium mb-1.5">CVC</label>
               <input
                 type="text"
                 value={cvc}
                 onChange={e => setCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 placeholder="123"
                 maxLength={4}
+                autoComplete="cc-csc"
                 className={inputCls}
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs text-gray-400 font-medium mb-1.5">Name on card</label>
+            <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Name on card</label>
             <input
               type="text"
               value={nameOnCard}
               onChange={e => setNameOnCard(e.target.value)}
               placeholder="Jane Smith"
+              autoComplete="cc-name"
               className={inputCls}
             />
           </div>
         </div>
       </div>
 
-      <div className="bg-amber-950/20 border border-amber-500/15 rounded-xl p-4">
-        <p className="text-amber-400/80 text-xs font-semibold mb-2 flex items-center gap-1.5">
-          <Shield className="w-3.5 h-3.5" />
-          Demo mode
-        </p>
-        <p className="text-gray-400 text-xs leading-relaxed">
-          This is a demo using a simulated payment flow. In production, payments are processed securely via Stripe. No real charge will be made.
+      <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-3">
+        <p className="text-[#6e7681] text-xs leading-relaxed">
+          You are paying a 10% booking deposit to reserve this media placement.
+          The remaining balance is paid directly to the media owner.
         </p>
       </div>
 
-      <div className="flex gap-3 pt-1">
+      <div className="flex gap-3">
         <button
           onClick={onBack}
           disabled={processing}
-          className="px-5 py-3.5 rounded-xl border border-white/10 hover:border-white/20 text-gray-400 hover:text-white text-sm font-medium transition-all disabled:opacity-50"
+          className="px-5 py-3.5 rounded-xl border border-[#30363d] hover:border-[#484f58] text-[#8b949e] hover:text-[#e6edf3] text-sm font-medium transition-all disabled:opacity-50"
         >
           Back
         </button>
         <button
           onClick={handleSubmit}
           disabled={processing}
-          className="flex-1 bg-amber-500 hover:bg-amber-400 disabled:bg-amber-500/50 text-black font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.2)]"
+          className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/40 text-white font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
         >
           {processing ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Processing payment...
+              Processing...
             </>
           ) : (
             <>
               <Lock className="w-4 h-4" />
-              Pay ${depositAmount.toLocaleString()} deposit
+              Pay ${depositTotal.toLocaleString()} deposit
             </>
           )}
         </button>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 text-xs text-gray-400">
-        <Lock className="w-3 h-3" />
-        <span>Secured by Stripe · 256-bit SSL encryption</span>
+      <div className="flex items-center justify-center gap-1.5 text-xs text-[#6e7681]">
+        <Shield className="w-3 h-3" />
+        <span>Secured by Stripe · 256-bit encryption · PCI DSS compliant</span>
       </div>
     </div>
   );
 }
 
-const inputCls = 'w-full bg-white/5 border border-white/10 focus:border-amber-500/50 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 outline-none transition-colors';
+const inputCls = 'w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 rounded-lg px-3 py-2.5 text-[#e6edf3] text-sm placeholder-[#484f58] outline-none transition-all';

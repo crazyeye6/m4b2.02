@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import {
   Mail, Mic, Instagram, ChevronLeft, CheckCircle, AlertTriangle,
-  Loader2, Info, DollarSign, Users, MapPin, Calendar, BarChart2,
+  Loader2, Info, DollarSign, Users, MapPin, BarChart2,
   Tag, Shield, Zap, Plus, X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
