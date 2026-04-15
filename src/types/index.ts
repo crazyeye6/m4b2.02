@@ -143,8 +143,7 @@ export interface FilterState {
   priceMin: number;
   priceMax: number;
   discountMin: number;
-  dateFrom: string;
-  dateTo: string;
+  endingThisWeek: boolean;
   verified: boolean;
 }
 

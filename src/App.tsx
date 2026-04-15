@@ -62,8 +62,7 @@ const DEFAULT_FILTERS: FilterState = {
   priceMin: 0,
   priceMax: 0,
   discountMin: 0,
-  dateFrom: '',
-  dateTo: '',
+  endingThisWeek: false,
   verified: false,
 };
 

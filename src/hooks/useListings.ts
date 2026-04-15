@@ -27,14 +27,14 @@ export function useListings(filters: FilterState) {
       query = query.gte('discounted_price', filters.priceMin);
     }
 
-    if (filters.dateFrom) {
-      query = query.gte('deadline_at', new Date(filters.dateFrom).toISOString());
-    }
-
-    if (filters.dateTo) {
-      const end = new Date(filters.dateTo);
-      end.setHours(23, 59, 59, 999);
-      query = query.lte('deadline_at', end.toISOString());
+    if (filters.endingThisWeek) {
+      const now = new Date();
+      const endOfWeek = new Date(now);
+      const day = now.getDay();
+      const daysUntilSunday = day === 0 ? 0 : 7 - day;
+      endOfWeek.setDate(now.getDate() + daysUntilSunday);
+      endOfWeek.setHours(23, 59, 59, 999);
+      query = query.lte('deadline_at', endOfWeek.toISOString());
     }
 
     query = query.order('deadline_at', { ascending: true });
