@@ -77,7 +77,7 @@ export default function App() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [columns, setColumns] = useState<GridColumns>(() => {
     const saved = localStorage.getItem('etw_grid_columns');
-    return (saved === '1' || saved === '2' || saved === '3') ? (Number(saved) as GridColumns) : 2;
+    return (saved === '1' || saved === '2' || saved === '3') ? (Number(saved) as GridColumns) : 3;
   });
   const [showAuthModal, setShowAuthModal] = useState(false);
   const opportunitiesRef = useRef<HTMLDivElement>(null);

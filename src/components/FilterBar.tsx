@@ -185,21 +185,24 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
           </button>
 
           {/* Layout toggle */}
-          <div className="flex-shrink-0 hidden sm:flex items-center gap-0.5 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 ml-auto">
-            {COLUMN_OPTIONS.map(o => (
-              <button
-                key={o.value}
-                onClick={() => onColumnsChange(o.value)}
-                title={o.title}
-                className={`flex items-center justify-center w-7 h-7 rounded-xl transition-all
-                  ${columns === o.value
-                    ? 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.08]'
-                    : 'text-[#6e6e73] hover:text-[#1d1d1f]'
-                  }`}
-              >
-                {o.icon}
-              </button>
-            ))}
+          <div className="flex-shrink-0 hidden sm:flex items-center gap-2 ml-auto">
+            <span className="text-[12px] text-[#aeaeb2] font-medium select-none">View</span>
+            <div className="flex items-center gap-0.5 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1">
+              {COLUMN_OPTIONS.map(o => (
+                <button
+                  key={o.value}
+                  onClick={() => onColumnsChange(o.value)}
+                  title={o.title}
+                  className={`flex items-center justify-center w-7 h-7 rounded-xl transition-all
+                    ${columns === o.value
+                      ? 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.08]'
+                      : 'text-[#6e6e73] hover:text-[#1d1d1f]'
+                    }`}
+                >
+                  {o.icon}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Result count + clear */}

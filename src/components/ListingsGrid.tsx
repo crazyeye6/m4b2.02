@@ -13,9 +13,9 @@ interface ListingsGridProps {
 }
 
 const GRID_CLASS: Record<GridColumns, string> = {
-  1: 'grid-cols-1 max-w-2xl mx-auto',
-  2: 'grid-cols-1 md:grid-cols-2',
-  3: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
+  1: 'grid-cols-1',
+  2: 'grid-cols-1 sm:grid-cols-2',
+  3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
 };
 
 export default function ListingsGrid({ listings, loading, onSecure, onDetails, columns = 2 }: ListingsGridProps) {
