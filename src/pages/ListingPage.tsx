@@ -92,7 +92,7 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
-      <div className="border-b border-black/[0.06] bg-white/80 backdrop-blur-xl sticky top-[72px] z-10">
+      <div className="border-b border-black/[0.06] bg-white/80 backdrop-blur-xl sticky top-[52px] z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
           <button
             onClick={onBack}

@@ -18,12 +18,12 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-black/[0.06]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-[72px]">
-          <button onClick={onHome} className="flex items-center gap-3 hover:opacity-75 transition-opacity">
-            <div className="w-12 h-12 bg-[#1d1d1f] rounded-[10px] flex items-center justify-center">
-              <Zap className="w-6 h-6 text-green-400 fill-green-400" />
+        <div className="flex items-center justify-between h-[52px]">
+          <button onClick={onHome} className="flex items-center gap-2 hover:opacity-75 transition-opacity">
+            <div className="w-6 h-6 bg-[#1d1d1f] rounded-[6px] flex items-center justify-center">
+              <Zap className="w-3 h-3 text-green-400 fill-green-400" />
             </div>
-            <span className="text-[#1d1d1f] font-semibold text-[26px] tracking-[-0.01em]">
+            <span className="text-[#1d1d1f] font-semibold text-[13px] tracking-[-0.01em]">
               EndingThisWeek<span className="text-[#6e6e73]">.media</span>
             </span>
           </button>

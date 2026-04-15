@@ -119,7 +119,7 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
     });
 
   return (
-    <div className="bg-white border-b border-black/[0.06] sticky top-[72px] z-40 shadow-sm shadow-black/[0.03]">
+    <div className="bg-white border-b border-black/[0.06] sticky top-[52px] z-40 shadow-sm shadow-black/[0.03]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="flex items-center gap-2 py-2.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
