@@ -155,33 +155,59 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
                 </p>
               )}
 
-              {(listing.seller_website_url || listing.seller_linkedin_url || listing.seller_twitter_url || listing.seller_instagram_url || listing.seller_youtube_url || listing.seller_tiktok_url || listing.seller_podcast_url) && (
-                <div className="flex flex-wrap gap-2">
-                  {listing.seller_website_url && (
-                    <SellerLink href={listing.seller_website_url} icon={<Globe className="w-3.5 h-3.5" />} label="Website" />
-                  )}
-                  {listing.seller_linkedin_url && (
-                    <SellerLink href={listing.seller_linkedin_url} icon={<Linkedin className="w-3.5 h-3.5" />} label="LinkedIn" />
-                  )}
-                  {listing.seller_twitter_url && (
-                    <SellerLink href={listing.seller_twitter_url} icon={<Twitter className="w-3.5 h-3.5" />} label="X / Twitter" />
-                  )}
-                  {listing.seller_instagram_url && (
-                    <SellerLink href={listing.seller_instagram_url} icon={<Instagram className="w-3.5 h-3.5" />} label="Instagram" />
-                  )}
-                  {listing.seller_youtube_url && (
-                    <SellerLink href={listing.seller_youtube_url} icon={<Youtube className="w-3.5 h-3.5" />} label="YouTube" />
-                  )}
-                  {listing.seller_tiktok_url && (
-                    <SellerLink href={listing.seller_tiktok_url} icon={<ExternalLink className="w-3.5 h-3.5" />} label="TikTok" />
-                  )}
-                  {listing.seller_podcast_url && (
-                    <SellerLink href={listing.seller_podcast_url} icon={<Mic className="w-3.5 h-3.5" />} label="Podcast" />
-                  )}
+              {(listing.seller_website_url || listing.seller_company_url || listing.seller_linkedin_url || listing.seller_twitter_url || listing.seller_instagram_url || listing.seller_youtube_url || listing.seller_tiktok_url || listing.seller_podcast_url) && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Online presence</p>
+                  <div className="flex flex-wrap gap-2">
+                    {listing.seller_website_url && (
+                      <SellerLink href={listing.seller_website_url} icon={<Globe className="w-3.5 h-3.5" />} label="Website" />
+                    )}
+                    {listing.seller_company_url && (
+                      <SellerLink href={listing.seller_company_url} icon={<ExternalLink className="w-3.5 h-3.5" />} label="Company page" />
+                    )}
+                    {listing.seller_linkedin_url && (
+                      <SellerLink href={listing.seller_linkedin_url} icon={<Linkedin className="w-3.5 h-3.5" />} label="LinkedIn" />
+                    )}
+                    {listing.seller_twitter_url && (
+                      <SellerLink href={listing.seller_twitter_url} icon={<Twitter className="w-3.5 h-3.5" />} label="X / Twitter" />
+                    )}
+                    {listing.seller_instagram_url && (
+                      <SellerLink href={listing.seller_instagram_url} icon={<Instagram className="w-3.5 h-3.5" />} label="Instagram" />
+                    )}
+                    {listing.seller_youtube_url && (
+                      <SellerLink href={listing.seller_youtube_url} icon={<Youtube className="w-3.5 h-3.5" />} label="YouTube" />
+                    )}
+                    {listing.seller_tiktok_url && (
+                      <SellerLink href={listing.seller_tiktok_url} icon={<ExternalLink className="w-3.5 h-3.5" />} label="TikTok" />
+                    )}
+                    {listing.seller_podcast_url && (
+                      <SellerLink href={listing.seller_podcast_url} icon={<Mic className="w-3.5 h-3.5" />} label="Podcast" />
+                    )}
+                  </div>
                 </div>
               )}
 
-              {!listing.seller_bio && !listing.seller_website_url && !listing.seller_linkedin_url && !listing.seller_twitter_url && !listing.seller_instagram_url && !listing.seller_youtube_url && !listing.seller_tiktok_url && !listing.seller_podcast_url && (
+              {listing.portfolio_links && listing.portfolio_links.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Past work &amp; portfolio</p>
+                  <div className="space-y-1.5">
+                    {listing.portfolio_links.map((link, i) => (
+                      <a
+                        key={i}
+                        href={link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-gray-300 hover:text-amber-400 bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/10 rounded-lg px-3 py-2 transition-all group"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 text-gray-500 group-hover:text-amber-400 flex-shrink-0 transition-colors" />
+                        <span className="truncate">{link.replace(/^https?:\/\//, '')}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!listing.seller_bio && !listing.seller_website_url && !listing.seller_company_url && !listing.seller_linkedin_url && !listing.seller_twitter_url && !listing.seller_instagram_url && !listing.seller_youtube_url && !listing.seller_tiktok_url && !listing.seller_podcast_url && (!listing.portfolio_links || listing.portfolio_links.length === 0) && (
                 <p className="text-gray-600 text-xs italic">No additional profile information provided by this seller.</p>
               )}
             </div>

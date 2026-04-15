@@ -38,12 +38,15 @@ interface FormData {
   advertiser_input: string;
   seller_bio: string;
   seller_website_url: string;
+  seller_company_url: string;
   seller_linkedin_url: string;
   seller_twitter_url: string;
   seller_instagram_url: string;
   seller_youtube_url: string;
   seller_tiktok_url: string;
   seller_podcast_url: string;
+  portfolio_links: string[];
+  portfolio_input: string;
 }
 
 const INITIAL: FormData = {
@@ -71,12 +74,15 @@ const INITIAL: FormData = {
   advertiser_input: '',
   seller_bio: '',
   seller_website_url: '',
+  seller_company_url: '',
   seller_linkedin_url: '',
   seller_twitter_url: '',
   seller_instagram_url: '',
   seller_youtube_url: '',
   seller_tiktok_url: '',
   seller_podcast_url: '',
+  portfolio_links: [],
+  portfolio_input: '',
 };
 
 const MEDIA_TYPES: Array<{ value: MediaType; label: string; icon: React.ReactNode; desc: string }> = [
@@ -203,12 +209,14 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
       status: 'live',
       seller_bio: form.seller_bio.trim() || null,
       seller_website_url: form.seller_website_url.trim() || null,
+      seller_company_url: form.seller_company_url.trim() || null,
       seller_linkedin_url: form.seller_linkedin_url.trim() || null,
       seller_twitter_url: form.seller_twitter_url.trim() || null,
       seller_instagram_url: form.seller_instagram_url.trim() || null,
       seller_youtube_url: form.seller_youtube_url.trim() || null,
       seller_tiktok_url: form.seller_tiktok_url.trim() || null,
       seller_podcast_url: form.seller_podcast_url.trim() || null,
+      portfolio_links: form.portfolio_links.length > 0 ? form.portfolio_links : null,
     };
 
     const { error } = await supabase.from('listings').insert(payload);
@@ -583,12 +591,21 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
                 />
               </Field>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Website / company page" hint="e.g. https://yoursite.com">
+                <Field label="Personal website" hint="Your main site or publication">
                   <input
                     type="url"
                     value={form.seller_website_url}
                     onChange={e => set('seller_website_url', e.target.value)}
                     placeholder="https://yoursite.com"
+                    className={inputCls(false)}
+                  />
+                </Field>
+                <Field label="Company page" hint="Business or brand page">
+                  <input
+                    type="url"
+                    value={form.seller_company_url}
+                    onChange={e => set('seller_company_url', e.target.value)}
+                    placeholder="https://yourcompany.com"
                     className={inputCls(false)}
                   />
                 </Field>
@@ -642,7 +659,7 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
                   </>
                 )}
                 {form.media_type === 'podcast' && (
-                  <Field label="Podcast page" hint="Apple, Spotify, etc." className="sm:col-span-2">
+                  <Field label="Podcast page" hint="Apple, Spotify, etc.">
                     <input
                       type="url"
                       value={form.seller_podcast_url}
@@ -653,6 +670,58 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
                   </Field>
                 )}
               </div>
+
+              <Field label="Past work / portfolio links" hint="Media kit, case studies, sample content — up to 5 links">
+                <div className="space-y-2">
+                  {form.portfolio_links.map((link, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <span className="flex-1 text-sm text-gray-300 bg-white/5 border border-white/10 rounded-lg px-3 py-2 truncate">{link}</span>
+                      <button
+                        type="button"
+                        onClick={() => set('portfolio_links', form.portfolio_links.filter((_, j) => j !== i))}
+                        className="text-gray-500 hover:text-red-400 transition-colors flex-shrink-0"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {form.portfolio_links.length < 5 && (
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={form.portfolio_input}
+                        onChange={e => set('portfolio_input', e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const v = form.portfolio_input.trim();
+                            if (v && !form.portfolio_links.includes(v)) {
+                              set('portfolio_links', [...form.portfolio_links, v]);
+                              set('portfolio_input', '');
+                            }
+                          }
+                        }}
+                        placeholder="https://yoursite.com/media-kit"
+                        className={inputCls(false) + ' flex-1'}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const v = form.portfolio_input.trim();
+                          if (v && !form.portfolio_links.includes(v)) {
+                            set('portfolio_links', [...form.portfolio_links, v]);
+                            set('portfolio_input', '');
+                          }
+                        }}
+                        className="flex items-center gap-1 bg-white/5 border border-white/10 hover:border-amber-500/40 hover:text-amber-400 text-gray-300 text-sm px-3 py-2 rounded-lg transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </Field>
             </div>
           </Section>
 
