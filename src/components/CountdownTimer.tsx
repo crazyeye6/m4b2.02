@@ -66,17 +66,23 @@ export default function CountdownTimer({ deadline, compact = false }: CountdownT
   }
 
   const pad = (n: number) => String(n).padStart(2, '0');
+  const colorClass = isUrgent || isWarning ? 'text-yellow-400' : 'text-amber-400';
 
   return (
-    <div className={`flex items-center gap-1.5 ${isUrgent ? 'text-yellow-400' : isWarning ? 'text-yellow-400' : 'text-amber-400'}`}>
+    <div className={`flex items-center gap-2 ${colorClass}`}>
       <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-      <div className="flex items-center gap-0.5 text-xs font-mono font-bold">
-        {time.days > 0 && <><span>{time.days}d</span><span className="mx-0.5 opacity-50">:</span></>}
-        <span>{pad(time.hours)}h</span>
-        <span className="mx-0.5 opacity-50">:</span>
-        <span>{pad(time.minutes)}m</span>
-        <span className="mx-0.5 opacity-50">:</span>
-        <span>{pad(time.seconds)}s</span>
+      <div className="flex items-center gap-1 text-xs font-mono font-bold">
+        {time.days > 0 && (
+          <>
+            <span>{time.days}<span className="font-normal opacity-60 text-[10px]">d</span></span>
+            <span className="opacity-30">:</span>
+          </>
+        )}
+        <span>{pad(time.hours)}<span className="font-normal opacity-60 text-[10px]">h</span></span>
+        <span className="opacity-30">:</span>
+        <span>{pad(time.minutes)}<span className="font-normal opacity-60 text-[10px]">m</span></span>
+        <span className="opacity-30">:</span>
+        <span>{pad(time.seconds)}<span className="font-normal opacity-60 text-[10px]">s</span></span>
       </div>
     </div>
   );

@@ -94,9 +94,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
                 {listing.slots_remaining} left
               </span>
             )}
-            <div className="flex items-center gap-1 bg-[#21262d] border border-[#30363d] rounded-md px-2 py-1">
-              <CountdownTimer deadline={listing.deadline_at} compact />
-            </div>
+            <CountdownTimer deadline={listing.deadline_at} compact />
           </div>
         </div>
 
@@ -159,6 +157,18 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           )}
         </div>
 
+        {/* Dates row */}
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-2">
+            <p className="text-[#6e7681] text-[9px] uppercase tracking-wide font-medium mb-0.5">Deadline for interest</p>
+            <p className="text-[#e6edf3] text-xs font-semibold">{new Date(listing.deadline_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+          </div>
+          <div className="bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-2">
+            <p className="text-[#6e7681] text-[9px] uppercase tracking-wide font-medium mb-0.5">Publish date</p>
+            <p className="text-[#e6edf3] text-xs font-semibold">{listing.date_label}</p>
+          </div>
+        </div>
+
         {/* Context row */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[11px] text-[#8b949e]">
           <span className="flex items-center gap-1">
@@ -168,9 +178,6 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           <span className="flex items-center gap-1">
             <Users className="w-3 h-3" />
             <span className="truncate">{listing.audience}</span>
-          </span>
-          <span className="flex items-center gap-1">
-            Ad slot: <span className="text-[#e6edf3] font-medium">{listing.date_label}</span>
           </span>
         </div>
 
