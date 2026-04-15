@@ -11,6 +11,15 @@ export interface UserProfile {
   phone: string;
   website: string;
   bio: string;
+  seller_bio: string;
+  seller_website_url: string;
+  seller_company_url: string;
+  seller_linkedin_url: string;
+  seller_twitter_url: string;
+  seller_instagram_url: string;
+  seller_youtube_url: string;
+  seller_tiktok_url: string;
+  seller_podcast_url: string;
   created_at: string;
   updated_at: string;
 }

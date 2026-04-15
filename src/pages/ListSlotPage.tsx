@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import {
   Mail, Mic, Instagram, ChevronLeft, CheckCircle, AlertTriangle,
   Loader2, Info, DollarSign, Users, MapPin, BarChart2,
-  Tag, Shield, Zap, Plus, X,
+  Tag, Shield, Zap, Plus, X, UserCircle,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { sendSlotListedEmail } from '../lib/email';
@@ -11,6 +11,7 @@ import type { MediaType } from '../types';
 
 interface ListSlotPageProps {
   onBack: () => void;
+  onEditProfile?: () => void;
 }
 
 interface FormData {
@@ -113,9 +114,24 @@ function getMaxDeadline(): string {
   return d.toISOString().slice(0, 16);
 }
 
-export default function ListSlotPage({ onBack }: ListSlotPageProps) {
+export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProps) {
   const { user, profile } = useAuth();
-  const [form, setForm] = useState<FormData>(INITIAL);
+
+  const profileDefaults: Partial<FormData> = profile ? {
+    media_owner_name: profile.display_name || '',
+    media_company_name: profile.company || '',
+    seller_bio: profile.seller_bio || profile.bio || '',
+    seller_website_url: profile.seller_website_url || profile.website || '',
+    seller_company_url: profile.seller_company_url || '',
+    seller_linkedin_url: profile.seller_linkedin_url || '',
+    seller_twitter_url: profile.seller_twitter_url || '',
+    seller_instagram_url: profile.seller_instagram_url || '',
+    seller_youtube_url: profile.seller_youtube_url || '',
+    seller_tiktok_url: profile.seller_tiktok_url || '',
+    seller_podcast_url: profile.seller_podcast_url || '',
+  } : {};
+
+  const [form, setForm] = useState<FormData>({ ...INITIAL, ...profileDefaults });
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -207,15 +223,15 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
       slots_remaining: parseInt(form.slots_remaining),
       past_advertisers: form.past_advertisers,
       status: 'live',
-      seller_bio: form.seller_bio.trim() || null,
-      seller_website_url: form.seller_website_url.trim() || null,
-      seller_company_url: form.seller_company_url.trim() || null,
-      seller_linkedin_url: form.seller_linkedin_url.trim() || null,
-      seller_twitter_url: form.seller_twitter_url.trim() || null,
-      seller_instagram_url: form.seller_instagram_url.trim() || null,
-      seller_youtube_url: form.seller_youtube_url.trim() || null,
-      seller_tiktok_url: form.seller_tiktok_url.trim() || null,
-      seller_podcast_url: form.seller_podcast_url.trim() || null,
+      seller_bio: (profile?.seller_bio || profile?.bio || form.seller_bio).trim() || null,
+      seller_website_url: (profile?.seller_website_url || profile?.website || form.seller_website_url).trim() || null,
+      seller_company_url: (profile?.seller_company_url || form.seller_company_url).trim() || null,
+      seller_linkedin_url: (profile?.seller_linkedin_url || form.seller_linkedin_url).trim() || null,
+      seller_twitter_url: (profile?.seller_twitter_url || form.seller_twitter_url).trim() || null,
+      seller_instagram_url: (profile?.seller_instagram_url || form.seller_instagram_url).trim() || null,
+      seller_youtube_url: (profile?.seller_youtube_url || form.seller_youtube_url).trim() || null,
+      seller_tiktok_url: (profile?.seller_tiktok_url || form.seller_tiktok_url).trim() || null,
+      seller_podcast_url: (profile?.seller_podcast_url || form.seller_podcast_url).trim() || null,
       portfolio_links: form.portfolio_links.length > 0 ? form.portfolio_links : null,
     };
 
@@ -301,6 +317,12 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
           </Section>
 
           <Section title="About you" icon={<Users className="w-4 h-4 text-amber-400" />}>
+            {profile && (
+              <div className="flex items-center gap-2 text-xs text-gray-500 bg-white/3 border border-white/6 rounded-lg px-3 py-2 mb-4">
+                <UserCircle className="w-3.5 h-3.5 text-amber-400/60 flex-shrink-0" />
+                <span>Pre-filled from your account profile. <button type="button" onClick={onEditProfile} className="text-amber-500/70 hover:text-amber-400 underline transition-colors">Edit profile</button> to update.</span>
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Your name" required error={errors.media_owner_name}>
                 <input
@@ -572,106 +594,44 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
             )}
           </Section>
 
-          <Section title="Your profile" icon={<Shield className="w-4 h-4 text-amber-400" />} optional>
-            <p className="text-gray-500 text-sm mb-4">Help buyers verify your credibility. Add a short bio and links to your online presence.</p>
-            <div className="space-y-4">
-              <Field label="Short bio / about" hint="1–2 sentences about you or your publication">
-                <textarea
-                  value={form.seller_bio}
-                  onChange={e => set('seller_bio', e.target.value)}
-                  placeholder={
-                    form.media_type === 'newsletter'
-                      ? 'SaaS Growth Weekly is a twice-weekly newsletter for B2B founders, curated by Rachel Byrne since 2020.'
-                      : form.media_type === 'podcast'
-                      ? 'The Commerce Playbook covers eCommerce strategy with 28k downloads per episode across 4 years.'
-                      : 'Lifestyle creator with 320k followers across Instagram and TikTok, focused on sustainable travel.'
-                  }
-                  rows={3}
-                  className="w-full bg-white/5 border border-white/10 focus:border-amber-500/50 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 outline-none transition-colors resize-none"
-                />
-              </Field>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Personal website" hint="Your main site or publication">
-                  <input
-                    type="url"
-                    value={form.seller_website_url}
-                    onChange={e => set('seller_website_url', e.target.value)}
-                    placeholder="https://yoursite.com"
-                    className={inputCls(false)}
-                  />
-                </Field>
-                <Field label="Company page" hint="Business or brand page">
-                  <input
-                    type="url"
-                    value={form.seller_company_url}
-                    onChange={e => set('seller_company_url', e.target.value)}
-                    placeholder="https://yourcompany.com"
-                    className={inputCls(false)}
-                  />
-                </Field>
-                <Field label="LinkedIn" hint="Profile or company page">
-                  <input
-                    type="url"
-                    value={form.seller_linkedin_url}
-                    onChange={e => set('seller_linkedin_url', e.target.value)}
-                    placeholder="https://linkedin.com/in/yourname"
-                    className={inputCls(false)}
-                  />
-                </Field>
-                <Field label="Twitter / X">
-                  <input
-                    type="url"
-                    value={form.seller_twitter_url}
-                    onChange={e => set('seller_twitter_url', e.target.value)}
-                    placeholder="https://x.com/yourhandle"
-                    className={inputCls(false)}
-                  />
-                </Field>
-                {form.media_type === 'influencer' && (
-                  <>
-                    <Field label="Instagram">
-                      <input
-                        type="url"
-                        value={form.seller_instagram_url}
-                        onChange={e => set('seller_instagram_url', e.target.value)}
-                        placeholder="https://instagram.com/yourhandle"
-                        className={inputCls(false)}
-                      />
-                    </Field>
-                    <Field label="TikTok">
-                      <input
-                        type="url"
-                        value={form.seller_tiktok_url}
-                        onChange={e => set('seller_tiktok_url', e.target.value)}
-                        placeholder="https://tiktok.com/@yourhandle"
-                        className={inputCls(false)}
-                      />
-                    </Field>
-                    <Field label="YouTube">
-                      <input
-                        type="url"
-                        value={form.seller_youtube_url}
-                        onChange={e => set('seller_youtube_url', e.target.value)}
-                        placeholder="https://youtube.com/@yourchannel"
-                        className={inputCls(false)}
-                      />
-                    </Field>
-                  </>
-                )}
-                {form.media_type === 'podcast' && (
-                  <Field label="Podcast page" hint="Apple, Spotify, etc.">
-                    <input
-                      type="url"
-                      value={form.seller_podcast_url}
-                      onChange={e => set('seller_podcast_url', e.target.value)}
-                      placeholder="https://open.spotify.com/show/..."
-                      className={inputCls(false)}
-                    />
-                  </Field>
+          {profile ? (
+            <Section title="Your profile" icon={<Shield className="w-4 h-4 text-amber-400" />}>
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <UserCircle className="w-5 h-5 text-amber-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold text-sm">{profile.display_name || 'Your account'}</p>
+                  <p className="text-gray-500 text-xs mt-0.5">{profile.company}</p>
+                  {(profile.seller_bio || profile.bio) && (
+                    <p className="text-gray-400 text-xs mt-2 leading-relaxed line-clamp-2">{profile.seller_bio || profile.bio}</p>
+                  )}
+                  <div className="flex flex-wrap gap-3 mt-3">
+                    {(profile.seller_website_url || profile.website) && (
+                      <span className="text-gray-500 text-xs truncate max-w-[180px]">{profile.seller_website_url || profile.website}</span>
+                    )}
+                    {profile.seller_linkedin_url && <span className="text-gray-500 text-xs">LinkedIn</span>}
+                    {profile.seller_twitter_url && <span className="text-gray-500 text-xs">Twitter / X</span>}
+                    {profile.seller_instagram_url && <span className="text-gray-500 text-xs">Instagram</span>}
+                    {profile.seller_podcast_url && <span className="text-gray-500 text-xs">Podcast</span>}
+                  </div>
+                </div>
+                {onEditProfile && (
+                  <button
+                    type="button"
+                    onClick={onEditProfile}
+                    className="flex-shrink-0 text-xs text-amber-400 hover:text-amber-300 border border-amber-500/30 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition-all font-medium"
+                  >
+                    Edit profile
+                  </button>
                 )}
               </div>
+              <div className="mt-4 pt-4 border-t border-white/5">
+                <p className="text-gray-600 text-xs">Your contact info, bio, and social links are pulled from your account profile and shown on all your listings. <span className="text-amber-500/70">Update them once in your profile — they apply everywhere.</span></p>
+              </div>
 
-              <Field label="Past work / portfolio links" hint="Media kit, case studies, sample content — up to 5 links">
+              <div className="mt-4">
+                <p className="text-xs text-gray-400 font-medium mb-2">Past work / portfolio links <span className="text-gray-600 font-normal">(optional — up to 5)</span></p>
                 <div className="space-y-2">
                   {form.portfolio_links.map((link, i) => (
                     <div key={i} className="flex items-center gap-2">
@@ -721,9 +681,99 @@ export default function ListSlotPage({ onBack }: ListSlotPageProps) {
                     </div>
                   )}
                 </div>
-              </Field>
-            </div>
-          </Section>
+              </div>
+            </Section>
+          ) : (
+            <Section title="Your profile" icon={<Shield className="w-4 h-4 text-amber-400" />} optional>
+              <p className="text-gray-500 text-sm mb-4">Help buyers verify your credibility. Add a short bio and links to your online presence.</p>
+              <div className="space-y-4">
+                <Field label="Short bio / about" hint="1–2 sentences about you or your publication">
+                  <textarea
+                    value={form.seller_bio}
+                    onChange={e => set('seller_bio', e.target.value)}
+                    placeholder={
+                      form.media_type === 'newsletter'
+                        ? 'SaaS Growth Weekly is a twice-weekly newsletter for B2B founders, curated by Rachel Byrne since 2020.'
+                        : form.media_type === 'podcast'
+                        ? 'The Commerce Playbook covers eCommerce strategy with 28k downloads per episode across 4 years.'
+                        : 'Lifestyle creator with 320k followers across Instagram and TikTok, focused on sustainable travel.'
+                    }
+                    rows={3}
+                    className="w-full bg-white/5 border border-white/10 focus:border-amber-500/50 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 outline-none transition-colors resize-none"
+                  />
+                </Field>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Field label="Personal website" hint="Your main site or publication">
+                    <input type="url" value={form.seller_website_url} onChange={e => set('seller_website_url', e.target.value)} placeholder="https://yoursite.com" className={inputCls(false)} />
+                  </Field>
+                  <Field label="Company page" hint="Business or brand page">
+                    <input type="url" value={form.seller_company_url} onChange={e => set('seller_company_url', e.target.value)} placeholder="https://yourcompany.com" className={inputCls(false)} />
+                  </Field>
+                  <Field label="LinkedIn" hint="Profile or company page">
+                    <input type="url" value={form.seller_linkedin_url} onChange={e => set('seller_linkedin_url', e.target.value)} placeholder="https://linkedin.com/in/yourname" className={inputCls(false)} />
+                  </Field>
+                  <Field label="Twitter / X">
+                    <input type="url" value={form.seller_twitter_url} onChange={e => set('seller_twitter_url', e.target.value)} placeholder="https://x.com/yourhandle" className={inputCls(false)} />
+                  </Field>
+                  {form.media_type === 'influencer' && (
+                    <>
+                      <Field label="Instagram">
+                        <input type="url" value={form.seller_instagram_url} onChange={e => set('seller_instagram_url', e.target.value)} placeholder="https://instagram.com/yourhandle" className={inputCls(false)} />
+                      </Field>
+                      <Field label="TikTok">
+                        <input type="url" value={form.seller_tiktok_url} onChange={e => set('seller_tiktok_url', e.target.value)} placeholder="https://tiktok.com/@yourhandle" className={inputCls(false)} />
+                      </Field>
+                      <Field label="YouTube">
+                        <input type="url" value={form.seller_youtube_url} onChange={e => set('seller_youtube_url', e.target.value)} placeholder="https://youtube.com/@yourchannel" className={inputCls(false)} />
+                      </Field>
+                    </>
+                  )}
+                  {form.media_type === 'podcast' && (
+                    <Field label="Podcast page" hint="Apple, Spotify, etc.">
+                      <input type="url" value={form.seller_podcast_url} onChange={e => set('seller_podcast_url', e.target.value)} placeholder="https://open.spotify.com/show/..." className={inputCls(false)} />
+                    </Field>
+                  )}
+                </div>
+                <Field label="Past work / portfolio links" hint="Media kit, case studies, sample content — up to 5 links">
+                  <div className="space-y-2">
+                    {form.portfolio_links.map((link, i) => (
+                      <div key={i} className="flex items-center gap-2">
+                        <span className="flex-1 text-sm text-gray-300 bg-white/5 border border-white/10 rounded-lg px-3 py-2 truncate">{link}</span>
+                        <button type="button" onClick={() => set('portfolio_links', form.portfolio_links.filter((_, j) => j !== i))} className="text-gray-500 hover:text-red-400 transition-colors flex-shrink-0">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                    {form.portfolio_links.length < 5 && (
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          value={form.portfolio_input}
+                          onChange={e => set('portfolio_input', e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const v = form.portfolio_input.trim();
+                              if (v && !form.portfolio_links.includes(v)) { set('portfolio_links', [...form.portfolio_links, v]); set('portfolio_input', ''); }
+                            }
+                          }}
+                          placeholder="https://yoursite.com/media-kit"
+                          className={inputCls(false) + ' flex-1'}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => { const v = form.portfolio_input.trim(); if (v && !form.portfolio_links.includes(v)) { set('portfolio_links', [...form.portfolio_links, v]); set('portfolio_input', ''); } }}
+                          className="flex items-center gap-1 bg-white/5 border border-white/10 hover:border-amber-500/40 hover:text-amber-400 text-gray-300 text-sm px-3 py-2 rounded-lg transition-colors"
+                        >
+                          <Plus className="w-4 h-4" />Add
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </Field>
+              </div>
+            </Section>
+          )}
 
           <Section title="Geographic reach" icon={<MapPin className="w-4 h-4 text-amber-400" />}>
             <div className="bg-amber-500/6 border border-amber-500/15 rounded-xl p-4 flex items-start gap-3">

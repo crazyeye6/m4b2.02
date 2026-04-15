@@ -108,7 +108,10 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
         <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
-        <ListSlotPage onBack={() => { setPage('home'); refetch(); }} />
+        <ListSlotPage
+          onBack={() => { setPage('home'); refetch(); }}
+          onEditProfile={() => { setPage('dashboard'); window.scrollTo(0, 0); }}
+        />
       </div>
     );
   }

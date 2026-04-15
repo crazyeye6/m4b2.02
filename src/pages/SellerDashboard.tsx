@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package } from 'lucide-react';
+import { BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package, Link, Twitter, Instagram, Youtube, Mic } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import type { Listing, ListingStatus, DepositBooking, BookingStatus } from '../types';
@@ -404,12 +404,22 @@ function SellerProfilePanel({ profile, userEmail, onSaved }: {
 }) {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [form, setForm] = useState({
     display_name: profile?.display_name || '',
     company: profile?.company || '',
     phone: profile?.phone || '',
     website: profile?.website || '',
     bio: profile?.bio || '',
+    seller_bio: profile?.seller_bio || '',
+    seller_website_url: profile?.seller_website_url || '',
+    seller_company_url: profile?.seller_company_url || '',
+    seller_linkedin_url: profile?.seller_linkedin_url || '',
+    seller_twitter_url: profile?.seller_twitter_url || '',
+    seller_instagram_url: profile?.seller_instagram_url || '',
+    seller_youtube_url: profile?.seller_youtube_url || '',
+    seller_tiktok_url: profile?.seller_tiktok_url || '',
+    seller_podcast_url: profile?.seller_podcast_url || '',
   });
 
   const save = async () => {
@@ -422,14 +432,26 @@ function SellerProfilePanel({ profile, userEmail, onSaved }: {
     await onSaved();
     setSaving(false);
     setEditing(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
   };
 
   if (!profile) return null;
 
+  const hasLinks = form.seller_website_url || form.seller_linkedin_url || form.seller_twitter_url ||
+    form.seller_instagram_url || form.seller_youtube_url || form.seller_tiktok_url || form.seller_podcast_url;
+
   return (
-    <div className="max-w-xl space-y-6">
+    <div className="max-w-2xl space-y-5">
+      {saved && (
+        <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-4 py-3 text-emerald-400 text-sm">
+          <CheckCircle className="w-4 h-4 flex-shrink-0" />
+          Profile saved. Your info will be used on all future listings.
+        </div>
+      )}
+
       <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6">
-        <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 bg-blue-600/20 border border-blue-500/30 rounded-xl flex items-center justify-center">
               <User className="w-6 h-6 text-blue-400" />
@@ -441,66 +463,110 @@ function SellerProfilePanel({ profile, userEmail, onSaved }: {
               </span>
             </div>
           </div>
-          {!editing && (
+          {!editing ? (
             <button
               onClick={() => setEditing(true)}
               className="flex items-center gap-1.5 text-[#8b949e] hover:text-[#e6edf3] text-sm border border-[#30363d] hover:border-[#484f58] px-3 py-1.5 rounded-lg transition-all"
             >
               <Edit3 className="w-3.5 h-3.5" />
-              Edit
+              Edit profile
             </button>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          <ProfileField label="Email" icon={<Mail className="w-3.5 h-3.5" />} value={userEmail || ''} editing={false} />
-          <ProfileField label="Display name" icon={<User className="w-3.5 h-3.5" />} value={form.display_name} editing={editing} onChange={v => setForm(p => ({ ...p, display_name: v }))} />
-          <ProfileField label="Company / Media name" icon={<Building2 className="w-3.5 h-3.5" />} value={form.company} editing={editing} onChange={v => setForm(p => ({ ...p, company: v }))} />
-          <ProfileField label="Phone" icon={<Phone className="w-3.5 h-3.5" />} value={form.phone} editing={editing} onChange={v => setForm(p => ({ ...p, phone: v }))} />
-          <ProfileField label="Website" icon={<Globe className="w-3.5 h-3.5" />} value={form.website} editing={editing} onChange={v => setForm(p => ({ ...p, website: v }))} />
-
-          {editing && (
-            <div>
-              <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Bio / About your media</label>
-              <textarea
-                value={form.bio}
-                onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
-                rows={3}
-                placeholder="Describe your newsletter, podcast, or audience..."
-                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg px-3 py-2.5 text-[#e6edf3] text-sm placeholder-[#484f58] outline-none transition-colors resize-none"
-              />
-            </div>
-          )}
-
-          {!editing && profile.bio && (
-            <div>
-              <p className="text-xs text-[#8b949e] font-medium mb-1">Bio</p>
-              <p className="text-[#8b949e] text-sm">{profile.bio}</p>
-            </div>
-          )}
-
-          {editing && (
-            <div className="flex gap-3 pt-2">
+          ) : (
+            <div className="flex gap-2">
               <button
                 onClick={save}
                 disabled={saving}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/40 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-all"
+                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/40 text-white font-semibold px-4 py-1.5 rounded-lg text-sm transition-all"
               >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                Save changes
+                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                Save
               </button>
-              <button onClick={() => setEditing(false)} className="px-5 py-2.5 rounded-lg border border-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-sm transition-all">
+              <button onClick={() => setEditing(false)} className="px-3 py-1.5 rounded-lg border border-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-sm transition-all">
                 Cancel
               </button>
             </div>
           )}
+        </div>
+
+        <div className="space-y-5">
+          <div>
+            <p className="text-[#8b949e] text-xs font-semibold uppercase tracking-wide mb-3">Account</p>
+            <div className="space-y-3">
+              <ProfileField label="Email" icon={<Mail className="w-3.5 h-3.5" />} value={userEmail || ''} editing={false} />
+              <ProfileField label="Display name" icon={<User className="w-3.5 h-3.5" />} value={form.display_name} editing={editing} onChange={v => setForm(p => ({ ...p, display_name: v }))} />
+              <ProfileField label="Company / Media name" icon={<Building2 className="w-3.5 h-3.5" />} value={form.company} editing={editing} onChange={v => setForm(p => ({ ...p, company: v }))} />
+              <ProfileField label="Phone" icon={<Phone className="w-3.5 h-3.5" />} value={form.phone} editing={editing} onChange={v => setForm(p => ({ ...p, phone: v }))} />
+            </div>
+          </div>
+
+          <div className="border-t border-[#21262d] pt-5">
+            <p className="text-[#8b949e] text-xs font-semibold uppercase tracking-wide mb-3">
+              Seller bio &amp; profile
+              <span className="ml-2 text-[#6e7681] font-normal normal-case">Shown on all your listings</span>
+            </p>
+            <div className="space-y-3">
+              {editing ? (
+                <div>
+                  <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Short bio</label>
+                  <textarea
+                    value={form.seller_bio}
+                    onChange={e => setForm(p => ({ ...p, seller_bio: e.target.value }))}
+                    rows={3}
+                    placeholder="Describe your newsletter, podcast, or audience in 1–2 sentences..."
+                    className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg px-3 py-2.5 text-[#e6edf3] text-sm placeholder-[#484f58] outline-none transition-colors resize-none"
+                  />
+                </div>
+              ) : (
+                (form.seller_bio || form.bio) ? (
+                  <div>
+                    <p className="text-xs text-[#8b949e] font-medium mb-1">Bio</p>
+                    <p className="text-[#8b949e] text-sm leading-relaxed">{form.seller_bio || form.bio}</p>
+                  </div>
+                ) : (
+                  <p className="text-[#6e7681] text-xs italic">No bio added yet. Click Edit profile to add one.</p>
+                )
+              )}
+            </div>
+          </div>
+
+          <div className="border-t border-[#21262d] pt-5">
+            <p className="text-[#8b949e] text-xs font-semibold uppercase tracking-wide mb-3">
+              Links &amp; social
+              <span className="ml-2 text-[#6e7681] font-normal normal-case">Help buyers verify your credibility</span>
+            </p>
+            {editing ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <ProfileField label="Personal website" icon={<Globe className="w-3.5 h-3.5" />} value={form.seller_website_url} editing={editing} onChange={v => setForm(p => ({ ...p, seller_website_url: v }))} type="url" placeholder="https://yoursite.com" />
+                <ProfileField label="Company page" icon={<Building2 className="w-3.5 h-3.5" />} value={form.seller_company_url} editing={editing} onChange={v => setForm(p => ({ ...p, seller_company_url: v }))} type="url" placeholder="https://yourcompany.com" />
+                <ProfileField label="LinkedIn" icon={<Link className="w-3.5 h-3.5" />} value={form.seller_linkedin_url} editing={editing} onChange={v => setForm(p => ({ ...p, seller_linkedin_url: v }))} type="url" placeholder="https://linkedin.com/in/you" />
+                <ProfileField label="Twitter / X" icon={<Twitter className="w-3.5 h-3.5" />} value={form.seller_twitter_url} editing={editing} onChange={v => setForm(p => ({ ...p, seller_twitter_url: v }))} type="url" placeholder="https://x.com/yourhandle" />
+                <ProfileField label="Instagram" icon={<Instagram className="w-3.5 h-3.5" />} value={form.seller_instagram_url} editing={editing} onChange={v => setForm(p => ({ ...p, seller_instagram_url: v }))} type="url" placeholder="https://instagram.com/yourhandle" />
+                <ProfileField label="YouTube" icon={<Youtube className="w-3.5 h-3.5" />} value={form.seller_youtube_url} editing={editing} onChange={v => setForm(p => ({ ...p, seller_youtube_url: v }))} type="url" placeholder="https://youtube.com/@yourchannel" />
+                <ProfileField label="TikTok" icon={<Link className="w-3.5 h-3.5" />} value={form.seller_tiktok_url} editing={editing} onChange={v => setForm(p => ({ ...p, seller_tiktok_url: v }))} type="url" placeholder="https://tiktok.com/@yourhandle" />
+                <ProfileField label="Podcast" icon={<Mic className="w-3.5 h-3.5" />} value={form.seller_podcast_url} editing={editing} onChange={v => setForm(p => ({ ...p, seller_podcast_url: v }))} type="url" placeholder="https://open.spotify.com/show/..." />
+              </div>
+            ) : hasLinks ? (
+              <div className="flex flex-wrap gap-2">
+                {form.seller_website_url && <LinkBadge icon={<Globe className="w-3 h-3" />} label="Website" url={form.seller_website_url} />}
+                {form.seller_company_url && <LinkBadge icon={<Building2 className="w-3 h-3" />} label="Company" url={form.seller_company_url} />}
+                {form.seller_linkedin_url && <LinkBadge icon={<Link className="w-3 h-3" />} label="LinkedIn" url={form.seller_linkedin_url} />}
+                {form.seller_twitter_url && <LinkBadge icon={<Twitter className="w-3 h-3" />} label="Twitter" url={form.seller_twitter_url} />}
+                {form.seller_instagram_url && <LinkBadge icon={<Instagram className="w-3 h-3" />} label="Instagram" url={form.seller_instagram_url} />}
+                {form.seller_youtube_url && <LinkBadge icon={<Youtube className="w-3 h-3" />} label="YouTube" url={form.seller_youtube_url} />}
+                {form.seller_tiktok_url && <LinkBadge icon={<Link className="w-3 h-3" />} label="TikTok" url={form.seller_tiktok_url} />}
+                {form.seller_podcast_url && <LinkBadge icon={<Mic className="w-3 h-3" />} label="Podcast" url={form.seller_podcast_url} />}
+              </div>
+            ) : (
+              <p className="text-[#6e7681] text-xs italic">No links added yet. Click Edit profile to add social and website links.</p>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-4">
         <p className="text-[#8b949e] text-xs font-semibold mb-2 uppercase tracking-wide">Seller tips</p>
         <ul className="space-y-1.5 text-xs text-[#8b949e]">
-          <li>• Ensure your seller email on listings matches your account email so bookings appear here.</li>
+          <li>• Your name, company, bio, and links are automatically applied to all new listings you create.</li>
           <li>• Respond to buyer enquiries promptly to maintain a high completion rate.</li>
           <li>• Keep your listing's deadline accurate — expired listings are automatically hidden.</li>
         </ul>
@@ -509,12 +575,28 @@ function SellerProfilePanel({ profile, userEmail, onSaved }: {
   );
 }
 
-function ProfileField({ label, icon, value, editing, onChange }: {
+function LinkBadge({ icon, label, url }: { icon: React.ReactNode; label: string; url: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-1.5 text-xs text-[#8b949e] hover:text-[#e6edf3] bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] px-2.5 py-1.5 rounded-lg transition-all"
+    >
+      {icon}
+      {label}
+    </a>
+  );
+}
+
+function ProfileField({ label, icon, value, editing, onChange, type = 'text', placeholder }: {
   label: string;
   icon: React.ReactNode;
   value: string;
   editing: boolean;
   onChange?: (v: string) => void;
+  type?: string;
+  placeholder?: string;
 }) {
   if (editing && onChange) {
     return (
@@ -523,10 +605,11 @@ function ProfileField({ label, icon, value, editing, onChange }: {
         <div className="relative">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b949e]">{icon}</div>
           <input
-            type="text"
+            type={type}
             value={value}
             onChange={e => onChange(e.target.value)}
-            className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg pl-9 pr-3 py-2.5 text-[#e6edf3] text-sm outline-none transition-colors"
+            placeholder={placeholder}
+            className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg pl-9 pr-3 py-2.5 text-[#e6edf3] text-sm outline-none transition-colors placeholder-[#484f58]"
           />
         </div>
       </div>
