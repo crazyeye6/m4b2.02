@@ -285,7 +285,7 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
               className={`flex-1 font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2
                 ${isSecured
                   ? 'bg-white/5 text-gray-400 cursor-not-allowed'
-                  : 'bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_25px_rgba(245,158,11,0.25)]'
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_25px_rgba(16,185,129,0.25)]'
                 }`}
             >
               {!isSecured && <Lock className="w-4 h-4" />}

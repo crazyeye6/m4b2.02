@@ -357,7 +357,7 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
                   className={`w-full font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2 mb-3
                     ${isSecured
                       ? 'bg-[#21262d] text-[#8b949e] cursor-not-allowed border border-[#30363d]'
-                      : 'bg-amber-500 hover:bg-amber-400 text-black shadow-[0_0_25px_rgba(245,158,11,0.2)]'
+                      : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-[0_0_25px_rgba(16,185,129,0.2)]'
                     }`}
                 >
                   {!isSecured && <Lock className="w-4 h-4" />}
