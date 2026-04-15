@@ -1,14 +1,18 @@
 import {
   SlidersHorizontal, Mail, Mic, Instagram, Flame, TrendingDown, Star,
   ChevronUp, X, Calendar, MapPin, Tag, DollarSign, ChevronDown, LayoutGrid,
+  Columns2, Columns3,
 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import type { FilterState, DateRangeOption } from '../types';
+import type { GridColumns } from './ListingsGrid';
 
 interface FilterBarProps {
   filters: FilterState;
   onChange: (f: Partial<FilterState>) => void;
   total: number;
+  columns: GridColumns;
+  onColumnsChange: (c: GridColumns) => void;
 }
 
 const CATEGORIES = [
@@ -86,7 +90,13 @@ function OptionBtn({
   );
 }
 
-export default function FilterBar({ filters, onChange, total }: FilterBarProps) {
+const COLUMN_OPTIONS: Array<{ value: GridColumns; icon: React.ReactNode; title: string }> = [
+  { value: 1, icon: <LayoutGrid className="w-3.5 h-3.5" />, title: '1 per row' },
+  { value: 2, icon: <Columns2 className="w-3.5 h-3.5" />, title: '2 per row' },
+  { value: 3, icon: <Columns3 className="w-3.5 h-3.5" />, title: '3 per row' },
+];
+
+export default function FilterBar({ filters, onChange, total, columns, onColumnsChange }: FilterBarProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
 
   const dateOptions = useMemo((): Array<{ value: DateRangeOption; label: string; sublabel?: string; urgent?: boolean }> => [
@@ -228,8 +238,26 @@ export default function FilterBar({ filters, onChange, total }: FilterBarProps) 
             }
           </button>
 
+          {/* Layout toggle */}
+          <div className="flex-shrink-0 hidden sm:flex items-center gap-0.5 bg-[#21262d] border border-[#30363d] rounded-lg p-0.5 ml-auto">
+            {COLUMN_OPTIONS.map(o => (
+              <button
+                key={o.value}
+                onClick={() => onColumnsChange(o.value)}
+                title={o.title}
+                className={`flex items-center justify-center w-7 h-7 rounded-md transition-all
+                  ${columns === o.value
+                    ? 'bg-[#30363d] text-[#e6edf3] shadow-sm'
+                    : 'text-[#8b949e] hover:text-[#c9d1d9] hover:bg-[#30363d]/50'
+                  }`}
+              >
+                {o.icon}
+              </button>
+            ))}
+          </div>
+
           {/* Spacer + result count */}
-          <div className="ml-auto flex-shrink-0 flex items-center gap-3">
+          <div className="flex-shrink-0 sm:ml-0 ml-auto flex items-center gap-3">
             {hasActive && (
               <button
                 onClick={reset}

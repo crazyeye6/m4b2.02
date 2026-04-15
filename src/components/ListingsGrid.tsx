@@ -2,14 +2,23 @@ import { Loader2, SearchX } from 'lucide-react';
 import type { Listing } from '../types';
 import OpportunityCard from './OpportunityCard';
 
+export type GridColumns = 1 | 2 | 3;
+
 interface ListingsGridProps {
   listings: Listing[];
   loading: boolean;
   onSecure: (listing: Listing) => void;
   onDetails: (listing: Listing) => void;
+  columns?: GridColumns;
 }
 
-export default function ListingsGrid({ listings, loading, onSecure, onDetails }: ListingsGridProps) {
+const GRID_CLASS: Record<GridColumns, string> = {
+  1: 'grid-cols-1 max-w-2xl mx-auto',
+  2: 'grid-cols-1 md:grid-cols-2',
+  3: 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3',
+};
+
+export default function ListingsGrid({ listings, loading, onSecure, onDetails, columns = 2 }: ListingsGridProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -36,7 +45,7 @@ export default function ListingsGrid({ listings, loading, onSecure, onDetails }:
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+    <div className={`grid ${GRID_CLASS[columns]} gap-5`}>
       {listings.map(listing => (
         <OpportunityCard
           key={listing.id}

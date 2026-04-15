@@ -19,6 +19,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import { useListings } from './hooks/useListings';
 import { useAuth } from './context/AuthContext';
 import type { FilterState, Listing } from './types';
+import type { GridColumns } from './components/ListingsGrid';
 
 type Page = 'home' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing';
 
@@ -53,6 +54,10 @@ export default function App() {
   const [page, setPage] = useState<Page>(() => getListingIdFromUrl() ? 'listing' : 'home');
   const [listingId, setListingId] = useState<string | null>(() => getListingIdFromUrl());
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
+  const [columns, setColumns] = useState<GridColumns>(() => {
+    const saved = localStorage.getItem('etw_grid_columns');
+    return (saved === '1' || saved === '2' || saved === '3') ? (Number(saved) as GridColumns) : 2;
+  });
   const [secureTarget, setSecureTarget] = useState<Listing | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const opportunitiesRef = useRef<HTMLDivElement>(null);
@@ -77,6 +82,11 @@ export default function App() {
 
   const updateFilters = (partial: Partial<FilterState>) => {
     setFilters(prev => ({ ...prev, ...partial }));
+  };
+
+  const handleColumnsChange = (c: GridColumns) => {
+    setColumns(c);
+    localStorage.setItem('etw_grid_columns', String(c));
   };
 
   const handleSecureSuccess = (listing: Listing) => {
@@ -261,7 +271,7 @@ export default function App() {
         />
 
         <div ref={opportunitiesRef} id="opportunities">
-          <FilterBar filters={filters} onChange={updateFilters} total={listings.length} />
+          <FilterBar filters={filters} onChange={updateFilters} total={listings.length} columns={columns} onColumnsChange={handleColumnsChange} />
 
           <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex items-center justify-between mb-6">
@@ -275,6 +285,7 @@ export default function App() {
               loading={loading}
               onSecure={setSecureTarget}
               onDetails={handleViewListing}
+              columns={columns}
             />
           </section>
         </div>
