@@ -39,9 +39,8 @@ export default function CountdownTimer({ deadline, compact = false }: CountdownT
 
   if (time.expired) {
     return (
-      <div className="flex items-center gap-1 bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 text-xs font-semibold px-2 py-1 rounded-md">
-        <Clock className="w-3 h-3" />
-        Claiming closed
+      <div className="flex items-center gap-1 bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold px-2 py-1 rounded-md tracking-wide">
+        CLOSED
       </div>
     );
   }

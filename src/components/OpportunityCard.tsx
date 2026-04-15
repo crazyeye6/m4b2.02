@@ -62,18 +62,20 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
   const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
   const savings = listing.original_price - listing.discounted_price;
   const depositAmount = Math.round(listing.discounted_price * 0.1);
-  const isLive = listing.status === 'live';
-  const isSecured = listing.status === 'secured' || listing.status === 'expired' || listing.status === 'cancelled';
+  const deadlinePassed = new Date(listing.deadline_at).getTime() < Date.now();
+  const isLive = listing.status === 'live' && !deadlinePassed;
+  const isSecured = listing.status === 'secured' || listing.status === 'expired' || listing.status === 'cancelled' || deadlinePassed;
   const isScarce = listing.slots_remaining <= 2;
 
   return (
     <div
       className={`relative bg-[#161b22] rounded-xl border flex flex-col transition-all duration-200
         ${isLive ? 'border-[#30363d] hover:border-[#484f58] hover:shadow-lg hover:shadow-black/20' : ''}
-        ${listing.status === 'securing' ? 'border-amber-400/30' : ''}
-        ${listing.status === 'pending_review' ? 'border-yellow-500/20' : ''}
+        ${listing.status === 'securing' && !deadlinePassed ? 'border-amber-400/30' : ''}
+        ${listing.status === 'pending_review' && !deadlinePassed ? 'border-yellow-500/20' : ''}
         ${listing.status === 'secured' ? 'border-emerald-500/20 opacity-60' : ''}
         ${listing.status === 'expired' ? 'border-yellow-500/15 opacity-40' : ''}
+        ${deadlinePassed && listing.status !== 'secured' && listing.status !== 'expired' && listing.status !== 'cancelled' ? 'border-red-500/15 opacity-50' : ''}
       `}
     >
       {listing.status !== 'live' && sc.topbar && (
@@ -211,7 +213,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
               }`}
           >
             {!isSecured && <Lock className="w-4 h-4" />}
-            {isSecured ? sc.label : 'Secure Slot'}
+            {isSecured ? (deadlinePassed && listing.status !== 'secured' && listing.status !== 'cancelled' ? 'CLOSED' : sc.label) : 'Secure Slot'}
             {!isSecured && <Zap className="w-3.5 h-3.5 fill-white" />}
           </button>
           {!isSecured && (

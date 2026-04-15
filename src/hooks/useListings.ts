@@ -125,6 +125,9 @@ export function useListings(filters: FilterState) {
       });
     }
 
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    result = result.filter(l => new Date(l.deadline_at).getTime() >= cutoff);
+
     setListings(result);
     setLoading(false);
   }, [filters]);
