@@ -11,13 +11,13 @@ interface BuyerDashboardProps {
 type DashTab = 'bookings' | 'profile';
 
 const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  pending_payment: { label: 'Pending Payment', color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', icon: <Clock className="w-3.5 h-3.5" /> },
-  secured: { label: 'Secured', color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', icon: <CheckCircle className="w-3.5 h-3.5" /> },
-  in_progress: { label: 'In Progress', color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20', icon: <Clock className="w-3.5 h-3.5" /> },
-  completed_off_platform: { label: 'Completed', color: 'text-[#8b949e]', bg: 'bg-[#21262d] border-[#30363d]', icon: <CheckCircle className="w-3.5 h-3.5" /> },
-  refund_requested: { label: 'Refund Requested', color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/20', icon: <RotateCcw className="w-3.5 h-3.5" /> },
-  refunded: { label: 'Refunded', color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/20', icon: <XCircle className="w-3.5 h-3.5" /> },
-  cancelled: { label: 'Cancelled', color: 'text-[#8b949e]', bg: 'bg-[#21262d] border-[#30363d]', icon: <XCircle className="w-3.5 h-3.5" /> },
+  pending_payment: { label: 'Pending Payment', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200', icon: <Clock className="w-3.5 h-3.5" /> },
+  secured: { label: 'Secured', color: 'text-green-700', bg: 'bg-green-50 border-green-200', icon: <CheckCircle className="w-3.5 h-3.5" /> },
+  in_progress: { label: 'In Progress', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', icon: <Clock className="w-3.5 h-3.5" /> },
+  completed_off_platform: { label: 'Completed', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]', icon: <CheckCircle className="w-3.5 h-3.5" /> },
+  refund_requested: { label: 'Refund Requested', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200', icon: <RotateCcw className="w-3.5 h-3.5" /> },
+  refunded: { label: 'Refunded', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]', icon: <XCircle className="w-3.5 h-3.5" /> },
+  cancelled: { label: 'Cancelled', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]', icon: <XCircle className="w-3.5 h-3.5" /> },
 };
 
 const REFUND_CATEGORIES: { value: RefundReasonCategory; label: string }[] = [
@@ -61,32 +61,32 @@ export default function BuyerDashboard({ onBack }: BuyerDashboardProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
-      <div className="border-b border-[#30363d] bg-[#161b22]">
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
+      <div className="border-b border-black/[0.06] bg-white/80 backdrop-blur-xl sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-[#e6edf3] font-bold text-lg">Buyer Dashboard</h1>
-            <p className="text-[#8b949e] text-xs mt-0.5">
+            <h1 className="text-[#1d1d1f] font-semibold text-base tracking-[-0.01em]">Buyer Dashboard</h1>
+            <p className="text-[#6e6e73] text-xs mt-0.5">
               {profile?.display_name} · {user?.email}
             </p>
           </div>
           <div className="flex items-center gap-3">
             <button
               onClick={fetchBookings}
-              className="flex items-center gap-1.5 text-[#8b949e] hover:text-[#e6edf3] text-sm border border-[#30363d] hover:border-[#484f58] px-3 py-1.5 rounded-lg transition-all"
+              className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-sm border border-black/[0.08] hover:border-black/[0.15] px-3 py-1.5 rounded-xl transition-all"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Refresh
             </button>
             <button
               onClick={onBack}
-              className="text-[#8b949e] hover:text-[#e6edf3] text-sm transition-colors"
+              className="text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-colors"
             >
               Back to site
             </button>
             <button
               onClick={signOut}
-              className="flex items-center gap-1.5 text-[#8b949e] hover:text-yellow-400 text-sm transition-colors"
+              className="flex items-center gap-1.5 text-[#6e6e73] hover:text-red-500 text-sm transition-colors"
             >
               <LogOut className="w-3.5 h-3.5" />
               Sign out
@@ -97,21 +97,21 @@ export default function BuyerDashboard({ onBack }: BuyerDashboardProps) {
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-          <StatCard icon={<ShoppingBag className="w-4 h-4 text-[#8b949e]" />} label="Total Bookings" value={stats.total} />
-          <StatCard icon={<CheckCircle className="w-4 h-4 text-emerald-400" />} label="Active" value={stats.active} green />
-          <StatCard icon={<DollarSign className="w-4 h-4 text-amber-400" />} label="Deposits Paid" value={`$${stats.totalSpent.toLocaleString()}`} amber />
-          <StatCard icon={<Clock className="w-4 h-4 text-orange-400" />} label="Pending Payment" value={stats.pending} warn={stats.pending > 0} />
+          <StatCard icon={<ShoppingBag className="w-4 h-4 text-[#86868b]" />} label="Total Bookings" value={stats.total} />
+          <StatCard icon={<CheckCircle className="w-4 h-4 text-green-600" />} label="Active" value={stats.active} green />
+          <StatCard icon={<DollarSign className="w-4 h-4 text-[#86868b]" />} label="Deposits Paid" value={`$${stats.totalSpent.toLocaleString()}`} />
+          <StatCard icon={<Clock className="w-4 h-4 text-orange-500" />} label="Pending Payment" value={stats.pending} warn={stats.pending > 0} />
         </div>
 
-        <div className="flex items-center gap-1 mb-6 bg-[#161b22] border border-[#30363d] rounded-xl p-1 w-fit">
+        <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit">
           {([['bookings', 'My Bookings'], ['profile', 'Profile']] as [DashTab, string][]).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 tab === key
-                  ? 'bg-[#30363d] text-[#e6edf3]'
-                  : 'text-[#8b949e] hover:text-[#8b949e]'
+                  ? 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.06]'
+                  : 'text-[#6e6e73] hover:text-[#1d1d1f]'
               }`}
             >
               {label}
@@ -122,11 +122,11 @@ export default function BuyerDashboard({ onBack }: BuyerDashboardProps) {
         {tab === 'bookings' && (
           loading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
+              <Loader2 className="w-5 h-5 text-[#1d1d1f] animate-spin" />
             </div>
           ) : bookings.length === 0 ? (
             <EmptyState
-              icon={<ShoppingBag className="w-8 h-8 text-[#8b949e]" />}
+              icon={<ShoppingBag className="w-8 h-8 text-[#aeaeb2]" />}
               title="No bookings yet"
               description="Browse opportunities and secure your first slot."
             />
@@ -173,32 +173,32 @@ function BookingCard({ booking, onClick }: { booking: DepositBooking; onClick: (
   return (
     <button
       onClick={onClick}
-      className="w-full text-left bg-[#161b22] border border-[#30363d] hover:border-[#484f58] rounded-xl p-4 transition-all group"
+      className="w-full text-left bg-white border border-black/[0.06] hover:border-black/[0.12] hover:shadow-md hover:shadow-black/[0.06] rounded-2xl p-4 transition-all group"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="font-mono text-xs text-amber-400 font-semibold">{booking.reference_number}</span>
-            <span className={`inline-flex items-center gap-1 border text-[10px] font-semibold px-2 py-0.5 rounded-md ${sc.bg} ${sc.color}`}>
+            <span className="font-mono text-xs text-[#6e6e73] font-semibold">{booking.reference_number}</span>
+            <span className={`inline-flex items-center gap-1 border text-[10px] font-semibold px-2 py-0.5 rounded-lg ${sc.bg} ${sc.color}`}>
               {sc.icon}
               {sc.label}
             </span>
           </div>
-          <h3 className="text-[#e6edf3] font-semibold text-sm truncate">
+          <h3 className="text-[#1d1d1f] font-semibold text-sm truncate">
             {listing?.property_name || 'Unknown listing'}
           </h3>
-          <p className="text-[#8b949e] text-xs mt-0.5">
+          <p className="text-[#6e6e73] text-xs mt-0.5">
             {listing?.media_owner_name} · {listing?.date_label}
           </p>
         </div>
         <div className="text-right flex-shrink-0">
-          <p className="text-emerald-400 font-bold text-base">${booking.deposit_amount.toLocaleString()}</p>
-          <p className="text-[#8b949e] text-xs">deposit</p>
-          <ChevronRight className="w-4 h-4 text-[#8b949e] group-hover:text-[#8b949e] ml-auto mt-1 transition-colors" />
+          <p className="text-green-600 font-bold text-base">${booking.deposit_amount.toLocaleString()}</p>
+          <p className="text-[#aeaeb2] text-xs">deposit</p>
+          <ChevronRight className="w-4 h-4 text-[#aeaeb2] group-hover:text-[#6e6e73] ml-auto mt-1 transition-colors" />
         </div>
       </div>
 
-      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-[#21262d]">
+      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-black/[0.04]">
         <Pill label="Slots" value={`${booking.slots_count}`} />
         <Pill label="Total value" value={`$${booking.total_price.toLocaleString()}`} />
         <Pill label="Balance to creator" value={`$${booking.balance_amount.toLocaleString()}`} />
@@ -219,28 +219,28 @@ function BookingDetailModal({ booking, onClose, onRequestRefund }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#161b22] border border-[#30363d] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="sticky top-0 bg-[#161b22] border-b border-[#30363d] px-6 py-4 flex items-center justify-between z-10">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white border border-black/[0.08] rounded-3xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl shadow-black/[0.12]">
+        <div className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-black/[0.06] px-6 py-4 flex items-center justify-between z-10">
           <div>
-            <h2 className="text-[#e6edf3] font-bold">Booking Details</h2>
-            <p className="text-amber-400 text-xs font-mono mt-0.5">{booking.reference_number}</p>
+            <h2 className="text-[#1d1d1f] font-semibold">Booking Details</h2>
+            <p className="text-[#6e6e73] text-xs font-mono mt-0.5">{booking.reference_number}</p>
           </div>
-          <button onClick={onClose} className="text-[#8b949e] hover:text-[#e6edf3] transition-colors">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="text-[#aeaeb2] hover:text-[#1d1d1f] transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7]">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="p-6 space-y-5">
-          <div className={`inline-flex items-center gap-2 border px-3 py-1.5 rounded-lg text-sm font-semibold ${sc.bg} ${sc.color}`}>
+          <div className={`inline-flex items-center gap-2 border px-3 py-1.5 rounded-xl text-sm font-semibold ${sc.bg} ${sc.color}`}>
             {sc.icon}
             {sc.label}
           </div>
 
-          <div className="bg-[#0d1117] rounded-xl border border-[#30363d] p-4">
-            <p className="text-[#8b949e] text-xs font-medium mb-0.5">Opportunity</p>
-            <p className="text-[#e6edf3] font-bold">{listing?.property_name}</p>
-            <p className="text-[#8b949e] text-sm">{listing?.media_owner_name} · {listing?.date_label}</p>
+          <div className="bg-[#f5f5f7] rounded-2xl border border-black/[0.06] p-4">
+            <p className="text-[#86868b] text-xs font-semibold mb-0.5">Opportunity</p>
+            <p className="text-[#1d1d1f] font-semibold">{listing?.property_name}</p>
+            <p className="text-[#6e6e73] text-sm">{listing?.media_owner_name} · {listing?.date_label}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
@@ -251,24 +251,24 @@ function BookingDetailModal({ booking, onClose, onRequestRefund }: {
           </div>
 
           {(booking.seller_email || booking.seller_phone || booking.seller_website) && (
-            <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4">
-              <p className="text-emerald-400 text-xs font-semibold mb-2">Creator Contact</p>
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
+              <p className="text-green-700 text-xs font-semibold mb-2">Creator Contact</p>
               <div className="space-y-1.5">
-                {booking.seller_name && <p className="text-[#e6edf3] text-sm font-medium">{booking.seller_name}</p>}
+                {booking.seller_name && <p className="text-[#1d1d1f] text-sm font-medium">{booking.seller_name}</p>}
                 {booking.seller_email && (
-                  <a href={`mailto:${booking.seller_email}`} className="flex items-center gap-1.5 text-[#8b949e] hover:text-emerald-400 text-sm transition-colors">
+                  <a href={`mailto:${booking.seller_email}`} className="flex items-center gap-1.5 text-[#6e6e73] hover:text-blue-600 text-sm transition-colors">
                     <Mail className="w-3.5 h-3.5" />
                     {booking.seller_email}
                   </a>
                 )}
                 {booking.seller_phone && (
-                  <p className="flex items-center gap-1.5 text-[#8b949e] text-sm">
+                  <p className="flex items-center gap-1.5 text-[#6e6e73] text-sm">
                     <Phone className="w-3.5 h-3.5" />
                     {booking.seller_phone}
                   </p>
                 )}
                 {booking.seller_website && (
-                  <a href={booking.seller_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[#8b949e] hover:text-emerald-400 text-sm transition-colors">
+                  <a href={booking.seller_website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-[#6e6e73] hover:text-blue-600 text-sm transition-colors">
                     <Globe className="w-3.5 h-3.5" />
                     {booking.seller_website}
                   </a>
@@ -278,35 +278,35 @@ function BookingDetailModal({ booking, onClose, onRequestRefund }: {
           )}
 
           {booking.message_to_creator && (
-            <div className="bg-[#21262d] rounded-xl border border-[#30363d] p-4">
-              <p className="text-[#8b949e] text-xs font-semibold mb-2">Your message to creator</p>
-              <p className="text-[#8b949e] text-sm">{booking.message_to_creator}</p>
+            <div className="bg-[#f5f5f7] rounded-2xl border border-black/[0.06] p-4">
+              <p className="text-[#86868b] text-xs font-semibold mb-2">Your message to creator</p>
+              <p className="text-[#6e6e73] text-sm">{booking.message_to_creator}</p>
             </div>
           )}
 
-          <div className="bg-[#21262d] rounded-xl border border-[#30363d] p-4">
-            <p className="text-[#8b949e] text-xs font-semibold mb-2">Your details</p>
+          <div className="bg-[#f5f5f7] rounded-2xl border border-black/[0.06] p-4">
+            <p className="text-[#86868b] text-xs font-semibold mb-2">Your details</p>
             <div className="grid grid-cols-2 gap-2 text-xs">
-              <div><span className="text-[#8b949e]">Company</span><p className="text-[#8b949e] mt-0.5">{booking.buyer_company}</p></div>
-              <div><span className="text-[#8b949e]">Country</span><p className="text-[#8b949e] mt-0.5">{booking.buyer_country}</p></div>
-              {booking.buyer_website && <div className="col-span-2"><span className="text-[#8b949e]">Website</span><p className="text-[#8b949e] mt-0.5">{booking.buyer_website}</p></div>}
+              <div><span className="text-[#86868b]">Company</span><p className="text-[#1d1d1f] mt-0.5">{booking.buyer_company}</p></div>
+              <div><span className="text-[#86868b]">Country</span><p className="text-[#1d1d1f] mt-0.5">{booking.buyer_country}</p></div>
+              {booking.buyer_website && <div className="col-span-2"><span className="text-[#86868b]">Website</span><p className="text-[#1d1d1f] mt-0.5">{booking.buyer_website}</p></div>}
             </div>
           </div>
 
-          <p className="text-[#8b949e] text-[10px]">
+          <p className="text-[#aeaeb2] text-[10px]">
             Booked {new Date(booking.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
           </p>
 
           {canRefund && (
-            <div className="pt-2 border-t border-[#30363d]">
+            <div className="pt-2 border-t border-black/[0.06]">
               <button
                 onClick={onRequestRefund}
-                className="flex items-center gap-2 text-orange-400 hover:text-orange-300 text-sm font-medium transition-colors"
+                className="flex items-center gap-2 text-orange-600 hover:text-orange-700 text-sm font-medium transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 Request a refund
               </button>
-              <p className="text-[#8b949e] text-[10px] mt-1">Only available where seller cannot fulfil or terms have changed.</p>
+              <p className="text-[#aeaeb2] text-[10px] mt-1">Only available where seller cannot fulfil or terms have changed.</p>
             </div>
           )}
         </div>
@@ -344,39 +344,39 @@ function RefundRequestModal({ booking, onClose }: { booking: DepositBooking; onC
 
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#161b22] border border-[#30363d] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-[#30363d] flex items-center justify-between">
-          <h2 className="text-[#e6edf3] font-bold">Request Refund</h2>
-          <button onClick={onClose} className="text-[#8b949e] hover:text-[#e6edf3] transition-colors">
-            <X className="w-5 h-5" />
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white border border-black/[0.08] rounded-3xl w-full max-w-md shadow-2xl shadow-black/[0.12] overflow-hidden">
+        <div className="px-6 py-4 border-b border-black/[0.06] flex items-center justify-between">
+          <h2 className="text-[#1d1d1f] font-semibold">Request Refund</h2>
+          <button onClick={onClose} className="text-[#aeaeb2] hover:text-[#1d1d1f] transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7]">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {done ? (
           <div className="p-6 text-center">
-            <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-              <CheckCircle className="w-6 h-6 text-emerald-400" />
+            <div className="w-14 h-14 bg-green-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="w-7 h-7 text-green-600" />
             </div>
-            <h3 className="text-[#e6edf3] font-bold mb-1">Refund request submitted</h3>
-            <p className="text-[#8b949e] text-sm mb-4">We'll review your request and get back to you within 2 business days.</p>
-            <button onClick={onClose} className="bg-[#21262d] border border-[#30363d] text-[#e6edf3] text-sm font-medium px-6 py-2.5 rounded-lg hover:border-[#484f58] transition-all">
+            <h3 className="text-[#1d1d1f] font-semibold mb-1">Refund request submitted</h3>
+            <p className="text-[#6e6e73] text-sm mb-4">We'll review your request and get back to you within 2 business days.</p>
+            <button onClick={onClose} className="bg-[#f5f5f7] border border-black/[0.08] text-[#1d1d1f] text-sm font-semibold px-6 py-2.5 rounded-2xl hover:border-black/[0.15] transition-all">
               Close
             </button>
           </div>
         ) : (
           <form onSubmit={submit} className="p-6 space-y-4">
-            <div className="bg-orange-500/5 border border-orange-500/20 rounded-xl p-3">
-              <p className="text-orange-400 text-xs font-semibold">{booking.reference_number}</p>
-              <p className="text-[#8b949e] text-sm mt-0.5">Deposit paid: ${booking.deposit_amount.toLocaleString()}</p>
+            <div className="bg-orange-50 border border-orange-200 rounded-2xl p-3">
+              <p className="text-orange-700 text-xs font-semibold">{booking.reference_number}</p>
+              <p className="text-[#6e6e73] text-sm mt-0.5">Deposit paid: ${booking.deposit_amount.toLocaleString()}</p>
             </div>
 
             <div>
-              <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Reason category</label>
+              <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Reason category</label>
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value as RefundReasonCategory)}
-                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg px-3 py-2.5 text-[#e6edf3] text-sm outline-none"
+                className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all [color-scheme:light]"
               >
                 {REFUND_CATEGORIES.map(c => (
                   <option key={c.value} value={c.value}>{c.label}</option>
@@ -385,27 +385,27 @@ function RefundRequestModal({ booking, onClose }: { booking: DepositBooking; onC
             </div>
 
             <div>
-              <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Explain in detail</label>
+              <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Explain in detail</label>
               <textarea
                 value={reason}
                 onChange={e => setReason(e.target.value)}
                 placeholder="Please describe why you are requesting a refund..."
                 rows={4}
                 required
-                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg px-3 py-2.5 text-[#e6edf3] text-sm placeholder-[#484f58] outline-none transition-colors resize-none"
+                className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all resize-none"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading || !reason.trim()}
-              className="w-full bg-orange-600 hover:bg-orange-500 disabled:bg-orange-600/30 text-white font-semibold py-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"
+              className="w-full bg-orange-600 hover:bg-orange-700 disabled:opacity-40 text-white font-semibold py-3 rounded-2xl text-sm transition-all flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
               Submit Refund Request
             </button>
 
-            <p className="text-[#8b949e] text-[10px] text-center">Refunds are reviewed within 2 business days. Platform policy applies.</p>
+            <p className="text-[#aeaeb2] text-[10px] text-center">Refunds are reviewed within 2 business days. Platform policy applies.</p>
           </form>
         )}
       </div>
@@ -444,15 +444,15 @@ function ProfilePanel({ profile, userEmail, onSaved }: {
 
   return (
     <div className="max-w-xl space-y-6">
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-6">
+      <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-emerald-600/20 border border-emerald-500/30 rounded-xl flex items-center justify-center">
-              <User className="w-6 h-6 text-emerald-400" />
+            <div className="w-12 h-12 bg-green-50 border border-green-200 rounded-2xl flex items-center justify-center">
+              <User className="w-6 h-6 text-green-600" />
             </div>
             <div>
-              <h3 className="text-[#e6edf3] font-bold">{profile.display_name || 'Your Profile'}</h3>
-              <span className="inline-block bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-semibold px-2 py-0.5 rounded capitalize">
+              <h3 className="text-[#1d1d1f] font-semibold">{profile.display_name || 'Your Profile'}</h3>
+              <span className="inline-block bg-green-50 border border-green-200 text-green-700 text-[10px] font-semibold px-2 py-0.5 rounded-lg capitalize">
                 {profile.role}
               </span>
             </div>
@@ -460,7 +460,7 @@ function ProfilePanel({ profile, userEmail, onSaved }: {
           {!editing && (
             <button
               onClick={() => setEditing(true)}
-              className="flex items-center gap-1.5 text-[#8b949e] hover:text-[#e6edf3] text-sm border border-[#30363d] hover:border-[#484f58] px-3 py-1.5 rounded-lg transition-all"
+              className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-sm border border-black/[0.08] hover:border-black/[0.15] px-3 py-1.5 rounded-xl transition-all"
             >
               <Edit3 className="w-3.5 h-3.5" />
               Edit
@@ -506,20 +506,20 @@ function ProfilePanel({ profile, userEmail, onSaved }: {
 
           {editing && (
             <div>
-              <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Bio (optional)</label>
+              <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Bio (optional)</label>
               <textarea
                 value={form.bio}
                 onChange={e => setForm(p => ({ ...p, bio: e.target.value }))}
                 rows={3}
-                className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg px-3 py-2.5 text-[#e6edf3] text-sm placeholder-[#484f58] outline-none transition-colors resize-none"
+                className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all resize-none"
               />
             </div>
           )}
 
           {!editing && profile.bio && (
             <div>
-              <p className="text-xs text-[#8b949e] font-medium mb-1">Bio</p>
-              <p className="text-[#8b949e] text-sm">{profile.bio}</p>
+              <p className="text-[11px] text-[#86868b] font-semibold mb-1">Bio</p>
+              <p className="text-[#6e6e73] text-sm">{profile.bio}</p>
             </div>
           )}
 
@@ -528,14 +528,14 @@ function ProfilePanel({ profile, userEmail, onSaved }: {
               <button
                 onClick={save}
                 disabled={saving}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/40 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-all"
+                className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold px-5 py-2.5 rounded-2xl text-sm transition-all"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 Save changes
               </button>
               <button
                 onClick={() => setEditing(false)}
-                className="px-5 py-2.5 rounded-lg border border-[#30363d] text-[#8b949e] hover:text-[#e6edf3] text-sm transition-all"
+                className="px-5 py-2.5 rounded-2xl border border-black/[0.08] text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-all"
               >
                 Cancel
               </button>
@@ -544,9 +544,9 @@ function ProfilePanel({ profile, userEmail, onSaved }: {
         </div>
       </div>
 
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-4">
-        <p className="text-[#8b949e] text-xs font-semibold mb-2 uppercase tracking-wide">Account info</p>
-        <div className="space-y-1.5 text-xs text-[#8b949e]">
+      <div className="bg-white border border-black/[0.06] rounded-2xl p-4">
+        <p className="text-[#86868b] text-xs font-semibold mb-2 uppercase tracking-wider">Account info</p>
+        <div className="space-y-1.5 text-xs text-[#6e6e73]">
           <p>Member since {new Date(profile.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
           <p>Role: <span className="capitalize">{profile.role}</span></p>
         </div>
@@ -567,14 +567,14 @@ function ProfileField({
   if (editing && onChange) {
     return (
       <div>
-        <label className="block text-xs text-[#8b949e] font-medium mb-1.5">{label}</label>
+        <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">{label}</label>
         <div className="relative">
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b949e]">{icon}</div>
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aeaeb2]">{icon}</div>
           <input
             type="text"
             value={value}
             onChange={e => onChange(e.target.value)}
-            className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg pl-9 pr-3 py-2.5 text-[#e6edf3] text-sm outline-none transition-colors"
+            className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl pl-9 pr-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all"
           />
         </div>
       </div>
@@ -583,27 +583,26 @@ function ProfileField({
 
   return (
     <div className="flex items-center gap-2.5">
-      <div className="text-[#8b949e]">{icon}</div>
+      <div className="text-[#aeaeb2]">{icon}</div>
       <div>
-        <p className="text-[10px] text-[#8b949e] font-medium">{label}</p>
-        <p className="text-[#8b949e] text-sm">{value || '—'}</p>
+        <p className="text-[10px] text-[#86868b] font-semibold">{label}</p>
+        <p className="text-[#1d1d1f] text-sm">{value || '—'}</p>
       </div>
     </div>
   );
 }
 
-function StatCard({ icon, label, value, green, amber, warn }: {
+function StatCard({ icon, label, value, green, warn }: {
   icon: React.ReactNode;
   label: string;
   value: string | number;
   green?: boolean;
-  amber?: boolean;
   warn?: boolean;
 }) {
   return (
-    <div className={`bg-[#161b22] border rounded-xl p-4 ${warn ? 'border-orange-500/20' : 'border-[#30363d]'}`}>
-      <div className="flex items-center gap-2 mb-2">{icon}<p className="text-[#8b949e] text-xs">{label}</p></div>
-      <p className={`text-2xl font-black ${green ? 'text-emerald-400' : amber ? 'text-amber-400' : warn ? 'text-orange-400' : 'text-[#e6edf3]'}`}>
+    <div className={`bg-white border rounded-2xl p-4 ${warn ? 'border-orange-200' : 'border-black/[0.06]'}`}>
+      <div className="flex items-center gap-2 mb-2">{icon}<p className="text-[#6e6e73] text-xs">{label}</p></div>
+      <p className={`text-2xl font-bold tracking-[-0.02em] ${green ? 'text-green-600' : warn ? 'text-orange-600' : 'text-[#1d1d1f]'}`}>
         {value}
       </p>
     </div>
@@ -612,9 +611,9 @@ function StatCard({ icon, label, value, green, amber, warn }: {
 
 function InfoBlock({ label, value, green }: { label: string; value: string; green?: boolean }) {
   return (
-    <div className="bg-[#21262d] border border-[#30363d] rounded-lg p-3">
-      <p className="text-[#8b949e] text-xs mb-0.5">{label}</p>
-      <p className={`text-sm font-bold ${green ? 'text-emerald-400' : 'text-[#e6edf3]'}`}>{value}</p>
+    <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-3">
+      <p className="text-[#86868b] text-xs mb-0.5">{label}</p>
+      <p className={`text-sm font-semibold ${green ? 'text-green-600' : 'text-[#1d1d1f]'}`}>{value}</p>
     </div>
   );
 }
@@ -622,12 +621,12 @@ function InfoBlock({ label, value, green }: { label: string; value: string; gree
 function EmptyState({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-20 gap-3">
-      <div className="w-14 h-14 bg-[#21262d] border border-[#30363d] rounded-xl flex items-center justify-center">
+      <div className="w-14 h-14 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl flex items-center justify-center">
         {icon}
       </div>
       <div className="text-center">
-        <p className="text-[#e6edf3] font-semibold text-sm mb-1">{title}</p>
-        <p className="text-[#8b949e] text-sm">{description}</p>
+        <p className="text-[#1d1d1f] font-semibold text-sm mb-1">{title}</p>
+        <p className="text-[#6e6e73] text-sm">{description}</p>
       </div>
     </div>
   );
@@ -636,9 +635,8 @@ function EmptyState({ icon, title, description }: { icon: React.ReactNode; title
 function Pill({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[9px] text-[#8b949e] uppercase tracking-wide font-medium">{label}</p>
-      <p className="text-[#8b949e] text-xs font-medium">{value}</p>
+      <p className="text-[9px] text-[#86868b] uppercase tracking-wide font-semibold">{label}</p>
+      <p className="text-[#6e6e73] text-xs font-medium">{value}</p>
     </div>
   );
 }
-

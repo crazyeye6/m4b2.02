@@ -150,33 +150,37 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
   const stepIndex = STEPS.findIndex(s => s.key === step);
   const isConfirmed = step === 'confirmation';
 
+  const StepIndicator = () => (
+    <div className="flex items-center">
+      {STEPS.map((s, i) => {
+        const done = i < stepIndex;
+        const active = i === stepIndex;
+        return (
+          <div key={s.key} className="flex items-center flex-1 min-w-0">
+            <div className="flex items-center gap-1 min-w-0">
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all
+                ${done ? 'bg-green-600 text-white' : active ? 'bg-[#1d1d1f] text-white' : 'bg-[#f5f5f7] border border-black/[0.08] text-[#aeaeb2]'}`}
+              >
+                {done ? <Check className="w-3 h-3" /> : i + 1}
+              </div>
+              <span className={`text-[10px] font-medium hidden sm:block whitespace-nowrap ${active ? 'text-[#1d1d1f]' : done ? 'text-green-600' : 'text-[#aeaeb2]'}`}>
+                {s.label}
+              </span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div className={`h-px flex-1 mx-1.5 transition-colors ${done ? 'bg-green-300' : 'bg-black/[0.08]'}`} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+
   if (inline) {
     return (
-      <div className="bg-[#0d1117] border border-[#30363d] rounded-2xl w-full shadow-xl flex flex-col">
-        <div className="border-b border-[#30363d] px-6 pt-5 pb-4">
-          <div className="flex items-center mb-5">
-            {STEPS.map((s, i) => {
-              const done = i < stepIndex;
-              const active = i === stepIndex;
-              return (
-                <div key={s.key} className="flex items-center flex-1 min-w-0">
-                  <div className="flex items-center gap-1 min-w-0">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all
-                      ${done ? 'bg-emerald-500 text-black' : active ? 'bg-amber-500 text-black' : 'bg-[#21262d] border border-[#30363d] text-[#6e7681]'}`}
-                    >
-                      {done ? <Check className="w-3 h-3" /> : i + 1}
-                    </div>
-                    <span className={`text-[10px] font-medium hidden sm:block whitespace-nowrap ${active ? 'text-[#e6edf3]' : done ? 'text-emerald-400' : 'text-[#6e7681]'}`}>
-                      {s.label}
-                    </span>
-                  </div>
-                  {i < STEPS.length - 1 && (
-                    <div className={`h-px flex-1 mx-1.5 transition-colors ${done ? 'bg-emerald-500/40' : 'bg-[#30363d]'}`} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
+      <div className="bg-white border border-black/[0.08] rounded-3xl w-full shadow-sm flex flex-col">
+        <div className="border-b border-black/[0.06] px-6 pt-5 pb-4">
+          <StepIndicator />
         </div>
         <div className="p-6 flex-1">
           {step === 'entry' && (
@@ -205,55 +209,33 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/30 backdrop-blur-sm"
         onClick={!isConfirmed ? onClose : undefined}
       />
 
-      <div className="relative bg-[#0d1117] border border-[#30363d] rounded-2xl w-full max-w-lg max-h-[94vh] overflow-y-auto shadow-2xl flex flex-col">
-        <div className="sticky top-0 bg-[#0d1117] border-b border-[#30363d] px-6 pt-5 pb-4 z-10">
+      <div className="relative bg-white border border-black/[0.08] rounded-3xl w-full max-w-lg max-h-[94vh] overflow-y-auto shadow-2xl shadow-black/[0.12] flex flex-col">
+        <div className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-black/[0.06] px-6 pt-5 pb-4 z-10">
           <div className="flex items-start justify-between mb-5">
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Secure Slot</span>
+                <span className="text-[10px] font-bold text-[#6e6e73] uppercase tracking-widest">Secure Slot</span>
               </div>
-              <h2 className="text-[#e6edf3] font-bold text-base leading-tight truncate max-w-[280px]">
+              <h2 className="text-[#1d1d1f] font-bold text-base leading-tight truncate max-w-[280px]">
                 {listing.property_name}
               </h2>
-              <p className="text-[#8b949e] text-xs mt-0.5">{listing.media_owner_name}</p>
+              <p className="text-[#aeaeb2] text-xs mt-0.5">{listing.media_owner_name}</p>
             </div>
             {!isConfirmed && (
               <button
                 onClick={onClose}
-                className="text-[#6e7681] hover:text-[#e6edf3] transition-colors ml-3 flex-shrink-0 p-1"
+                className="text-[#aeaeb2] hover:text-[#1d1d1f] transition-colors ml-3 flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7]"
               >
                 <X className="w-5 h-5" />
               </button>
             )}
           </div>
 
-          <div className="flex items-center">
-            {STEPS.map((s, i) => {
-              const done = i < stepIndex;
-              const active = i === stepIndex;
-              return (
-                <div key={s.key} className="flex items-center flex-1 min-w-0">
-                  <div className="flex items-center gap-1 min-w-0">
-                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 transition-all
-                      ${done ? 'bg-emerald-500 text-black' : active ? 'bg-amber-500 text-black' : 'bg-[#21262d] border border-[#30363d] text-[#6e7681]'}`}
-                    >
-                      {done ? <Check className="w-3 h-3" /> : i + 1}
-                    </div>
-                    <span className={`text-[10px] font-medium hidden sm:block whitespace-nowrap ${active ? 'text-[#e6edf3]' : done ? 'text-emerald-400' : 'text-[#6e7681]'}`}>
-                      {s.label}
-                    </span>
-                  </div>
-                  {i < STEPS.length - 1 && (
-                    <div className={`h-px flex-1 mx-1.5 transition-colors ${done ? 'bg-emerald-500/40' : 'bg-[#30363d]'}`} />
-                  )}
-                </div>
-              );
-            })}
-          </div>
+          <StepIndicator />
         </div>
 
         <div className="p-6 flex-1">

@@ -39,49 +39,50 @@ export default function CountdownTimer({ deadline, compact = false }: CountdownT
 
   if (time.expired) {
     return (
-      <div className="flex items-center gap-1 bg-red-500/20 border border-red-500/30 text-red-400 text-xs font-bold px-2 py-1 rounded-md tracking-wide">
-        CLOSED
+      <div className="inline-flex items-center gap-1.5 bg-red-50 border border-red-100 text-red-500 text-[11px] font-semibold px-2.5 py-1.5 rounded-full tracking-wide">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+        Closed
       </div>
     );
   }
 
   if (compact) {
-    const colorClass = isUrgent
-      ? 'bg-yellow-500/20 border-yellow-500/30 text-yellow-400'
+    const bg = isUrgent
+      ? 'bg-red-50 border-red-100 text-red-500'
       : isWarning
-      ? 'bg-yellow-500/15 border-yellow-500/20 text-yellow-400'
-      : 'bg-amber-500/15 border-amber-500/20 text-amber-400';
+      ? 'bg-orange-50 border-orange-100 text-orange-500'
+      : 'bg-[#f5f5f7] border-black/[0.06] text-[#6e6e73]';
 
     const label = time.days > 0
       ? `${time.days}d ${time.hours}h to claim`
       : `${time.hours}h ${time.minutes}m to claim`;
 
     return (
-      <div className={`flex items-center gap-1.5 border text-xs font-bold px-2.5 py-1.5 rounded-lg ${colorClass}`}>
-        <Clock className="w-3 h-3" />
+      <div className={`inline-flex items-center gap-1.5 border text-[11px] font-semibold px-2.5 py-1.5 rounded-full ${bg}`}>
+        <Clock className="w-3 h-3 flex-shrink-0" />
         {label}
       </div>
     );
   }
 
   const pad = (n: number) => String(n).padStart(2, '0');
-  const colorClass = isUrgent || isWarning ? 'text-yellow-400' : 'text-amber-400';
+  const textColor = isUrgent ? 'text-red-500' : isWarning ? 'text-orange-500' : 'text-[#1d1d1f]';
 
   return (
-    <div className={`flex items-center gap-2 ${colorClass}`}>
+    <div className={`flex items-center gap-2 ${textColor}`}>
       <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-      <div className="flex items-center gap-1 text-xs font-mono font-bold">
+      <div className="flex items-center gap-1 text-[12px] font-mono font-semibold tracking-tight">
         {time.days > 0 && (
           <>
-            <span>{time.days}<span className="font-normal opacity-60 text-[10px]">d</span></span>
-            <span className="opacity-30">:</span>
+            <span>{time.days}<span className="font-normal text-[10px] opacity-50">d</span></span>
+            <span className="opacity-25">:</span>
           </>
         )}
-        <span>{pad(time.hours)}<span className="font-normal opacity-60 text-[10px]">h</span></span>
-        <span className="opacity-30">:</span>
-        <span>{pad(time.minutes)}<span className="font-normal opacity-60 text-[10px]">m</span></span>
-        <span className="opacity-30">:</span>
-        <span>{pad(time.seconds)}<span className="font-normal opacity-60 text-[10px]">s</span></span>
+        <span>{pad(time.hours)}<span className="font-normal text-[10px] opacity-50">h</span></span>
+        <span className="opacity-25">:</span>
+        <span>{pad(time.minutes)}<span className="font-normal text-[10px] opacity-50">m</span></span>
+        <span className="opacity-25">:</span>
+        <span>{pad(time.seconds)}<span className="font-normal text-[10px] opacity-50">s</span></span>
       </div>
     </div>
   );

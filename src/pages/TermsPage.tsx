@@ -7,8 +7,8 @@ interface TermsPageProps {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-10">
-      <h2 className="text-lg font-semibold text-[#e6edf3] mb-4 pb-2 border-b border-[#30363d]">{title}</h2>
-      <div className="space-y-3 text-[#8b949e] text-sm leading-relaxed">{children}</div>
+      <h2 className="text-lg font-semibold text-[#1d1d1f] mb-4 pb-2 border-b border-black/[0.06]">{title}</h2>
+      <div className="space-y-3 text-[#6e6e73] text-sm leading-relaxed">{children}</div>
     </section>
   );
 }
@@ -16,8 +16,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function SubSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mt-5">
-      <h3 className="text-sm font-semibold text-[#c9d1d9] mb-2">{title}</h3>
-      <div className="space-y-2 text-[#8b949e] text-sm leading-relaxed">{children}</div>
+      <h3 className="text-sm font-semibold text-[#1d1d1f] mb-2">{title}</h3>
+      <div className="space-y-2 text-[#6e6e73] text-sm leading-relaxed">{children}</div>
     </div>
   );
 }
@@ -26,29 +26,29 @@ export default function TermsPage({ onBack }: TermsPageProps) {
   const effectiveDate = 'April 14, 2026';
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8 py-20 pb-24">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-[#8b949e] hover:text-[#e6edf3] text-sm mb-10 transition-colors group"
+          className="flex items-center gap-2 text-[#6e6e73] hover:text-[#1d1d1f] text-sm mb-10 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
           Back to marketplace
         </button>
 
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 bg-[#238636] rounded-md flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-[#1d1d1f] rounded-xl flex items-center justify-center flex-shrink-0">
             <Zap className="w-4 h-4 text-white fill-white" />
           </div>
-          <span className="text-[#e6edf3] font-semibold">
-            EndingThisWeek<span className="text-[#3fb950]">.media</span>
+          <span className="text-[#1d1d1f] font-semibold">
+            EndingThisWeek<span className="text-[#6e6e73]">.media</span>
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold text-[#e6edf3] mt-6 mb-2">Terms of Service</h1>
-        <p className="text-[#6e7681] text-sm mb-12">Effective date: {effectiveDate}</p>
+        <h1 className="text-3xl font-bold text-[#1d1d1f] mt-6 mb-2">Terms of Service</h1>
+        <p className="text-[#aeaeb2] text-sm mb-12">Effective date: {effectiveDate}</p>
 
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5 mb-10 text-sm text-[#8b949e] leading-relaxed">
+        <div className="bg-white border border-black/[0.08] rounded-2xl p-5 mb-10 text-sm text-[#6e6e73] leading-relaxed">
           Please read these Terms of Service carefully before using EndingThisWeek.media. By accessing or using the platform in any capacity — as a buyer, seller, or visitor — you agree to be bound by these terms. If you do not agree, you must not use the platform.
         </div>
 
@@ -289,13 +289,13 @@ export default function TermsPage({ onBack }: TermsPageProps) {
           <p>
             If you have questions about these Terms, please contact us at:
           </p>
-          <div className="mt-3 bg-[#161b22] border border-[#30363d] rounded-md p-4 text-[#c9d1d9]">
-            <p className="font-medium">EndingThisWeek.media</p>
-            <p className="mt-1 text-[#8b949e]">Email: legal@endingthisweek.media</p>
+          <div className="mt-3 bg-white border border-black/[0.08] rounded-2xl p-4 text-[#1d1d1f]">
+            <p className="font-semibold">EndingThisWeek.media</p>
+            <p className="mt-1 text-[#6e6e73]">Email: legal@endingthisweek.media</p>
           </div>
         </Section>
 
-        <div className="mt-12 pt-6 border-t border-[#30363d] text-center text-xs text-[#484f58]">
+        <div className="mt-12 pt-6 border-t border-black/[0.06] text-center text-xs text-[#aeaeb2]">
           &copy; 2026 EndingThisWeek.media. All rights reserved.
         </div>
       </div>

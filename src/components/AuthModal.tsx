@@ -80,16 +80,16 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
     return (
       <ModalShell onClose={onClose}>
         <div className="p-8 text-center">
-          <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Mail className="w-7 h-7 text-emerald-400" />
+          <div className="w-14 h-14 bg-green-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
+            <Mail className="w-7 h-7 text-green-600" />
           </div>
-          <h3 className="text-[#e6edf3] font-bold text-lg mb-2">Check your inbox</h3>
-          <p className="text-[#8b949e] text-sm mb-1">We sent a password reset link to:</p>
-          <p className="text-[#e6edf3] font-semibold text-sm mb-6">{resetEmail}</p>
-          <p className="text-[#6e7681] text-xs mb-6">Click the link in the email to reset your password. The link expires in 1 hour.</p>
+          <h3 className="text-[#1d1d1f] font-semibold text-[17px] mb-2">Check your inbox</h3>
+          <p className="text-[#6e6e73] text-[13px] mb-1">We sent a password reset link to:</p>
+          <p className="text-[#1d1d1f] font-semibold text-[14px] mb-5">{resetEmail}</p>
+          <p className="text-[#aeaeb2] text-[12px] mb-6">Click the link in the email to reset your password. The link expires in 1 hour.</p>
           <button
             onClick={() => { setMode('auth'); setTab('sign-in'); }}
-            className="w-full bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] font-semibold py-2.5 rounded-lg text-sm transition-all"
+            className="w-full bg-[#f5f5f7] hover:bg-[#e5e5ea] border border-black/[0.08] text-[#1d1d1f] font-semibold py-3 rounded-2xl text-[14px] transition-all"
           >
             Back to sign in
           </button>
@@ -102,16 +102,16 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
     return (
       <ModalShell onClose={onClose}>
         <div className="p-8 text-center">
-          <div className="w-14 h-14 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-7 h-7 text-emerald-400" />
+          <div className="w-14 h-14 bg-green-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-7 h-7 text-green-600" />
           </div>
-          <h3 className="text-[#e6edf3] font-bold text-lg mb-2">Account created</h3>
-          <p className="text-[#8b949e] text-sm mb-1">We sent a verification email to:</p>
-          <p className="text-[#e6edf3] font-semibold text-sm mb-4">{form.email}</p>
-          <p className="text-[#6e7681] text-xs mb-6">Please check your inbox and click the link to verify your email address before signing in.</p>
+          <h3 className="text-[#1d1d1f] font-semibold text-[17px] mb-2">Account created</h3>
+          <p className="text-[#6e6e73] text-[13px] mb-1">We sent a verification email to:</p>
+          <p className="text-[#1d1d1f] font-semibold text-[14px] mb-4">{form.email}</p>
+          <p className="text-[#aeaeb2] text-[12px] mb-6">Please check your inbox and click the link to verify your email address before signing in.</p>
           <button
             onClick={() => { setMode('auth'); setTab('sign-in'); }}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-2.5 rounded-lg text-sm transition-all"
+            className="w-full bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold py-3 rounded-2xl text-[14px] transition-all"
           >
             Go to sign in
           </button>
@@ -126,15 +126,15 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
         <div className="p-6">
           <button
             onClick={() => { setMode('auth'); setError(''); }}
-            className="flex items-center gap-1.5 text-[#8b949e] hover:text-[#e6edf3] text-xs mb-5 transition-colors"
+            className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-[12px] mb-5 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Back to sign in
           </button>
-          <h3 className="text-[#e6edf3] font-bold text-base mb-1">Reset your password</h3>
-          <p className="text-[#8b949e] text-xs mb-5">Enter your email and we'll send you a reset link.</p>
+          <h3 className="text-[#1d1d1f] font-semibold text-[17px] mb-1">Reset your password</h3>
+          <p className="text-[#6e6e73] text-[13px] mb-5">Enter your email and we'll send you a reset link.</p>
           <form onSubmit={handlePasswordReset} className="space-y-4">
-            <Field
+            <AuthField
               label="Email address"
               icon={<Mail className="w-3.5 h-3.5" />}
               type="email"
@@ -147,7 +147,7 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/40 text-white font-semibold py-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"
+              className="w-full bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold py-3 rounded-2xl text-[14px] transition-all flex items-center justify-center gap-2"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               Send reset link
@@ -160,18 +160,21 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
 
   return (
     <ModalShell onClose={onClose}>
-      <div className="flex border-b border-[#30363d]">
+      <div className="flex border-b border-black/[0.06]">
         {(['sign-in', 'sign-up'] as const).map(t => (
           <button
             key={t}
             onClick={() => { setTab(t); setError(''); }}
-            className={`flex-1 py-3 text-sm font-semibold transition-colors ${
+            className={`flex-1 py-3.5 text-[13px] font-semibold transition-colors relative ${
               tab === t
-                ? 'text-[#e6edf3] border-b-2 border-emerald-500'
-                : 'text-[#8b949e] hover:text-[#c9d1d9]'
+                ? 'text-[#1d1d1f]'
+                : 'text-[#6e6e73] hover:text-[#1d1d1f]'
             }`}
           >
             {t === 'sign-in' ? 'Sign In' : 'Create Account'}
+            {tab === t && (
+              <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-[#1d1d1f] rounded-full" />
+            )}
           </button>
         ))}
       </div>
@@ -180,79 +183,54 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
         {tab === 'sign-up' && (
           <>
             <div>
-              <label className="block text-xs text-[#8b949e] font-medium mb-1.5">I am a</label>
+              <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-2">I am a</label>
               <div className="grid grid-cols-2 gap-2">
                 {(['buyer', 'seller'] as const).map(r => (
                   <button
                     key={r}
                     type="button"
                     onClick={() => update('role', r)}
-                    className={`py-2.5 rounded-lg text-sm font-semibold border transition-all capitalize ${
+                    className={`py-2.5 rounded-2xl text-[13px] font-semibold border transition-all capitalize ${
                       form.role === r
                         ? r === 'buyer'
-                          ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-400'
-                          : 'bg-blue-600/20 border-blue-500/50 text-blue-400'
-                        : 'bg-[#21262d] border-[#30363d] text-[#8b949e] hover:border-[#484f58] hover:text-[#c9d1d9]'
+                          ? 'bg-green-50 border-green-200 text-green-700'
+                          : 'bg-blue-50 border-blue-200 text-blue-700'
+                        : 'bg-[#f5f5f7] border-black/[0.06] text-[#6e6e73] hover:border-black/[0.12] hover:text-[#1d1d1f]'
                     }`}
                   >
                     {r === 'buyer' ? 'Buyer (Advertiser)' : 'Seller (Creator)'}
                   </button>
                 ))}
               </div>
-              <p className="text-[10px] text-[#8b949e] mt-1.5">
+              <p className="text-[11px] text-[#aeaeb2] mt-2">
                 {form.role === 'buyer'
                   ? 'Browse and secure media slots for your campaigns.'
                   : 'List your newsletter, podcast, or influencer slots.'}
               </p>
             </div>
 
-            <Field
-              label="Full name"
-              icon={<User className="w-3.5 h-3.5" />}
-              type="text"
-              value={form.displayName}
-              onChange={v => update('displayName', v)}
-              placeholder="Jane Smith"
-              required
-            />
-
-            <Field
-              label="Company"
-              icon={<Building2 className="w-3.5 h-3.5" />}
-              type="text"
-              value={form.company}
-              onChange={v => update('company', v)}
-              placeholder="Acme Corp"
-              required
-            />
+            <AuthField label="Full name" icon={<User className="w-3.5 h-3.5" />} type="text" value={form.displayName} onChange={v => update('displayName', v)} placeholder="Jane Smith" required />
+            <AuthField label="Company" icon={<Building2 className="w-3.5 h-3.5" />} type="text" value={form.company} onChange={v => update('company', v)} placeholder="Acme Corp" required />
           </>
         )}
 
-        <Field
-          label="Email address"
-          icon={<Mail className="w-3.5 h-3.5" />}
-          type="email"
-          value={form.email}
-          onChange={v => update('email', v)}
-          placeholder="you@company.com"
-          required
-        />
+        <AuthField label="Email address" icon={<Mail className="w-3.5 h-3.5" />} type="email" value={form.email} onChange={v => update('email', v)} placeholder="you@company.com" required />
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs text-[#8b949e] font-medium">Password</label>
+            <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider">Password</label>
             {tab === 'sign-in' && (
               <button
                 type="button"
                 onClick={() => { setMode('reset'); setResetEmail(form.email); setError(''); }}
-                className="text-[10px] text-emerald-500 hover:text-emerald-400 transition-colors"
+                className="text-[11px] text-blue-600 hover:text-blue-700 transition-colors font-medium"
               >
                 Forgot password?
               </button>
             )}
           </div>
           <div className="relative">
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b949e]">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aeaeb2]">
               <Lock className="w-3.5 h-3.5" />
             </div>
             <input
@@ -262,12 +240,12 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
               placeholder={tab === 'sign-up' ? 'Min 8 characters' : '••••••••'}
               minLength={tab === 'sign-up' ? 8 : undefined}
               required
-              className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg pl-9 pr-10 py-2.5 text-[#e6edf3] text-sm placeholder-[#6e7681] outline-none transition-colors"
+              className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl pl-9 pr-10 py-3 text-[#1d1d1f] text-[14px] placeholder-[#aeaeb2] outline-none transition-all"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8b949e] hover:text-[#c9d1d9] transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aeaeb2] hover:text-[#6e6e73] transition-colors"
             >
               {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
             </button>
@@ -279,18 +257,18 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/40 text-white font-semibold py-3 rounded-lg text-sm transition-all flex items-center justify-center gap-2"
+          className="w-full bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold py-3 rounded-2xl text-[14px] transition-all flex items-center justify-center gap-2"
         >
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           {tab === 'sign-in' ? 'Sign In' : 'Create Account'}
         </button>
 
-        <p className="text-center text-[#8b949e] text-xs">
+        <p className="text-center text-[#6e6e73] text-[12px]">
           {tab === 'sign-in' ? "Don't have an account? " : 'Already have an account? '}
           <button
             type="button"
             onClick={() => { setTab(tab === 'sign-in' ? 'sign-up' : 'sign-in'); setError(''); }}
-            className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+            className="text-blue-600 hover:text-blue-700 font-semibold transition-colors"
           >
             {tab === 'sign-in' ? 'Create one' : 'Sign in'}
           </button>
@@ -303,17 +281,17 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
 function ModalShell({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-[#161b22] border border-[#30363d] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[#30363d]">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white border border-black/[0.08] rounded-3xl w-full max-w-md shadow-2xl shadow-black/[0.12] overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-black/[0.06]">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 bg-emerald-600 rounded-md flex items-center justify-center">
+            <div className="w-7 h-7 bg-[#1d1d1f] rounded-xl flex items-center justify-center">
               <Zap className="w-3.5 h-3.5 text-white fill-white" />
             </div>
-            <span className="text-[#e6edf3] font-bold text-sm">EndingThisWeek.media</span>
+            <span className="text-[#1d1d1f] font-semibold text-[14px] tracking-[-0.01em]">EndingThisWeek<span className="text-[#6e6e73]">.media</span></span>
           </div>
-          <button onClick={onClose} className="text-[#8b949e] hover:text-[#e6edf3] transition-colors">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="text-[#aeaeb2] hover:text-[#1d1d1f] transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7]">
+            <X className="w-4 h-4" />
           </button>
         </div>
         {children}
@@ -322,7 +300,7 @@ function ModalShell({ children, onClose }: { children: React.ReactNode; onClose:
   );
 }
 
-function Field({
+function AuthField({
   label, icon, type, value, onChange, placeholder, required,
 }: {
   label: string;
@@ -335,16 +313,16 @@ function Field({
 }) {
   return (
     <div>
-      <label className="block text-xs text-[#8b949e] font-medium mb-1.5">{label}</label>
+      <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">{label}</label>
       <div className="relative">
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8b949e]">{icon}</div>
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aeaeb2]">{icon}</div>
         <input
           type={type}
           value={value}
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           required={required}
-          className="w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 rounded-lg pl-9 pr-3 py-2.5 text-[#e6edf3] text-sm placeholder-[#6e7681] outline-none transition-colors"
+          className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl pl-9 pr-3 py-3 text-[#1d1d1f] text-[14px] placeholder-[#aeaeb2] outline-none transition-all"
         />
       </div>
     </div>
@@ -353,8 +331,8 @@ function Field({
 
 function ErrorBox({ message }: { message: string }) {
   return (
-    <div className="bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2.5">
-      <p className="text-red-400 text-xs">{message}</p>
+    <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3">
+      <p className="text-red-600 text-[12px] font-medium">{message}</p>
     </div>
   );
 }

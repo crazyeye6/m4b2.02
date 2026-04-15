@@ -60,48 +60,48 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#161b22] border border-emerald-500/20 rounded-xl p-4">
+      <div className="bg-[#f5f5f7] border border-green-200 rounded-2xl p-4">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[#8b949e] text-xs uppercase tracking-wide font-semibold mb-1">Booking deposit</p>
-            <p className="text-[#e6edf3] text-3xl font-black tabular-nums">${depositTotal.toLocaleString()}</p>
-            <p className="text-[#6e7681] text-xs mt-1">Charged by EndingThisWeek.media</p>
+            <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold mb-1">Booking deposit</p>
+            <p className="text-[#1d1d1f] text-3xl font-black tabular-nums">${depositTotal.toLocaleString()}</p>
+            <p className="text-[#aeaeb2] text-xs mt-1">Charged by EndingThisWeek.media</p>
           </div>
-          <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-2.5 py-1.5">
-            <Lock className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="text-emerald-400 text-xs font-semibold">Secured</span>
+          <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-xl px-2.5 py-1.5">
+            <Lock className="w-3.5 h-3.5 text-green-600" />
+            <span className="text-green-700 text-xs font-semibold">Secured</span>
           </div>
         </div>
-        <div className="mt-3 pt-3 border-t border-[#30363d] space-y-1.5 text-xs">
+        <div className="mt-3 pt-3 border-t border-black/[0.06] space-y-1.5 text-xs">
           <div className="flex justify-between">
-            <span className="text-[#6e7681]">Deposit (10%)</span>
-            <span className="text-[#8b949e]">${depositSubtotal.toLocaleString()}</span>
+            <span className="text-[#aeaeb2]">Deposit (10%)</span>
+            <span className="text-[#6e6e73]">${depositSubtotal.toLocaleString()}</span>
           </div>
           {vat.vatApplies && (
             <div className="flex justify-between">
-              <span className="text-[#6e7681]">{vat.vatLabel}</span>
-              <span className="text-[#8b949e]">${vat.vatAmount.toFixed(2)}</span>
+              <span className="text-[#aeaeb2]">{vat.vatLabel}</span>
+              <span className="text-[#6e6e73]">${vat.vatAmount.toFixed(2)}</span>
             </div>
           )}
           {vat.reverseCharge && (
             <div className="flex justify-between">
-              <span className="text-blue-400">Reverse charge (0% VAT)</span>
-              <span className="text-blue-400">$0.00</span>
+              <span className="text-blue-600">Reverse charge (0% VAT)</span>
+              <span className="text-blue-600">$0.00</span>
             </div>
           )}
         </div>
       </div>
 
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-[#30363d] flex items-center justify-between">
+      <div className="bg-white border border-black/[0.08] rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-black/[0.06] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-[#8b949e]" />
-            <p className="text-[#8b949e] text-xs uppercase tracking-wide font-semibold">Card details</p>
+            <CreditCard className="w-4 h-4 text-[#6e6e73]" />
+            <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold">Card details</p>
           </div>
           <div className="flex items-center gap-1.5">
             {['VISA', 'MC', 'AMEX'].map(c => (
-              <div key={c} className="h-5 px-1.5 bg-[#21262d] border border-[#30363d] rounded flex items-center">
-                <span className="text-[8px] font-black text-[#8b949e]">{c}</span>
+              <div key={c} className="h-5 px-1.5 bg-[#f5f5f7] border border-black/[0.08] rounded flex items-center">
+                <span className="text-[8px] font-black text-[#86868b]">{c}</span>
               </div>
             ))}
           </div>
@@ -109,14 +109,14 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
 
         <div className="p-4 space-y-3">
           {error && (
-            <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm px-3 py-2.5 rounded-lg">
+            <div className="flex items-center gap-2 bg-red-50 border border-red-100 text-red-600 text-sm px-3 py-2.5 rounded-2xl">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               {error}
             </div>
           )}
 
           <div>
-            <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Card number</label>
+            <label className="block text-xs text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Card number</label>
             <input
               type="text"
               value={cardNumber}
@@ -130,7 +130,7 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Expiry</label>
+              <label className="block text-xs text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Expiry</label>
               <input
                 type="text"
                 value={expiry}
@@ -142,7 +142,7 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
               />
             </div>
             <div>
-              <label className="block text-xs text-[#8b949e] font-medium mb-1.5">CVC</label>
+              <label className="block text-xs text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">CVC</label>
               <input
                 type="text"
                 value={cvc}
@@ -156,7 +156,7 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
           </div>
 
           <div>
-            <label className="block text-xs text-[#8b949e] font-medium mb-1.5">Name on card</label>
+            <label className="block text-xs text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Name on card</label>
             <input
               type="text"
               value={nameOnCard}
@@ -169,8 +169,8 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
         </div>
       </div>
 
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-3">
-        <p className="text-[#6e7681] text-xs leading-relaxed">
+      <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-3">
+        <p className="text-[#6e6e73] text-xs leading-relaxed">
           You are paying a 10% booking deposit to reserve this media placement.
           The remaining balance is paid directly to the media owner.
         </p>
@@ -180,14 +180,14 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
         <button
           onClick={onBack}
           disabled={processing}
-          className="px-5 py-3.5 rounded-xl border border-[#30363d] hover:border-[#484f58] text-[#8b949e] hover:text-[#e6edf3] text-sm font-medium transition-all disabled:opacity-50"
+          className="px-5 py-3.5 rounded-2xl border border-black/[0.08] hover:border-black/[0.15] text-[#6e6e73] hover:text-[#1d1d1f] text-sm font-medium transition-all disabled:opacity-50"
         >
           Back
         </button>
         <button
           onClick={handleSubmit}
           disabled={processing}
-          className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-600/40 text-white font-bold py-3.5 rounded-xl transition-all text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
+          className="flex-1 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-bold py-3.5 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
         >
           {processing ? (
             <>
@@ -203,7 +203,7 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
         </button>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 text-xs text-[#6e7681]">
+      <div className="flex items-center justify-center gap-1.5 text-xs text-[#aeaeb2]">
         <Shield className="w-3 h-3" />
         <span>Secured by Stripe · 256-bit encryption · PCI DSS compliant</span>
       </div>
@@ -211,4 +211,4 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
   );
 }
 
-const inputCls = 'w-full bg-[#0d1117] border border-[#30363d] focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 rounded-lg px-3 py-2.5 text-[#e6edf3] text-sm placeholder-[#484f58] outline-none transition-all';
+const inputCls = 'w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all';

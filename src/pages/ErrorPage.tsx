@@ -10,17 +10,17 @@ export default function ErrorPage({ onHome, onRetry, message }: ErrorPageProps) 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4">
       <div className="text-center max-w-md">
-        <div className="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <AlertTriangle className="w-9 h-9 text-red-400" />
+        <div className="w-20 h-20 bg-red-50 rounded-3xl flex items-center justify-center mx-auto mb-8">
+          <AlertTriangle className="w-9 h-9 text-red-500" />
         </div>
 
-        <h1 className="text-[#e6edf3] font-bold text-2xl mb-3">Something went wrong</h1>
-        <p className="text-[#8b949e] text-sm leading-relaxed mb-3">
+        <h1 className="text-[#1d1d1f] font-semibold text-3xl mb-3 tracking-[-0.02em]">Something went wrong</h1>
+        <p className="text-[#6e6e73] text-[15px] leading-relaxed mb-3">
           {message || 'An unexpected error occurred. Our team has been notified.'}
         </p>
-        <p className="text-[#6e7681] text-xs mb-8">
+        <p className="text-[#aeaeb2] text-[13px] mb-10">
           If this keeps happening, please contact support at{' '}
-          <a href="mailto:support@endingthisweek.media" className="text-emerald-500 hover:text-emerald-400 transition-colors">
+          <a href="mailto:support@endingthisweek.media" className="text-blue-600 hover:text-blue-700 transition-colors">
             support@endingthisweek.media
           </a>
         </p>
@@ -28,7 +28,7 @@ export default function ErrorPage({ onHome, onRetry, message }: ErrorPageProps) 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={onHome}
-            className="flex items-center justify-center gap-2 bg-[#21262d] hover:bg-[#30363d] border border-[#30363d] text-[#e6edf3] font-semibold px-5 py-2.5 rounded-lg text-sm transition-all"
+            className="flex items-center justify-center gap-2 bg-white border border-black/[0.08] hover:border-black/[0.15] text-[#1d1d1f] font-semibold px-6 py-3 rounded-2xl text-[14px] transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
             Go home
@@ -36,7 +36,7 @@ export default function ErrorPage({ onHome, onRetry, message }: ErrorPageProps) 
           {onRetry && (
             <button
               onClick={onRetry}
-              className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-5 py-2.5 rounded-lg text-sm transition-all"
+              className="flex items-center justify-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-6 py-3 rounded-2xl text-[14px] transition-all"
             >
               <RefreshCw className="w-4 h-4" />
               Try again

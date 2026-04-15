@@ -35,12 +35,12 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-[#e6edf3] font-bold text-base mb-1">Reserve your slot</h3>
-        <p className="text-[#8b949e] text-sm">Takes under 60 seconds. No account required.</p>
+        <h3 className="text-[#1d1d1f] font-bold text-base mb-1">Reserve your slot</h3>
+        <p className="text-[#6e6e73] text-sm">Takes under 60 seconds. No account required.</p>
       </div>
 
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-4">
-        <p className="text-[#8b949e] text-xs uppercase tracking-wide font-semibold mb-3">Purchase type</p>
+      <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
+        <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold mb-3">Purchase type</p>
         <div className="grid grid-cols-2 gap-2">
           {([
             { type: 'business' as PurchaseType, icon: <Building2 className="w-4 h-4" />, label: 'Business', sub: 'Company / brand' },
@@ -50,17 +50,17 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
               key={type}
               type="button"
               onClick={() => onChange({ purchase_type: type })}
-              className={`flex flex-col items-start gap-1 p-3.5 rounded-xl border text-left transition-all ${
+              className={`flex flex-col items-start gap-1 p-3.5 rounded-2xl border text-left transition-all ${
                 form.purchase_type === type
-                  ? 'border-emerald-500/50 bg-emerald-500/[0.06] ring-1 ring-emerald-500/20'
-                  : 'border-[#30363d] bg-[#0d1117] hover:border-[#484f58]'
+                  ? 'border-black/[0.2] bg-white shadow-sm'
+                  : 'border-black/[0.06] bg-white hover:border-black/[0.12]'
               }`}
             >
-              <div className={`flex items-center gap-2 font-semibold text-sm ${form.purchase_type === type ? 'text-emerald-400' : 'text-[#e6edf3]'}`}>
+              <div className={`flex items-center gap-2 font-semibold text-sm ${form.purchase_type === type ? 'text-[#1d1d1f]' : 'text-[#6e6e73]'}`}>
                 {icon}
                 {label}
               </div>
-              <p className="text-[#6e7681] text-xs">{sub}</p>
+              <p className="text-[#aeaeb2] text-xs">{sub}</p>
             </button>
           ))}
         </div>
@@ -68,11 +68,11 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
 
       <div className="space-y-3">
         <div>
-          <label className="block text-xs font-medium text-[#8b949e] mb-1.5">
-            Email address <span className="text-amber-500">*</span>
+          <label className="block text-xs font-semibold text-[#86868b] uppercase tracking-wider mb-1.5">
+            Email address <span className="text-red-500">*</span>
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6e7681]" />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#aeaeb2]" />
             <input
               type="email"
               value={form.buyer_email}
@@ -82,15 +82,15 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
               className={inputCls + ' pl-10'}
             />
           </div>
-          <p className="text-[#6e7681] text-xs mt-1">Booking confirmation sent here</p>
+          <p className="text-[#aeaeb2] text-xs mt-1">Booking confirmation sent here</p>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-[#8b949e] mb-1.5">
-            <Globe className="inline w-3.5 h-3.5 mr-1 mb-0.5 text-[#6e7681]" />
-            Country <span className="text-amber-500">*</span>
+          <label className="block text-xs font-semibold text-[#86868b] uppercase tracking-wider mb-1.5">
+            <Globe className="inline w-3.5 h-3.5 mr-1 mb-0.5 text-[#aeaeb2]" />
+            Country <span className="text-red-500">*</span>
             {(countryInfo.isEU || countryInfo.isGBR) && (
-              <span className="ml-2 text-[10px] text-blue-400 font-normal">· VAT territory</span>
+              <span className="ml-2 text-[10px] text-blue-600 font-normal normal-case">· VAT territory</span>
             )}
           </label>
           <div className="relative">
@@ -103,10 +103,10 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
                 <option key={c.code} value={c.code}>{c.name}</option>
               ))}
             </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6e7681] pointer-events-none" />
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#aeaeb2] pointer-events-none" />
           </div>
           {countryInfo.currency !== 'USD' && (
-            <p className="text-[#6e7681] text-xs mt-1">
+            <p className="text-[#aeaeb2] text-xs mt-1">
               Local currency: {countryInfo.currencySymbol} {countryInfo.currency}
             </p>
           )}
@@ -114,25 +114,25 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2.5">
-          <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
-          <p className="text-yellow-400 text-sm">{error}</p>
+        <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-2xl px-3 py-2.5">
+          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+          <p className="text-red-600 text-sm">{error}</p>
         </div>
       )}
 
       <button
         onClick={handleContinue}
-        className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all text-sm shadow-lg shadow-emerald-900/20"
+        className="w-full bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-bold py-3.5 rounded-2xl transition-all text-sm"
       >
         Continue
       </button>
 
-      <p className="text-[#6e7681] text-xs text-center leading-relaxed">
+      <p className="text-[#aeaeb2] text-xs text-center leading-relaxed">
         Your data is used only for booking purposes. We collect only what's necessary.
       </p>
     </div>
   );
 }
 
-const inputCls = 'w-full bg-[#161b22] border border-[#30363d] focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 rounded-lg px-3 py-2.5 text-[#e6edf3] text-sm placeholder-[#484f58] outline-none transition-all';
-const selectCls = 'w-full bg-[#161b22] border border-[#30363d] focus:border-emerald-500/50 rounded-lg px-3 py-2.5 text-[#e6edf3] text-sm outline-none transition-all appearance-none pr-10';
+const inputCls = 'w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all';
+const selectCls = 'w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all appearance-none pr-10 [color-scheme:light]';

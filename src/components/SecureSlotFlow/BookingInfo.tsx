@@ -22,32 +22,32 @@ export default function BookingInfo({ form, onChange, listing, onContinue, onBac
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-[#e6edf3] font-bold text-base mb-1">Campaign details</h3>
-        <p className="text-[#8b949e] text-sm">Shared with the creator to brief your campaign.</p>
+        <h3 className="text-[#1d1d1f] font-bold text-base mb-1">Campaign details</h3>
+        <p className="text-[#6e6e73] text-sm">Shared with the creator to brief your campaign.</p>
       </div>
 
-      <div className="bg-[#161b22] border border-[#30363d] rounded-xl p-3 flex items-start gap-3">
-        <div className="w-8 h-8 bg-[#21262d] border border-[#30363d] rounded-lg flex items-center justify-center flex-shrink-0">
-          <CalendarDays className="w-4 h-4 text-[#8b949e]" />
+      <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-3 flex items-start gap-3">
+        <div className="w-8 h-8 bg-white border border-black/[0.08] rounded-xl flex items-center justify-center flex-shrink-0">
+          <CalendarDays className="w-4 h-4 text-[#6e6e73]" />
         </div>
         <div>
-          <p className="text-[#e6edf3] text-xs font-semibold">{listing.property_name}</p>
-          <p className="text-[#8b949e] text-xs">{listing.slot_type} · {listing.date_label}</p>
+          <p className="text-[#1d1d1f] text-xs font-semibold">{listing.property_name}</p>
+          <p className="text-[#6e6e73] text-xs">{listing.slot_type} · {listing.date_label}</p>
         </div>
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2.5">
-          <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0" />
-          <p className="text-yellow-400 text-sm">{error}</p>
+        <div className="flex items-center gap-2 bg-red-50 border border-red-100 rounded-2xl px-3 py-2.5">
+          <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+          <p className="text-red-600 text-sm">{error}</p>
         </div>
       )}
 
       <div className="space-y-3">
         <div>
-          <label className="block text-xs font-medium text-[#8b949e] mb-1.5">
+          <label className="block text-xs font-semibold text-[#86868b] uppercase tracking-wider mb-1.5">
             <Tag className="inline w-3.5 h-3.5 mr-1 mb-0.5" />
-            Brand name <span className="text-amber-500">*</span>
+            Brand name <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -56,13 +56,13 @@ export default function BookingInfo({ form, onChange, listing, onContinue, onBac
             placeholder="e.g. Acme, MyBrand, ProductName"
             className={inputCls}
           />
-          <p className="text-[#6e7681] text-xs mt-1">The brand being advertised in this slot</p>
+          <p className="text-[#aeaeb2] text-xs mt-1">The brand being advertised in this slot</p>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-[#8b949e] mb-1.5">
+          <label className="block text-xs font-semibold text-[#86868b] uppercase tracking-wider mb-1.5">
             <MessageSquare className="inline w-3.5 h-3.5 mr-1 mb-0.5" />
-            Campaign note <span className="text-[#6e7681] font-normal">(optional)</span>
+            Campaign note <span className="text-[#aeaeb2] font-normal normal-case">(optional)</span>
           </label>
           <textarea
             value={form.campaign_note}
@@ -72,20 +72,20 @@ export default function BookingInfo({ form, onChange, listing, onContinue, onBac
             maxLength={500}
             className={inputCls + ' resize-none'}
           />
-          <p className="text-[#6e7681] text-xs mt-1 text-right">{form.campaign_note.length}/500</p>
+          <p className="text-[#aeaeb2] text-xs mt-1 text-right">{form.campaign_note.length}/500</p>
         </div>
       </div>
 
       <div className="flex gap-3 pt-2">
         <button
           onClick={onBack}
-          className="px-5 py-3.5 rounded-xl border border-[#30363d] hover:border-[#484f58] text-[#8b949e] hover:text-[#e6edf3] text-sm font-medium transition-all"
+          className="px-5 py-3.5 rounded-2xl border border-black/[0.08] hover:border-black/[0.15] text-[#6e6e73] hover:text-[#1d1d1f] text-sm font-medium transition-all"
         >
           Back
         </button>
         <button
           onClick={handleContinue}
-          className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all text-sm"
+          className="flex-1 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-bold py-3.5 rounded-2xl transition-all text-sm"
         >
           Review & Pay
         </button>
@@ -94,4 +94,4 @@ export default function BookingInfo({ form, onChange, listing, onContinue, onBac
   );
 }
 
-const inputCls = 'w-full bg-[#161b22] border border-[#30363d] focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 rounded-lg px-3 py-2.5 text-[#e6edf3] text-sm placeholder-[#484f58] outline-none transition-all';
+const inputCls = 'w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all';

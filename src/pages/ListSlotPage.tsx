@@ -266,23 +266,23 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
     INFLUENCER_SLOT_TYPES;
 
   return (
-    <div className="min-h-screen bg-[#08080f] text-white">
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-gray-500 hover:text-white text-sm font-medium mb-8 transition-colors group"
+          className="flex items-center gap-2 text-[#6e6e73] hover:text-[#1d1d1f] text-[13px] font-medium mb-8 transition-colors group"
         >
           <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
           Back to marketplace
         </button>
 
         <div className="mb-10">
-          <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold px-3 py-1.5 rounded-full mb-4 uppercase tracking-widest">
+          <div className="inline-flex items-center gap-2 bg-[#f5f5f7] border border-black/[0.08] text-[#6e6e73] text-[11px] font-semibold px-3 py-1.5 rounded-full mb-4 uppercase tracking-widest">
             <Zap className="w-3 h-3" />
             For sellers
           </div>
-          <h1 className="text-4xl font-black text-white mb-3">List your slot</h1>
-          <p className="text-gray-400 text-lg">
+          <h1 className="text-4xl font-semibold text-[#1d1d1f] mb-3 tracking-[-0.02em]">List your slot</h1>
+          <p className="text-[#6e6e73] text-[17px] font-light">
             Fill unsold inventory before the deadline. Buyers discover your opportunity and can secure it instantly.
           </p>
         </div>
@@ -294,18 +294,18 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                 <button
                   key={t.value}
                   onClick={() => { set('media_type', t.value); set('slot_type', ''); set('ad_type', ''); set('deliverable', ''); }}
-                  className={`flex flex-col items-start gap-2 p-4 rounded-xl border text-left transition-all
+                  className={`flex flex-col items-start gap-2 p-4 rounded-2xl border text-left transition-all
                     ${form.media_type === t.value
-                      ? 'bg-amber-500/10 border-amber-500/40 text-white'
-                      : 'bg-white/[0.02] border-white/8 text-gray-400 hover:border-white/15 hover:text-white'
+                      ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white shadow-sm'
+                      : 'bg-white border-black/[0.06] text-[#6e6e73] hover:border-black/[0.12] hover:text-[#1d1d1f]'
                     }`}
                 >
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${form.media_type === t.value ? 'bg-amber-500/20 text-amber-400' : 'bg-white/5'}`}>
+                  <div className={`w-9 h-9 rounded-2xl flex items-center justify-center ${form.media_type === t.value ? 'bg-white/20 text-white' : 'bg-[#f5f5f7] text-[#6e6e73]'}`}>
                     {t.icon}
                   </div>
                   <div>
-                    <p className="font-semibold text-sm">{t.label}</p>
-                    <p className="text-xs text-gray-500 mt-0.5 leading-snug">{t.desc}</p>
+                    <p className={`font-semibold text-[13px] ${form.media_type === t.value ? 'text-white' : 'text-[#1d1d1f]'}`}>{t.label}</p>
+                    <p className={`text-[11px] mt-0.5 leading-snug ${form.media_type === t.value ? 'text-white/60' : 'text-[#aeaeb2]'}`}>{t.desc}</p>
                   </div>
                 </button>
               ))}
@@ -314,9 +314,9 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
 
           <Section title="About you" icon={<Users className="w-4 h-4 text-amber-400" />}>
             {profile && (
-              <div className="flex items-center gap-2 text-xs text-gray-500 bg-white/3 border border-white/6 rounded-lg px-3 py-2 mb-4">
-                <UserCircle className="w-3.5 h-3.5 text-amber-400/60 flex-shrink-0" />
-                <span>Pre-filled from your account profile. <button type="button" onClick={onEditProfile} className="text-amber-500/70 hover:text-amber-400 underline transition-colors">Edit profile</button> to update.</span>
+              <div className="flex items-center gap-2 text-[12px] text-[#6e6e73] bg-blue-50 border border-blue-100 rounded-2xl px-3 py-2.5 mb-4">
+                <UserCircle className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+                <span>Pre-filled from your account profile. <button type="button" onClick={onEditProfile} className="text-blue-600 hover:text-blue-700 underline transition-colors">Edit profile</button> to update.</span>
               </div>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -494,7 +494,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                   onChange={e => set('deadline_at', e.target.value)}
                   min={getMinDeadline()}
                   max={getMaxDeadline()}
-                  className={inputCls(!!errors.deadline_at) + ' [color-scheme:dark]'}
+                  className={inputCls(!!errors.deadline_at) + ' [color-scheme:light]'}
                 />
                 <p className="text-gray-600 text-xs mt-1.5">Buyers must claim their interest before this date. This is not the ad publish date — set it early enough to allow time for ad copy handover.</p>
               </Field>
@@ -543,12 +543,12 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             </div>
 
             {discount !== null && savings !== null && (
-              <div className="mt-3 flex items-center gap-4 bg-emerald-500/8 border border-emerald-500/20 rounded-xl px-4 py-3">
+              <div className="mt-3 flex items-center gap-4 bg-green-50 border border-green-100 rounded-2xl px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <span className="bg-yellow-500 text-black text-xs font-black px-2 py-0.5 rounded">-{discount}%</span>
-                  <span className="text-emerald-400 text-sm font-semibold">Buyers save ${savings.toLocaleString()}</span>
+                  <span className="bg-[#1d1d1f] text-white text-[11px] font-bold px-2 py-0.5 rounded-lg">-{discount}%</span>
+                  <span className="text-green-600 text-[13px] font-semibold">Buyers save ${savings.toLocaleString()}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-gray-500 text-xs">
+                <div className="flex items-center gap-1.5 text-[#aeaeb2] text-[11px]">
                   <Info className="w-3 h-3" />
                   Discounts of 20–40% attract the most buyer activity
                 </div>
@@ -570,7 +570,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
               <button
                 type="button"
                 onClick={addAdvertiser}
-                className="flex items-center gap-1.5 bg-white/8 hover:bg-white/12 border border-white/10 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-all"
+                className="flex items-center gap-1.5 bg-[#f5f5f7] hover:bg-[#e5e5ea] border border-black/[0.08] text-[#1d1d1f] text-[13px] font-medium px-4 py-2.5 rounded-2xl transition-all"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Add
@@ -579,9 +579,9 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             {form.past_advertisers.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {form.past_advertisers.map(a => (
-                  <span key={a} className="flex items-center gap-1.5 text-sm text-gray-300 bg-white/6 border border-white/8 px-3 py-1 rounded-lg">
+                  <span key={a} className="flex items-center gap-1.5 text-[13px] text-[#3a3a3c] bg-white border border-black/[0.06] px-3 py-1.5 rounded-full">
                     {a}
-                    <button onClick={() => removeAdvertiser(a)} className="text-gray-600 hover:text-white transition-colors">
+                    <button onClick={() => removeAdvertiser(a)} className="text-[#aeaeb2] hover:text-[#1d1d1f] transition-colors">
                       <X className="w-3 h-3" />
                     </button>
                   </span>
@@ -591,39 +591,39 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
           </Section>
 
           {profile ? (
-            <Section title="Your profile" icon={<Shield className="w-4 h-4 text-amber-400" />}>
+            <Section title="Your profile" icon={<Shield className="w-4 h-4 text-[#1d1d1f]" />}>
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <UserCircle className="w-5 h-5 text-amber-400" />
+                <div className="w-10 h-10 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <UserCircle className="w-5 h-5 text-[#6e6e73]" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm">{profile.display_name || 'Your account'}</p>
-                  <p className="text-gray-500 text-xs mt-0.5">{profile.company}</p>
+                  <p className="text-[#1d1d1f] font-semibold text-[14px]">{profile.display_name || 'Your account'}</p>
+                  <p className="text-[#6e6e73] text-[12px] mt-0.5">{profile.company}</p>
                   {(profile.seller_bio || profile.bio) && (
-                    <p className="text-gray-400 text-xs mt-2 leading-relaxed line-clamp-2">{profile.seller_bio || profile.bio}</p>
+                    <p className="text-[#3a3a3c] text-[12px] mt-2 leading-relaxed line-clamp-2">{profile.seller_bio || profile.bio}</p>
                   )}
                   <div className="flex flex-wrap gap-3 mt-3">
                     {(profile.seller_website_url || profile.website) && (
-                      <span className="text-gray-500 text-xs truncate max-w-[180px]">{profile.seller_website_url || profile.website}</span>
+                      <span className="text-[#6e6e73] text-[11px] truncate max-w-[180px]">{profile.seller_website_url || profile.website}</span>
                     )}
-                    {profile.seller_linkedin_url && <span className="text-gray-500 text-xs">LinkedIn</span>}
-                    {profile.seller_twitter_url && <span className="text-gray-500 text-xs">Twitter / X</span>}
-                    {profile.seller_instagram_url && <span className="text-gray-500 text-xs">Instagram</span>}
-                    {profile.seller_podcast_url && <span className="text-gray-500 text-xs">Podcast</span>}
+                    {profile.seller_linkedin_url && <span className="text-[#6e6e73] text-[11px]">LinkedIn</span>}
+                    {profile.seller_twitter_url && <span className="text-[#6e6e73] text-[11px]">Twitter / X</span>}
+                    {profile.seller_instagram_url && <span className="text-[#6e6e73] text-[11px]">Instagram</span>}
+                    {profile.seller_podcast_url && <span className="text-[#6e6e73] text-[11px]">Podcast</span>}
                   </div>
                 </div>
                 {onEditProfile && (
                   <button
                     type="button"
                     onClick={onEditProfile}
-                    className="flex-shrink-0 text-xs text-amber-400 hover:text-amber-300 border border-amber-500/30 hover:border-amber-500/50 px-3 py-1.5 rounded-lg transition-all font-medium"
+                    className="flex-shrink-0 text-[12px] text-blue-600 hover:text-blue-700 border border-blue-100 hover:border-blue-200 px-3 py-1.5 rounded-xl transition-all font-medium bg-blue-50"
                   >
                     Edit profile
                   </button>
                 )}
               </div>
-              <div className="mt-4 pt-4 border-t border-white/5">
-                <p className="text-gray-600 text-xs">Your contact info, bio, and social links are pulled from your account profile and shown on all your listings. <span className="text-amber-500/70">Update them once in your profile — they apply everywhere.</span></p>
+              <div className="mt-4 pt-4 border-t border-black/[0.06]">
+                <p className="text-[#aeaeb2] text-[11px]">Your contact info, bio, and social links are pulled from your account profile and shown on all your listings. <span className="text-blue-600 font-medium">Update them once in your profile — they apply everywhere.</span></p>
               </div>
 
               <div className="mt-4">
@@ -631,11 +631,11 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                 <div className="space-y-2">
                   {form.portfolio_links.map((link, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <span className="flex-1 text-sm text-gray-300 bg-white/5 border border-white/10 rounded-lg px-3 py-2 truncate">{link}</span>
+                      <span className="flex-1 text-[13px] text-[#3a3a3c] bg-[#f5f5f7] border border-black/[0.06] rounded-2xl px-3 py-2 truncate">{link}</span>
                       <button
                         type="button"
                         onClick={() => set('portfolio_links', form.portfolio_links.filter((_, j) => j !== i))}
-                        className="text-gray-500 hover:text-red-400 transition-colors flex-shrink-0"
+                        className="text-[#aeaeb2] hover:text-red-500 transition-colors flex-shrink-0"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -669,7 +669,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                             set('portfolio_input', '');
                           }
                         }}
-                        className="flex items-center gap-1 bg-white/5 border border-white/10 hover:border-amber-500/40 hover:text-amber-400 text-gray-300 text-sm px-3 py-2 rounded-lg transition-colors"
+                        className="flex items-center gap-1 bg-[#f5f5f7] border border-black/[0.08] hover:border-black/[0.15] text-[#1d1d1f] text-[13px] px-3 py-2 rounded-2xl transition-colors"
                       >
                         <Plus className="w-4 h-4" />
                         Add
@@ -680,8 +680,8 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
               </div>
             </Section>
           ) : (
-            <Section title="Your profile" icon={<Shield className="w-4 h-4 text-amber-400" />} optional>
-              <p className="text-gray-500 text-sm mb-4">Help buyers verify your credibility. Add a short bio and links to your online presence.</p>
+            <Section title="Your profile" icon={<Shield className="w-4 h-4 text-[#1d1d1f]" />} optional>
+              <p className="text-[#6e6e73] text-[13px] mb-4">Help buyers verify your credibility. Add a short bio and links to your online presence.</p>
               <div className="space-y-4">
                 <Field label="Short bio / about" hint="1–2 sentences about you or your publication">
                   <textarea
@@ -695,7 +695,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                         : 'Lifestyle creator with 320k followers across Instagram and TikTok, focused on sustainable travel.'
                     }
                     rows={3}
-                    className="w-full bg-white/5 border border-white/10 focus:border-amber-500/50 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 outline-none transition-colors resize-none"
+                    className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-3 text-[#1d1d1f] text-[14px] placeholder-[#aeaeb2] outline-none transition-all resize-none"
                   />
                 </Field>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -734,8 +734,8 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                   <div className="space-y-2">
                     {form.portfolio_links.map((link, i) => (
                       <div key={i} className="flex items-center gap-2">
-                        <span className="flex-1 text-sm text-gray-300 bg-white/5 border border-white/10 rounded-lg px-3 py-2 truncate">{link}</span>
-                        <button type="button" onClick={() => set('portfolio_links', form.portfolio_links.filter((_, j) => j !== i))} className="text-gray-500 hover:text-red-400 transition-colors flex-shrink-0">
+                        <span className="flex-1 text-[13px] text-[#3a3a3c] bg-[#f5f5f7] border border-black/[0.06] rounded-2xl px-3 py-2 truncate">{link}</span>
+                        <button type="button" onClick={() => set('portfolio_links', form.portfolio_links.filter((_, j) => j !== i))} className="text-[#aeaeb2] hover:text-red-500 transition-colors flex-shrink-0">
                           <X className="w-4 h-4" />
                         </button>
                       </div>
@@ -759,7 +759,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                         <button
                           type="button"
                           onClick={() => { const v = form.portfolio_input.trim(); if (v && !form.portfolio_links.includes(v)) { set('portfolio_links', [...form.portfolio_links, v]); set('portfolio_input', ''); } }}
-                          className="flex items-center gap-1 bg-white/5 border border-white/10 hover:border-amber-500/40 hover:text-amber-400 text-gray-300 text-sm px-3 py-2 rounded-lg transition-colors"
+                          className="flex items-center gap-1 bg-[#f5f5f7] border border-black/[0.08] hover:border-black/[0.15] text-[#1d1d1f] text-[13px] px-3 py-2 rounded-2xl transition-colors"
                         >
                           <Plus className="w-4 h-4" />Add
                         </button>
@@ -771,17 +771,17 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             </Section>
           )}
 
-          <Section title="Geographic reach" icon={<MapPin className="w-4 h-4 text-amber-400" />}>
-            <div className="bg-amber-500/6 border border-amber-500/15 rounded-xl p-4 flex items-start gap-3">
-              <Info className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-gray-400 leading-relaxed">
+          <Section title="Geographic reach" icon={<MapPin className="w-4 h-4 text-[#1d1d1f]" />}>
+            <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-start gap-3">
+              <Info className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+              <div className="text-[13px] text-blue-700 leading-relaxed">
                 Your listing will be live immediately after submission and visible to all buyers on the marketplace. Once a buyer secures your slot, you'll be notified to review their brief and confirm the booking.
               </div>
             </div>
           </Section>
 
           {Object.keys(errors).length > 0 && (
-            <div className="flex items-center gap-3 bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-sm px-4 py-3 rounded-xl">
+            <div className="flex items-center gap-3 bg-orange-50 border border-orange-100 text-orange-600 text-[13px] px-4 py-3 rounded-2xl">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               Please fix the errors above before submitting.
             </div>
@@ -791,14 +791,14 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-60 text-black font-bold px-8 py-3.5 rounded-xl transition-all shadow-[0_0_30px_rgba(245,158,11,0.25)] hover:shadow-[0_0_40px_rgba(245,158,11,0.35)]"
+              className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-50 text-white font-semibold px-8 py-3.5 rounded-2xl transition-all"
             >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-black" />}
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-white" />}
               {submitting ? 'Publishing...' : 'Publish Listing'}
             </button>
             <button
               onClick={onBack}
-              className="text-gray-500 hover:text-white text-sm font-medium px-6 py-3.5 rounded-xl border border-white/8 hover:border-white/15 transition-all"
+              className="text-[#6e6e73] hover:text-[#1d1d1f] text-[14px] font-medium px-6 py-3.5 rounded-2xl border border-black/[0.08] hover:border-black/[0.15] bg-white transition-all"
             >
               Cancel
             </button>
@@ -811,35 +811,33 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
 
 function SuccessScreen({ onBack, propertyName }: { onBack: () => void; propertyName: string }) {
   return (
-    <div className="min-h-screen bg-[#08080f] text-white flex items-center justify-center p-6">
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f] flex items-center justify-center p-6">
       <div className="max-w-md w-full text-center">
-        <div className="w-20 h-20 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
-          <CheckCircle className="w-10 h-10 text-emerald-400" />
+        <div className="w-20 h-20 bg-green-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+          <CheckCircle className="w-10 h-10 text-green-600" />
         </div>
-        <h2 className="text-3xl font-black text-white mb-3">Listing live!</h2>
-        <p className="text-gray-400 text-lg mb-2">
-          <span className="text-white font-semibold">{propertyName}</span> is now visible to all buyers on the marketplace.
+        <h2 className="text-3xl font-semibold text-[#1d1d1f] mb-3 tracking-[-0.02em]">Listing live!</h2>
+        <p className="text-[#6e6e73] text-[15px] mb-2">
+          <span className="text-[#1d1d1f] font-semibold">{propertyName}</span> is now visible to all buyers on the marketplace.
         </p>
-        <p className="text-gray-500 text-sm mb-8">
+        <p className="text-[#aeaeb2] text-[13px] mb-8">
           You'll be notified when a buyer secures your slot. Make sure to respond within the hold window.
         </p>
-        <div className="bg-white/[0.03] border border-white/8 rounded-xl p-4 text-left space-y-3 mb-8">
-          <div className="flex items-center gap-2 text-sm">
-            <CheckCircle className="w-4 h-4 text-emerald-400" />
-            <span className="text-gray-300">Listing published and live</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <CheckCircle className="w-4 h-4 text-emerald-400" />
-            <span className="text-gray-300">Visible to all active buyers</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm">
-            <CheckCircle className="w-4 h-4 text-emerald-400" />
-            <span className="text-gray-300">Countdown timer started</span>
-          </div>
+        <div className="bg-white border border-black/[0.06] rounded-3xl p-5 text-left space-y-3 mb-6 shadow-sm">
+          {[
+            'Listing published and live',
+            'Visible to all active buyers',
+            'Countdown timer started',
+          ].map(item => (
+            <div key={item} className="flex items-center gap-2 text-[13px]">
+              <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+              <span className="text-[#3a3a3c]">{item}</span>
+            </div>
+          ))}
         </div>
         <button
           onClick={onBack}
-          className="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold py-3.5 rounded-xl transition-all"
+          className="w-full bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold py-3.5 rounded-2xl transition-all"
         >
           View marketplace
         </button>
@@ -854,11 +852,11 @@ function Section({
   title: string; icon: React.ReactNode; children: React.ReactNode; optional?: boolean;
 }) {
   return (
-    <div className="bg-[#111118] border border-white/8 rounded-2xl p-6">
+    <div className="bg-white border border-black/[0.06] rounded-3xl p-6 shadow-sm">
       <div className="flex items-center gap-2 mb-5">
         {icon}
-        <h2 className="text-white font-semibold text-sm uppercase tracking-wide">{title}</h2>
-        {optional && <span className="text-gray-600 text-xs font-normal normal-case">(optional)</span>}
+        <h2 className="text-[#1d1d1f] font-semibold text-[12px] uppercase tracking-widest">{title}</h2>
+        {optional && <span className="text-[#aeaeb2] text-[11px] font-normal normal-case">(optional)</span>}
       </div>
       {children}
     </div>
@@ -872,14 +870,14 @@ function Field({
 }) {
   return (
     <div className={className}>
-      <label className="block text-xs text-gray-400 font-medium mb-1.5">
+      <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">
         {label}
-        {required && <span className="text-amber-500 ml-1">*</span>}
-        {hint && <span className="text-gray-600 font-normal ml-1.5">— {hint}</span>}
+        {required && <span className="text-red-500 ml-1">*</span>}
+        {hint && <span className="text-[#aeaeb2] font-normal normal-case ml-1.5">— {hint}</span>}
       </label>
       {children}
       {error && (
-        <p className="text-yellow-400 text-xs mt-1 flex items-center gap-1">
+        <p className="text-orange-500 text-[11px] mt-1 flex items-center gap-1">
           <AlertTriangle className="w-3 h-3" />{error}
         </p>
       )}
@@ -888,7 +886,7 @@ function Field({
 }
 
 function inputCls(hasError: boolean): string {
-  return `w-full bg-white/5 border ${hasError ? 'border-yellow-500/50 focus:border-yellow-500/70' : 'border-white/10 focus:border-amber-500/50'} rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 outline-none transition-colors`;
+  return `w-full bg-[#f5f5f7] border ${hasError ? 'border-red-300 focus:border-red-400' : 'border-black/[0.08] focus:border-black/[0.2] focus:bg-white'} rounded-2xl px-3 py-3 text-[#1d1d1f] text-[14px] placeholder-[#aeaeb2] outline-none transition-all`;
 }
 
 function SelectField({
@@ -900,7 +898,7 @@ function SelectField({
     <select
       value={value}
       onChange={e => onChange(e.target.value)}
-      className={`w-full bg-[#0d0d14] border ${hasError ? 'border-yellow-500/50' : 'border-white/10 focus:border-amber-500/50'} rounded-lg px-3 py-2.5 text-sm outline-none transition-colors [color-scheme:dark] ${value ? 'text-white' : 'text-gray-600'}`}
+      className={`w-full bg-[#f5f5f7] border ${hasError ? 'border-red-300' : 'border-black/[0.08] focus:border-black/[0.2]'} rounded-2xl px-3 py-3 text-[14px] outline-none transition-all [color-scheme:light] ${value ? 'text-[#1d1d1f]' : 'text-[#aeaeb2]'}`}
     >
       <option value="" disabled>{placeholder}</option>
       {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -930,7 +928,7 @@ function SelectOrCustom({
         <button
           type="button"
           onClick={() => { setCustom(false); onChange(''); }}
-          className="text-gray-500 hover:text-white border border-white/10 rounded-lg px-3 py-2.5 text-sm transition-colors"
+          className="text-[#aeaeb2] hover:text-[#1d1d1f] border border-black/[0.08] rounded-2xl px-3 py-3 text-[13px] transition-colors"
         >
           <X className="w-3.5 h-3.5" />
         </button>
@@ -943,7 +941,7 @@ function SelectOrCustom({
       <select
         value={value}
         onChange={e => onChange(e.target.value)}
-        className={`flex-1 bg-[#0d0d14] border ${hasError ? 'border-yellow-500/50' : 'border-white/10 focus:border-amber-500/50'} rounded-lg px-3 py-2.5 text-sm outline-none transition-colors [color-scheme:dark] ${value ? 'text-white' : 'text-gray-600'}`}
+        className={`flex-1 bg-[#f5f5f7] border ${hasError ? 'border-red-300' : 'border-black/[0.08] focus:border-black/[0.2]'} rounded-2xl px-3 py-3 text-[14px] outline-none transition-all [color-scheme:light] ${value ? 'text-[#1d1d1f]' : 'text-[#aeaeb2]'}`}
       >
         <option value="" disabled>{placeholder}</option>
         {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -951,7 +949,7 @@ function SelectOrCustom({
       <button
         type="button"
         onClick={() => setCustom(true)}
-        className="text-gray-500 hover:text-white border border-white/10 rounded-lg px-3 py-2.5 text-xs font-medium transition-colors whitespace-nowrap"
+        className="text-[#6e6e73] hover:text-[#1d1d1f] border border-black/[0.08] hover:border-black/[0.15] bg-[#f5f5f7] rounded-2xl px-3 py-3 text-[12px] font-medium transition-colors whitespace-nowrap"
         title="Enter custom value"
       >
         Custom

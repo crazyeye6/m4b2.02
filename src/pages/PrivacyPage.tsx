@@ -8,8 +8,8 @@ interface PrivacyPageProps {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="mb-10">
-      <h2 className="text-lg font-semibold text-[#e6edf3] mb-4 pb-2 border-b border-[#30363d]">{title}</h2>
-      <div className="space-y-3 text-[#8b949e] text-sm leading-relaxed">{children}</div>
+      <h2 className="text-lg font-semibold text-[#1d1d1f] mb-4 pb-2 border-b border-black/[0.06]">{title}</h2>
+      <div className="space-y-3 text-[#6e6e73] text-sm leading-relaxed">{children}</div>
     </section>
   );
 }
@@ -17,8 +17,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function SubSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mt-5">
-      <h3 className="text-sm font-semibold text-[#c9d1d9] mb-2">{title}</h3>
-      <div className="space-y-2 text-[#8b949e] text-sm leading-relaxed">{children}</div>
+      <h3 className="text-sm font-semibold text-[#1d1d1f] mb-2">{title}</h3>
+      <div className="space-y-2 text-[#6e6e73] text-sm leading-relaxed">{children}</div>
     </div>
   );
 }
@@ -27,29 +27,29 @@ export default function PrivacyPage({ onBack, onTerms }: PrivacyPageProps) {
   const effectiveDate = 'April 14, 2026';
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-[#e6edf3]">
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
       <div className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8 py-20 pb-24">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 text-[#8b949e] hover:text-[#e6edf3] text-sm mb-10 transition-colors group"
+          className="flex items-center gap-2 text-[#6e6e73] hover:text-[#1d1d1f] text-sm mb-10 transition-colors group"
         >
           <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
           Back to marketplace
         </button>
 
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 bg-[#238636] rounded-md flex items-center justify-center flex-shrink-0">
+          <div className="w-8 h-8 bg-[#1d1d1f] rounded-xl flex items-center justify-center flex-shrink-0">
             <Zap className="w-4 h-4 text-white fill-white" />
           </div>
-          <span className="text-[#e6edf3] font-semibold">
-            EndingThisWeek<span className="text-[#3fb950]">.media</span>
+          <span className="text-[#1d1d1f] font-semibold">
+            EndingThisWeek<span className="text-[#6e6e73]">.media</span>
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold text-[#e6edf3] mt-6 mb-2">Privacy Policy</h1>
-        <p className="text-[#6e7681] text-sm mb-12">Effective date: {effectiveDate}</p>
+        <h1 className="text-3xl font-bold text-[#1d1d1f] mt-6 mb-2">Privacy Policy</h1>
+        <p className="text-[#aeaeb2] text-sm mb-12">Effective date: {effectiveDate}</p>
 
-        <div className="bg-[#161b22] border border-[#30363d] rounded-lg p-5 mb-10 text-sm text-[#8b949e] leading-relaxed">
+        <div className="bg-white border border-black/[0.08] rounded-2xl p-5 mb-10 text-sm text-[#6e6e73] leading-relaxed">
           This Privacy Policy explains how EndingThisWeek.media ("we", "us", or "our") collects, uses, stores, and protects your personal information when you use our platform. By accessing or using EndingThisWeek.media, you agree to the practices described in this policy. If you do not agree, please do not use the platform.
         </div>
 
@@ -58,7 +58,7 @@ export default function PrivacyPage({ onBack, onTerms }: PrivacyPageProps) {
             EndingThisWeek.media is an online marketplace connecting media property owners (Sellers) with advertisers and brands (Buyers). We operate the platform at endingthisweek.media. For the purposes of applicable data protection law, EndingThisWeek.media is the data controller of personal information collected through the platform.
           </p>
           <p>
-            If you have any questions about this policy or how we handle your data, contact us at: <span className="text-[#c9d1d9]">privacy@endingthisweek.media</span>
+            If you have any questions about this policy or how we handle your data, contact us at: <span className="text-[#1d1d1f] font-medium">privacy@endingthisweek.media</span>
           </p>
         </Section>
 
@@ -66,9 +66,9 @@ export default function PrivacyPage({ onBack, onTerms }: PrivacyPageProps) {
           <SubSection title="2.1 Information You Provide">
             <p>We collect personal information you voluntarily provide when using the platform:</p>
             <ul className="list-disc list-inside space-y-1 mt-2 pl-2">
-              <li><span className="text-[#c9d1d9]">Buyers:</span> Full name, email address, company name, website URL, phone/WhatsApp number, billing country, and any campaign messaging or notes you include in a booking.</li>
-              <li><span className="text-[#c9d1d9]">Sellers:</span> Full name, company or publication name, email address, phone number, website URL, media property details, audience metrics, and pricing information submitted in a listing.</li>
-              <li><span className="text-[#c9d1d9]">All users:</span> Any communications you send to us, including support requests, refund requests, and admin correspondence.</li>
+              <li><span className="text-[#1d1d1f] font-medium">Buyers:</span> Full name, email address, company name, website URL, phone/WhatsApp number, billing country, and any campaign messaging or notes you include in a booking.</li>
+              <li><span className="text-[#1d1d1f] font-medium">Sellers:</span> Full name, company or publication name, email address, phone number, website URL, media property details, audience metrics, and pricing information submitted in a listing.</li>
+              <li><span className="text-[#1d1d1f] font-medium">All users:</span> Any communications you send to us, including support requests, refund requests, and admin correspondence.</li>
             </ul>
           </SubSection>
 
@@ -86,7 +86,7 @@ export default function PrivacyPage({ onBack, onTerms }: PrivacyPageProps) {
 
           <SubSection title="2.3 Payment Information">
             <p>
-              Payment processing on the platform is handled by Stripe, a third-party provider. We do not store, collect, or have access to your full card number, CVV, or other sensitive payment credentials. Stripe processes payments directly and provides us with a transaction reference and status confirmation only. Your use of Stripe is also subject to <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#3fb950] hover:underline">Stripe's Privacy Policy</a>.
+              Payment processing on the platform is handled by Stripe, a third-party provider. We do not store, collect, or have access to your full card number, CVV, or other sensitive payment credentials. Stripe processes payments directly and provides us with a transaction reference and status confirmation only. Your use of Stripe is also subject to <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">Stripe's Privacy Policy</a>.
             </p>
           </SubSection>
 
@@ -190,9 +190,9 @@ export default function PrivacyPage({ onBack, onTerms }: PrivacyPageProps) {
           </p>
           <p>We may use the following types of cookies:</p>
           <ul className="list-disc list-inside space-y-1 mt-2 pl-2">
-            <li><span className="text-[#c9d1d9]">Essential cookies:</span> Required for core platform functionality such as session management and security.</li>
-            <li><span className="text-[#c9d1d9]">Analytics cookies:</span> Help us understand how visitors interact with the platform so we can improve it.</li>
-            <li><span className="text-[#c9d1d9]">Preference cookies:</span> Remember your settings and filter selections.</li>
+            <li><span className="text-[#1d1d1f] font-medium">Essential cookies:</span> Required for core platform functionality such as session management and security.</li>
+            <li><span className="text-[#1d1d1f] font-medium">Analytics cookies:</span> Help us understand how visitors interact with the platform so we can improve it.</li>
+            <li><span className="text-[#1d1d1f] font-medium">Preference cookies:</span> Remember your settings and filter selections.</li>
           </ul>
           <p className="mt-3">
             Most web browsers allow you to control cookies through browser settings. Disabling cookies may affect the functionality of certain platform features. By continuing to use the platform, you consent to our use of cookies as described.
@@ -207,7 +207,7 @@ export default function PrivacyPage({ onBack, onTerms }: PrivacyPageProps) {
             However, no method of transmission over the internet or electronic storage is 100% secure. While we strive to use commercially acceptable means to protect your data, we cannot guarantee absolute security. You use the platform at your own risk.
           </p>
           <p>
-            If you become aware of any security vulnerability or breach related to the platform, please notify us immediately at <span className="text-[#c9d1d9]">security@endingthisweek.media</span>.
+            If you become aware of any security vulnerability or breach related to the platform, please notify us immediately at <span className="text-[#1d1d1f] font-medium">security@endingthisweek.media</span>.
           </p>
         </Section>
 
@@ -216,16 +216,16 @@ export default function PrivacyPage({ onBack, onTerms }: PrivacyPageProps) {
             Depending on your location and applicable law, you may have certain rights regarding your personal information:
           </p>
           <ul className="list-disc list-inside space-y-1 mt-2 pl-2">
-            <li><span className="text-[#c9d1d9]">Access:</span> Request a copy of the personal information we hold about you.</li>
-            <li><span className="text-[#c9d1d9]">Correction:</span> Request that we correct inaccurate or incomplete information.</li>
-            <li><span className="text-[#c9d1d9]">Deletion:</span> Request that we delete your personal information, subject to our legal obligations and legitimate operational needs.</li>
-            <li><span className="text-[#c9d1d9]">Restriction:</span> Request that we restrict the processing of your information in certain circumstances.</li>
-            <li><span className="text-[#c9d1d9]">Portability:</span> Request a machine-readable copy of your personal data where technically feasible.</li>
-            <li><span className="text-[#c9d1d9]">Objection:</span> Object to processing of your information for direct marketing purposes.</li>
-            <li><span className="text-[#c9d1d9]">Withdraw consent:</span> Where processing is based on consent, withdraw that consent at any time.</li>
+            <li><span className="text-[#1d1d1f] font-medium">Access:</span> Request a copy of the personal information we hold about you.</li>
+            <li><span className="text-[#1d1d1f] font-medium">Correction:</span> Request that we correct inaccurate or incomplete information.</li>
+            <li><span className="text-[#1d1d1f] font-medium">Deletion:</span> Request that we delete your personal information, subject to our legal obligations and legitimate operational needs.</li>
+            <li><span className="text-[#1d1d1f] font-medium">Restriction:</span> Request that we restrict the processing of your information in certain circumstances.</li>
+            <li><span className="text-[#1d1d1f] font-medium">Portability:</span> Request a machine-readable copy of your personal data where technically feasible.</li>
+            <li><span className="text-[#1d1d1f] font-medium">Objection:</span> Object to processing of your information for direct marketing purposes.</li>
+            <li><span className="text-[#1d1d1f] font-medium">Withdraw consent:</span> Where processing is based on consent, withdraw that consent at any time.</li>
           </ul>
           <p className="mt-3">
-            To exercise any of these rights, contact us at <span className="text-[#c9d1d9]">privacy@endingthisweek.media</span>. We will respond to verified requests within a commercially reasonable timeframe. We may need to verify your identity before fulfilling a request.
+            To exercise any of these rights, contact us at <span className="text-[#1d1d1f] font-medium">privacy@endingthisweek.media</span>. We will respond to verified requests within a commercially reasonable timeframe. We may need to verify your identity before fulfilling a request.
           </p>
           <p className="mt-2">
             Please note that certain rights may be limited where we have overriding legitimate interests or legal obligations that require us to retain or process the data.
@@ -263,19 +263,19 @@ export default function PrivacyPage({ onBack, onTerms }: PrivacyPageProps) {
           <p>
             If you have any questions, concerns, or requests relating to this Privacy Policy or the handling of your personal information, please contact us:
           </p>
-          <div className="mt-3 bg-[#161b22] border border-[#30363d] rounded-md p-4 text-[#c9d1d9]">
-            <p className="font-medium">EndingThisWeek.media — Privacy Team</p>
-            <p className="mt-1 text-[#8b949e]">Email: privacy@endingthisweek.media</p>
+          <div className="mt-3 bg-white border border-black/[0.08] rounded-2xl p-4 text-[#1d1d1f]">
+            <p className="font-semibold">EndingThisWeek.media — Privacy Team</p>
+            <p className="mt-1 text-[#6e6e73]">Email: privacy@endingthisweek.media</p>
           </div>
         </Section>
 
         {onTerms && (
-          <div className="mt-8 pt-6 border-t border-[#30363d]">
-            <p className="text-[#6e7681] text-sm">
+          <div className="mt-8 pt-6 border-t border-black/[0.06]">
+            <p className="text-[#6e6e73] text-sm">
               This Privacy Policy should be read alongside our{' '}
               <button
                 onClick={onTerms}
-                className="text-[#3fb950] hover:underline"
+                className="text-blue-600 hover:underline font-medium"
               >
                 Terms of Service
               </button>
@@ -284,7 +284,7 @@ export default function PrivacyPage({ onBack, onTerms }: PrivacyPageProps) {
           </div>
         )}
 
-        <div className="mt-8 pt-6 border-t border-[#30363d] text-center text-xs text-[#484f58]">
+        <div className="mt-8 pt-6 border-t border-black/[0.06] text-center text-xs text-[#aeaeb2]">
           &copy; 2026 EndingThisWeek.media. All rights reserved.
         </div>
       </div>
