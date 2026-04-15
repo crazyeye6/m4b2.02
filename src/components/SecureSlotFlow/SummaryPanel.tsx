@@ -59,7 +59,6 @@ export default function SummaryPanel({
             <Row label="VAT number" value={form.buyer_vat_number} />
           )}
           <Row label="Brand" value={form.brand_name} />
-          <Row label="Campaign start" value={form.campaign_start_date} />
         </div>
       </div>
 

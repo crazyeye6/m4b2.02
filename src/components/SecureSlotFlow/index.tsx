@@ -90,7 +90,7 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
       buyer_phone: form.buyer_phone || '',
       buyer_country: form.buyer_country,
       message_to_creator: form.campaign_note || '',
-      booking_notes: `Brand: ${form.brand_name}. Campaign start: ${form.campaign_start_date}. VAT: ${form.buyer_vat_number || 'N/A'}`,
+      booking_notes: `Brand: ${form.brand_name}. VAT: ${form.buyer_vat_number || 'N/A'}`,
       slots_count: slotsCount,
       price_per_slot: listing.discounted_price,
       total_price: totalPrice,

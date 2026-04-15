@@ -13,13 +13,8 @@ interface BookingInfoProps {
 export default function BookingInfo({ form, onChange, listing, onContinue, onBack }: BookingInfoProps) {
   const [error, setError] = useState('');
 
-  const minDate = new Date();
-  minDate.setDate(minDate.getDate() + 1);
-  const minDateStr = minDate.toISOString().split('T')[0];
-
   const handleContinue = () => {
     if (!form.brand_name.trim()) { setError('Brand name is required'); return; }
-    if (!form.campaign_start_date) { setError('Campaign start date is required'); return; }
     setError('');
     onContinue();
   };
@@ -62,21 +57,6 @@ export default function BookingInfo({ form, onChange, listing, onContinue, onBac
             className={inputCls}
           />
           <p className="text-[#6e7681] text-xs mt-1">The brand being advertised in this slot</p>
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-[#8b949e] mb-1.5">
-            <CalendarDays className="inline w-3.5 h-3.5 mr-1 mb-0.5" />
-            Campaign start date <span className="text-amber-500">*</span>
-          </label>
-          <input
-            type="date"
-            value={form.campaign_start_date}
-            min={minDateStr}
-            onChange={e => onChange({ campaign_start_date: e.target.value })}
-            className={inputCls + ' [color-scheme:dark]'}
-          />
-          <p className="text-[#6e7681] text-xs mt-1">When you intend the campaign to go live</p>
         </div>
 
         <div>
