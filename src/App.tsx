@@ -62,9 +62,9 @@ const DEFAULT_FILTERS: FilterState = {
   priceMin: 0,
   priceMax: 0,
   discountMin: 0,
-  dateRange: '',
+  dateFrom: '',
+  dateTo: '',
   verified: false,
-  sortBy: 'ending_soon',
 };
 
 export default function App() {

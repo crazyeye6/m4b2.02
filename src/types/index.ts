@@ -136,16 +136,6 @@ export interface SlotBooking {
   booking_type: 'review' | 'proceed';
 }
 
-export type DateRangeOption =
-  | ''
-  | 'today'
-  | 'tomorrow'
-  | 'this_week'
-  | 'next_week'
-  | 'week_3'
-  | 'week_4'
-  | 'this_month';
-
 export interface FilterState {
   category: MediaType | 'all';
   niche: string;
@@ -153,9 +143,9 @@ export interface FilterState {
   priceMin: number;
   priceMax: number;
   discountMin: number;
-  dateRange: DateRangeOption;
+  dateFrom: string;
+  dateTo: string;
   verified: boolean;
-  sortBy: 'ending_soon' | 'biggest_discount' | 'best_value';
 }
 
 export type PurchaseType = 'business' | 'individual';
