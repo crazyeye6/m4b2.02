@@ -165,7 +165,13 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           </div>
           <div className="bg-[#0d1117] border border-[#30363d] rounded-lg px-2.5 py-2">
             <p className="text-[#6e7681] text-[9px] uppercase tracking-wide font-medium mb-0.5">Publish date</p>
-            <p className="text-[#e6edf3] text-xs font-semibold">{listing.date_label}</p>
+            {listing.posting_date_start ? (
+              <p className="text-[#e6edf3] text-xs font-semibold leading-tight">
+                {new Date(listing.posting_date_start).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            ) : (
+              <p className="text-[#e6edf3] text-xs font-semibold">{listing.date_label}</p>
+            )}
           </div>
         </div>
 
