@@ -112,8 +112,6 @@ export default function TagInput({
     inputRef.current?.focus();
   };
 
-  const totalOptions = suggestions.length + (showCreateNewOption ? 1 : 0);
-
   const slug = normalizeSlug(inputValue);
   const showCreateNewOption = Boolean(
     inputValue.trim() &&
@@ -121,6 +119,8 @@ export default function TagInput({
     !selectedTags.includes(slug) &&
     !suggestions.some(s => s.name === slug)
   );
+
+  const totalOptions = suggestions.length + (showCreateNewOption ? 1 : 0);
 
   const similarTag = showCreateNewOption ? isSimilarToExisting(allTags, inputValue) : null;
 
