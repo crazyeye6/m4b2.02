@@ -6,49 +6,48 @@ interface FooterProps {
 
 export default function Footer({ onTerms, onPrivacy }: FooterProps) {
   return (
-    <footer className="border-t border-black/[0.06] py-10 mt-0 bg-white">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-[#1d1d1f] mt-0">
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
           <div className="flex items-center gap-2">
-            <div className="w-[31px] h-[31px] bg-[#1d1d1f] rounded-[5px] flex items-center justify-center flex-shrink-0">
+            <div className="w-[31px] h-[31px] bg-white/10 rounded-[5px] flex items-center justify-center flex-shrink-0">
               <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
                 <path d="M7 1L3 7h3.5L4 11l6-6.5H6.5L7 1z" fill="#4ade80" stroke="#22c55e" strokeWidth="0.3" strokeLinejoin="round"/>
               </svg>
             </div>
-            <span className="text-[#1d1d1f] font-bold text-[16px] tracking-[-0.03em] leading-none">
+            <span className="text-white font-bold text-[16px] tracking-[-0.03em] leading-none">
               EndingThisWeek
             </span>
-            <span className="text-[16px] font-bold text-white bg-[#1d1d1f] px-1.5 py-0.5 rounded-[4px] tracking-[-0.03em] leading-none">
+            <span className="text-[16px] font-bold text-[#1d1d1f] bg-white px-1.5 py-0.5 rounded-[4px] tracking-[-0.03em] leading-none">
               .media
             </span>
           </div>
 
-          <p className="text-[#6e6e73] text-[13px] text-center">
+          <p className="text-white/50 text-[13px] text-center">
             Last-minute media slots. Priced to move.
           </p>
 
           <div className="flex items-center gap-6">
             <button
               onClick={onPrivacy}
-              className="text-[#6e6e73] hover:text-[#1d1d1f] text-[13px] transition-colors"
+              className="text-white/50 hover:text-white text-[13px] transition-colors"
             >
               Privacy
             </button>
             <button
               onClick={onTerms}
-              className="text-[#6e6e73] hover:text-[#1d1d1f] text-[13px] transition-colors"
+              className="text-white/50 hover:text-white text-[13px] transition-colors"
             >
               Terms
             </button>
-            <a href="mailto:legal@endingthisweek.media" className="text-[#6e6e73] hover:text-[#1d1d1f] text-[13px] transition-colors">Contact</a>
+            <a href="mailto:legal@endingthisweek.media" className="text-white/50 hover:text-white text-[13px] transition-colors">Contact</a>
           </div>
         </div>
-
       </div>
 
-      <div className="bg-[#1d1d1f] mt-8">
+      <div className="border-t border-white/10">
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center">
-          <p className="text-white/50 text-[12px]">
+          <p className="text-white/30 text-[12px]">
             &copy; 2026 EndingThisWeek.media. All rights reserved.
           </p>
         </div>
