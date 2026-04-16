@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Lock, CreditCard, AlertTriangle, Shield, Loader2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Lock, AlertTriangle, Shield, Loader2 } from 'lucide-react';
 import type { BuyerFormData, Listing } from '../../types';
 import type { VatCalculation } from '../../lib/vat';
+import { loadStripe, type Stripe, type StripeElements, type StripePaymentElement } from '@stripe/stripe-js';
 
 interface PaymentStepProps {
   listing: Listing;
@@ -13,50 +14,187 @@ interface PaymentStepProps {
   onBack: () => void;
 }
 
-export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, onSuccess, onBack }: PaymentStepProps) {
-  const [cardNumber, setCardNumber] = useState('');
-  const [expiry, setExpiry] = useState('');
-  const [cvc, setCvc] = useState('');
-  const [nameOnCard, setNameOnCard] = useState(form.buyer_name || form.buyer_company || '');
+const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+let stripePromise: ReturnType<typeof loadStripe> | null = null;
+function getStripe() {
+  if (!STRIPE_KEY) return null;
+  if (!stripePromise) stripePromise = loadStripe(STRIPE_KEY);
+  return stripePromise;
+}
+
+export default function PaymentStep({ listing, form, vat, depositSubtotal, depositTotal, onSuccess, onBack }: PaymentStepProps) {
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+  const [loadingIntent, setLoadingIntent] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
+  const [stripeReady, setStripeReady] = useState(false);
 
-  const formatCard = (v: string) => {
-    const digits = v.replace(/\D/g, '').slice(0, 16);
-    return digits.replace(/(.{4})/g, '$1 ').trim();
-  };
+  const stripeRef = useRef<Stripe | null>(null);
+  const elementsRef = useRef<StripeElements | null>(null);
+  const paymentElementRef = useRef<StripePaymentElement | null>(null);
+  const mountRef = useRef<HTMLDivElement | null>(null);
 
-  const formatExpiry = (v: string) => {
-    const digits = v.replace(/\D/g, '').slice(0, 4);
-    if (digits.length >= 3) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    return digits;
-  };
+  const amountInCents = Math.round(depositTotal * 100);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function createIntent() {
+      setLoadingIntent(true);
+      setError('');
+      try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/create-payment-intent`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            amount: amountInCents,
+            currency: 'usd',
+            metadata: {
+              listing_id: listing.id,
+              property_name: listing.property_name,
+              buyer_email: form.buyer_email,
+            },
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.client_secret) {
+          throw new Error(data.error ?? 'Failed to initialise payment');
+        }
+        if (!cancelled) {
+          setClientSecret(data.client_secret);
+          setPaymentIntentId(data.payment_intent_id);
+        }
+      } catch (e) {
+        if (!cancelled) setError(String(e));
+      } finally {
+        if (!cancelled) setLoadingIntent(false);
+      }
+    }
+
+    createIntent();
+    return () => { cancelled = true; };
+  }, [amountInCents, listing.id, listing.property_name, form.buyer_email]);
+
+  useEffect(() => {
+    if (!clientSecret || !mountRef.current || !STRIPE_KEY) return;
+    let mounted = true;
+
+    getStripe()?.then(stripe => {
+      if (!stripe || !mounted || !mountRef.current) return;
+      stripeRef.current = stripe;
+
+      const elements = stripe.elements({
+        clientSecret,
+        appearance: {
+          theme: 'flat',
+          variables: {
+            colorPrimary: '#1d1d1f',
+            colorBackground: '#f5f5f7',
+            colorText: '#1d1d1f',
+            colorDanger: '#ef4444',
+            fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif',
+            borderRadius: '16px',
+            spacingUnit: '4px',
+          },
+          rules: {
+            '.Input': {
+              border: '1px solid rgba(0,0,0,0.08)',
+              boxShadow: 'none',
+              fontSize: '14px',
+              padding: '12px',
+            },
+            '.Input:focus': {
+              border: '1px solid rgba(0,0,0,0.2)',
+              boxShadow: 'none',
+              backgroundColor: '#ffffff',
+            },
+            '.Label': {
+              fontSize: '11px',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: '#86868b',
+            },
+          },
+        },
+      });
+
+      elementsRef.current = elements;
+      const paymentElement = elements.create('payment', {
+        layout: 'tabs',
+        defaultValues: {
+          billingDetails: {
+            name: form.buyer_name || form.buyer_company || '',
+            email: form.buyer_email,
+          },
+        },
+      });
+
+      paymentElement.on('ready', () => { if (mounted) setStripeReady(true); });
+      paymentElement.mount(mountRef.current!);
+      paymentElementRef.current = paymentElement;
+    });
+
+    return () => {
+      mounted = false;
+      paymentElementRef.current?.destroy();
+      paymentElementRef.current = null;
+      elementsRef.current = null;
+      stripeRef.current = null;
+      setStripeReady(false);
+    };
+  }, [clientSecret, form.buyer_name, form.buyer_company, form.buyer_email]);
 
   const handleSubmit = async () => {
-    if (!cardNumber || cardNumber.replace(/\s/g, '').length < 16) {
-      setError('Please enter a valid card number');
-      return;
-    }
-    if (!expiry || expiry.length < 5) {
-      setError('Please enter a valid expiry date');
-      return;
-    }
-    if (!cvc || cvc.length < 3) {
-      setError('Please enter a valid CVC');
-      return;
-    }
-    if (!nameOnCard.trim()) {
-      setError('Please enter the name on card');
+    if (!stripeRef.current || !elementsRef.current || !paymentIntentId) return;
+    setError('');
+    setProcessing(true);
+
+    const { error: submitError } = await elementsRef.current.submit();
+    if (submitError) {
+      setError(submitError.message ?? 'Payment failed');
+      setProcessing(false);
       return;
     }
 
-    setError('');
-    setProcessing(true);
-    await new Promise(r => setTimeout(r, 2000));
-    const paymentIntentId = `pi_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    const { error: confirmError } = await stripeRef.current.confirmPayment({
+      elements: elementsRef.current,
+      redirect: 'if_required',
+      confirmParams: {
+        payment_method_data: {
+          billing_details: {
+            name: form.buyer_name || form.buyer_company,
+            email: form.buyer_email,
+          },
+        },
+      },
+    });
+
+    if (confirmError) {
+      setError(confirmError.message ?? 'Payment failed');
+      setProcessing(false);
+      return;
+    }
+
     setProcessing(false);
     onSuccess(paymentIntentId);
   };
+
+  if (!STRIPE_KEY) {
+    return (
+      <div className="flex items-center gap-3 bg-orange-50 border border-orange-200 text-orange-700 text-sm px-4 py-3 rounded-2xl">
+        <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+        Stripe is not configured. Add <code className="font-mono text-xs bg-orange-100 px-1 rounded">VITE_STRIPE_PUBLISHABLE_KEY</code> to your environment.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -92,80 +230,34 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
         </div>
       </div>
 
-      <div className="bg-white border border-black/[0.08] rounded-2xl overflow-hidden">
-        <div className="px-4 py-3 border-b border-black/[0.06] flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CreditCard className="w-4 h-4 text-[#6e6e73]" />
-            <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold">Card details</p>
-          </div>
-          <div className="flex items-center gap-1.5">
-            {['VISA', 'MC', 'AMEX'].map(c => (
-              <div key={c} className="h-5 px-1.5 bg-[#f5f5f7] border border-black/[0.08] rounded flex items-center">
-                <span className="text-[8px] font-black text-[#86868b]">{c}</span>
-              </div>
-            ))}
-          </div>
+      {error && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-100 text-red-600 text-sm px-3 py-2.5 rounded-2xl">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+          {error}
         </div>
+      )}
 
-        <div className="p-4 space-y-3">
-          {error && (
-            <div className="flex items-center gap-2 bg-red-50 border border-red-100 text-red-600 text-sm px-3 py-2.5 rounded-2xl">
-              <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-              {error}
+      <div className="bg-white border border-black/[0.08] rounded-2xl overflow-hidden">
+        <div className="px-4 py-3 border-b border-black/[0.06]">
+          <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold">Payment details</p>
+        </div>
+        <div className="p-4">
+          {loadingIntent && (
+            <div className="flex items-center justify-center py-8 gap-2 text-[#aeaeb2] text-sm">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Preparing secure payment...
             </div>
           )}
-
-          <div>
-            <label className="block text-xs text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Card number</label>
-            <input
-              type="text"
-              value={cardNumber}
-              onChange={e => setCardNumber(formatCard(e.target.value))}
-              placeholder="1234 5678 9012 3456"
-              maxLength={19}
-              autoComplete="cc-number"
-              className={inputCls}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Expiry</label>
-              <input
-                type="text"
-                value={expiry}
-                onChange={e => setExpiry(formatExpiry(e.target.value))}
-                placeholder="MM/YY"
-                maxLength={5}
-                autoComplete="cc-exp"
-                className={inputCls}
-              />
+          {!loadingIntent && !stripeReady && (
+            <div className="flex items-center justify-center py-8 gap-2 text-[#aeaeb2] text-sm">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading payment form...
             </div>
-            <div>
-              <label className="block text-xs text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">CVC</label>
-              <input
-                type="text"
-                value={cvc}
-                onChange={e => setCvc(e.target.value.replace(/\D/g, '').slice(0, 4))}
-                placeholder="123"
-                maxLength={4}
-                autoComplete="cc-csc"
-                className={inputCls}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Name on card</label>
-            <input
-              type="text"
-              value={nameOnCard}
-              onChange={e => setNameOnCard(e.target.value)}
-              placeholder="Jane Smith"
-              autoComplete="cc-name"
-              className={inputCls}
-            />
-          </div>
+          )}
+          <div
+            ref={mountRef}
+            className={stripeReady ? 'opacity-100 transition-opacity duration-200' : 'opacity-0 h-0 overflow-hidden'}
+          />
         </div>
       </div>
 
@@ -186,7 +278,7 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
         </button>
         <button
           onClick={handleSubmit}
-          disabled={processing}
+          disabled={processing || loadingIntent || !stripeReady}
           className="flex-1 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-bold py-3.5 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
         >
           {processing ? (
@@ -210,5 +302,3 @@ export default function PaymentStep({ form, vat, depositSubtotal, depositTotal, 
     </div>
   );
 }
-
-const inputCls = 'w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all';
