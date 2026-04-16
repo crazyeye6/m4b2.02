@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save } from 'lucide-react';
+import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save, Bell, Tag, BellOff } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import type { DepositBooking, BookingStatus, RefundReasonCategory } from '../types';
+import type { DigestPreferences, UserProfile } from '../context/AuthContext';
 
 interface BuyerDashboardProps {
   onBack: () => void;
 }
 
-type DashTab = 'bookings' | 'profile';
+type DashTab = 'bookings' | 'alerts' | 'profile';
 
 const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
   pending_payment: { label: 'Pending Payment', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200', icon: <Clock className="w-3.5 h-3.5" /> },
@@ -104,7 +105,7 @@ export default function BuyerDashboard({ onBack }: BuyerDashboardProps) {
         </div>
 
         <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit">
-          {([['bookings', 'My Bookings'], ['profile', 'Profile']] as [DashTab, string][]).map(([key, label]) => (
+          {([['bookings', 'My Bookings'], ['alerts', 'Alert Preferences'], ['profile', 'Profile']] as [DashTab, string][]).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
@@ -141,6 +142,10 @@ export default function BuyerDashboard({ onBack }: BuyerDashboardProps) {
               ))}
             </div>
           )
+        )}
+
+        {tab === 'alerts' && (
+          <AlertPreferencesPanel profile={profile} onSaved={refreshProfile} />
         )}
 
         {tab === 'profile' && (
@@ -637,6 +642,241 @@ function Pill({ label, value }: { label: string; value: string }) {
     <div>
       <p className="text-[9px] text-[#86868b] uppercase tracking-wide font-semibold">{label}</p>
       <p className="text-[#6e6e73] text-xs font-medium">{value}</p>
+    </div>
+  );
+}
+
+const MEDIA_TYPE_OPTIONS = [
+  { value: 'newsletter', label: 'Newsletter', active: 'bg-blue-50 border-blue-200 text-blue-700' },
+  { value: 'podcast', label: 'Podcast', active: 'bg-green-50 border-green-200 text-green-700' },
+  { value: 'influencer', label: 'Influencer', active: 'bg-orange-50 border-orange-200 text-orange-700' },
+];
+
+const LOCATION_OPTIONS = ['Global', 'US', 'UK', 'EU', 'Canada', 'Australia', 'Asia', 'Latin America'];
+
+const POPULAR_TAGS = [
+  'B2B', 'B2C', 'SaaS', 'E-commerce', 'Finance', 'Health & Wellness', 'Tech',
+  'Marketing', 'Entrepreneurship', 'Productivity', 'AI', 'Crypto', 'Design',
+  'HR & Recruiting', 'Sales', 'Startups', 'Climate & Sustainability',
+];
+
+function AlertPreferencesPanel({ profile, onSaved }: {
+  profile: UserProfile | null;
+  onSaved: () => Promise<void>;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [dbTags, setDbTags] = useState<string[]>([]);
+  const [form, setForm] = useState<DigestPreferences>({
+    digest_enabled: profile?.digest_enabled ?? true,
+    digest_frequency: profile?.digest_frequency ?? 'weekly',
+    digest_media_types: profile?.digest_media_types ?? [],
+    digest_locations: profile?.digest_locations ?? [],
+    digest_tags: profile?.digest_tags ?? [],
+  });
+
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        digest_enabled: profile.digest_enabled ?? true,
+        digest_frequency: profile.digest_frequency ?? 'weekly',
+        digest_media_types: profile.digest_media_types ?? [],
+        digest_locations: profile.digest_locations ?? [],
+        digest_tags: profile.digest_tags ?? [],
+      });
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    supabase
+      .from('tags')
+      .select('name')
+      .order('usage_count', { ascending: false })
+      .limit(30)
+      .then(({ data }) => {
+        if (data && data.length > 0) setDbTags(data.map((t: { name: string }) => t.name));
+      });
+  }, []);
+
+  const tagList = dbTags.length > 0 ? dbTags : POPULAR_TAGS;
+
+  const toggle = <T extends string>(arr: T[], val: T): T[] =>
+    arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val];
+
+  const handleSave = async () => {
+    if (!profile) return;
+    setSaving(true);
+    await supabase.from('user_profiles').update({
+      ...form,
+      updated_at: new Date().toISOString(),
+    }).eq('id', profile.id);
+    await onSaved();
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  if (!profile) return null;
+
+  return (
+    <div className="max-w-xl space-y-5">
+      <div className="bg-white border border-black/[0.06] rounded-3xl p-6 space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-green-50 border border-green-200 rounded-2xl flex items-center justify-center flex-shrink-0">
+            <Bell className="w-5 h-5 text-green-600" />
+          </div>
+          <div>
+            <h3 className="text-[#1d1d1f] font-semibold text-sm">Opportunity Alert Preferences</h3>
+            <p className="text-[#6e6e73] text-xs mt-0.5">
+              We send you a personalised digest of matching slots based on these preferences.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between p-4 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl">
+          <div className="flex items-center gap-2.5">
+            {form.digest_enabled
+              ? <Bell className="w-4 h-4 text-green-600" />
+              : <BellOff className="w-4 h-4 text-[#aeaeb2]" />
+            }
+            <div>
+              <p className="text-[#1d1d1f] text-sm font-semibold">
+                {form.digest_enabled ? 'Alerts enabled' : 'Alerts disabled'}
+              </p>
+              <p className="text-[#aeaeb2] text-xs">Receive digest emails with matching opportunities</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setForm(p => ({ ...p, digest_enabled: !p.digest_enabled }))}
+            className={`relative w-11 h-6 rounded-full transition-colors ${form.digest_enabled ? 'bg-green-500' : 'bg-[#d1d1d6]'}`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${form.digest_enabled ? 'translate-x-5' : 'translate-x-0'}`} />
+          </button>
+        </div>
+
+        {form.digest_enabled && (
+          <>
+            <div>
+              <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-2">Frequency</label>
+              <div className="grid grid-cols-2 gap-2">
+                {(['daily', 'weekly'] as const).map(f => (
+                  <button
+                    key={f}
+                    type="button"
+                    onClick={() => setForm(p => ({ ...p, digest_frequency: f }))}
+                    className={`py-2.5 rounded-2xl text-[13px] font-semibold border transition-all flex items-center justify-center gap-1.5 ${
+                      form.digest_frequency === f
+                        ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white'
+                        : 'bg-[#f5f5f7] border-black/[0.06] text-[#6e6e73] hover:border-black/[0.12]'
+                    }`}
+                  >
+                    {form.digest_frequency === f && <CheckCircle className="w-3.5 h-3.5" />}
+                    {f === 'daily' ? 'Daily' : 'Weekly'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-2">Media type</label>
+              <div className="flex flex-wrap gap-2">
+                {MEDIA_TYPE_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setForm(p => ({ ...p, digest_media_types: toggle(p.digest_media_types, opt.value) }))}
+                    className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold border transition-all ${
+                      form.digest_media_types.includes(opt.value)
+                        ? opt.active
+                        : 'bg-[#f5f5f7] border-black/[0.06] text-[#6e6e73] hover:border-black/[0.12]'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              {form.digest_media_types.length === 0 && (
+                <p className="text-[11px] text-[#aeaeb2] mt-1.5">None selected = all types included in digest</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-2">Audience location</label>
+              <div className="flex flex-wrap gap-2">
+                {LOCATION_OPTIONS.map(loc => (
+                  <button
+                    key={loc}
+                    type="button"
+                    onClick={() => setForm(p => ({ ...p, digest_locations: toggle(p.digest_locations, loc) }))}
+                    className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold border transition-all ${
+                      form.digest_locations.includes(loc)
+                        ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white'
+                        : 'bg-[#f5f5f7] border-black/[0.06] text-[#6e6e73] hover:border-black/[0.12]'
+                    }`}
+                  >
+                    {loc}
+                  </button>
+                ))}
+              </div>
+              {form.digest_locations.length === 0 && (
+                <p className="text-[11px] text-[#aeaeb2] mt-1.5">None selected = all locations included</p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-2">
+                <Tag className="w-3 h-3 inline mr-1" />
+                Topics &amp; niches
+              </label>
+              <div className="flex flex-wrap gap-2 max-h-44 overflow-y-auto pr-1">
+                {tagList.map(tag => (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => setForm(p => ({ ...p, digest_tags: toggle(p.digest_tags, tag) }))}
+                    className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold border transition-all ${
+                      form.digest_tags.includes(tag)
+                        ? 'bg-green-50 border-green-200 text-green-700'
+                        : 'bg-[#f5f5f7] border-black/[0.06] text-[#6e6e73] hover:border-black/[0.12]'
+                    }`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
+              {form.digest_tags.length > 0 ? (
+                <p className="text-[11px] text-green-600 mt-1.5 font-medium">{form.digest_tags.length} selected</p>
+              ) : (
+                <p className="text-[11px] text-[#aeaeb2] mt-1.5">None selected = all topics included</p>
+              )}
+            </div>
+          </>
+        )}
+
+        <div className="flex items-center gap-3 pt-1">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold px-5 py-2.5 rounded-2xl text-sm transition-all"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Save preferences
+          </button>
+          {saved && (
+            <span className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
+              <CheckCircle className="w-4 h-4" />
+              Saved
+            </span>
+          )}
+        </div>
+
+        {profile.digest_last_sent_at && (
+          <p className="text-[#aeaeb2] text-[11px]">
+            Last digest sent {new Date(profile.digest_last_sent_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+          </p>
+        )}
+      </div>
     </div>
   );
 }

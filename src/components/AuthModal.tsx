@@ -2,22 +2,26 @@ import { useState } from 'react';
 import { X, Mail, Lock, User, Building2, Loader2, Eye, EyeOff, Zap, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import BuyerPreferencesStep from './BuyerPreferencesStep';
+import type { DigestPreferences } from '../context/AuthContext';
 
 interface AuthModalProps {
   onClose: () => void;
   defaultTab?: 'sign-in' | 'sign-up';
 }
 
-type ModalMode = 'auth' | 'reset' | 'reset-sent' | 'verify-sent';
+type ModalMode = 'auth' | 'reset' | 'reset-sent' | 'verify-sent' | 'buyer-preferences';
 
 export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModalProps) {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, saveDigestPreferences, user } = useAuth();
   const [tab, setTab] = useState<'sign-in' | 'sign-up'>(defaultTab);
   const [mode, setMode] = useState<ModalMode>('auth');
   const [loading, setLoading] = useState(false);
+  const [prefSaving, setPrefSaving] = useState(false);
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [newUserId, setNewUserId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
     email: '',
@@ -54,6 +58,14 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
     const { error } = await signUp(form.email, form.password, form.role, form.displayName, form.company);
     if (error) {
       setError(error.message || 'Could not create account. Please try again.');
+      setLoading(false);
+      return;
+    }
+
+    if (form.role === 'buyer') {
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData?.user) setNewUserId(userData.user.id);
+      setMode('buyer-preferences');
     } else {
       setMode('verify-sent');
     }
@@ -75,6 +87,32 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
     }
     setLoading(false);
   };
+
+  const handleSavePreferences = async (prefs: DigestPreferences) => {
+    setPrefSaving(true);
+    const uid = newUserId || user?.id;
+    if (uid) {
+      await saveDigestPreferences(uid, prefs);
+    }
+    setPrefSaving(false);
+    setMode('verify-sent');
+  };
+
+  const handleSkipPreferences = () => {
+    setMode('verify-sent');
+  };
+
+  if (mode === 'buyer-preferences') {
+    return (
+      <ModalShell onClose={onClose}>
+        <BuyerPreferencesStep
+          onSave={handleSavePreferences}
+          onSkip={handleSkipPreferences}
+          saving={prefSaving}
+        />
+      </ModalShell>
+    );
+  }
 
   if (mode === 'reset-sent') {
     return (
@@ -262,6 +300,15 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
           {loading && <Loader2 className="w-4 h-4 animate-spin" />}
           {tab === 'sign-in' ? 'Sign In' : 'Create Account'}
         </button>
+
+        {tab === 'sign-up' && form.role === 'buyer' && (
+          <div className="bg-green-50 border border-green-200 rounded-2xl px-3 py-2.5 flex items-start gap-2">
+            <CheckCircle className="w-3.5 h-3.5 text-green-600 flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-green-700 leading-relaxed">
+              After creating your account, you'll set up your opportunity alert preferences so we can match you with relevant slots.
+            </p>
+          </div>
+        )}
 
         <p className="text-center text-[#6e6e73] text-[12px]">
           {tab === 'sign-in' ? "Don't have an account? " : 'Already have an account? '}

@@ -20,8 +20,22 @@ export interface UserProfile {
   seller_youtube_url: string;
   seller_tiktok_url: string;
   seller_podcast_url: string;
+  digest_enabled: boolean;
+  digest_frequency: 'daily' | 'weekly';
+  digest_media_types: string[];
+  digest_locations: string[];
+  digest_tags: string[];
+  digest_last_sent_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface DigestPreferences {
+  digest_enabled: boolean;
+  digest_frequency: 'daily' | 'weekly';
+  digest_media_types: string[];
+  digest_locations: string[];
+  digest_tags: string[];
 }
 
 interface AuthContextValue {
@@ -31,6 +45,7 @@ interface AuthContextValue {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, role: 'buyer' | 'seller', displayName: string, company: string) => Promise<{ error: Error | null }>;
+  saveDigestPreferences: (userId: string, prefs: DigestPreferences) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -111,13 +126,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: profileError };
   };
 
+  const saveDigestPreferences = async (userId: string, prefs: DigestPreferences) => {
+    const { error } = await supabase
+      .from('user_profiles')
+      .update({ ...prefs, updated_at: new Date().toISOString() })
+      .eq('id', userId);
+    if (!error) await fetchProfile(userId);
+    return { error };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setProfile(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, loading, signIn, signUp, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, session, profile, loading, signIn, signUp, saveDigestPreferences, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
