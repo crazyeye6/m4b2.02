@@ -63,7 +63,7 @@ const DEFAULT_FILTERS: FilterState = {
   priceMin: 0,
   priceMax: 0,
   discountMin: 0,
-  endingThisWeek: false,
+  endingThisWeek: true,
   verified: false,
   searchQuery: '',
   selectedTags: [],
