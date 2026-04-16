@@ -3,7 +3,7 @@ import { Mail, Mic, Instagram, ChevronLeft, CheckCircle, AlertTriangle, Loader2,
 import { supabase } from '../lib/supabase';
 import { sendSlotListedEmail } from '../lib/email';
 import { useAuth } from '../context/AuthContext';
-import TagSelector from '../components/TagSelector';
+import TagInput from '../components/TagInput';
 import type { MediaType } from '../types';
 
 interface ListSlotPageProps {
@@ -252,9 +252,10 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
 
     if (insertedListing && form.tags.length > 0) {
       for (const tagName of form.tags) {
+        const displayName = tagName.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         const { data: tagRow } = await supabase
           .from('tags')
-          .upsert({ name: tagName }, { onConflict: 'name' })
+          .upsert({ name: tagName, display_name: displayName }, { onConflict: 'name' })
           .select('id')
           .maybeSingle();
         if (tagRow) {
@@ -605,7 +606,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
 
           <Section title="Tags" icon={<Tag className="w-4 h-4 text-[#6e6e73]" />} optional>
             <p className="text-gray-500 text-sm mb-3">Add tags to help buyers discover your listing by topic, niche, or format.</p>
-            <TagSelector
+            <TagInput
               selectedTags={form.tags}
               onChange={tags => set('tags', tags)}
               maxTags={10}

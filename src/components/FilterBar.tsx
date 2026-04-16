@@ -6,6 +6,7 @@ import {
 import { useState, useEffect } from 'react';
 import type { FilterState } from '../types';
 import type { GridColumns } from './ListingsGrid';
+import { TagFilterInput } from './TagInput/TagFilterInput';
 
 interface FilterBarProps {
   filters: FilterState;
@@ -113,6 +114,7 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
     filters.priceMax > 0,
     !!filters.geography,
     !!filters.niche,
+    (filters.selectedTags?.length ?? 0) > 0,
   ].filter(Boolean).length;
 
   const reset = () =>
@@ -321,6 +323,22 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
                   </OptionBtn>
                 ))}
               </FilterSection>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-black/[0.06]">
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className="text-[#aeaeb2]"><Tag className="w-3 h-3" /></span>
+                <span className="text-[10px] text-[#86868b] font-bold uppercase tracking-widest">Filter by tag</span>
+                {filters.selectedTags && filters.selectedTags.length > 0 && (
+                  <span className="flex items-center justify-center w-4 h-4 rounded-full bg-teal-600 text-white text-[9px] font-bold ml-auto">
+                    {filters.selectedTags.length}
+                  </span>
+                )}
+              </div>
+              <TagFilterInput
+                selectedTags={filters.selectedTags ?? []}
+                onChange={(tags) => onChange({ selectedTags: tags })}
+              />
             </div>
 
             {hasActive && (

@@ -140,6 +140,7 @@ export interface SlotBooking {
 export interface Tag {
   id: string;
   name: string;
+  display_name: string | null;
   usage_count: number;
   created_at: string;
 }

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Bell, Globe, Tag, Clock, CheckCircle, Loader2, ChevronRight } from 'lucide-react';
-import { supabase } from '../lib/supabase';
 import type { DigestPreferences } from '../context/AuthContext';
+import TagInput from './TagInput';
 
 interface BuyerPreferencesStepProps {
   onSave: (prefs: DigestPreferences) => Promise<void>;
@@ -19,33 +19,11 @@ const LOCATION_OPTIONS = [
   'Global', 'US', 'UK', 'EU', 'Canada', 'Australia', 'Asia', 'Latin America',
 ];
 
-const POPULAR_TAGS = [
-  'B2B', 'B2C', 'SaaS', 'E-commerce', 'Finance', 'Health & Wellness', 'Tech',
-  'Marketing', 'Entrepreneurship', 'Productivity', 'AI', 'Crypto', 'Design',
-  'HR & Recruiting', 'Sales', 'Startups', 'Climate & Sustainability',
-];
-
 export default function BuyerPreferencesStep({ onSave, onSkip, saving }: BuyerPreferencesStepProps) {
   const [selectedMediaTypes, setSelectedMediaTypes] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [frequency, setFrequency] = useState<'daily' | 'weekly'>('weekly');
-  const [dbTags, setDbTags] = useState<string[]>([]);
-
-  useEffect(() => {
-    supabase
-      .from('tags')
-      .select('name')
-      .order('usage_count', { ascending: false })
-      .limit(30)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setDbTags(data.map((t: { name: string }) => t.name));
-        }
-      });
-  }, []);
-
-  const tagList = dbTags.length > 0 ? dbTags : POPULAR_TAGS;
 
   const toggle = <T extends string>(arr: T[], val: T): T[] =>
     arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val];
@@ -124,24 +102,16 @@ export default function BuyerPreferencesStep({ onSave, onSkip, saving }: BuyerPr
           <Tag className="w-3 h-3 inline mr-1" />
           Topics &amp; niches
         </label>
-        <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1">
-          {tagList.map(tag => (
-            <button
-              key={tag}
-              type="button"
-              onClick={() => setSelectedTags(prev => toggle(prev, tag))}
-              className={`px-3 py-1.5 rounded-xl text-[12px] font-semibold border transition-all ${
-                selectedTags.includes(tag)
-                  ? 'bg-green-50 border-green-200 text-green-700'
-                  : 'bg-[#f5f5f7] border-black/[0.06] text-[#6e6e73] hover:border-black/[0.12]'
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
-        </div>
+        <TagInput
+          selectedTags={selectedTags}
+          onChange={setSelectedTags}
+          maxTags={20}
+          placeholder="Search topics… (e.g. SaaS, B2B, Finance)"
+          chipVariant="filter"
+          showHint={false}
+        />
         {selectedTags.length > 0 && (
-          <p className="text-[11px] text-green-600 mt-1.5 font-medium">{selectedTags.length} selected</p>
+          <p className="text-[11px] text-green-600 mt-1.5 font-medium">{selectedTags.length} topic{selectedTags.length > 1 ? 's' : ''} selected</p>
         )}
       </div>
 
