@@ -21,10 +21,10 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
         <div className="flex items-center justify-between h-[52px]">
           <button onClick={onHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity group">
             <div className="w-[22px] h-[22px] bg-[#1d1d1f] rounded-[5px] flex items-center justify-center flex-shrink-0">
-              <svg width="13" height="13" viewBox="0 0 10 12" fill="none">
-                <rect x="1" y="1" width="8" height="2.5" rx="1" fill="#4ade80"/>
-                <rect x="1" y="4.75" width="6" height="2.5" rx="1" fill="#f97316"/>
-                <rect x="1" y="8.5" width="8" height="2.5" rx="1" fill="#38bdf8"/>
+              <svg width="13" height="13" viewBox="0 0 10 12" fill="none" style={{transform: 'rotate(180deg)'}}>
+                <rect x="1" y="1" width="8" height="2.5" rx="1" fill="#38bdf8"/>
+                <rect x="1" y="4.75" width="6" height="2.5" rx="1" fill="#4ade80"/>
+                <rect x="1" y="8.5" width="8" height="2.5" rx="1" fill="#f472b6"/>
               </svg>
             </div>
             <span className="text-[#1d1d1f] font-bold text-[16px] tracking-[-0.03em] leading-none">
