@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { X, Check } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { sendBookingConfirmationEmails } from '../../lib/email';
@@ -35,13 +35,31 @@ const STEPS: { key: Step; label: string }[] = [
   { key: 'confirmation', label: 'Done' },
 ];
 
+function storageKey(listingId: string) {
+  return `etw_checkout:${listingId}`;
+}
+
+function loadPersistedForm(listingId: string): Partial<BuyerFormData> | null {
+  try {
+    const raw = localStorage.getItem(storageKey(listingId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    return parsed as Partial<BuyerFormData>;
+  } catch {
+    return null;
+  }
+}
+
 function buildInitialForm(
   profile: import('../../context/AuthContext').UserProfile | null,
   user: import('@supabase/supabase-js').User | null,
+  listingId: string,
 ): BuyerFormData {
   const detectedCountry = detectUserCountry();
   const detectedCountryInfo = getCountryInfo(detectedCountry);
-  return {
+  const persisted = loadPersistedForm(listingId);
+  const defaults: BuyerFormData = {
     purchase_type: 'business',
     buyer_email: user?.email ?? '',
     buyer_country: detectedCountryInfo.name,
@@ -57,20 +75,16 @@ function buildInitialForm(
     message_to_creator: '',
     booking_notes: '',
   };
-}
-
-function generateReference(): string {
-  const year = new Date().getFullYear();
-  const rand = Math.random().toString(36).toUpperCase().slice(2, 7);
-  return `ETW-${year}-${rand}`;
+  return { ...defaults, ...(persisted ?? {}) };
 }
 
 export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = false }: SecureSlotFlowProps) {
   const { user, profile } = useAuth();
   const [step, setStep] = useState<Step>('entry');
-  const [form, setForm] = useState<BuyerFormData>(() => buildInitialForm(profile, user));
+  const [form, setForm] = useState<BuyerFormData>(() => buildInitialForm(profile, user, listing.id));
   const [vatNumberValid, setVatNumberValid] = useState<boolean | null>(null);
   const [booking, setBooking] = useState<DepositBooking | null>(null);
+  const persistTimerRef = useRef<number | null>(null);
 
   const slotsCount = 1;
   const totalPrice = listing.discounted_price * slotsCount;
@@ -84,69 +98,47 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
   const depositTotal = Math.round(vat.total);
   const balanceAmount = totalPrice - depositSubtotal;
 
+  useEffect(() => {
+    if (persistTimerRef.current) window.clearTimeout(persistTimerRef.current);
+    persistTimerRef.current = window.setTimeout(() => {
+      try {
+        localStorage.setItem(storageKey(listing.id), JSON.stringify(form));
+      } catch {
+        // storage unavailable
+      }
+    }, 250);
+    return () => {
+      if (persistTimerRef.current) window.clearTimeout(persistTimerRef.current);
+    };
+  }, [form, listing.id]);
+
   const updateForm = (updates: Partial<BuyerFormData>) => {
     setForm(prev => ({ ...prev, ...updates }));
   };
 
-  const handlePaymentSuccess = async (stripePaymentIntentId: string): Promise<PaymentSuccessResult> => {
-    const referenceNumber = generateReference();
-
-    const effectiveBuyerName = (form.buyer_name && form.buyer_name.trim())
-      || (form.buyer_company && form.buyer_company.trim())
-      || form.buyer_email;
-    const effectiveBuyerCompany = form.purchase_type === 'business'
-      ? (form.buyer_company?.trim() || effectiveBuyerName)
-      : effectiveBuyerName;
-    const effectiveCountry = form.buyer_country?.trim() || 'Unknown';
-
-    const bookingData = {
-      reference_number: referenceNumber,
-      listing_id: listing.id,
-      buyer_name: effectiveBuyerName,
-      buyer_email: form.buyer_email,
-      buyer_company: effectiveBuyerCompany,
-      buyer_website: form.buyer_website || '',
-      buyer_phone: form.buyer_phone || '',
-      buyer_country: effectiveCountry,
-      message_to_creator: form.campaign_note || '',
-      booking_notes: `Brand: ${form.brand_name || effectiveBuyerName}. VAT: ${form.buyer_vat_number || 'N/A'}`,
-      slots_count: slotsCount,
-      price_per_slot: listing.discounted_price,
-      total_price: totalPrice,
-      deposit_amount: depositTotal,
-      balance_amount: balanceAmount,
-      stripe_payment_intent_id: stripePaymentIntentId,
-      stripe_charge_id: `ch_${Date.now()}`,
-      payment_status: 'paid' as const,
-      status: 'secured' as const,
-      seller_name: listing.media_owner_name,
-      seller_email: listing.seller_email || '',
-      seller_phone: listing.seller_phone || '',
-      seller_website: listing.seller_website || '',
-    };
-
+  const handlePaymentSuccess = async ({
+    booking_id,
+    reference_number,
+  }: { stripe_payment_intent_id: string; booking_id: string; reference_number: string }): Promise<PaymentSuccessResult> => {
     const { data, error } = await supabase
       .from('deposit_bookings')
-      .insert(bookingData)
-      .select()
+      .select('*')
+      .eq('id', booking_id)
       .maybeSingle();
 
     if (error || !data) {
-      const message = error?.message
-        || 'We charged your card but could not save your booking. Please contact support with your payment reference: ' + stripePaymentIntentId;
-      return { ok: false, error: message };
+      return {
+        ok: false,
+        error: `Payment processed (ref ${reference_number}). Booking will be confirmed shortly — if not, please contact support.`,
+      };
     }
 
-    await supabase
-      .from('listings')
-      .update({
-        status: 'secured',
-        slots_remaining: Math.max(0, listing.slots_remaining - slotsCount),
-      })
-      .eq('id', listing.id);
+    const effectiveBuyerName = data.buyer_name;
+    const effectiveBuyerCompany = data.buyer_company;
+    const effectiveCountry = data.buyer_country;
 
     sendBookingConfirmationEmails(form.buyer_email, listing.seller_email || '', {
-      reference_number: referenceNumber,
+      reference_number,
       property_name: listing.property_name,
       media_owner_name: listing.media_owner_name,
       date_label: listing.date_label,
@@ -164,6 +156,12 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
       buyer_country: effectiveCountry,
       message_to_creator: form.campaign_note || '',
     });
+
+    try {
+      localStorage.removeItem(storageKey(listing.id));
+    } catch {
+      // ignore
+    }
 
     setBooking({ ...data, listing });
     setStep('confirmation');
@@ -200,32 +198,36 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
     </div>
   );
 
+  const content = (
+    <>
+      {step === 'entry' && (
+        <FastEntry form={form} onChange={updateForm} onContinue={() => setStep('details')} />
+      )}
+      {step === 'details' && (
+        <BuyerDetails form={form} onChange={updateForm} vatNumberValid={vatNumberValid} onVatValidation={setVatNumberValid} onContinue={() => setStep('booking')} onBack={() => setStep('entry')} />
+      )}
+      {step === 'booking' && (
+        <BookingInfo form={form} onChange={updateForm} listing={listing} onContinue={() => setStep('summary')} onBack={() => setStep('details')} />
+      )}
+      {step === 'summary' && (
+        <SummaryPanel listing={listing} form={form} vat={vat} depositSubtotal={depositSubtotal} depositTotal={depositTotal} balanceAmount={balanceAmount} totalPrice={totalPrice} onContinue={() => setStep('payment')} onBack={() => setStep('booking')} />
+      )}
+      {step === 'payment' && (
+        <PaymentStep listing={listing} form={form} vat={vat} depositSubtotal={depositSubtotal} depositTotal={depositTotal} slotsCount={slotsCount} onSuccess={handlePaymentSuccess} onBack={() => setStep('summary')} />
+      )}
+      {step === 'confirmation' && booking && (
+        <BookingConfirmation booking={booking} listing={listing} depositTotal={depositTotal} onClose={onClose} />
+      )}
+    </>
+  );
+
   if (inline) {
     return (
       <div className="bg-white border border-black/[0.08] rounded-3xl w-full shadow-sm flex flex-col">
         <div className="border-b border-black/[0.06] px-6 pt-5 pb-4">
           <StepIndicator />
         </div>
-        <div className="p-6 flex-1">
-          {step === 'entry' && (
-            <FastEntry form={form} onChange={updateForm} onContinue={() => setStep('details')} />
-          )}
-          {step === 'details' && (
-            <BuyerDetails form={form} onChange={updateForm} vatNumberValid={vatNumberValid} onVatValidation={setVatNumberValid} onContinue={() => setStep('booking')} onBack={() => setStep('entry')} />
-          )}
-          {step === 'booking' && (
-            <BookingInfo form={form} onChange={updateForm} listing={listing} onContinue={() => setStep('summary')} onBack={() => setStep('details')} />
-          )}
-          {step === 'summary' && (
-            <SummaryPanel listing={listing} form={form} vat={vat} depositSubtotal={depositSubtotal} depositTotal={depositTotal} balanceAmount={balanceAmount} totalPrice={totalPrice} onContinue={() => setStep('payment')} onBack={() => setStep('booking')} />
-          )}
-          {step === 'payment' && (
-            <PaymentStep listing={listing} form={form} vat={vat} depositSubtotal={depositSubtotal} depositTotal={depositTotal} onSuccess={handlePaymentSuccess} onBack={() => setStep('summary')} />
-          )}
-          {step === 'confirmation' && booking && (
-            <BookingConfirmation booking={booking} listing={listing} depositTotal={depositTotal} onClose={onClose} />
-          )}
-        </div>
+        <div className="p-6 flex-1">{content}</div>
       </div>
     );
   }
@@ -262,71 +264,7 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
           <StepIndicator />
         </div>
 
-        <div className="p-6 flex-1">
-          {step === 'entry' && (
-            <FastEntry
-              form={form}
-              onChange={updateForm}
-              onContinue={() => setStep('details')}
-            />
-          )}
-
-          {step === 'details' && (
-            <BuyerDetails
-              form={form}
-              onChange={updateForm}
-              vatNumberValid={vatNumberValid}
-              onVatValidation={setVatNumberValid}
-              onContinue={() => setStep('booking')}
-              onBack={() => setStep('entry')}
-            />
-          )}
-
-          {step === 'booking' && (
-            <BookingInfo
-              form={form}
-              onChange={updateForm}
-              listing={listing}
-              onContinue={() => setStep('summary')}
-              onBack={() => setStep('details')}
-            />
-          )}
-
-          {step === 'summary' && (
-            <SummaryPanel
-              listing={listing}
-              form={form}
-              vat={vat}
-              depositSubtotal={depositSubtotal}
-              depositTotal={depositTotal}
-              balanceAmount={balanceAmount}
-              totalPrice={totalPrice}
-              onContinue={() => setStep('payment')}
-              onBack={() => setStep('booking')}
-            />
-          )}
-
-          {step === 'payment' && (
-            <PaymentStep
-              listing={listing}
-              form={form}
-              vat={vat}
-              depositSubtotal={depositSubtotal}
-              depositTotal={depositTotal}
-              onSuccess={handlePaymentSuccess}
-              onBack={() => setStep('summary')}
-            />
-          )}
-
-          {step === 'confirmation' && booking && (
-            <BookingConfirmation
-              booking={booking}
-              listing={listing}
-              depositTotal={depositTotal}
-              onClose={onClose}
-            />
-          )}
-        </div>
+        <div className="p-6 flex-1">{content}</div>
       </div>
     </div>
   );

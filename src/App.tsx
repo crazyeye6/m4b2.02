@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import StatsBar from './components/StatsBar';
@@ -8,15 +8,24 @@ import ListingsGrid from './components/ListingsGrid';
 import HowItWorks from './components/HowItWorks';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
-import ListSlotPage from './pages/ListSlotPage';
-import ListingPage from './pages/ListingPage';
-import AdminPage from './pages/AdminPage';
-import BuyerDashboard from './pages/BuyerDashboard';
-import SellerDashboard from './pages/SellerDashboard';
-import TermsPage from './pages/TermsPage';
-import PrivacyPage from './pages/PrivacyPage';
-import NotFoundPage from './pages/NotFoundPage';
-import CheckoutPage from './pages/CheckoutPage';
+
+const ListSlotPage = lazy(() => import('./pages/ListSlotPage'));
+const ListingPage = lazy(() => import('./pages/ListingPage'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
+const BuyerDashboard = lazy(() => import('./pages/BuyerDashboard'));
+const SellerDashboard = lazy(() => import('./pages/SellerDashboard'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+
+function PageFallback() {
+  return (
+    <div className="min-h-[60vh] flex items-center justify-center">
+      <div className="w-6 h-6 border-2 border-[#1d1d1f] border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 import { useListings } from './hooks/useListings';
 import { useAuth } from './context/AuthContext';
 import type { FilterState, Listing } from './types';
@@ -215,7 +224,9 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={goHome} />
-        <TermsPage onBack={goHome} />
+        <Suspense fallback={<PageFallback />}>
+          <TermsPage onBack={goHome} />
+        </Suspense>
       </div>
     );
   }
@@ -224,7 +235,9 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={goHome} />
-        <PrivacyPage onBack={goHome} onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }} />
+        <Suspense fallback={<PageFallback />}>
+          <PrivacyPage onBack={goHome} onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }} />
+        </Suspense>
       </div>
     );
   }
@@ -233,32 +246,42 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={goHome} />
-        <ListSlotPage
-          onBack={() => { goHome(); refetch(); }}
-          onEditProfile={() => { setPage('dashboard'); window.scrollTo(0, 0); }}
-        />
+        <Suspense fallback={<PageFallback />}>
+          <ListSlotPage
+            onBack={() => { goHome(); refetch(); }}
+            onEditProfile={() => { setPage('dashboard'); window.scrollTo(0, 0); }}
+          />
+        </Suspense>
       </div>
     );
   }
 
   if (page === 'admin') {
-    return <AdminPage onBack={goHome} />;
+    return (
+      <Suspense fallback={<PageFallback />}>
+        <AdminPage onBack={goHome} />
+      </Suspense>
+    );
   }
 
   if (page === 'dashboard') {
     if (profile?.role === 'seller') {
       return (
-        <SellerDashboard
-          onBack={() => { goHome(); window.scrollTo(0, 0); }}
-          onListSlot={() => { setPage('list-slot'); window.scrollTo(0, 0); }}
-        />
+        <Suspense fallback={<PageFallback />}>
+          <SellerDashboard
+            onBack={() => { goHome(); window.scrollTo(0, 0); }}
+            onListSlot={() => { setPage('list-slot'); window.scrollTo(0, 0); }}
+          />
+        </Suspense>
       );
     }
 
     return (
-      <BuyerDashboard
-        onBack={() => { goHome(); window.scrollTo(0, 0); }}
-      />
+      <Suspense fallback={<PageFallback />}>
+        <BuyerDashboard
+          onBack={() => { goHome(); window.scrollTo(0, 0); }}
+        />
+      </Suspense>
     );
   }
 
@@ -266,7 +289,9 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={() => { setListingInUrl(null); setPage('home'); }} />
-        <NotFoundPage onHome={() => { setListingInUrl(null); setPage('home'); }} onBrowse={() => { setListingInUrl(null); setPage('home'); }} />
+        <Suspense fallback={<PageFallback />}>
+          <NotFoundPage onHome={() => { setListingInUrl(null); setPage('home'); }} onBrowse={() => { setListingInUrl(null); setPage('home'); }} />
+        </Suspense>
       </div>
     );
   }
@@ -274,30 +299,32 @@ export default function App() {
   if (page === 'checkout' && checkoutListingId) {
     const fromListingId = listingId;
     return (
-      <CheckoutPage
-        listingId={checkoutListingId}
-        onBack={() => {
-          if (fromListingId) {
-            setCheckoutListingId(null);
-            setListingInUrl(fromListingId);
-            setPage('listing');
-          } else {
-            setCheckoutListingId(null);
-            setListingInUrl(null);
-            setPage('home');
-          }
-          window.scrollTo(0, 0);
-        }}
-        onHome={goHome}
-        onListSlot={handleListSlot}
-        onAdmin={handleAdmin}
-        onDashboard={handleDashboard}
-        onSignIn={() => setShowAuthModal(true)}
-        onSuccess={(listing) => {
-          handleSecureSuccess(listing);
-          refetch();
-        }}
-      />
+      <Suspense fallback={<PageFallback />}>
+        <CheckoutPage
+          listingId={checkoutListingId}
+          onBack={() => {
+            if (fromListingId) {
+              setCheckoutListingId(null);
+              setListingInUrl(fromListingId);
+              setPage('listing');
+            } else {
+              setCheckoutListingId(null);
+              setListingInUrl(null);
+              setPage('home');
+            }
+            window.scrollTo(0, 0);
+          }}
+          onHome={goHome}
+          onListSlot={handleListSlot}
+          onAdmin={handleAdmin}
+          onDashboard={handleDashboard}
+          onSignIn={() => setShowAuthModal(true)}
+          onSuccess={(listing) => {
+            handleSecureSuccess(listing);
+            refetch();
+          }}
+        />
+      </Suspense>
     );
   }
 
@@ -305,11 +332,13 @@ export default function App() {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={() => { setListingInUrl(null); setPage('home'); }} />
-        <ListingPage
-          listingId={listingId}
-          onBack={handleBackFromListing}
-          onSecure={handleSecure}
-        />
+        <Suspense fallback={<PageFallback />}>
+          <ListingPage
+            listingId={listingId}
+            onBack={handleBackFromListing}
+            onSecure={handleSecure}
+          />
+        </Suspense>
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
       </div>
     );

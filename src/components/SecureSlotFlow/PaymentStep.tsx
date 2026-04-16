@@ -11,7 +11,8 @@ interface PaymentStepProps {
   vat: VatCalculation;
   depositSubtotal: number;
   depositTotal: number;
-  onSuccess: (stripePaymentIntentId: string) => Promise<{ ok: boolean; error?: string }> | void;
+  slotsCount: number;
+  onSuccess: (result: { stripe_payment_intent_id: string; booking_id: string; reference_number: string }) => Promise<{ ok: boolean; error?: string }> | void;
   onBack: () => void;
 }
 
@@ -41,29 +42,48 @@ async function getStripeInstance(): Promise<Stripe | null> {
   return stripePromise;
 }
 
-async function createPaymentIntent(amountInCents: number, listingId: string, propertyName: string, buyerEmail: string) {
+async function createPaymentIntent(
+  listing: Listing,
+  form: BuyerFormData,
+  vat: VatCalculation,
+  slotsCount: number,
+) {
   const res = await fetch(`${SUPABASE_URL}/functions/v1/create-payment-intent`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
     },
     body: JSON.stringify({
-      amount: amountInCents,
-      currency: 'usd',
-      metadata: {
-        listing_id: listingId,
-        property_name: propertyName,
-        buyer_email: buyerEmail,
-      },
+      listing_id: listing.id,
+      slots_count: slotsCount,
+      buyer_name: form.buyer_name,
+      buyer_email: form.buyer_email,
+      buyer_company: form.buyer_company,
+      buyer_website: form.buyer_website,
+      buyer_phone: form.buyer_phone,
+      buyer_country: form.buyer_country,
+      buyer_country_code: form.buyer_country_code,
+      buyer_vat_number: form.buyer_vat_number,
+      purchase_type: form.purchase_type,
+      vat_rate: vat.vatRate / 100,
+      vat_reverse_charge: vat.reverseCharge,
+      vat_applies: vat.vatApplies,
+      campaign_note: form.campaign_note,
+      brand_name: form.brand_name,
     }),
   });
   const data = await res.json();
   if (!res.ok || !data.client_secret) throw new Error(data.error ?? 'Failed to initialise payment');
-  return data as { client_secret: string; payment_intent_id: string };
+  return data as {
+    client_secret: string;
+    payment_intent_id: string;
+    reference_number: string;
+    booking_id: string;
+  };
 }
 
-export default function PaymentStep({ listing, form, vat, depositSubtotal, depositTotal, onSuccess, onBack }: PaymentStepProps) {
+export default function PaymentStep({ listing, form, vat, depositSubtotal, depositTotal, slotsCount, onSuccess, onBack }: PaymentStepProps) {
   const [loading, setLoading] = useState(true);
   const [stripeReady, setStripeReady] = useState(false);
   const [processing, setProcessing] = useState(false);
@@ -73,10 +93,8 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
   const mountRef = useRef<HTMLDivElement | null>(null);
   const stripeRef = useRef<Stripe | null>(null);
   const elementsRef = useRef<StripeElements | null>(null);
-  const paymentIntentIdRef = useRef<string | null>(null);
+  const intentRef = useRef<{ payment_intent_id: string; reference_number: string; booking_id: string } | null>(null);
   const initialisedRef = useRef(false);
-
-  const amountInCents = Math.round(depositTotal * 100);
 
   const initialise = useCallback(async () => {
     if (initialisedRef.current) return;
@@ -87,13 +105,17 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
     try {
       const [stripe, intent] = await Promise.all([
         getStripeInstance(),
-        createPaymentIntent(amountInCents, listing.id, listing.property_name, form.buyer_email),
+        createPaymentIntent(listing, form, vat, slotsCount),
       ]);
 
       if (!stripe) { setNoKey(true); setLoading(false); return; }
 
       stripeRef.current = stripe;
-      paymentIntentIdRef.current = intent.payment_intent_id;
+      intentRef.current = {
+        payment_intent_id: intent.payment_intent_id,
+        reference_number: intent.reference_number,
+        booking_id: intent.booking_id,
+      };
 
       const elements = stripe.elements({
         clientSecret: intent.client_secret,
@@ -166,7 +188,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
       setError(e instanceof Error ? e.message : String(e));
       setLoading(false);
     }
-  }, [amountInCents, listing.id, listing.property_name, form.buyer_email, form.buyer_name, form.buyer_company]);
+  }, [listing, form, vat, slotsCount]);
 
   useEffect(() => {
     initialise();
@@ -177,7 +199,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
   }, [initialise]);
 
   const handleSubmit = async () => {
-    if (!stripeRef.current || !elementsRef.current || !paymentIntentIdRef.current) return;
+    if (!stripeRef.current || !elementsRef.current || !intentRef.current) return;
     setError('');
     setProcessing(true);
 
@@ -208,12 +230,16 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
     }
 
     try {
-      const result = await onSuccess(paymentIntentIdRef.current);
+      const result = await onSuccess({
+        stripe_payment_intent_id: intentRef.current.payment_intent_id,
+        booking_id: intentRef.current.booking_id,
+        reference_number: intentRef.current.reference_number,
+      });
       if (result && result.ok === false) {
-        setError(result.error ?? 'Payment succeeded but booking could not be saved. Please contact support.');
+        setError(result.error ?? 'Payment succeeded but booking could not be finalised. Please contact support with reference ' + intentRef.current.reference_number);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Unexpected error after payment. Please contact support.');
+      setError(e instanceof Error ? e.message : 'Unexpected error after payment. Please contact support with reference ' + intentRef.current.reference_number);
     } finally {
       setProcessing(false);
     }
