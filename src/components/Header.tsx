@@ -23,7 +23,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
             <div className="w-[22px] h-[22px] bg-[#1d1d1f] rounded-[5px] flex items-center justify-center flex-shrink-0">
               <svg width="13" height="13" viewBox="0 0 10 12" fill="none" style={{transform: 'rotate(180deg)'}}>
                 <rect x="1" y="1" width="8" height="2.5" rx="1" fill="#38bdf8"/>
-                <rect x="1" y="4.75" width="6" height="2.5" rx="1" fill="#4ade80"/>
+                <rect x="1" y="4.75" width="6" height="2.5" rx="1" fill="white"/>
                 <rect x="1" y="8.5" width="8" height="2.5" rx="1" fill="#f472b6"/>
               </svg>
             </div>
