@@ -85,7 +85,7 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const opportunitiesRef = useRef<HTMLDivElement>(null);
 
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   const { listings, loading, stats, updateListingStatus, refetch } = useListings(filters);
 
   useEffect(() => {
@@ -192,6 +192,13 @@ export default function App() {
   }
 
   if (page === 'list-slot') {
+    if (authLoading) {
+      return (
+        <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-[#1d1d1f] border-t-transparent rounded-full animate-spin" />
+        </div>
+      );
+    }
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={goHome} />
@@ -204,6 +211,13 @@ export default function App() {
   }
 
   if (page === 'admin') {
+    if (authLoading) {
+      return (
+        <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-[#1d1d1f] border-t-transparent rounded-full animate-spin" />
+        </div>
+      );
+    }
     if (profile?.role !== 'admin') {
       return (
         <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
@@ -227,6 +241,13 @@ export default function App() {
   }
 
   if (page === 'dashboard') {
+    if (authLoading) {
+      return (
+        <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center">
+          <div className="w-6 h-6 border-2 border-[#1d1d1f] border-t-transparent rounded-full animate-spin" />
+        </div>
+      );
+    }
     if (!profile) {
       return (
         <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
