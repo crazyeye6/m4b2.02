@@ -10,17 +10,15 @@ export default function Footer({ onTerms, onPrivacy }: FooterProps) {
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
           <div className="flex items-center gap-2">
-            <div className="w-[20px] h-[20px] bg-[#1d1d1f] rounded-[4px] flex items-center justify-center flex-shrink-0">
-              <svg width="11" height="11" viewBox="0 0 10 12" fill="none">
-                <rect x="1" y="1" width="8" height="2.5" rx="1" fill="#4ade80"/>
-                <rect x="1" y="4.75" width="6" height="2.5" rx="1" fill="#f97316"/>
-                <rect x="1" y="8.5" width="8" height="2.5" rx="1" fill="#38bdf8"/>
+            <div className="w-[31px] h-[31px] bg-[#1d1d1f] rounded-[5px] flex items-center justify-center flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
+                <path d="M7 1L3 7h3.5L4 11l6-6.5H6.5L7 1z" fill="#facc15" stroke="#f59e0b" strokeWidth="0.3" strokeLinejoin="round"/>
               </svg>
             </div>
-            <span className="text-[#1d1d1f] font-bold text-[15px] tracking-[-0.03em] leading-none">
+            <span className="text-[#1d1d1f] font-bold text-[16px] tracking-[-0.03em] leading-none">
               EndingThisWeek
             </span>
-            <span className="text-[15px] font-bold text-white bg-[#1d1d1f] px-1.5 py-0.5 rounded-[4px] tracking-[-0.03em] leading-none">
+            <span className="text-[16px] font-bold text-white bg-[#1d1d1f] px-1.5 py-0.5 rounded-[4px] tracking-[-0.03em] leading-none">
               .media
             </span>
           </div>
