@@ -132,6 +132,34 @@ export default function App() {
     opportunitiesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const handleOpportunities = () => {
+    if (page !== 'home') {
+      setListingInUrl(null);
+      setListingId(null);
+      setCheckoutListingId(null);
+      setPage('home');
+      setTimeout(() => {
+        document.getElementById('opportunities')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      opportunitiesRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleHowItWorks = () => {
+    if (page !== 'home') {
+      setListingInUrl(null);
+      setListingId(null);
+      setCheckoutListingId(null);
+      setPage('home');
+      setTimeout(() => {
+        document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const handleListSlot = () => {
     if (!profile) {
       setShowAuthModal(true);
@@ -177,6 +205,8 @@ export default function App() {
     onAdmin: handleAdmin,
     onDashboard: handleDashboard,
     onSignIn: () => setShowAuthModal(true),
+    onOpportunities: handleOpportunities,
+    onHowItWorks: handleHowItWorks,
   };
 
   const goHome = () => { setListingInUrl(null); setListingId(null); setCheckoutListingId(null); setPage('home'); };

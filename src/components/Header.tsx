@@ -8,9 +8,25 @@ interface HeaderProps {
   onAdmin?: () => void;
   onDashboard: () => void;
   onSignIn: () => void;
+  onOpportunities?: () => void;
+  onHowItWorks?: () => void;
 }
 
-export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSignIn }: HeaderProps) {
+export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSignIn, onOpportunities, onHowItWorks }: HeaderProps) {
+  const handleOpportunities = () => {
+    if (onOpportunities) {
+      onOpportunities();
+    } else {
+      onHome();
+    }
+  };
+
+  const handleHowItWorks = (e: React.MouseEvent) => {
+    if (onHowItWorks) {
+      e.preventDefault();
+      onHowItWorks();
+    }
+  };
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, profile, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -35,13 +51,14 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
 
           <nav className="hidden md:flex items-center gap-0">
             <button
-              onClick={onHome}
+              onClick={handleOpportunities}
               className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
             >
               Opportunities
             </button>
             <a
               href="#how-it-works"
+              onClick={handleHowItWorks}
               className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
             >
               How it works
@@ -139,8 +156,15 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
 
       {mobileOpen && (
         <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-4 py-3 space-y-0.5">
-          <button onClick={() => { onHome(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">Opportunities</button>
-          <a href="#how-it-works" className="block text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">How it works</a>
+          <button onClick={() => { handleOpportunities(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">Opportunities</button>
+          <a
+            href="#how-it-works"
+            onClick={(e) => {
+              if (onHowItWorks) { e.preventDefault(); onHowItWorks(); }
+              setMobileOpen(false);
+            }}
+            className="block text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all"
+          >How it works</a>
           <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">For sellers</button>
           <div className="flex gap-2 pt-3 border-t border-black/[0.06] mt-2">
             {user ? (
