@@ -89,7 +89,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
         createPaymentIntent(amountInCents, listing.id, listing.property_name, form.buyer_email),
       ]);
 
-      if (!stripe) { setNoKey(true); return; }
+      if (!stripe) { setNoKey(true); setLoading(false); return; }
 
       stripeRef.current = stripe;
       paymentIntentIdRef.current = intent.payment_intent_id;
@@ -142,15 +142,24 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
         },
       });
 
-      setLoading(false);
-
-      await new Promise<void>(resolve => {
-        paymentElement.on('ready', () => {
-          setStripeReady(true);
-          resolve();
-        });
-        paymentElement.mount(mountRef.current!);
+      paymentElement.on('ready', () => {
+        setStripeReady(true);
+        setLoading(false);
       });
+
+      if (mountRef.current) {
+        paymentElement.mount(mountRef.current);
+      } else {
+        await new Promise<void>(resolve => {
+          const interval = setInterval(() => {
+            if (mountRef.current) {
+              clearInterval(interval);
+              paymentElement.mount(mountRef.current);
+              resolve();
+            }
+          }, 50);
+        });
+      }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : String(e));
       setLoading(false);
@@ -258,12 +267,12 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
           {(loading || !stripeReady) && (
             <div className="absolute inset-0 flex items-center justify-center gap-2 text-[#aeaeb2] text-sm">
               <Loader2 className="w-4 h-4 animate-spin" />
-              {loading ? 'Preparing secure payment...' : 'Loading payment form...'}
+              Preparing secure payment...
             </div>
           )}
           <div
             ref={mountRef}
-            style={{ opacity: stripeReady ? 1 : 0, transition: 'opacity 0.2s' }}
+            style={{ opacity: stripeReady ? 1 : 0, transition: 'opacity 0.3s' }}
           />
         </div>
       </div>

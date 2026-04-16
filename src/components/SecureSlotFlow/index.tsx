@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { sendBookingConfirmationEmails } from '../../lib/email';
 import type { Listing, BuyerFormData, DepositBooking } from '../../types';
 import { calculateVAT, detectUserCountry, getCountryInfo } from '../../lib/vat';
+import { useAuth } from '../../context/AuthContext';
 import FastEntry from './FastEntry';
 import BuyerDetails from './BuyerDetails';
 import BookingInfo from './BookingInfo';
@@ -29,25 +30,29 @@ const STEPS: { key: Step; label: string }[] = [
   { key: 'confirmation', label: 'Done' },
 ];
 
-const detectedCountry = detectUserCountry();
-const detectedCountryInfo = getCountryInfo(detectedCountry);
-
-const INITIAL_FORM: BuyerFormData = {
-  purchase_type: 'business',
-  buyer_email: '',
-  buyer_country: detectedCountryInfo.name,
-  buyer_country_code: detectedCountry,
-  buyer_name: '',
-  buyer_company: '',
-  buyer_vat_number: '',
-  brand_name: '',
-  campaign_start_date: '',
-  campaign_note: '',
-  buyer_website: '',
-  buyer_phone: '',
-  message_to_creator: '',
-  booking_notes: '',
-};
+function buildInitialForm(
+  profile: import('../../context/AuthContext').UserProfile | null,
+  user: import('@supabase/supabase-js').User | null,
+): BuyerFormData {
+  const detectedCountry = detectUserCountry();
+  const detectedCountryInfo = getCountryInfo(detectedCountry);
+  return {
+    purchase_type: 'business',
+    buyer_email: user?.email ?? '',
+    buyer_country: detectedCountryInfo.name,
+    buyer_country_code: detectedCountry,
+    buyer_name: profile?.display_name ?? '',
+    buyer_company: profile?.company ?? '',
+    buyer_vat_number: '',
+    brand_name: profile?.company ?? '',
+    campaign_start_date: '',
+    campaign_note: '',
+    buyer_website: profile?.seller_website_url ?? profile?.website ?? '',
+    buyer_phone: profile?.phone ?? '',
+    message_to_creator: '',
+    booking_notes: '',
+  };
+}
 
 function generateReference(): string {
   const year = new Date().getFullYear();
@@ -56,8 +61,9 @@ function generateReference(): string {
 }
 
 export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = false }: SecureSlotFlowProps) {
+  const { user, profile } = useAuth();
   const [step, setStep] = useState<Step>('entry');
-  const [form, setForm] = useState<BuyerFormData>(INITIAL_FORM);
+  const [form, setForm] = useState<BuyerFormData>(() => buildInitialForm(profile, user));
   const [vatNumberValid, setVatNumberValid] = useState<boolean | null>(null);
   const [booking, setBooking] = useState<DepositBooking | null>(null);
 
