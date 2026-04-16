@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Lock, AlertTriangle, Shield, Loader2 } from 'lucide-react';
 import type { BuyerFormData, Listing } from '../../types';
 import type { VatCalculation } from '../../lib/vat';
-import { loadStripe, type Stripe, type StripeElements, type StripePaymentElement } from '@stripe/stripe-js';
+import { loadStripe, type Stripe, type StripeElements } from '@stripe/stripe-js';
 import { supabase } from '../../lib/supabase';
 
 interface PaymentStepProps {
@@ -18,107 +18,84 @@ interface PaymentStepProps {
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-let cachedStripePromise: ReturnType<typeof loadStripe> | null = null;
-let cachedStripeKey: string | null = null;
+let stripePromise: ReturnType<typeof loadStripe> | null = null;
+let resolvedKey: string | null = null;
 
-function getStripe(key: string) {
-  if (cachedStripeKey !== key) {
-    cachedStripeKey = key;
-    cachedStripePromise = loadStripe(key);
+async function getStripeInstance(): Promise<Stripe | null> {
+  if (!resolvedKey) {
+    const envKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
+    if (envKey && envKey.startsWith('pk_')) {
+      resolvedKey = envKey;
+    } else {
+      const { data } = await supabase
+        .from('platform_settings')
+        .select('value')
+        .eq('key', 'stripe_publishable_key')
+        .maybeSingle();
+      const dbKey = data?.value;
+      if (dbKey && dbKey.startsWith('pk_')) resolvedKey = dbKey;
+    }
   }
-  return cachedStripePromise!;
+  if (!resolvedKey) return null;
+  if (!stripePromise) stripePromise = loadStripe(resolvedKey);
+  return stripePromise;
 }
 
-async function resolveStripeKey(): Promise<string | null> {
-  const envKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
-  if (envKey && envKey.startsWith('pk_')) return envKey;
-  const { data } = await supabase
-    .from('platform_settings')
-    .select('value')
-    .eq('key', 'stripe_publishable_key')
-    .maybeSingle();
-  const dbKey = data?.value;
-  if (dbKey && dbKey.startsWith('pk_')) return dbKey;
-  return null;
+async function createPaymentIntent(amountInCents: number, listingId: string, propertyName: string, buyerEmail: string) {
+  const res = await fetch(`${SUPABASE_URL}/functions/v1/create-payment-intent`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+    body: JSON.stringify({
+      amount: amountInCents,
+      currency: 'usd',
+      metadata: {
+        listing_id: listingId,
+        property_name: propertyName,
+        buyer_email: buyerEmail,
+      },
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.client_secret) throw new Error(data.error ?? 'Failed to initialise payment');
+  return data as { client_secret: string; payment_intent_id: string };
 }
 
 export default function PaymentStep({ listing, form, vat, depositSubtotal, depositTotal, onSuccess, onBack }: PaymentStepProps) {
-  const [stripeKey, setStripeKey] = useState<string | null>(null);
-  const [keyLoading, setKeyLoading] = useState(true);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
-  const [loadingIntent, setLoadingIntent] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [stripeReady, setStripeReady] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
-  const [stripeReady, setStripeReady] = useState(false);
+  const [noKey, setNoKey] = useState(false);
 
-  useEffect(() => {
-    resolveStripeKey().then(key => {
-      setStripeKey(key);
-      setKeyLoading(false);
-    });
-  }, []);
-
+  const mountRef = useRef<HTMLDivElement | null>(null);
   const stripeRef = useRef<Stripe | null>(null);
   const elementsRef = useRef<StripeElements | null>(null);
-  const paymentElementRef = useRef<StripePaymentElement | null>(null);
-  const mountRef = useRef<HTMLDivElement | null>(null);
+  const paymentIntentIdRef = useRef<string | null>(null);
+  const initialisedRef = useRef(false);
 
   const amountInCents = Math.round(depositTotal * 100);
 
-  useEffect(() => {
-    if (keyLoading || !stripeKey) return;
-    let cancelled = false;
+  const initialise = useCallback(async () => {
+    if (initialisedRef.current) return;
+    initialisedRef.current = true;
+    setLoading(true);
+    setError('');
+    try {
+      const [stripe, intent] = await Promise.all([
+        getStripeInstance(),
+        createPaymentIntent(amountInCents, listing.id, listing.property_name, form.buyer_email),
+      ]);
 
-    async function createIntent() {
-      setLoadingIntent(true);
-      setError('');
-      try {
-        const res = await fetch(`${SUPABASE_URL}/functions/v1/create-payment-intent`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({
-            amount: amountInCents,
-            currency: 'usd',
-            metadata: {
-              listing_id: listing.id,
-              property_name: listing.property_name,
-              buyer_email: form.buyer_email,
-            },
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok || !data.client_secret) {
-          throw new Error(data.error ?? 'Failed to initialise payment');
-        }
-        if (!cancelled) {
-          setClientSecret(data.client_secret);
-          setPaymentIntentId(data.payment_intent_id);
-        }
-      } catch (e) {
-        if (!cancelled) setError(String(e));
-      } finally {
-        if (!cancelled) setLoadingIntent(false);
-      }
-    }
+      if (!stripe) { setNoKey(true); return; }
 
-    createIntent();
-    return () => { cancelled = true; };
-  }, [keyLoading, stripeKey, amountInCents, listing.id, listing.property_name, form.buyer_email]);
-
-  useEffect(() => {
-    if (!clientSecret || !mountRef.current || !stripeKey) return;
-    let mounted = true;
-
-    getStripe(stripeKey).then(stripe => {
-      if (!stripe || !mounted || !mountRef.current) return;
       stripeRef.current = stripe;
+      paymentIntentIdRef.current = intent.payment_intent_id;
 
       const elements = stripe.elements({
-        clientSecret,
+        clientSecret: intent.client_secret,
         appearance: {
           theme: 'flat',
           variables: {
@@ -154,6 +131,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
       });
 
       elementsRef.current = elements;
+
       const paymentElement = elements.create('payment', {
         layout: 'tabs',
         defaultValues: {
@@ -164,23 +142,31 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
         },
       });
 
-      paymentElement.on('ready', () => { if (mounted) setStripeReady(true); });
-      paymentElement.mount(mountRef.current!);
-      paymentElementRef.current = paymentElement;
-    });
+      setLoading(false);
 
+      await new Promise<void>(resolve => {
+        paymentElement.on('ready', () => {
+          setStripeReady(true);
+          resolve();
+        });
+        paymentElement.mount(mountRef.current!);
+      });
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : String(e));
+      setLoading(false);
+    }
+  }, [amountInCents, listing.id, listing.property_name, form.buyer_email, form.buyer_name, form.buyer_company]);
+
+  useEffect(() => {
+    initialise();
     return () => {
-      mounted = false;
-      paymentElementRef.current?.destroy();
-      paymentElementRef.current = null;
       elementsRef.current = null;
       stripeRef.current = null;
-      setStripeReady(false);
     };
-  }, [clientSecret, form.buyer_name, form.buyer_company, form.buyer_email]);
+  }, [initialise]);
 
   const handleSubmit = async () => {
-    if (!stripeRef.current || !elementsRef.current || !paymentIntentId) return;
+    if (!stripeRef.current || !elementsRef.current || !paymentIntentIdRef.current) return;
     setError('');
     setProcessing(true);
 
@@ -211,19 +197,10 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
     }
 
     setProcessing(false);
-    onSuccess(paymentIntentId);
+    onSuccess(paymentIntentIdRef.current);
   };
 
-  if (keyLoading) {
-    return (
-      <div className="flex items-center justify-center py-10 gap-2 text-[#aeaeb2] text-sm">
-        <Loader2 className="w-4 h-4 animate-spin" />
-        Loading payment...
-      </div>
-    );
-  }
-
-  if (!stripeKey) {
+  if (noKey) {
     return (
       <div className="flex items-center gap-3 bg-orange-50 border border-orange-200 text-orange-700 text-sm px-4 py-3 rounded-2xl">
         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
@@ -277,22 +254,16 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
         <div className="px-4 py-3 border-b border-black/[0.06]">
           <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold">Payment details</p>
         </div>
-        <div className="p-4">
-          {loadingIntent && (
-            <div className="flex items-center justify-center py-8 gap-2 text-[#aeaeb2] text-sm">
+        <div className="p-4 min-h-[120px] relative">
+          {(loading || !stripeReady) && (
+            <div className="absolute inset-0 flex items-center justify-center gap-2 text-[#aeaeb2] text-sm">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Preparing secure payment...
-            </div>
-          )}
-          {!loadingIntent && !stripeReady && (
-            <div className="flex items-center justify-center py-8 gap-2 text-[#aeaeb2] text-sm">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              Loading payment form...
+              {loading ? 'Preparing secure payment...' : 'Loading payment form...'}
             </div>
           )}
           <div
             ref={mountRef}
-            className={stripeReady ? 'opacity-100 transition-opacity duration-200' : 'opacity-0 h-0 overflow-hidden'}
+            style={{ opacity: stripeReady ? 1 : 0, transition: 'opacity 0.2s' }}
           />
         </div>
       </div>
@@ -314,7 +285,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
         </button>
         <button
           onClick={handleSubmit}
-          disabled={processing || loadingIntent || !stripeReady}
+          disabled={processing || loading || !stripeReady}
           className="flex-1 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-bold py-3.5 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
         >
           {processing ? (
