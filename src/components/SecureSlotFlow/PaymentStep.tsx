@@ -82,6 +82,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
     if (initialisedRef.current) return;
     initialisedRef.current = true;
     setLoading(true);
+    setStripeReady(false);
     setError('');
     try {
       const [stripe, intent] = await Promise.all([
@@ -161,6 +162,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
         });
       }
     } catch (e: unknown) {
+      initialisedRef.current = false;
       setError(e instanceof Error ? e.message : String(e));
       setLoading(false);
     }
@@ -253,9 +255,19 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-100 text-red-600 text-sm px-3 py-2.5 rounded-2xl">
-          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-          {error}
+        <div className="flex items-start gap-2 bg-red-50 border border-red-100 text-red-600 text-sm px-3 py-2.5 rounded-2xl">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p>{error}</p>
+            {!stripeReady && (
+              <button
+                onClick={() => initialise()}
+                className="mt-1.5 text-xs font-semibold underline hover:no-underline"
+              >
+                Try again
+              </button>
+            )}
+          </div>
         </div>
       )}
 
