@@ -17,8 +17,18 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
   }, [form.buyer_email, form.purchase_type, form.buyer_country_code]);
 
   const handleContinue = () => {
-    if (!form.buyer_email.trim() || !form.buyer_email.includes('@')) {
+    const email = form.buyer_email.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!email) {
+      setError('Email address is required');
+      return;
+    }
+    if (!emailRegex.test(email)) {
       setError('Please enter a valid email address');
+      return;
+    }
+    if (email.length > 254) {
+      setError('Email address is too long');
       return;
     }
     setError('');

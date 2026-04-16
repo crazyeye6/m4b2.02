@@ -462,8 +462,8 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         from: "EndingThisWeek.media <onboarding@resend.dev>",
-        to: ["regna007@protonmail.com"],
-        subject: `[To: ${to}] ${emailContent.subject}`,
+        to: [to],
+        subject: emailContent.subject,
         html: emailContent.html,
       }),
     });

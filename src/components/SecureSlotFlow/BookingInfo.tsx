@@ -15,6 +15,7 @@ export default function BookingInfo({ form, onChange, listing, onContinue, onBac
 
   const handleContinue = () => {
     if (!form.brand_name.trim()) { setError('Brand name is required'); return; }
+    if (form.brand_name.trim().length > 200) { setError('Brand name is too long (max 200 characters)'); return; }
     setError('');
     onContinue();
   };
@@ -54,6 +55,7 @@ export default function BookingInfo({ form, onChange, listing, onContinue, onBac
             value={form.brand_name}
             onChange={e => onChange({ brand_name: e.target.value })}
             placeholder="e.g. Acme, MyBrand, ProductName"
+            maxLength={200}
             className={inputCls}
           />
           <p className="text-[#aeaeb2] text-xs mt-1">The brand being advertised in this slot</p>

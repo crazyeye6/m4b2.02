@@ -47,8 +47,11 @@ export default function BuyerDetails({
   const handleContinue = () => {
     if (isBusiness) {
       if (!form.buyer_company.trim()) { setError('Company name is required'); return; }
+      if (form.buyer_company.trim().length > 200) { setError('Company name is too long (max 200 characters)'); return; }
+      if (form.buyer_name.trim().length > 200) { setError('Your name is too long (max 200 characters)'); return; }
     } else {
       if (!form.buyer_name.trim()) { setError('Full name is required'); return; }
+      if (form.buyer_name.trim().length > 200) { setError('Name is too long (max 200 characters)'); return; }
     }
     setError('');
     onContinue();
@@ -87,6 +90,7 @@ export default function BuyerDetails({
                   onChange={e => onChange({ buyer_company: e.target.value })}
                   placeholder="Acme Inc."
                   autoComplete="organization"
+                  maxLength={200}
                   className={inputCls + ' pl-10'}
                 />
               </div>
@@ -104,6 +108,7 @@ export default function BuyerDetails({
                   onChange={e => onChange({ buyer_name: e.target.value })}
                   placeholder="Jane Smith"
                   autoComplete="name"
+                  maxLength={200}
                   className={inputCls + ' pl-10'}
                 />
               </div>
@@ -172,6 +177,7 @@ export default function BuyerDetails({
                 onChange={e => onChange({ buyer_name: e.target.value })}
                 placeholder="Jane Smith"
                 autoComplete="name"
+                maxLength={200}
                 className={inputCls + ' pl-10'}
               />
             </div>
