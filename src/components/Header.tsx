@@ -23,7 +23,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
             <div className="w-[22px] h-[22px] bg-[#1d1d1f] rounded-[5px] flex items-center justify-center flex-shrink-0">
               <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
                 <rect x="0" y="0" width="3.5" height="12" rx="1" fill="#38bdf8"/>
-                <rect x="4.25" y="5" width="3.5" height="7" rx="1" fill="white"/>
+                <rect x="4.25" y="0" width="3.5" height="7" rx="1" fill="white"/>
                 <rect x="8.5" y="0" width="3.5" height="12" rx="1" fill="#f472b6"/>
               </svg>
             </div>
