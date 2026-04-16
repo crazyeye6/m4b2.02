@@ -37,7 +37,7 @@ const STEPS = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 border-t border-black/[0.06] bg-white">
+    <section id="how-it-works" className="pt-24 pb-24 border-t border-black/[0.06] bg-white">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mb-14">
           <p className="text-[12px] font-semibold uppercase tracking-widest text-[#86868b] mb-4">How it works</p>
@@ -91,7 +91,7 @@ export default function HowItWorks() {
           ))}
         </div>
 
-        <div className="mt-4 bg-[#1d1d1f] rounded-3xl p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
+        <div className="mt-12 bg-[#1d1d1f] rounded-3xl p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
             <h3 className="text-white font-semibold text-[17px] mb-1 tracking-[-0.01em]">Are you a publisher or creator?</h3>
             <p className="text-white/55 text-[14px]">List your unsold ad slots and set a claim deadline — giving buyers time to get their copy ready before the slot runs.</p>
