@@ -45,8 +45,11 @@ export default function Footer({ onTerms, onPrivacy }: FooterProps) {
           </div>
         </div>
 
-        <div className="mt-6 pt-5 border-t border-black/[0.04] text-center">
-          <p className="text-[#aeaeb2] text-[12px]">
+      </div>
+
+      <div className="bg-[#1d1d1f] mt-8">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center">
+          <p className="text-white/50 text-[12px]">
             &copy; 2026 EndingThisWeek.media. All rights reserved.
           </p>
         </div>
