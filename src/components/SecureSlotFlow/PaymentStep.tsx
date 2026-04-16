@@ -11,7 +11,7 @@ interface PaymentStepProps {
   vat: VatCalculation;
   depositSubtotal: number;
   depositTotal: number;
-  onSuccess: (stripePaymentIntentId: string) => void;
+  onSuccess: (stripePaymentIntentId: string) => Promise<{ ok: boolean; error?: string }> | void;
   onBack: () => void;
 }
 
@@ -207,8 +207,16 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
       return;
     }
 
-    setProcessing(false);
-    onSuccess(paymentIntentIdRef.current);
+    try {
+      const result = await onSuccess(paymentIntentIdRef.current);
+      if (result && result.ok === false) {
+        setError(result.error ?? 'Payment succeeded but booking could not be saved. Please contact support.');
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unexpected error after payment. Please contact support.');
+    } finally {
+      setProcessing(false);
+    }
   };
 
   if (noKey) {

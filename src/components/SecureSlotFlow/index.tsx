@@ -19,6 +19,11 @@ interface SecureSlotFlowProps {
   inline?: boolean;
 }
 
+interface PaymentSuccessResult {
+  ok: boolean;
+  error?: string;
+}
+
 export type Step = 'entry' | 'details' | 'booking' | 'summary' | 'payment' | 'confirmation';
 
 const STEPS: { key: Step; label: string }[] = [
@@ -83,20 +88,28 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
     setForm(prev => ({ ...prev, ...updates }));
   };
 
-  const handlePaymentSuccess = async (stripePaymentIntentId: string) => {
+  const handlePaymentSuccess = async (stripePaymentIntentId: string): Promise<PaymentSuccessResult> => {
     const referenceNumber = generateReference();
+
+    const effectiveBuyerName = (form.buyer_name && form.buyer_name.trim())
+      || (form.buyer_company && form.buyer_company.trim())
+      || form.buyer_email;
+    const effectiveBuyerCompany = form.purchase_type === 'business'
+      ? (form.buyer_company?.trim() || effectiveBuyerName)
+      : effectiveBuyerName;
+    const effectiveCountry = form.buyer_country?.trim() || 'Unknown';
 
     const bookingData = {
       reference_number: referenceNumber,
       listing_id: listing.id,
-      buyer_name: form.buyer_name,
+      buyer_name: effectiveBuyerName,
       buyer_email: form.buyer_email,
-      buyer_company: form.purchase_type === 'business' ? form.buyer_company : form.buyer_name,
+      buyer_company: effectiveBuyerCompany,
       buyer_website: form.buyer_website || '',
       buyer_phone: form.buyer_phone || '',
-      buyer_country: form.buyer_country,
+      buyer_country: effectiveCountry,
       message_to_creator: form.campaign_note || '',
-      booking_notes: `Brand: ${form.brand_name}. VAT: ${form.buyer_vat_number || 'N/A'}`,
+      booking_notes: `Brand: ${form.brand_name || effectiveBuyerName}. VAT: ${form.buyer_vat_number || 'N/A'}`,
       slots_count: slotsCount,
       price_per_slot: listing.discounted_price,
       total_price: totalPrice,
@@ -116,41 +129,46 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
       .from('deposit_bookings')
       .insert(bookingData)
       .select()
-      .single();
+      .maybeSingle();
 
-    if (!error && data) {
-      await supabase
-        .from('listings')
-        .update({
-          status: 'secured',
-          slots_remaining: Math.max(0, listing.slots_remaining - slotsCount),
-        })
-        .eq('id', listing.id);
-
-      sendBookingConfirmationEmails(form.buyer_email, listing.seller_email || '', {
-        reference_number: referenceNumber,
-        property_name: listing.property_name,
-        media_owner_name: listing.media_owner_name,
-        date_label: listing.date_label,
-        slot_type: listing.slot_type,
-        deposit_amount: depositTotal,
-        balance_amount: balanceAmount,
-        total_price: totalPrice,
-        seller_name: listing.media_owner_name,
-        seller_email: listing.seller_email || '',
-        buyer_name: form.buyer_name,
-        buyer_email: form.buyer_email,
-        buyer_company: form.purchase_type === 'business' ? form.buyer_company : form.buyer_name,
-        buyer_phone: form.buyer_phone || '',
-        buyer_website: form.buyer_website || '',
-        buyer_country: form.buyer_country,
-        message_to_creator: form.campaign_note || '',
-      });
-
-      setBooking({ ...data, listing });
-      setStep('confirmation');
-      onSuccess(listing);
+    if (error || !data) {
+      const message = error?.message
+        || 'We charged your card but could not save your booking. Please contact support with your payment reference: ' + stripePaymentIntentId;
+      return { ok: false, error: message };
     }
+
+    await supabase
+      .from('listings')
+      .update({
+        status: 'secured',
+        slots_remaining: Math.max(0, listing.slots_remaining - slotsCount),
+      })
+      .eq('id', listing.id);
+
+    sendBookingConfirmationEmails(form.buyer_email, listing.seller_email || '', {
+      reference_number: referenceNumber,
+      property_name: listing.property_name,
+      media_owner_name: listing.media_owner_name,
+      date_label: listing.date_label,
+      slot_type: listing.slot_type,
+      deposit_amount: depositTotal,
+      balance_amount: balanceAmount,
+      total_price: totalPrice,
+      seller_name: listing.media_owner_name,
+      seller_email: listing.seller_email || '',
+      buyer_name: effectiveBuyerName,
+      buyer_email: form.buyer_email,
+      buyer_company: effectiveBuyerCompany,
+      buyer_phone: form.buyer_phone || '',
+      buyer_website: form.buyer_website || '',
+      buyer_country: effectiveCountry,
+      message_to_creator: form.campaign_note || '',
+    });
+
+    setBooking({ ...data, listing });
+    setStep('confirmation');
+    onSuccess(listing);
+    return { ok: true };
   };
 
   const stepIndex = STEPS.findIndex(s => s.key === step);
