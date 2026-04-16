@@ -358,7 +358,7 @@ export default function App() {
           </section>
         </div>
 
-        <HowItWorks />
+        <HowItWorks onListSlot={handleListSlot} />
       </main>
 
       <Footer

@@ -35,7 +35,11 @@ const STEPS = [
   },
 ];
 
-export default function HowItWorks() {
+interface HowItWorksProps {
+  onListSlot?: () => void;
+}
+
+export default function HowItWorks({ onListSlot }: HowItWorksProps) {
   return (
     <section id="how-it-works" className="pt-24 pb-24 border-t border-black/[0.06] bg-white">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,9 +98,9 @@ export default function HowItWorks() {
         <div className="mt-12 bg-[#1d1d1f] rounded-3xl p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
             <h3 className="text-white font-semibold text-[17px] mb-1 tracking-[-0.01em]">Are you a publisher or creator?</h3>
-            <p className="text-white/55 text-[14px]">List your unsold ad slots and set a claim deadline — giving buyers time to get their copy ready before the slot runs.</p>
+            <p className="text-white/55 text-[14px]">List your unsold ad slots and set a deadline for interest — giving buyers time to get their copy ready before the promotional opportunity runs.</p>
           </div>
-          <button className="flex-shrink-0 bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap shadow-lg shadow-green-500/25">
+          <button onClick={onListSlot} className="flex-shrink-0 bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap shadow-lg shadow-green-500/25">
             List a Slot Free
           </button>
         </div>
