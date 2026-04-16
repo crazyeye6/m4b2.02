@@ -23,10 +23,6 @@ export default function Footer({ onTerms, onPrivacy }: FooterProps) {
             </span>
           </div>
 
-          <p className="text-white/50 text-[13px] text-center">
-            Last-minute media slots. Priced to move.
-          </p>
-
           <div className="flex items-center gap-6">
             <button
               onClick={onPrivacy}
@@ -43,11 +39,12 @@ export default function Footer({ onTerms, onPrivacy }: FooterProps) {
             <a href="mailto:legal@endingthisweek.media" className="text-white/50 hover:text-white text-[13px] transition-colors">Contact</a>
           </div>
         </div>
-      </div>
 
-      <div className="border-t border-white/10">
-        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center">
-          <p className="text-white/30 text-[12px]">
+        <div className="mt-8 text-center">
+          <p className="text-white font-bold text-[13px]">
+            Last-minute media slots. Priced to move.
+          </p>
+          <p className="text-white/30 text-[12px] mt-2">
             &copy; 2026 EndingThisWeek.media. All rights reserved.
           </p>
         </div>
