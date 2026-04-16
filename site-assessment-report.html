@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Site Assessment Report</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: #1a1a1a;
+      background: #fff;
+      padding: 40px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .cover {
+      text-align: center;
+      padding: 60px 0 80px;
+      border-bottom: 3px solid #1e3a5f;
+      margin-bottom: 48px;
+    }
+
+    .cover .label {
+      font-size: 10pt;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+
+    .cover h1 {
+      font-size: 28pt;
+      font-weight: 700;
+      color: #1e3a5f;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .cover .subtitle {
+      font-size: 13pt;
+      color: #475569;
+      margin-bottom: 40px;
+    }
+
+    .cover .meta {
+      display: inline-block;
+      background: #f1f5f9;
+      border-radius: 6px;
+      padding: 16px 32px;
+      font-size: 10pt;
+      color: #64748b;
+    }
+
+    .cover .meta strong {
+      color: #1e3a5f;
+    }
+
+    h2 {
+      font-size: 15pt;
+      font-weight: 700;
+      color: #1e3a5f;
+      margin-top: 40px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    h3 {
+      font-size: 12pt;
+      font-weight: 700;
+      color: #334155;
+      margin-top: 24px;
+      margin-bottom: 8px;
+    }
+
+    p {
+      margin-bottom: 12px;
+      color: #374151;
+    }
+
+    ul, ol {
+      margin: 8px 0 16px 24px;
+    }
+
+    li {
+      margin-bottom: 6px;
+      color: #374151;
+    }
+
+    .callout {
+      border-left: 4px solid #1e3a5f;
+      background: #f8fafc;
+      padding: 14px 18px;
+      margin: 16px 0;
+      border-radius: 0 6px 6px 0;
+    }
+
+    .callout.critical {
+      border-left-color: #dc2626;
+      background: #fef2f2;
+    }
+
+    .callout.warning {
+      border-left-color: #d97706;
+      background: #fffbeb;
+    }
+
+    .callout.good {
+      border-left-color: #16a34a;
+      background: #f0fdf4;
+    }
+
+    .callout .callout-title {
+      font-weight: 700;
+      font-size: 10pt;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .callout.critical .callout-title { color: #dc2626; }
+    .callout.warning .callout-title { color: #d97706; }
+    .callout.good .callout-title { color: #16a34a; }
+    .callout .callout-title { color: #1e3a5f; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 24px;
+      font-size: 10pt;
+    }
+
+    thead {
+      background: #1e3a5f;
+      color: #fff;
+    }
+
+    th {
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    td {
+      padding: 9px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 9pt;
+      font-weight: 600;
+    }
+
+    .badge.critical { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .badge.high { background: #fff7ed; color: #ea580c; border: 1px solid #fed7aa; }
+    .badge.medium { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+    .badge.low { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+    .badge.good { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+    .section-intro {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      font-size: 10.5pt;
+      color: #475569;
+    }
+
+    .toc {
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 24px 28px;
+      margin-bottom: 40px;
+    }
+
+    .toc h3 {
+      margin-top: 0;
+      color: #1e3a5f;
+      margin-bottom: 12px;
+    }
+
+    .toc ol {
+      margin: 0 0 0 20px;
+    }
+
+    .toc li {
+      color: #1e3a5f;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    @media print {
+      body { padding: 20px; }
+      .no-print { display: none; }
+    }
+
+    .print-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #1e3a5f;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11pt;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    .print-btn:hover { background: #15304f; }
+
+    code {
+      background: #f1f5f9;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-size: 9.5pt;
+      color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+
+  <button class="print-btn no-print" onclick="window.print()">Save as PDF / Print</button>
+
+  <div class="cover">
+    <div class="label">Confidential Technical Report</div>
+    <h1>Site Assessment Report</h1>
+    <div class="subtitle">Traffic Capacity &bull; Security &bull; Scalability &bull; Costs &bull; Development Roadmap</div>
+    <div class="meta">
+      <strong>Date:</strong> 16 April 2026 &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+      <strong>Stack:</strong> React + TypeScript + Supabase &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+      <strong>Classification:</strong> Internal Use Only
+    </div>
+  </div>
+
+  <div class="toc">
+    <h3>Contents</h3>
+    <ol>
+      <li>Current Traffic Capacity</li>
+      <li>Security Issues</li>
+      <li>Scalability Path &amp; Speed</li>
+      <li>Costs to Scale &amp; Secure</li>
+      <li>Additional Tools &amp; Subscriptions</li>
+      <li>Development Recommendations</li>
+    </ol>
+  </div>
+
+  <!-- SECTION 1 -->
+  <h2>1. Current Traffic Capacity</h2>
+
+  <div class="section-intro">
+    The site runs as a React Single Page Application (SPA) connected to Supabase for the database, authentication, and background functions. Hosting is via a CDN-based platform such as Netlify or Vercel.
+  </div>
+
+  <h3>Frontend Hosting (Netlify / Vercel Free Tier)</h3>
+  <ul>
+    <li>Handles approximately 100GB of bandwidth per month</li>
+    <li>Unlimited page requests served via global CDN</li>
+    <li>Scales automatically to millions of static asset requests with no configuration</li>
+  </ul>
+
+  <h3>Supabase (Free Tier)</h3>
+  <ul>
+    <li>500MB database storage</li>
+    <li>50,000 monthly active users</li>
+    <li>5GB data transfer bandwidth</li>
+    <li>500,000 Edge Function invocations per month</li>
+    <li>Comfortable for 1,000 to 5,000 monthly active users in early stage</li>
+  </ul>
+
+  <div class="callout">
+    <div class="callout-title">Current Ceiling</div>
+    Approximately <strong>5,000 to 10,000 monthly active users</strong> and a few hundred concurrent users before hitting Supabase free tier limits. The frontend is not the bottleneck. Database query throughput and Edge Function cold starts will be the first constraints at scale.
+  </div>
+
+  <!-- SECTION 2 -->
+  <h2>2. Security Issues</h2>
+
+  <h3>Critical Issues (Must Fix Before Accepting Real Users)</h3>
+
+  <div class="callout critical">
+    <div class="callout-title">Critical &mdash; Fake Payment Integration</div>
+    The payment form collects card details directly in the browser and simulates a transaction with a randomly generated fake ID. No money is actually charged. The form also displays the text "Secured by Stripe &bull; PCI DSS compliant" which is factually false. Collecting raw card numbers on the frontend violates PCI DSS compliance standards. Stripe Elements must replace the current form entirely.
+  </div>
+
+  <div class="callout critical">
+    <div class="callout-title">Critical &mdash; Hardcoded Email Address</div>
+    All outbound emails (booking confirmations, welcome emails, opportunity digests) are being delivered to a single developer email address regardless of who the intended recipient is. No users are currently receiving any emails from the platform. This is a single line fix in the Edge Function.
+  </div>
+
+  <h3>High Severity</h3>
+
+  <div class="callout warning">
+    <div class="callout-title">High &mdash; No Rate Limiting</div>
+    Any actor can repeatedly trigger booking creation, email sends, or digest runs without restriction. This exposes the platform to spam abuse, inflated email costs, and denial-of-service against the email provider quota. The digest endpoint in particular has no authentication and can be called by anyone with the URL.
+  </div>
+
+  <h3>Medium Severity</h3>
+  <ul>
+    <li><strong>No input validation</strong> &mdash; Email addresses, phone numbers, and free-text fields are saved to the database without format checks or length limits</li>
+    <li><strong>Slot bookings table</strong> allows unrestricted public INSERT and SELECT, making it trivially spammable</li>
+  </ul>
+
+  <h3>Low Severity / Architecture Notes</h3>
+  <ul>
+    <li>CORS on Edge Functions currently allows all origins. This is acceptable in development but should be locked to the production domain before launch.</li>
+    <li>The Supabase anonymous key is visible in the frontend bundle. This is standard and expected for SPA architecture. It is not a vulnerability on its own.</li>
+  </ul>
+
+  <h3>What Is Done Well</h3>
+
+  <div class="callout good">
+    <div class="callout-title">Security Strengths</div>
+    <ul style="margin: 6px 0 0 16px;">
+      <li>Row Level Security (RLS) is fully implemented on all database tables with appropriately restrictive policies</li>
+      <li>No SQL injection vectors &mdash; all queries use the Supabase parameterised query builder</li>
+      <li>No hardcoded secrets in frontend code</li>
+      <li>No XSS vulnerabilities &mdash; React escapes all user-generated content automatically</li>
+      <li>CSRF is not a risk &mdash; authentication uses JWT tokens, not cookies</li>
+      <li>Sensitive API keys (Resend, Supabase service role) are stored only in Edge Function environment variables, never in the frontend</li>
+    </ul>
+  </div>
+
+  <h3>Security Issue Summary</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Issue</th>
+        <th>Severity</th>
+        <th>Effort to Fix</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Fake Stripe integration &amp; card data on frontend</td>
+        <td><span class="badge critical">Critical</span></td>
+        <td>2&ndash;3 days</td>
+        <td>Not started</td>
+      </tr>
+      <tr>
+        <td>Hardcoded email recipient in Edge Function</td>
+        <td><span class="badge critical">Critical</span></td>
+        <td>30 minutes</td>
+        <td>Not started</td>
+      </tr>
+      <tr>
+        <td>No rate limiting on API endpoints</td>
+        <td><span class="badge high">High</span></td>
+        <td>1 day</td>
+        <td>Not started</td>
+      </tr>
+      <tr>
+        <td>Digest endpoint unauthenticated</td>
+        <td><span class="badge high">High</span></td>
+        <td>Half day</td>
+        <td>Not started</td>
+      </tr>
+      <tr>
+        <td>No input validation on form fields</td>
+        <td><span class="badge medium">Medium</span></td>
+        <td>1 day</td>
+        <td>Not started</td>
+      </tr>
+      <tr>
+        <td>Slot bookings table open to public spam</td>
+        <td><span class="badge medium">Medium</span></td>
+        <td>Half day</td>
+        <td>Not started</td>
+      </tr>
+      <tr>
+        <td>CORS allows all origins</td>
+        <td><span class="badge low">Low</span></td>
+        <td>1 hour</td>
+        <td>Acceptable for now</td>
+      </tr>
+      <tr>
+        <td>RLS on all tables</td>
+        <td><span class="badge good">Done</span></td>
+        <td>&mdash;</td>
+        <td>Complete</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- SECTION 3 -->
+  <div class="page-break"></div>
+  <h2>3. Scalability Path &amp; Speed</h2>
+
+  <div class="section-intro">
+    The architecture scales cleanly. Supabase and Vite/Vercel are both designed for this. The database is well-indexed with GIN, trigram, and B-tree indexes already in place. The main future bottlenecks will be Edge Function cold starts and unoptimised queries as listing volume grows into the tens of thousands.
+  </div>
+
+  <h3>Phase 1 &mdash; Up to 50,000 Monthly Users</h3>
+  <ul>
+    <li>Upgrade Supabase to Pro plan</li>
+    <li>Database connection pooling via PgBouncer is included on Pro (no code changes)</li>
+    <li>No architectural changes required</li>
+    <li><strong>Time to implement: same day</strong></li>
+  </ul>
+
+  <h3>Phase 2 &mdash; Up to 500,000 Monthly Users</h3>
+  <ul>
+    <li>Add Cloudflare in front of the app for DDoS protection and edge caching</li>
+    <li>Implement server-side pagination on all listing queries (partially done)</li>
+    <li>Add Redis caching for frequently read listing data via Upstash</li>
+    <li>Enable read replicas in Supabase Pro/Team plan</li>
+    <li><strong>Time to implement: 1 to 2 days engineering</strong></li>
+  </ul>
+
+  <h3>Phase 3 &mdash; Millions of Users</h3>
+  <ul>
+    <li>Migrate to Supabase Team or Enterprise plan</li>
+    <li>Implement pg_cron for scheduled background jobs (digest emails, cleanup)</li>
+    <li>Split monolithic Edge Functions into smaller, purpose-specific functions</li>
+    <li>Consider a dedicated transactional email provider (Postmark or SendGrid) for high volume</li>
+    <li><strong>Time to implement: 1 to 2 weeks engineering</strong></li>
+  </ul>
+
+  <!-- SECTION 4 -->
+  <h2>4. Costs to Scale &amp; Secure</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Growth Stage</th>
+        <th>Monthly Active Users</th>
+        <th>Estimated Monthly Cost</th>
+        <th>Key Changes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Current (Free)</strong></td>
+        <td>0 &ndash; 5,000</td>
+        <td>&pound;0</td>
+        <td>No changes needed</td>
+      </tr>
+      <tr>
+        <td><strong>Early Growth</strong></td>
+        <td>5,000 &ndash; 50,000</td>
+        <td>&pound;25 &ndash; &pound;50</td>
+        <td>Supabase Pro ($25) + Resend Starter ($0&ndash;20)</td>
+      </tr>
+      <tr>
+        <td><strong>Growth</strong></td>
+        <td>50,000 &ndash; 200,000</td>
+        <td>&pound;100 &ndash; &pound;200</td>
+        <td>Supabase Pro + Vercel Pro ($20) + Resend Growth ($50) + Upstash Redis ($10)</td>
+      </tr>
+      <tr>
+        <td><strong>Scale</strong></td>
+        <td>200,000 &ndash; 1,000,000</td>
+        <td>&pound;400 &ndash; &pound;800</td>
+        <td>Supabase Team ($599) + Cloudflare Pro + dedicated email infrastructure</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <div class="callout-title">Payment Processing Costs (Stripe)</div>
+    Stripe charges <strong>1.4% + 20p per UK card transaction</strong> (European cards) or <strong>2.9% + 30p</strong> for international cards. There are no monthly fees. On a &pound;100 deposit, the platform pays approximately &pound;1.60. This is unavoidable for compliant payment processing and is the industry standard.
+  </div>
+
+  <!-- SECTION 5 -->
+  <h2>5. Additional Tools &amp; Subscriptions Needed</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Tool</th>
+        <th>Purpose</th>
+        <th>Monthly Cost</th>
+        <th>Priority</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Stripe</strong></td>
+        <td>Real payment processing &mdash; essential to replace fake integration</td>
+        <td>Pay-per-transaction only (1.4% + 20p UK)</td>
+        <td><span class="badge critical">Critical</span></td>
+      </tr>
+      <tr>
+        <td><strong>Resend</strong></td>
+        <td>Already integrated &mdash; fix hardcoded email, then operational</td>
+        <td>Free up to 3,000 emails/month</td>
+        <td><span class="badge critical">Critical</span></td>
+      </tr>
+      <tr>
+        <td><strong>Sentry</strong></td>
+        <td>Error monitoring and crash reporting across frontend and Edge Functions</td>
+        <td>Free up to 5,000 errors/month</td>
+        <td><span class="badge high">High</span></td>
+      </tr>
+      <tr>
+        <td><strong>Cloudflare</strong></td>
+        <td>DDoS protection, CDN, bot mitigation, CORS locking</td>
+        <td>Free tier sufficient to large scale</td>
+        <td><span class="badge high">High</span></td>
+      </tr>
+      <tr>
+        <td><strong>Upstash Redis</strong></td>
+        <td>Rate limiting on Edge Functions to prevent abuse</td>
+        <td>Free tier sufficient early on, ~$10/month at scale</td>
+        <td><span class="badge medium">Medium</span></td>
+      </tr>
+      <tr>
+        <td><strong>Supabase Pro</strong></td>
+        <td>Removes free tier limits, adds connection pooling and read replicas</td>
+        <td>$25/month</td>
+        <td><span class="badge medium">Medium</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout good">
+    <div class="callout-title">Cost Summary for Full Security Compliance</div>
+    Fixing all critical and high security issues requires only <strong>a Stripe account</strong> (free to create) and <strong>a code fix</strong> for the email address. Total additional monthly cost to be fully secure and compliant at current scale: <strong>&pound;0</strong>. The transaction fee on Stripe is paid from revenue, not as a fixed cost.
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="page-break"></div>
+  <h2>6. Development Recommendations</h2>
+
+  <div class="section-intro">
+    The following features are ranked by market impact for a media slot marketplace. They are presented in order of value delivered to buyers and sellers, not technical complexity.
+  </div>
+
+  <h3>Immediate Priorities (Before Launch)</h3>
+  <ol>
+    <li><strong>Implement real Stripe integration</strong> &mdash; Use Stripe Elements to collect card details securely. Create a payment intent server-side via an Edge Function and confirm it client-side. Never collect raw card numbers in the frontend.</li>
+    <li><strong>Fix email routing</strong> &mdash; Remove the hardcoded email address from the Edge Function so booking confirmations, welcome emails, and notifications reach actual users.</li>
+    <li><strong>Add rate limiting</strong> &mdash; Protect the email send endpoint and booking creation from abuse using Upstash Redis or simple in-function counters.</li>
+  </ol>
+
+  <h3>High-Value Features for This Market</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Feature</th>
+        <th>Market Impact</th>
+        <th>Why It Matters</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td><strong>Seller Verification Badges</strong></td>
+        <td><span class="badge critical">Very High</span></td>
+        <td>Verified subscriber and download counts (audited by ABC, Podtrac, or similar) command significantly higher prices and trust. A simple admin-reviewed verification request flow differentiates the platform from unverified listing sites.</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><strong>Post-Campaign Performance Reporting</strong></td>
+        <td><span class="badge critical">Very High</span></td>
+        <td>Sellers uploading open rate and click data after a slot runs creates a feedback loop. Buyers can filter by proven ROI. This is the primary driver of repeat purchase rates on content marketplaces.</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><strong>Escrow Payment Flow</strong></td>
+        <td><span class="badge high">High</span></td>
+        <td>Hold full payment at booking and release to the seller 7 days after the slot goes live. This is the standard for content marketplaces and eliminates most buyer-seller disputes. The current deposit model is appropriate for early stage only.</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><strong>Media Kit PDF Generation</strong></td>
+        <td><span class="badge high">High</span></td>
+        <td>Auto-generate a downloadable media kit from listing data. Sellers use these constantly for outreach and it drives organic traffic back to the platform when shared externally.</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><strong>Waitlist for Sold-Out Slots</strong></td>
+        <td><span class="badge high">High</span></td>
+        <td>When a slot is booked, interested buyers join a waitlist. If a booking falls through, the next in line is notified automatically. Reduces revenue lost to cancellations.</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td><strong>Bulk Booking / Agency Accounts</strong></td>
+        <td><span class="badge medium">Medium</span></td>
+        <td>Agencies booking across multiple properties need a campaign basket view and consolidated invoicing. This unlocks a higher-value buyer segment that transacts at higher volume and lower support cost.</td>
+      </tr>
+      <tr>
+        <td>7</td>
+        <td><strong>RSS Feed &amp; Zapier Webhook</strong></td>
+        <td><span class="badge medium">Medium</span></td>
+        <td>Let buyers subscribe to new listing notifications via RSS or Zapier webhook in addition to email digest. Zapier alone has millions of users who automate procurement workflows, providing a free distribution channel.</td>
+      </tr>
+      <tr>
+        <td>8</td>
+        <td><strong>Seller Analytics Dashboard</strong></td>
+        <td><span class="badge medium">Medium</span></td>
+        <td>Show sellers pageviews per listing, click-throughs into the booking flow, and conversion rates. Sellers on a platform that shows demand data are more likely to renew and recommend the platform to peers.</td>
+      </tr>
+      <tr>
+        <td>9</td>
+        <td><strong>Buyer Review System</strong></td>
+        <td><span class="badge medium">Medium</span></td>
+        <td>Post-campaign ratings from buyers build seller trust scores over time. Essential for a marketplace to self-regulate quality and reduce the overhead of manual seller vetting.</td>
+      </tr>
+      <tr>
+        <td>10</td>
+        <td><strong>Affiliate / Referral Programme</strong></td>
+        <td><span class="badge low">Growth</span></td>
+        <td>With a deposit model, even a 3% referral commission is sustainable. Newsletter writers who list their own slots will naturally refer other writers if there is a financial incentive. Organic acquisition at low cost.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e2e8f0; color: #94a3b8; font-size: 9pt; text-align: center;">
+    Confidential &bull; Generated 16 April 2026 &bull; Internal Use Only
+  </div>
+
+</body>
+</html>
