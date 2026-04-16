@@ -22,9 +22,9 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
           <button onClick={onHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity group">
             <div className="w-[22px] h-[22px] bg-[#1d1d1f] rounded-[5px] flex items-center justify-center flex-shrink-0">
               <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
-                <rect x="0" y="0" width="2.5" height="12" rx="1" fill="#38bdf8"/>
-                <rect x="9.5" y="0" width="2.5" height="12" rx="1" fill="#f472b6"/>
-                <path d="M2.5 0 L6 5.5 L9.5 0 L9.5 2.5 L6 8 L2.5 2.5 Z" fill="white"/>
+                <rect x="0" y="0" width="3.5" height="12" rx="1" fill="#38bdf8"/>
+                <rect x="4.25" y="5" width="3.5" height="7" rx="1" fill="white"/>
+                <rect x="8.5" y="0" width="3.5" height="12" rx="1" fill="#f472b6"/>
               </svg>
             </div>
             <span className="text-[#1d1d1f] font-bold text-[16px] tracking-[-0.03em] leading-none">
