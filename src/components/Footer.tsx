@@ -11,9 +11,10 @@ export default function Footer({ onTerms, onPrivacy }: FooterProps) {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-5">
           <div className="flex items-center gap-2">
             <div className="w-[20px] h-[20px] bg-[#1d1d1f] rounded-[4px] flex items-center justify-center flex-shrink-0">
-              <svg width="11" height="11" viewBox="0 0 10 10" fill="none">
-                <rect x="1" y="1" width="3.5" height="8" rx="1" fill="white" opacity="0.9"/>
-                <rect x="5.5" y="1" width="3.5" height="5" rx="1" fill="#4ade80"/>
+              <svg width="11" height="11" viewBox="0 0 10 12" fill="none">
+                <rect x="1" y="1" width="8" height="2.5" rx="1" fill="#4ade80"/>
+                <rect x="1" y="4.75" width="6" height="2.5" rx="1" fill="#f97316"/>
+                <rect x="1" y="8.5" width="8" height="2.5" rx="1" fill="#38bdf8"/>
               </svg>
             </div>
             <span className="text-[#1d1d1f] font-bold text-[15px] tracking-[-0.03em] leading-none">
