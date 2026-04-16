@@ -199,10 +199,16 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      setErrors({ media_owner_name: 'You must be signed in to list a slot.' });
+      return;
+    }
     if (!validate()) return;
     setSubmitting(true);
 
     const payload = {
+      seller_user_id: user!.id,
+      seller_email: user!.email,
       media_type: form.media_type,
       media_owner_name: form.media_owner_name.trim(),
       media_company_name: form.media_company_name.trim(),

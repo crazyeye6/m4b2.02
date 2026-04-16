@@ -133,6 +133,10 @@ export default function App() {
   };
 
   const handleListSlot = () => {
+    if (!profile) {
+      setShowAuthModal(true);
+      return;
+    }
     setListingInUrl(null);
     setPage('list-slot');
     window.scrollTo(0, 0);
@@ -145,6 +149,10 @@ export default function App() {
   };
 
   const handleDashboard = () => {
+    if (!profile) {
+      setShowAuthModal(true);
+      return;
+    }
     setListingInUrl(null);
     setPage('dashboard');
     window.scrollTo(0, 0);
