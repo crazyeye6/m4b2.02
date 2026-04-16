@@ -3,6 +3,7 @@ import { Lock, AlertTriangle, Shield, Loader2 } from 'lucide-react';
 import type { BuyerFormData, Listing } from '../../types';
 import type { VatCalculation } from '../../lib/vat';
 import { loadStripe, type Stripe, type StripeElements, type StripePaymentElement } from '@stripe/stripe-js';
+import { supabase } from '../../lib/supabase';
 
 interface PaymentStepProps {
   listing: Listing;
@@ -14,24 +15,49 @@ interface PaymentStepProps {
   onBack: () => void;
 }
 
-const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
-let stripePromise: ReturnType<typeof loadStripe> | null = null;
-function getStripe() {
-  if (!STRIPE_KEY) return null;
-  if (!stripePromise) stripePromise = loadStripe(STRIPE_KEY);
-  return stripePromise;
+let cachedStripePromise: ReturnType<typeof loadStripe> | null = null;
+let cachedStripeKey: string | null = null;
+
+function getStripe(key: string) {
+  if (cachedStripeKey !== key) {
+    cachedStripeKey = key;
+    cachedStripePromise = loadStripe(key);
+  }
+  return cachedStripePromise!;
+}
+
+async function resolveStripeKey(): Promise<string | null> {
+  const envKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string | undefined;
+  if (envKey && envKey.startsWith('pk_')) return envKey;
+  const { data } = await supabase
+    .from('platform_settings')
+    .select('value')
+    .eq('key', 'stripe_publishable_key')
+    .maybeSingle();
+  const dbKey = data?.value;
+  if (dbKey && dbKey.startsWith('pk_')) return dbKey;
+  return null;
 }
 
 export default function PaymentStep({ listing, form, vat, depositSubtotal, depositTotal, onSuccess, onBack }: PaymentStepProps) {
+  const [stripeKey, setStripeKey] = useState<string | null>(null);
+  const [keyLoading, setKeyLoading] = useState(true);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
   const [loadingIntent, setLoadingIntent] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState('');
   const [stripeReady, setStripeReady] = useState(false);
+
+  useEffect(() => {
+    resolveStripeKey().then(key => {
+      setStripeKey(key);
+      setKeyLoading(false);
+    });
+  }, []);
 
   const stripeRef = useRef<Stripe | null>(null);
   const elementsRef = useRef<StripeElements | null>(null);
@@ -41,6 +67,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
   const amountInCents = Math.round(depositTotal * 100);
 
   useEffect(() => {
+    if (keyLoading || !stripeKey) return;
     let cancelled = false;
 
     async function createIntent() {
@@ -80,13 +107,13 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
 
     createIntent();
     return () => { cancelled = true; };
-  }, [amountInCents, listing.id, listing.property_name, form.buyer_email]);
+  }, [keyLoading, stripeKey, amountInCents, listing.id, listing.property_name, form.buyer_email]);
 
   useEffect(() => {
-    if (!clientSecret || !mountRef.current || !STRIPE_KEY) return;
+    if (!clientSecret || !mountRef.current || !stripeKey) return;
     let mounted = true;
 
-    getStripe()?.then(stripe => {
+    getStripe(stripeKey).then(stripe => {
       if (!stripe || !mounted || !mountRef.current) return;
       stripeRef.current = stripe;
 
@@ -187,11 +214,20 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
     onSuccess(paymentIntentId);
   };
 
-  if (!STRIPE_KEY) {
+  if (keyLoading) {
+    return (
+      <div className="flex items-center justify-center py-10 gap-2 text-[#aeaeb2] text-sm">
+        <Loader2 className="w-4 h-4 animate-spin" />
+        Loading payment...
+      </div>
+    );
+  }
+
+  if (!stripeKey) {
     return (
       <div className="flex items-center gap-3 bg-orange-50 border border-orange-200 text-orange-700 text-sm px-4 py-3 rounded-2xl">
         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-        Stripe is not configured. Add <code className="font-mono text-xs bg-orange-100 px-1 rounded">VITE_STRIPE_PUBLISHABLE_KEY</code> to your environment.
+        Payments are not yet configured. Please contact the site administrator to add the Stripe key in Admin &rarr; Settings.
       </div>
     );
   }

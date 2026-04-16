@@ -3,14 +3,14 @@ import { supabase } from '../lib/supabase';
 import type { DepositBooking, RefundRequest, BookingStatus, RefundStatus } from '../types';
 import {
   Shield, AlertTriangle, CheckCircle, RefreshCw, X, ChevronDown, Users,
-  DollarSign, FileText, RotateCcw, Ban, Play, Loader2, Eye,
+  DollarSign, FileText, RotateCcw, Ban, Play, Loader2, Eye, Settings, Key, Save, EyeOff,
 } from 'lucide-react';
 
 interface AdminPageProps {
   onBack: () => void;
 }
 
-type AdminTab = 'bookings' | 'refunds';
+type AdminTab = 'bookings' | 'refunds' | 'settings';
 
 const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string }> = {
   pending_payment: { label: 'Pending Payment', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
@@ -142,7 +142,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
         </div>
 
         <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit">
-          {([['bookings', 'Bookings'], ['refunds', 'Refund Requests']] as [AdminTab, string][]).map(([key, label]) => (
+          {([['bookings', 'Bookings'], ['refunds', 'Refund Requests'], ['settings', 'Settings']] as [AdminTab, string][]).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
@@ -168,11 +168,13 @@ export default function AdminPage({ onBack }: AdminPageProps) {
           </div>
         ) : tab === 'bookings' ? (
           <BookingsTable bookings={bookings} onSelect={setSelectedBooking} />
-        ) : (
+        ) : tab === 'refunds' ? (
           <RefundsTable refunds={refunds} bookings={bookings} onSelect={(r) => {
             const booking = bookings.find(b => b.id === r.deposit_booking_id);
             setSelectedRefund({ ...r, booking });
           }} />
+        ) : (
+          <SettingsPanel />
         )}
       </div>
 
@@ -541,6 +543,124 @@ function RefundDetailPanel({ refund, decisionReason, onReasonChange, onDecision,
               )}
             </div>
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsPanel() {
+  const [stripeKey, setStripeKey] = useState('');
+  const [showKey, setShowKey] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from('platform_settings')
+      .select('value')
+      .eq('key', 'stripe_publishable_key')
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) setStripeKey(data.value);
+        setLoading(false);
+      });
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    await supabase
+      .from('platform_settings')
+      .upsert({ key: 'stripe_publishable_key', value: stripeKey.trim(), updated_at: new Date().toISOString() });
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  const maskedKey = stripeKey
+    ? stripeKey.slice(0, 8) + '••••••••••••••••' + stripeKey.slice(-4)
+    : '';
+
+  return (
+    <div className="max-w-xl">
+      <div className="bg-white border border-black/[0.06] rounded-3xl overflow-hidden shadow-sm">
+        <div className="px-6 py-5 border-b border-black/[0.06] flex items-center gap-3">
+          <div className="w-8 h-8 bg-[#f5f5f7] border border-black/[0.08] rounded-xl flex items-center justify-center">
+            <Settings className="w-4 h-4 text-[#1d1d1f]" />
+          </div>
+          <div>
+            <h2 className="text-[#1d1d1f] font-semibold text-sm">Platform Settings</h2>
+            <p className="text-[#aeaeb2] text-xs">Configure payment and integration keys</p>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <Key className="w-3.5 h-3.5 text-[#86868b]" />
+              <label className="text-[11px] text-[#86868b] font-semibold uppercase tracking-wider">
+                Stripe Publishable Key
+              </label>
+            </div>
+            <p className="text-[#aeaeb2] text-xs mb-3">
+              Your Stripe publishable key starts with <span className="font-mono font-semibold text-[#6e6e73]">pk_live_</span> (live) or <span className="font-mono font-semibold text-[#6e6e73]">pk_test_</span> (test). Find it in your{' '}
+              <span className="text-[#1d1d1f] font-medium">Stripe Dashboard &rarr; Developers &rarr; API Keys</span>.
+            </p>
+
+            {loading ? (
+              <div className="h-11 bg-[#f5f5f7] rounded-2xl animate-pulse" />
+            ) : (
+              <div className="relative">
+                <input
+                  type={showKey ? 'text' : 'password'}
+                  value={stripeKey}
+                  onChange={e => setStripeKey(e.target.value)}
+                  placeholder="pk_live_... or pk_test_..."
+                  className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-4 py-3 text-[#1d1d1f] text-sm font-mono placeholder-[#aeaeb2] outline-none transition-all pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowKey(v => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#aeaeb2] hover:text-[#6e6e73] transition-colors"
+                >
+                  {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            )}
+
+            {stripeKey && !showKey && (
+              <p className="mt-2 text-[#aeaeb2] text-xs font-mono">{maskedKey}</p>
+            )}
+          </div>
+
+          <div className="pt-2 border-t border-black/[0.06] flex items-center gap-3">
+            <button
+              onClick={handleSave}
+              disabled={saving || !stripeKey.trim()}
+              className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold px-5 py-2.5 rounded-2xl transition-all text-sm"
+            >
+              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {saving ? 'Saving...' : 'Save Key'}
+            </button>
+            {saved && (
+              <div className="flex items-center gap-1.5 text-green-600 text-sm font-medium">
+                <CheckCircle className="w-4 h-4" />
+                Saved successfully
+              </div>
+            )}
+          </div>
+
+          <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
+            <p className="text-[#86868b] text-xs font-semibold mb-2">How to find your Stripe key</p>
+            <ol className="text-[#6e6e73] text-xs space-y-1 list-decimal list-inside">
+              <li>Go to <span className="font-semibold text-[#1d1d1f]">stripe.com</span> and log in</li>
+              <li>Click <span className="font-semibold text-[#1d1d1f]">Developers</span> in the top navigation</li>
+              <li>Click <span className="font-semibold text-[#1d1d1f]">API Keys</span></li>
+              <li>Copy the <span className="font-semibold text-[#1d1d1f]">Publishable key</span> (starts with pk_)</li>
+              <li>Paste it into the field above and click Save</li>
+            </ol>
+          </div>
         </div>
       </div>
     </div>
