@@ -13,6 +13,9 @@ export function useListings(filters: FilterState) {
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
+
+    const hasTagFilter = filters.selectedTags && filters.selectedTags.length > 0;
+
     let query = supabase.from('listings').select('*');
 
     if (filters.category !== 'all') {
@@ -35,6 +38,13 @@ export function useListings(filters: FilterState) {
       endOfWeek.setDate(now.getDate() + daysUntilSunday);
       endOfWeek.setHours(23, 59, 59, 999);
       query = query.lte('deadline_at', endOfWeek.toISOString());
+    }
+
+    if (filters.searchQuery && filters.searchQuery.trim()) {
+      query = query.textSearch('search_vector', filters.searchQuery.trim(), {
+        type: 'websearch',
+        config: 'english',
+      });
     }
 
     query = query.order('deadline_at', { ascending: true });
@@ -66,6 +76,30 @@ export function useListings(filters: FilterState) {
         const pct = Math.round(((l.original_price - l.discounted_price) / l.original_price) * 100);
         return pct >= filters.discountMin;
       });
+    }
+
+    if (hasTagFilter) {
+      const { data: tagRows } = await supabase
+        .from('tags')
+        .select('id, name')
+        .in('name', filters.selectedTags);
+
+      if (tagRows && tagRows.length > 0) {
+        const tagIds = tagRows.map((t: { id: string }) => t.id);
+        const { data: listingTagRows } = await supabase
+          .from('listing_tags')
+          .select('listing_id')
+          .in('tag_id', tagIds);
+
+        if (listingTagRows) {
+          const matchedListingIds = new Set(listingTagRows.map((r: { listing_id: string }) => r.listing_id));
+          result = result.filter(l => matchedListingIds.has(l.id));
+        } else {
+          result = [];
+        }
+      } else {
+        result = [];
+      }
     }
 
     const cutoff = Date.now() - 24 * 60 * 60 * 1000;

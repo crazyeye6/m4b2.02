@@ -75,6 +75,14 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
 
   const activeChips: Array<{ label: string; clear: () => void }> = [];
 
+  if (filters.searchQuery) {
+    activeChips.push({ label: `"${filters.searchQuery}"`, clear: () => onChange({ searchQuery: '' }) });
+  }
+  if (filters.selectedTags && filters.selectedTags.length > 0) {
+    filters.selectedTags.forEach(tag =>
+      activeChips.push({ label: `#${tag}`, clear: () => onChange({ selectedTags: filters.selectedTags.filter(t => t !== tag) }) })
+    );
+  }
   if (filters.category !== 'all') {
     const cat = CATEGORIES.find(c => c.value === filters.category);
     activeChips.push({ label: cat?.label ?? filters.category, clear: () => onChange({ category: 'all' }) });
@@ -116,10 +124,12 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
       priceMax: 0,
       niche: '',
       geography: '',
+      searchQuery: '',
+      selectedTags: [],
     });
 
   return (
-    <div className="bg-white border-b border-black/[0.06] sticky top-[52px] z-40 shadow-sm shadow-black/[0.03]">
+    <div className="bg-white border-b border-black/[0.06] sticky top-[126px] z-40 shadow-sm shadow-black/[0.03]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="flex items-center gap-2 py-2.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>

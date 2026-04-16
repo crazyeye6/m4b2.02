@@ -77,6 +77,7 @@ export interface Listing {
   seller_podcast_url?: string | null;
   portfolio_links?: string[] | null;
   created_at: string;
+  tags?: Tag[];
 }
 
 export interface DepositBooking {
@@ -136,6 +137,13 @@ export interface SlotBooking {
   booking_type: 'review' | 'proceed';
 }
 
+export interface Tag {
+  id: string;
+  name: string;
+  usage_count: number;
+  created_at: string;
+}
+
 export interface FilterState {
   category: MediaType | 'all';
   niche: string;
@@ -145,6 +153,8 @@ export interface FilterState {
   discountMin: number;
   endingThisWeek: boolean;
   verified: boolean;
+  searchQuery: string;
+  selectedTags: string[];
 }
 
 export type PurchaseType = 'business' | 'individual';

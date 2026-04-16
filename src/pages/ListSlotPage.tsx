@@ -3,6 +3,7 @@ import { Mail, Mic, Instagram, ChevronLeft, CheckCircle, AlertTriangle, Loader2,
 import { supabase } from '../lib/supabase';
 import { sendSlotListedEmail } from '../lib/email';
 import { useAuth } from '../context/AuthContext';
+import TagSelector from '../components/TagSelector';
 import type { MediaType } from '../types';
 
 interface ListSlotPageProps {
@@ -46,6 +47,7 @@ interface FormData {
   seller_podcast_url: string;
   portfolio_links: string[];
   portfolio_input: string;
+  tags: string[];
 }
 
 const INITIAL: FormData = {
@@ -84,6 +86,7 @@ const INITIAL: FormData = {
   seller_podcast_url: '',
   portfolio_links: [],
   portfolio_input: '',
+  tags: [],
 };
 
 const MEDIA_TYPES: Array<{ value: MediaType; label: string; icon: React.ReactNode; desc: string }> = [
@@ -236,12 +239,32 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
       portfolio_links: form.portfolio_links.length > 0 ? form.portfolio_links : null,
     };
 
-    const { error } = await supabase.from('listings').insert(payload);
-    setSubmitting(false);
+    const { data: insertedListing, error } = await supabase
+      .from('listings')
+      .insert(payload)
+      .select('id')
+      .maybeSingle();
     if (error) {
+      setSubmitting(false);
       setErrors({ media_owner_name: error.message });
       return;
     }
+
+    if (insertedListing && form.tags.length > 0) {
+      for (const tagName of form.tags) {
+        const { data: tagRow } = await supabase
+          .from('tags')
+          .upsert({ name: tagName }, { onConflict: 'name' })
+          .select('id')
+          .maybeSingle();
+        if (tagRow) {
+          await supabase
+            .from('listing_tags')
+            .insert({ listing_id: insertedListing.id, tag_id: tagRow.id });
+        }
+      }
+    }
+    setSubmitting(false);
 
     if (user?.email) {
       const originalPrice = parseInt(form.original_price);
@@ -578,6 +601,15 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                 </div>
               </div>
             )}
+          </Section>
+
+          <Section title="Tags" icon={<Tag className="w-4 h-4 text-[#6e6e73]" />} optional>
+            <p className="text-gray-500 text-sm mb-3">Add tags to help buyers discover your listing by topic, niche, or format.</p>
+            <TagSelector
+              selectedTags={form.tags}
+              onChange={tags => set('tags', tags)}
+              maxTags={10}
+            />
           </Section>
 
           <Section title="Past advertisers" icon={<Shield className="w-4 h-4 text-[#6e6e73]" />} optional>

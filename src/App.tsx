@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import StatsBar from './components/StatsBar';
+import SearchBar from './components/SearchBar';
 import FilterBar from './components/FilterBar';
 import ListingsGrid from './components/ListingsGrid';
 import HowItWorks from './components/HowItWorks';
@@ -64,6 +65,8 @@ const DEFAULT_FILTERS: FilterState = {
   discountMin: 0,
   endingThisWeek: false,
   verified: false,
+  searchQuery: '',
+  selectedTags: [],
 };
 
 export default function App() {
@@ -326,6 +329,16 @@ export default function App() {
         />
 
         <div ref={opportunitiesRef} id="opportunities">
+          <div className="bg-white border-b border-black/[0.06] sticky top-[52px] z-50 shadow-sm shadow-black/[0.04]">
+            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
+              <SearchBar
+                searchQuery={filters.searchQuery}
+                selectedTags={filters.selectedTags}
+                onSearchChange={(q) => updateFilters({ searchQuery: q })}
+                onTagsChange={(tags) => updateFilters({ selectedTags: tags })}
+              />
+            </div>
+          </div>
           <FilterBar filters={filters} onChange={updateFilters} total={listings.length} columns={columns} onColumnsChange={handleColumnsChange} />
 
           <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
