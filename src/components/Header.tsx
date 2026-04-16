@@ -20,8 +20,8 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-[52px]">
           <button onClick={onHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity group">
-            <div className="w-[22px] h-[22px] bg-[#1d1d1f] rounded-[5px] flex items-center justify-center flex-shrink-0">
-              <svg width="13" height="13" viewBox="0 0 12 12" fill="none">
+            <div className="w-[31px] h-[31px] bg-[#1d1d1f] rounded-[5px] flex items-center justify-center flex-shrink-0">
+              <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
                 <path d="M7 1L3 7h3.5L4 11l6-6.5H6.5L7 1z" fill="#facc15" stroke="#f59e0b" strokeWidth="0.3" strokeLinejoin="round"/>
               </svg>
             </div>
