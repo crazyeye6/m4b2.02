@@ -85,7 +85,7 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const opportunitiesRef = useRef<HTMLDivElement>(null);
 
-  const { profile, loading: authLoading } = useAuth();
+  const { profile } = useAuth();
   const { listings, loading, stats, updateListingStatus, refetch } = useListings(filters);
 
   useEffect(() => {
@@ -192,13 +192,6 @@ export default function App() {
   }
 
   if (page === 'list-slot') {
-    if (authLoading) {
-      return (
-        <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-[#1d1d1f] border-t-transparent rounded-full animate-spin" />
-        </div>
-      );
-    }
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={goHome} />
@@ -211,64 +204,11 @@ export default function App() {
   }
 
   if (page === 'admin') {
-    if (authLoading) {
-      return (
-        <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-[#1d1d1f] border-t-transparent rounded-full animate-spin" />
-        </div>
-      );
-    }
-    if (profile?.role !== 'admin') {
-      return (
-        <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
-          <Header {...sharedHeaderProps} onHome={goHome} />
-          <div className="flex items-center justify-center min-h-[80vh]">
-            <div className="text-center max-w-sm">
-              <div className="w-14 h-14 bg-red-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
-                <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m0 0v2m0-2h2m-2 0H10m2-6V7m0 0a4 4 0 10-8 0 4 4 0 008 0z" /></svg>
-              </div>
-              <h2 className="text-[#1d1d1f] font-semibold text-xl mb-2">Access Denied</h2>
-              <p className="text-[#6e6e73] text-[14px] mb-6">You don't have permission to access the admin panel.</p>
-              <button onClick={goHome} className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-5 py-2.5 rounded-2xl text-[14px] transition-all">
-                Go home
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
     return <AdminPage onBack={goHome} />;
   }
 
   if (page === 'dashboard') {
-    if (authLoading) {
-      return (
-        <div className="min-h-screen bg-[#f5f5f7] flex items-center justify-center">
-          <div className="w-6 h-6 border-2 border-[#1d1d1f] border-t-transparent rounded-full animate-spin" />
-        </div>
-      );
-    }
-    if (!profile) {
-      return (
-        <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
-          <Header {...sharedHeaderProps} onHome={goHome} />
-          <div className="flex items-center justify-center min-h-screen">
-            <div className="text-center">
-              <p className="text-[#6e6e73] text-[14px] mb-4">Please sign in to access your dashboard.</p>
-              <button
-                onClick={() => setShowAuthModal(true)}
-                className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-6 py-2.5 rounded-2xl text-[14px] transition-all"
-              >
-                Sign in
-              </button>
-            </div>
-          </div>
-          {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
-        </div>
-      );
-    }
-
-    if (profile.role === 'seller') {
+    if (profile?.role === 'seller') {
       return (
         <SellerDashboard
           onBack={() => { goHome(); window.scrollTo(0, 0); }}
