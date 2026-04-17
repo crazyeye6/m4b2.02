@@ -146,7 +146,7 @@ export interface Tag {
   created_at: string;
 }
 
-export type SortOption = 'deadline_asc' | 'price_asc' | 'price_desc' | 'discount_desc' | 'audience_desc' | 'newest';
+export type SortOption = 'deadline_asc' | 'price_asc' | 'price_desc' | 'discount_desc' | 'audience_desc' | 'newest' | 'best_stats';
 
 export type ViewMode = 'grid' | 'list';
 

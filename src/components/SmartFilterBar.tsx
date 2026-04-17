@@ -1,7 +1,7 @@
 import {
   Search, X, Hash, Mail, Mic, Instagram, LayoutGrid,
   ChevronDown, ChevronUp, Check, MapPin, Users, DollarSign,
-  Zap, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp, Calendar,
+  Zap, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp, Calendar, Star,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
@@ -23,6 +23,7 @@ interface SmartFilterBarProps {
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string; desc: string }> = [
   { value: 'deadline_asc', label: 'Ending soonest', desc: 'Act before slots close' },
+  { value: 'best_stats', label: 'Best stats', desc: 'Top reach, discount & value combined' },
   { value: 'discount_desc', label: 'Biggest saving', desc: 'Best % off original rate' },
   { value: 'audience_desc', label: 'Largest reach', desc: 'Max impressions first' },
   { value: 'price_asc', label: 'Lowest price', desc: 'Entry-level budgets first' },
@@ -63,7 +64,7 @@ const AUDIENCE_RANGES = [
   { label: '500k+', min: 500_000 },
 ];
 
-type PanelId = 'price' | 'reach' | 'discount' | 'deadline' | 'sort' | null;
+type PanelId = 'price' | 'reach' | 'discount' | 'deadline' | 'sort' | 'best_stats' | null;
 
 interface PortalPanelProps {
   anchorRef: React.RefObject<HTMLButtonElement | null>;
@@ -151,6 +152,7 @@ export default function SmartFilterBar({
   const reachBtnRef = useRef<HTMLButtonElement>(null);
   const discountBtnRef = useRef<HTMLButtonElement>(null);
   const deadlineBtnRef = useRef<HTMLButtonElement>(null);
+  const bestStatsBtnRef = useRef<HTMLButtonElement>(null);
   const sortBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -283,6 +285,7 @@ export default function SmartFilterBar({
   const hasAnyFilter =
     filters.category !== 'all' || geoCount > 0 || nicheCount > 0 || tagCount > 0 ||
     hasPrice || (filters.audienceMin > 0) || hasDiscount || hasDeadline || !!filters.searchQuery;
+  const isBestStats = filters.sort === 'best_stats';
   const matchedDeadline = DEADLINE_OPTIONS.find(d => d.value === filters.deadlineWindow);
   const matchedDiscount = DISCOUNT_OPTIONS.find(d => d.value === filters.discountMin);
   const hasAudience = filters.audienceMin > 0;
@@ -518,6 +521,23 @@ export default function SmartFilterBar({
             <Calendar className="w-3.5 h-3.5" />
             {matchedDeadline ? matchedDeadline.label : 'Deadline'}
             {openPanel === 'deadline' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+
+          {/* Best Stats */}
+          <button
+            ref={bestStatsBtnRef}
+            onClick={() => {
+              const next = isBestStats ? 'deadline_asc' : 'best_stats';
+              onChange({ sort: next });
+            }}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap ${
+              isBestStats
+                ? 'bg-teal-600 text-white border-teal-600'
+                : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-teal-300 hover:text-teal-700'
+            }`}
+          >
+            <Star className="w-3.5 h-3.5" />
+            Best Stats
           </button>
 
           {/* Spacer */}

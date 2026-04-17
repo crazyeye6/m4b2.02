@@ -133,6 +133,29 @@ export function useListings(filters: FilterState) {
         const reachB = b.subscribers ?? b.downloads ?? b.followers ?? 0;
         return reachB - reachA;
       });
+    } else if (sort === 'best_stats') {
+      const reaches = result.map(l => l.subscribers ?? l.downloads ?? l.followers ?? 0);
+      const maxLog = Math.max(...reaches.map(r => r > 0 ? Math.log10(r) : 0), 1);
+      const cpms = result.map(l => {
+        const reach = l.subscribers ?? l.downloads ?? l.followers ?? 0;
+        return reach > 0 ? (l.discounted_price / reach) * 1000 : Infinity;
+      });
+      const finiteCpms = cpms.filter(c => isFinite(c));
+      const maxCpm = finiteCpms.length ? Math.max(...finiteCpms) : 1;
+
+      const scored = result.map((l, i) => {
+        const reach = reaches[i];
+        const audienceScore = reach > 0 ? Math.log10(reach) / maxLog : 0;
+        const discountScore = l.original_price > 0
+          ? (l.original_price - l.discounted_price) / l.original_price
+          : 0;
+        const cpm = cpms[i];
+        const cpmScore = isFinite(cpm) && maxCpm > 0 ? 1 - cpm / maxCpm : 0;
+        const composite = audienceScore * 0.40 + discountScore * 0.35 + cpmScore * 0.25;
+        return { listing: l, score: composite };
+      });
+
+      result = scored.sort((a, b) => b.score - a.score).map(s => s.listing);
     }
 
     setListings(result);

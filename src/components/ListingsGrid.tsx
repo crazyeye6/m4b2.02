@@ -44,6 +44,29 @@ function sortListings(listings: Listing[], sort: SortOption): Listing[] {
       });
     case 'newest':
       return arr.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    case 'best_stats': {
+      const reaches = arr.map(l => l.subscribers ?? l.downloads ?? l.followers ?? 0);
+      const maxLog = Math.max(...reaches.map(r => r > 0 ? Math.log10(r) : 0), 1);
+      const cpms = arr.map(l => {
+        const reach = l.subscribers ?? l.downloads ?? l.followers ?? 0;
+        return reach > 0 ? (l.discounted_price / reach) * 1000 : Infinity;
+      });
+      const finiteCpms = cpms.filter(c => isFinite(c));
+      const maxCpm = finiteCpms.length ? Math.max(...finiteCpms) : 1;
+      return arr
+        .map((l, i) => {
+          const reach = reaches[i];
+          const audienceScore = reach > 0 ? Math.log10(reach) / maxLog : 0;
+          const discountScore = l.original_price > 0
+            ? (l.original_price - l.discounted_price) / l.original_price
+            : 0;
+          const cpm = cpms[i];
+          const cpmScore = isFinite(cpm) && maxCpm > 0 ? 1 - cpm / maxCpm : 0;
+          return { listing: l, score: audienceScore * 0.40 + discountScore * 0.35 + cpmScore * 0.25 };
+        })
+        .sort((a, b) => b.score - a.score)
+        .map(s => s.listing);
+    }
     default:
       return arr;
   }
