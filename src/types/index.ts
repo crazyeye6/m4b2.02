@@ -145,6 +145,10 @@ export interface Tag {
   created_at: string;
 }
 
+export type SortOption = 'deadline_asc' | 'price_asc' | 'price_desc' | 'discount_desc' | 'audience_desc' | 'newest';
+
+export type ViewMode = 'grid' | 'list';
+
 export interface FilterState {
   category: MediaType | 'all';
   niche: string;
@@ -156,6 +160,7 @@ export interface FilterState {
   verified: boolean;
   searchQuery: string;
   selectedTags: string[];
+  sort: SortOption;
 }
 
 export type PurchaseType = 'business' | 'individual';

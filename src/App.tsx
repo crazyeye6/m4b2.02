@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import StatsBar from './components/StatsBar';
 import SearchBar from './components/SearchBar';
-import FilterBar from './components/FilterBar';
+import FilterSidebar from './components/FilterSidebar';
 import ListingsGrid from './components/ListingsGrid';
 import HowItWorks from './components/HowItWorks';
 import Footer from './components/Footer';
@@ -26,10 +26,12 @@ function PageFallback() {
     </div>
   );
 }
+
 import { useListings } from './hooks/useListings';
 import { useAuth } from './context/AuthContext';
-import type { FilterState, Listing } from './types';
+import type { FilterState, Listing, ViewMode } from './types';
 import type { GridColumns } from './components/ListingsGrid';
+import { encodeFiltersToUrl, decodeFiltersFromUrl, DEFAULT_FILTERS } from './lib/urlState';
 
 type Page = 'home' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout';
 
@@ -65,19 +67,6 @@ function setCheckoutInUrl(listingId: string | null) {
   window.history.pushState({}, '', url.toString());
 }
 
-const DEFAULT_FILTERS: FilterState = {
-  category: 'all',
-  niche: '',
-  geography: '',
-  priceMin: 0,
-  priceMax: 0,
-  discountMin: 0,
-  endingThisWeek: true,
-  verified: false,
-  searchQuery: '',
-  selectedTags: [],
-};
-
 export default function App() {
   const [page, setPage] = useState<Page>(() => {
     if (getCheckoutIdFromUrl()) return 'checkout';
@@ -86,16 +75,37 @@ export default function App() {
   });
   const [listingId, setListingId] = useState<string | null>(() => getListingIdFromUrl());
   const [checkoutListingId, setCheckoutListingId] = useState<string | null>(() => getCheckoutIdFromUrl());
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
-  const [columns, setColumns] = useState<GridColumns>(() => {
-    const saved = localStorage.getItem('etw_grid_columns');
-    return (saved === '1' || saved === '2' || saved === '3') ? (Number(saved) as GridColumns) : 2;
+
+  const [{ filters, viewMode, columns }, setUiState] = useState<{
+    filters: FilterState;
+    viewMode: ViewMode;
+    columns: GridColumns;
+  }>(() => {
+    const decoded = decodeFiltersFromUrl();
+    const savedCols = localStorage.getItem('etw_grid_columns');
+    const colsFromStorage = (savedCols === '1' || savedCols === '2' || savedCols === '3')
+      ? (Number(savedCols) as GridColumns)
+      : decoded.columns;
+    return {
+      filters: decoded.filters,
+      viewMode: decoded.viewMode,
+      columns: colsFromStorage,
+    };
   });
+
   const [showAuthModal, setShowAuthModal] = useState(false);
   const opportunitiesRef = useRef<HTMLDivElement>(null);
 
   const { profile } = useAuth();
   const { listings, loading, stats, updateListingStatus, refetch } = useListings(filters);
+
+  const syncUrl = useCallback((f: FilterState, v: ViewMode, c: GridColumns) => {
+    encodeFiltersToUrl(f, v, c);
+  }, []);
+
+  useEffect(() => {
+    syncUrl(filters, viewMode, columns);
+  }, [filters, viewMode, columns, syncUrl]);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -118,12 +128,20 @@ export default function App() {
   }, []);
 
   const updateFilters = (partial: Partial<FilterState>) => {
-    setFilters(prev => ({ ...prev, ...partial }));
+    setUiState(prev => ({ ...prev, filters: { ...prev.filters, ...partial } }));
+  };
+
+  const handleViewModeChange = (v: ViewMode) => {
+    setUiState(prev => ({ ...prev, viewMode: v }));
   };
 
   const handleColumnsChange = (c: GridColumns) => {
-    setColumns(c);
+    setUiState(prev => ({ ...prev, columns: c }));
     localStorage.setItem('etw_grid_columns', String(c));
+  };
+
+  const handleReset = () => {
+    setUiState(prev => ({ ...prev, filters: DEFAULT_FILTERS }));
   };
 
   const handleSecureSuccess = (listing: Listing) => {
@@ -367,22 +385,73 @@ export default function App() {
               />
             </div>
           </div>
-          <FilterBar filters={filters} onChange={updateFilters} total={listings.length} columns={columns} onColumnsChange={handleColumnsChange} />
 
           <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-[20px] font-semibold text-[#1d1d1f] tracking-[-0.01em]">Live Opportunities</h2>
-                <p className="text-[#6e6e73] text-[13px] mt-0.5">Secure expiring opportunities before they disappear.</p>
+            <div className="flex items-start gap-7">
+
+              {/* Sidebar */}
+              <div className="hidden lg:block">
+                <FilterSidebar
+                  filters={filters}
+                  onChange={updateFilters}
+                  total={listings.length}
+                  viewMode={viewMode}
+                  onViewModeChange={handleViewModeChange}
+                  columns={columns}
+                  onColumnsChange={handleColumnsChange}
+                  onReset={handleReset}
+                />
               </div>
+
+              {/* Main content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between mb-5">
+                  <div>
+                    <h2 className="text-[20px] font-semibold text-[#1d1d1f] tracking-[-0.01em]">Live Opportunities</h2>
+                    <p className="text-[#6e6e73] text-[13px] mt-0.5">
+                      {listings.length} result{listings.length !== 1 ? 's' : ''} &mdash; Secure expiring opportunities before they disappear.
+                    </p>
+                  </div>
+
+                  {/* Mobile view/sort controls */}
+                  <div className="flex items-center gap-2 lg:hidden">
+                    <button
+                      onClick={() => handleViewModeChange(viewMode === 'grid' ? 'list' : 'grid')}
+                      className="flex items-center justify-center w-8 h-8 rounded-xl bg-white border border-black/[0.08] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors"
+                    >
+                      {viewMode === 'grid'
+                        ? (
+                          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                            <line x1="2" y1="4" x2="14" y2="4" />
+                            <line x1="2" y1="8" x2="14" y2="8" />
+                            <line x1="2" y1="12" x2="14" y2="12" />
+                          </svg>
+                        )
+                        : (
+                          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                            <rect x="2" y="2" width="5" height="5" rx="1" />
+                            <rect x="9" y="2" width="5" height="5" rx="1" />
+                            <rect x="2" y="9" width="5" height="5" rx="1" />
+                            <rect x="9" y="9" width="5" height="5" rx="1" />
+                          </svg>
+                        )
+                      }
+                    </button>
+                  </div>
+                </div>
+
+                <ListingsGrid
+                  listings={listings}
+                  loading={loading}
+                  onSecure={handleSecure}
+                  onDetails={handleViewListing}
+                  columns={columns}
+                  viewMode={viewMode}
+                  sort={filters.sort}
+                />
+              </div>
+
             </div>
-            <ListingsGrid
-              listings={listings}
-              loading={loading}
-              onSecure={handleSecure}
-              onDetails={handleViewListing}
-              columns={columns}
-            />
           </section>
         </div>
 

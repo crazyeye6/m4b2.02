@@ -1,6 +1,7 @@
 import { Loader2, SearchX } from 'lucide-react';
-import type { Listing } from '../types';
+import type { Listing, SortOption, ViewMode } from '../types';
 import OpportunityCard from './OpportunityCard';
+import ListingRow from './ListingRow';
 
 export type GridColumns = 1 | 2 | 3;
 
@@ -10,6 +11,8 @@ interface ListingsGridProps {
   onSecure: (listing: Listing) => void;
   onDetails: (listing: Listing) => void;
   columns?: GridColumns;
+  viewMode?: ViewMode;
+  sort?: SortOption;
 }
 
 const GRID_CLASS: Record<GridColumns, string> = {
@@ -18,7 +21,43 @@ const GRID_CLASS: Record<GridColumns, string> = {
   3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
 };
 
-export default function ListingsGrid({ listings, loading, onSecure, onDetails, columns = 2 }: ListingsGridProps) {
+function sortListings(listings: Listing[], sort: SortOption): Listing[] {
+  const arr = [...listings];
+  switch (sort) {
+    case 'deadline_asc':
+      return arr.sort((a, b) => new Date(a.deadline_at).getTime() - new Date(b.deadline_at).getTime());
+    case 'price_asc':
+      return arr.sort((a, b) => a.discounted_price - b.discounted_price);
+    case 'price_desc':
+      return arr.sort((a, b) => b.discounted_price - a.discounted_price);
+    case 'discount_desc':
+      return arr.sort((a, b) => {
+        const da = ((a.original_price - a.discounted_price) / a.original_price);
+        const db = ((b.original_price - b.discounted_price) / b.original_price);
+        return db - da;
+      });
+    case 'audience_desc':
+      return arr.sort((a, b) => {
+        const va = a.subscribers ?? a.downloads ?? a.followers ?? 0;
+        const vb = b.subscribers ?? b.downloads ?? b.followers ?? 0;
+        return vb - va;
+      });
+    case 'newest':
+      return arr.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    default:
+      return arr;
+  }
+}
+
+export default function ListingsGrid({
+  listings,
+  loading,
+  onSecure,
+  onDetails,
+  columns = 2,
+  viewMode = 'grid',
+  sort = 'deadline_asc',
+}: ListingsGridProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -44,9 +83,26 @@ export default function ListingsGrid({ listings, loading, onSecure, onDetails, c
     );
   }
 
+  const sorted = sortListings(listings, sort);
+
+  if (viewMode === 'list') {
+    return (
+      <div className="flex flex-col gap-2">
+        {sorted.map(listing => (
+          <ListingRow
+            key={listing.id}
+            listing={listing}
+            onSecure={onSecure}
+            onDetails={onDetails}
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className={`grid ${GRID_CLASS[columns]} gap-4`}>
-      {listings.map(listing => (
+      {sorted.map(listing => (
         <OpportunityCard
           key={listing.id}
           listing={listing}
