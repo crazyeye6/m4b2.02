@@ -1,9 +1,10 @@
 import {
   Search, X, Hash, Mail, Mic, Instagram, LayoutGrid,
   ChevronDown, ChevronUp, Check, MapPin, Users, DollarSign,
-  Zap, Clock, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp, Calendar,
+  Zap, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp, Calendar,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../lib/supabase';
 import type { FilterState, Tag as TagType, SortOption, ViewMode, DeadlineWindow } from '../types';
 import type { GridColumns } from './ListingsGrid';
@@ -19,7 +20,6 @@ interface SmartFilterBarProps {
   onColumnsChange: (c: GridColumns) => void;
   onReset: () => void;
 }
-
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string; desc: string }> = [
   { value: 'deadline_asc', label: 'Ending soonest', desc: 'Act before slots close' },
@@ -45,6 +45,7 @@ const DEADLINE_OPTIONS: Array<{ label: string; value: DeadlineWindow }> = [
   { label: 'This week', value: '1week' },
   { label: 'Next 2 weeks', value: '2weeks' },
 ];
+
 const PRICE_RANGES = [
   { label: 'Under $250', min: 0, max: 250 },
   { label: '$250–$500', min: 250, max: 500 },
@@ -64,9 +65,42 @@ const AUDIENCE_RANGES = [
 
 type PanelId = 'price' | 'reach' | 'discount' | 'deadline' | 'sort' | null;
 
-function Panel({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
-  return (
-    <div className="absolute top-full left-0 mt-1.5 bg-white border border-black/[0.08] rounded-2xl shadow-2xl shadow-black/[0.12] z-50 min-w-[200px] overflow-hidden">
+interface PortalPanelProps {
+  anchorRef: React.RefObject<HTMLButtonElement | null>;
+  align?: 'left' | 'right';
+  children: React.ReactNode;
+  onClose: () => void;
+  minWidth?: number;
+}
+
+function PortalPanel({ anchorRef, align = 'left', children, onClose, minWidth = 200 }: PortalPanelProps) {
+  const [pos, setPos] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    function compute() {
+      const el = anchorRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const top = rect.bottom + window.scrollY + 6;
+      const left = align === 'right'
+        ? rect.right + window.scrollX - minWidth
+        : rect.left + window.scrollX;
+      setPos({ top, left });
+    }
+    compute();
+    window.addEventListener('scroll', compute, true);
+    window.addEventListener('resize', compute);
+    return () => {
+      window.removeEventListener('scroll', compute, true);
+      window.removeEventListener('resize', compute);
+    };
+  }, [anchorRef, align, minWidth]);
+
+  return createPortal(
+    <div
+      style={{ top: pos.top, left: pos.left, minWidth, position: 'absolute' }}
+      className="bg-white border border-black/[0.08] rounded-2xl shadow-2xl shadow-black/[0.12] z-[9999] overflow-hidden"
+    >
       {children}
       <div className="px-3 pb-3">
         <button
@@ -76,7 +110,8 @@ function Panel({ children, onClose }: { children: React.ReactNode; onClose: () =
           Done
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -111,6 +146,12 @@ export default function SmartFilterBar({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchBoxRef = useRef<HTMLDivElement>(null);
+
+  const priceBtnRef = useRef<HTMLButtonElement>(null);
+  const reachBtnRef = useRef<HTMLButtonElement>(null);
+  const discountBtnRef = useRef<HTMLButtonElement>(null);
+  const deadlineBtnRef = useRef<HTMLButtonElement>(null);
+  const sortBtnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     async function load() {
@@ -190,6 +231,7 @@ export default function SmartFilterBar({
       else if (inputValue.trim()) commitSearch(inputValue.trim());
     } else if (e.key === 'Escape') {
       setShowTagDrop(false);
+      setOpenPanel(null);
       inputRef.current?.blur();
     } else if (e.key === 'Backspace' && !inputValue) {
       const tags = filters.selectedTags ?? [];
@@ -205,16 +247,25 @@ export default function SmartFilterBar({
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setShowTagDrop(false);
-        setOpenPanel(null);
-        if (inputValue.trim()) commitSearch(inputValue.trim());
+        const target = e.target as Node;
+        const isInsidePortal = document.querySelectorAll('[data-filter-panel]');
+        let clickedInPanel = false;
+        isInsidePortal.forEach(panel => { if (panel.contains(target)) clickedInPanel = true; });
+        if (!clickedInPanel) {
+          setShowTagDrop(false);
+          setOpenPanel(null);
+          if (inputValue.trim()) commitSearch(inputValue.trim());
+        }
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [inputValue]);
 
-  const togglePanel = (id: PanelId) => setOpenPanel(p => (p === id ? null : id));
+  const togglePanel = (id: PanelId) => {
+    setShowTagDrop(false);
+    setOpenPanel(p => (p === id ? null : id));
+  };
 
   const setPriceRange = (min: number, max: number) => {
     if (filters.priceMin === min && filters.priceMax === max) onChange({ priceMin: 0, priceMax: 0 });
@@ -222,23 +273,20 @@ export default function SmartFilterBar({
   };
 
   const matchedPriceRange = PRICE_RANGES.find(r => r.min === filters.priceMin && r.max === filters.priceMax);
-
   const currentSort = SORT_OPTIONS.find(s => s.value === filters.sort);
-
   const tagCount = (filters.selectedTags ?? []).length;
   const hasPrice = filters.priceMin > 0 || filters.priceMax > 0;
   const hasDiscount = filters.discountMin > 0;
   const hasDeadline = !!filters.deadlineWindow;
-
   const geoCount = (filters.selectedGeographies ?? []).length;
   const nicheCount = (filters.selectedNiches ?? []).length;
-
   const hasAnyFilter =
     filters.category !== 'all' || geoCount > 0 || nicheCount > 0 || tagCount > 0 ||
     hasPrice || (filters.audienceMin > 0) || hasDiscount || hasDeadline || !!filters.searchQuery;
-
   const matchedDeadline = DEADLINE_OPTIONS.find(d => d.value === filters.deadlineWindow);
   const matchedDiscount = DISCOUNT_OPTIONS.find(d => d.value === filters.discountMin);
+  const hasAudience = filters.audienceMin > 0;
+  const matchedAud = AUDIENCE_RANGES.find(r => r.min === filters.audienceMin);
 
   const allChips: Array<{ label: string; type: 'tag' | 'geo' | 'niche' | 'search'; slug: string }> = [
     ...(filters.searchQuery ? [{ label: `"${filters.searchQuery}"`, type: 'search' as const, slug: filters.searchQuery }] : []),
@@ -254,6 +302,13 @@ export default function SmartFilterBar({
   ];
 
   const hasInputContent = inputValue || allChips.length > 0;
+
+  const filterBtnClass = (active: boolean, colorClass?: string) =>
+    `flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap ${
+      active
+        ? colorClass ?? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
+        : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-black/[0.2] hover:text-[#1d1d1f]'
+    }`;
 
   return (
     <div ref={containerRef} className="bg-white border-b border-black/[0.07] sticky top-[52px] z-50 shadow-sm shadow-black/[0.04]">
@@ -413,180 +468,72 @@ export default function SmartFilterBar({
         {/* Row 2: Filters + sort + view */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
 
-          {/* Budget dropdown */}
-          <div className="relative flex-shrink-0">
-            <button
-              onClick={() => { togglePanel('price'); setShowTagDrop(false); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-                ${openPanel === 'price' || hasPrice
-                  ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
-                  : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-black/[0.2] hover:text-[#1d1d1f]'}`}
-            >
-              <DollarSign className="w-3.5 h-3.5" />
-              {matchedPriceRange ? matchedPriceRange.label : 'Budget'}
-              {openPanel === 'price' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            {openPanel === 'price' && (
-              <Panel onClose={() => setOpenPanel(null)}>
-                <div className="pt-2">
-                  <PanelItem active={!hasPrice} onClick={() => onChange({ priceMin: 0, priceMax: 0 })}>Any budget</PanelItem>
-                  {PRICE_RANGES.map(r => (
-                    <PanelItem key={r.label} active={!!(matchedPriceRange && matchedPriceRange.label === r.label)} onClick={() => setPriceRange(r.min, r.max)}>
-                      {r.label}
-                    </PanelItem>
-                  ))}
-                </div>
-              </Panel>
-            )}
-          </div>
+          {/* Budget */}
+          <button
+            ref={priceBtnRef}
+            onClick={() => togglePanel('price')}
+            className={filterBtnClass(openPanel === 'price' || hasPrice)}
+          >
+            <DollarSign className="w-3.5 h-3.5" />
+            {matchedPriceRange ? matchedPriceRange.label : 'Budget'}
+            {openPanel === 'price' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
 
-          {/* Reach dropdown */}
-          <div className="relative flex-shrink-0">
-            {(() => {
-              const hasAudience = filters.audienceMin > 0;
-              const matchedAud = AUDIENCE_RANGES.find(r => r.min === filters.audienceMin);
-              return (
-                <>
-                  <button
-                    onClick={() => { togglePanel('reach'); setShowTagDrop(false); }}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-                      ${openPanel === 'reach' || hasAudience
-                        ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
-                        : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-black/[0.2] hover:text-[#1d1d1f]'}`}
-                  >
-                    <TrendingUp className="w-3.5 h-3.5" />
-                    {matchedAud ? matchedAud.label : 'Reach'}
-                    {openPanel === 'reach' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-                  </button>
-                  {openPanel === 'reach' && (
-                    <Panel onClose={() => setOpenPanel(null)}>
-                      <div className="pt-2">
-                        <PanelItem active={!hasAudience} onClick={() => onChange({ audienceMin: 0 })}>Any size</PanelItem>
-                        {AUDIENCE_RANGES.map(r => (
-                          <PanelItem key={r.min} active={filters.audienceMin === r.min} onClick={() => onChange({ audienceMin: filters.audienceMin === r.min ? 0 : r.min })}>
-                            {r.label} audience
-                          </PanelItem>
-                        ))}
-                      </div>
-                    </Panel>
-                  )}
-                </>
-              );
-            })()}
-          </div>
+          {/* Reach */}
+          <button
+            ref={reachBtnRef}
+            onClick={() => togglePanel('reach')}
+            className={filterBtnClass(openPanel === 'reach' || hasAudience)}
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            {matchedAud ? matchedAud.label : 'Reach'}
+            {openPanel === 'reach' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
 
-          {/* Discount dropdown */}
-          <div className="relative flex-shrink-0">
-            <button
-              onClick={() => { togglePanel('discount'); setShowTagDrop(false); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-                ${openPanel === 'discount' || hasDiscount
-                  ? 'bg-orange-500 text-white border-orange-500'
-                  : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-orange-200 hover:text-orange-600'}`}
-            >
-              <Zap className="w-3.5 h-3.5" />
-              {matchedDiscount && matchedDiscount.value > 0 ? matchedDiscount.label : 'Discount'}
-              {openPanel === 'discount' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            {openPanel === 'discount' && (
-              <Panel onClose={() => setOpenPanel(null)}>
-                <div className="pt-2">
-                  {DISCOUNT_OPTIONS.map(opt => (
-                    <PanelItem
-                      key={opt.value}
-                      active={filters.discountMin === opt.value}
-                      onClick={() => { onChange({ discountMin: opt.value }); if (opt.value === 0) setOpenPanel(null); }}
-                    >
-                      {opt.label}
-                    </PanelItem>
-                  ))}
-                </div>
-              </Panel>
-            )}
-          </div>
+          {/* Discount */}
+          <button
+            ref={discountBtnRef}
+            onClick={() => togglePanel('discount')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap ${
+              openPanel === 'discount' || hasDiscount
+                ? 'bg-orange-500 text-white border-orange-500'
+                : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-orange-200 hover:text-orange-600'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            {matchedDiscount && matchedDiscount.value > 0 ? matchedDiscount.label : 'Discount'}
+            {openPanel === 'discount' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
 
-          {/* Deadline dropdown */}
-          <div className="relative flex-shrink-0">
-            <button
-              onClick={() => { togglePanel('deadline'); setShowTagDrop(false); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-                ${openPanel === 'deadline' || hasDeadline
-                  ? 'bg-red-500 text-white border-red-500'
-                  : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-red-200 hover:text-red-500'}`}
-            >
-              <Calendar className="w-3.5 h-3.5" />
-              {matchedDeadline ? matchedDeadline.label : 'Deadline'}
-              {openPanel === 'deadline' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            {openPanel === 'deadline' && (
-              <Panel onClose={() => setOpenPanel(null)}>
-                <div className="pt-2">
-                  <PanelItem active={!hasDeadline} onClick={() => { onChange({ deadlineWindow: null }); setOpenPanel(null); }}>
-                    Any deadline
-                  </PanelItem>
-                  {DEADLINE_OPTIONS.map(opt => (
-                    <PanelItem
-                      key={opt.value}
-                      active={filters.deadlineWindow === opt.value}
-                      onClick={() => { onChange({ deadlineWindow: filters.deadlineWindow === opt.value ? null : opt.value }); }}
-                    >
-                      {opt.label}
-                    </PanelItem>
-                  ))}
-                </div>
-              </Panel>
-            )}
-          </div>
+          {/* Deadline */}
+          <button
+            ref={deadlineBtnRef}
+            onClick={() => togglePanel('deadline')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap ${
+              openPanel === 'deadline' || hasDeadline
+                ? 'bg-red-500 text-white border-red-500'
+                : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-red-200 hover:text-red-500'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            {matchedDeadline ? matchedDeadline.label : 'Deadline'}
+            {openPanel === 'deadline' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
 
           {/* Spacer */}
           <div className="flex-1" />
 
           {/* Sort */}
-          <div className="relative flex-shrink-0">
-            <button
-              onClick={() => { togglePanel('sort'); setShowTagDrop(false); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-                ${openPanel === 'sort' || (filters.sort && filters.sort !== 'deadline_asc')
-                  ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
-                  : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-black/[0.15] hover:text-[#1d1d1f]'}`}
-            >
-              <ArrowUpDown className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">{currentSort?.label ?? 'Sort'}</span>
-              <span className="sm:hidden">Sort</span>
-              {openPanel === 'sort' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            {openPanel === 'sort' && (
-              <div className="absolute top-full right-0 mt-1.5 bg-white border border-black/[0.08] rounded-2xl shadow-2xl shadow-black/[0.12] z-50 min-w-[240px] overflow-hidden">
-                <div className="px-4 pt-3 pb-1.5">
-                  <p className="text-[10px] text-[#aeaeb2] font-bold uppercase tracking-widest">Sort by</p>
-                </div>
-                <div className="pb-1">
-                  {SORT_OPTIONS.map(opt => (
-                    <button
-                      key={opt.value}
-                      onClick={() => { onChange({ sort: opt.value }); setOpenPanel(null); }}
-                      className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors
-                        ${filters.sort === opt.value ? 'bg-teal-50' : 'hover:bg-[#f5f5f7]'}`}
-                    >
-                      <div>
-                        <p className={`text-[13px] font-medium ${filters.sort === opt.value ? 'text-teal-700' : 'text-[#1d1d1f]'}`}>{opt.label}</p>
-                        <p className="text-[11px] text-[#aeaeb2] mt-0.5">{opt.desc}</p>
-                      </div>
-                      {filters.sort === opt.value && <Check className="w-3.5 h-3.5 flex-shrink-0 text-teal-600" />}
-                    </button>
-                  ))}
-                </div>
-                <div className="px-3 pb-3">
-                  <button
-                    onClick={() => setOpenPanel(null)}
-                    className="w-full mt-1 py-2 rounded-xl bg-[#f5f5f7] text-[12px] font-semibold text-[#6e6e73] hover:bg-[#ebebed] transition-colors"
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          <button
+            ref={sortBtnRef}
+            onClick={() => togglePanel('sort')}
+            className={filterBtnClass(openPanel === 'sort' || !!(filters.sort && filters.sort !== 'deadline_asc'))}
+          >
+            <ArrowUpDown className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{currentSort?.label ?? 'Sort'}</span>
+            <span className="sm:hidden">Sort</span>
+            {openPanel === 'sort' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
 
           {/* View mode */}
           <div className="flex-shrink-0 flex items-center gap-0.5 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-0.5">
@@ -643,9 +590,96 @@ export default function SmartFilterBar({
               {total} <span className="text-[#aeaeb2] font-normal">result{total !== 1 ? 's' : ''}</span>
             </span>
           </div>
-
         </div>
       </div>
+
+      {/* Portaled panels — rendered outside overflow container */}
+      {openPanel === 'price' && (
+        <PortalPanel anchorRef={priceBtnRef} onClose={() => setOpenPanel(null)} minWidth={200}>
+          <div data-filter-panel="" className="pt-2">
+            <PanelItem active={!hasPrice} onClick={() => onChange({ priceMin: 0, priceMax: 0 })}>Any budget</PanelItem>
+            {PRICE_RANGES.map(r => (
+              <PanelItem key={r.label} active={!!(matchedPriceRange && matchedPriceRange.label === r.label)} onClick={() => setPriceRange(r.min, r.max)}>
+                {r.label}
+              </PanelItem>
+            ))}
+          </div>
+        </PortalPanel>
+      )}
+
+      {openPanel === 'reach' && (
+        <PortalPanel anchorRef={reachBtnRef} onClose={() => setOpenPanel(null)} minWidth={200}>
+          <div data-filter-panel="" className="pt-2">
+            <PanelItem active={!hasAudience} onClick={() => onChange({ audienceMin: 0 })}>Any size</PanelItem>
+            {AUDIENCE_RANGES.map(r => (
+              <PanelItem key={r.min} active={filters.audienceMin === r.min} onClick={() => onChange({ audienceMin: filters.audienceMin === r.min ? 0 : r.min })}>
+                {r.label} audience
+              </PanelItem>
+            ))}
+          </div>
+        </PortalPanel>
+      )}
+
+      {openPanel === 'discount' && (
+        <PortalPanel anchorRef={discountBtnRef} onClose={() => setOpenPanel(null)} minWidth={200}>
+          <div data-filter-panel="" className="pt-2">
+            {DISCOUNT_OPTIONS.map(opt => (
+              <PanelItem
+                key={opt.value}
+                active={filters.discountMin === opt.value}
+                onClick={() => { onChange({ discountMin: opt.value }); if (opt.value === 0) setOpenPanel(null); }}
+              >
+                {opt.label}
+              </PanelItem>
+            ))}
+          </div>
+        </PortalPanel>
+      )}
+
+      {openPanel === 'deadline' && (
+        <PortalPanel anchorRef={deadlineBtnRef} onClose={() => setOpenPanel(null)} minWidth={200}>
+          <div data-filter-panel="" className="pt-2">
+            <PanelItem active={!hasDeadline} onClick={() => { onChange({ deadlineWindow: null }); setOpenPanel(null); }}>
+              Any deadline
+            </PanelItem>
+            {DEADLINE_OPTIONS.map(opt => (
+              <PanelItem
+                key={opt.value}
+                active={filters.deadlineWindow === opt.value}
+                onClick={() => { onChange({ deadlineWindow: filters.deadlineWindow === opt.value ? null : opt.value }); }}
+              >
+                {opt.label}
+              </PanelItem>
+            ))}
+          </div>
+        </PortalPanel>
+      )}
+
+      {openPanel === 'sort' && (
+        <PortalPanel anchorRef={sortBtnRef} align="right" onClose={() => setOpenPanel(null)} minWidth={240}>
+          <div data-filter-panel="">
+            <div className="px-4 pt-3 pb-1.5">
+              <p className="text-[10px] text-[#aeaeb2] font-bold uppercase tracking-widest">Sort by</p>
+            </div>
+            <div className="pb-1">
+              {SORT_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => { onChange({ sort: opt.value }); setOpenPanel(null); }}
+                  className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors
+                    ${filters.sort === opt.value ? 'bg-teal-50' : 'hover:bg-[#f5f5f7]'}`}
+                >
+                  <div>
+                    <p className={`text-[13px] font-medium ${filters.sort === opt.value ? 'text-teal-700' : 'text-[#1d1d1f]'}`}>{opt.label}</p>
+                    <p className="text-[11px] text-[#aeaeb2] mt-0.5">{opt.desc}</p>
+                  </div>
+                  {filters.sort === opt.value && <Check className="w-3.5 h-3.5 flex-shrink-0 text-teal-600" />}
+                </button>
+              ))}
+            </div>
+          </div>
+        </PortalPanel>
+      )}
     </div>
   );
 }
