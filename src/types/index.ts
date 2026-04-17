@@ -141,6 +141,7 @@ export interface Tag {
   id: string;
   name: string;
   display_name: string | null;
+  tag_type: 'niche' | 'geography' | 'audience' | 'format' | 'general';
   usage_count: number;
   created_at: string;
 }
@@ -151,8 +152,8 @@ export type ViewMode = 'grid' | 'list';
 
 export interface FilterState {
   category: MediaType | 'all';
-  niche: string;
-  geography: string;
+  selectedNiches: string[];
+  selectedGeographies: string[];
   priceMin: number;
   priceMax: number;
   discountMin: number;

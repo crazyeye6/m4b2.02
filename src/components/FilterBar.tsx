@@ -1,10 +1,11 @@
 import {
   SlidersHorizontal, Mail, Mic, Instagram, MapPin, Tag, DollarSign,
   ChevronUp, X, LayoutGrid, Columns2, Columns3, Check, ChevronDown,
-  TrendingDown, Clock,
+  TrendingDown, Clock, Users,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import type { FilterState } from '../types';
+import { supabase } from '../lib/supabase';
+import type { FilterState, Tag as TagType } from '../types';
 import type { GridColumns } from './ListingsGrid';
 import { TagFilterInput } from './TagInput/TagFilterInput';
 
@@ -23,8 +24,6 @@ const CATEGORIES = [
   { value: 'influencer', label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" />, activeClass: 'bg-rose-50 text-rose-500 border border-rose-100 shadow-sm' },
 ];
 
-const GEOGRAPHIES = ['', 'US', 'UK', 'Europe', 'Ireland', 'Global'];
-const NICHES = ['', 'SaaS', 'eCommerce', 'Fintech', 'Startup', 'Marketing', 'Fitness', 'Beauty', 'Travel'];
 const DISCOUNT_OPTIONS = [0, 20, 30, 40, 50];
 const PRICE_MAX_OPTIONS = [0, 500, 1000, 2500, 5000];
 const PRICE_MIN_OPTIONS = [0, 100, 250, 500, 1000];
@@ -63,8 +62,30 @@ const COLUMN_OPTIONS: Array<{ value: GridColumns; icon: React.ReactNode; title: 
   { value: 3, icon: <Columns3 className="w-3.5 h-3.5" />, title: '3 per row' },
 ];
 
+function getDisplayName(tag: TagType) {
+  return tag.display_name || tag.name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
 export default function FilterBar({ filters, onChange, total, columns, onColumnsChange }: FilterBarProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [geoTags, setGeoTags] = useState<TagType[]>([]);
+  const [nicheTags, setNicheTags] = useState<TagType[]>([]);
+
+  useEffect(() => {
+    async function fetchTypedTags() {
+      const { data } = await supabase
+        .from('tags')
+        .select('id, name, display_name, tag_type, usage_count, created_at')
+        .in('tag_type', ['geography', 'niche'])
+        .order('usage_count', { ascending: false });
+
+      if (data) {
+        setGeoTags(data.filter((t: TagType) => t.tag_type === 'geography'));
+        setNicheTags(data.filter((t: TagType) => t.tag_type === 'niche'));
+      }
+    }
+    fetchTypedTags();
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -73,6 +94,20 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, [showAdvanced]);
+
+  const toggleGeo = (slug: string) => {
+    const current = filters.selectedGeographies ?? [];
+    onChange({
+      selectedGeographies: current.includes(slug) ? current.filter(g => g !== slug) : [...current, slug],
+    });
+  };
+
+  const toggleNiche = (slug: string) => {
+    const current = filters.selectedNiches ?? [];
+    onChange({
+      selectedNiches: current.includes(slug) ? current.filter(n => n !== slug) : [...current, slug],
+    });
+  };
 
   const activeChips: Array<{ label: string; clear: () => void }> = [];
 
@@ -83,6 +118,24 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
     filters.selectedTags.forEach(tag =>
       activeChips.push({ label: `#${tag}`, clear: () => onChange({ selectedTags: filters.selectedTags.filter(t => t !== tag) }) })
     );
+  }
+  if (filters.selectedGeographies && filters.selectedGeographies.length > 0) {
+    filters.selectedGeographies.forEach(slug => {
+      const tag = geoTags.find(t => t.name === slug);
+      activeChips.push({
+        label: tag ? getDisplayName(tag) : slug,
+        clear: () => onChange({ selectedGeographies: filters.selectedGeographies.filter(g => g !== slug) }),
+      });
+    });
+  }
+  if (filters.selectedNiches && filters.selectedNiches.length > 0) {
+    filters.selectedNiches.forEach(slug => {
+      const tag = nicheTags.find(t => t.name === slug);
+      activeChips.push({
+        label: tag ? getDisplayName(tag) : slug,
+        clear: () => onChange({ selectedNiches: filters.selectedNiches.filter(n => n !== slug) }),
+      });
+    });
   }
   if (filters.category !== 'all') {
     const cat = CATEGORIES.find(c => c.value === filters.category);
@@ -100,20 +153,14 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
   if (filters.priceMax > 0) {
     activeChips.push({ label: `Up to $${filters.priceMax.toLocaleString()}`, clear: () => onChange({ priceMax: 0 }) });
   }
-  if (filters.geography) {
-    activeChips.push({ label: filters.geography, clear: () => onChange({ geography: '' }) });
-  }
-  if (filters.niche) {
-    activeChips.push({ label: filters.niche, clear: () => onChange({ niche: '' }) });
-  }
 
   const hasActive = activeChips.length > 0;
   const advancedActiveCount = [
     filters.discountMin > 0,
     filters.priceMin > 0,
     filters.priceMax > 0,
-    !!filters.geography,
-    !!filters.niche,
+    (filters.selectedGeographies?.length ?? 0) > 0,
+    (filters.selectedNiches?.length ?? 0) > 0,
     (filters.selectedTags?.length ?? 0) > 0,
   ].filter(Boolean).length;
 
@@ -124,8 +171,8 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
       discountMin: 0,
       priceMin: 0,
       priceMax: 0,
-      niche: '',
-      geography: '',
+      selectedNiches: [],
+      selectedGeographies: [],
       searchQuery: '',
       selectedTags: [],
     });
@@ -301,25 +348,37 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
               </FilterSection>
 
               <FilterSection label="Geography" icon={<MapPin className="w-3 h-3" />}>
-                {GEOGRAPHIES.map(v => (
+                <OptionBtn
+                  active={(filters.selectedGeographies?.length ?? 0) === 0}
+                  onClick={() => onChange({ selectedGeographies: [] })}
+                >
+                  Any location
+                </OptionBtn>
+                {geoTags.map(tag => (
                   <OptionBtn
-                    key={v}
-                    active={filters.geography === v}
-                    onClick={() => onChange({ geography: v })}
+                    key={tag.name}
+                    active={(filters.selectedGeographies ?? []).includes(tag.name)}
+                    onClick={() => toggleGeo(tag.name)}
                   >
-                    {v || 'Any location'}
+                    {getDisplayName(tag)}
                   </OptionBtn>
                 ))}
               </FilterSection>
 
-              <FilterSection label="Niche" icon={<Tag className="w-3 h-3" />}>
-                {NICHES.map(v => (
+              <FilterSection label="Niche" icon={<Users className="w-3 h-3" />}>
+                <OptionBtn
+                  active={(filters.selectedNiches?.length ?? 0) === 0}
+                  onClick={() => onChange({ selectedNiches: [] })}
+                >
+                  Any niche
+                </OptionBtn>
+                {nicheTags.map(tag => (
                   <OptionBtn
-                    key={v}
-                    active={filters.niche === v}
-                    onClick={() => onChange({ niche: v })}
+                    key={tag.name}
+                    active={(filters.selectedNiches ?? []).includes(tag.name)}
+                    onClick={() => toggleNiche(tag.name)}
                   >
-                    {v || 'Any niche'}
+                    {getDisplayName(tag)}
                   </OptionBtn>
                 ))}
               </FilterSection>

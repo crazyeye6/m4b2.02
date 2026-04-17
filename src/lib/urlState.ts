@@ -2,8 +2,8 @@ import type { FilterState, SortOption, ViewMode } from '../types';
 
 const DEFAULT_FILTERS: FilterState = {
   category: 'all',
-  niche: '',
-  geography: '',
+  selectedNiches: [],
+  selectedGeographies: [],
   priceMin: 0,
   priceMax: 0,
   discountMin: 0,
@@ -21,8 +21,8 @@ export function encodeFiltersToUrl(filters: FilterState, viewMode: ViewMode, col
   const d = DEFAULT_FILTERS;
 
   if (filters.category !== d.category) p.set('cat', filters.category); else p.delete('cat');
-  if (filters.niche) p.set('niche', filters.niche); else p.delete('niche');
-  if (filters.geography) p.set('geo', filters.geography); else p.delete('geo');
+  if (filters.selectedNiches.length > 0) p.set('niche', filters.selectedNiches.join(',')); else p.delete('niche');
+  if (filters.selectedGeographies.length > 0) p.set('geo', filters.selectedGeographies.join(',')); else p.delete('geo');
   if (filters.priceMin > 0) p.set('pmin', String(filters.priceMin)); else p.delete('pmin');
   if (filters.priceMax > 0) p.set('pmax', String(filters.priceMax)); else p.delete('pmax');
   if (filters.discountMin > 0) p.set('disc', String(filters.discountMin)); else p.delete('disc');
@@ -41,8 +41,8 @@ export function decodeFiltersFromUrl(): { filters: FilterState; viewMode: ViewMo
 
   const filters: FilterState = {
     category: (p.get('cat') as FilterState['category']) || DEFAULT_FILTERS.category,
-    niche: p.get('niche') || '',
-    geography: p.get('geo') || '',
+    selectedNiches: p.get('niche') ? p.get('niche')!.split(',').filter(Boolean) : [],
+    selectedGeographies: p.get('geo') ? p.get('geo')!.split(',').filter(Boolean) : [],
     priceMin: Number(p.get('pmin')) || 0,
     priceMax: Number(p.get('pmax')) || 0,
     discountMin: Number(p.get('disc')) || 0,

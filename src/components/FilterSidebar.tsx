@@ -3,8 +3,9 @@ import {
   LayoutGrid, Check, X, ChevronDown, ChevronUp, SlidersHorizontal,
   ArrowUpDown, Users,
 } from 'lucide-react';
-import { useState } from 'react';
-import type { FilterState, SortOption, ViewMode } from '../types';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import type { FilterState, SortOption, ViewMode, Tag as TagType } from '../types';
 import { TagFilterInput } from './TagInput/TagFilterInput';
 import type { GridColumns } from './ListingsGrid';
 
@@ -26,8 +27,6 @@ const CATEGORIES = [
   { value: 'influencer', label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" /> },
 ];
 
-const GEOGRAPHIES = ['US', 'UK', 'Europe', 'Ireland', 'Global'];
-const NICHES = ['SaaS', 'eCommerce', 'Fintech', 'Startup', 'Marketing', 'Fitness', 'Beauty', 'Travel'];
 const DISCOUNT_OPTIONS = [20, 30, 40, 50];
 const PRICE_RANGES = [
   { label: 'Under $250', min: 0, max: 250 },
@@ -45,6 +44,10 @@ const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
   { value: 'audience_desc', label: 'Largest audience' },
   { value: 'newest', label: 'Newest listings' },
 ];
+
+function getDisplayName(tag: TagType) {
+  return tag.display_name || tag.name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
 
 function Section({
   label,
@@ -129,10 +132,43 @@ export default function FilterSidebar({
   onColumnsChange,
   onReset,
 }: FilterSidebarProps) {
+  const [geoTags, setGeoTags] = useState<TagType[]>([]);
+  const [nicheTags, setNicheTags] = useState<TagType[]>([]);
+
+  useEffect(() => {
+    async function fetchTypedTags() {
+      const { data } = await supabase
+        .from('tags')
+        .select('id, name, display_name, tag_type, usage_count, created_at')
+        .in('tag_type', ['geography', 'niche'])
+        .order('usage_count', { ascending: false });
+
+      if (data) {
+        setGeoTags(data.filter((t: TagType) => t.tag_type === 'geography'));
+        setNicheTags(data.filter((t: TagType) => t.tag_type === 'niche'));
+      }
+    }
+    fetchTypedTags();
+  }, []);
+
+  const toggleGeo = (slug: string) => {
+    const current = filters.selectedGeographies ?? [];
+    onChange({
+      selectedGeographies: current.includes(slug) ? current.filter(g => g !== slug) : [...current, slug],
+    });
+  };
+
+  const toggleNiche = (slug: string) => {
+    const current = filters.selectedNiches ?? [];
+    onChange({
+      selectedNiches: current.includes(slug) ? current.filter(n => n !== slug) : [...current, slug],
+    });
+  };
+
   const activeCount = [
     filters.category !== 'all',
-    !!filters.niche,
-    !!filters.geography,
+    (filters.selectedNiches?.length ?? 0) > 0,
+    (filters.selectedGeographies?.length ?? 0) > 0,
     filters.priceMin > 0 || filters.priceMax > 0,
     filters.discountMin > 0,
     filters.endingThisWeek,
@@ -275,23 +311,23 @@ export default function FilterSidebar({
           <Section
             label="Location"
             icon={<MapPin className="w-3.5 h-3.5" />}
-            count={filters.geography ? 1 : 0}
+            count={(filters.selectedGeographies?.length ?? 0)}
             defaultOpen={false}
           >
             <div className="flex flex-col gap-0.5">
               <CheckRow
-                active={!filters.geography}
-                onClick={() => onChange({ geography: '' })}
+                active={(filters.selectedGeographies?.length ?? 0) === 0}
+                onClick={() => onChange({ selectedGeographies: [] })}
               >
                 Any location
               </CheckRow>
-              {GEOGRAPHIES.map(v => (
+              {geoTags.map(tag => (
                 <CheckRow
-                  key={v}
-                  active={filters.geography === v}
-                  onClick={() => onChange({ geography: filters.geography === v ? '' : v })}
+                  key={tag.name}
+                  active={(filters.selectedGeographies ?? []).includes(tag.name)}
+                  onClick={() => toggleGeo(tag.name)}
                 >
-                  {v}
+                  {getDisplayName(tag)}
                 </CheckRow>
               ))}
             </div>
@@ -301,23 +337,23 @@ export default function FilterSidebar({
           <Section
             label="Niche"
             icon={<Users className="w-3.5 h-3.5" />}
-            count={filters.niche ? 1 : 0}
+            count={(filters.selectedNiches?.length ?? 0)}
             defaultOpen={false}
           >
             <div className="flex flex-col gap-0.5">
               <CheckRow
-                active={!filters.niche}
-                onClick={() => onChange({ niche: '' })}
+                active={(filters.selectedNiches?.length ?? 0) === 0}
+                onClick={() => onChange({ selectedNiches: [] })}
               >
                 Any niche
               </CheckRow>
-              {NICHES.map(v => (
+              {nicheTags.map(tag => (
                 <CheckRow
-                  key={v}
-                  active={filters.niche === v}
-                  onClick={() => onChange({ niche: filters.niche === v ? '' : v })}
+                  key={tag.name}
+                  active={(filters.selectedNiches ?? []).includes(tag.name)}
+                  onClick={() => toggleNiche(tag.name)}
                 >
-                  {v}
+                  {getDisplayName(tag)}
                 </CheckRow>
               ))}
             </div>

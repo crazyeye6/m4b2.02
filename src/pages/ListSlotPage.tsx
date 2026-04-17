@@ -256,18 +256,52 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
       return;
     }
 
-    if (insertedListing && form.tags.length > 0) {
-      for (const tagName of form.tags) {
-        const displayName = tagName.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    if (insertedListing) {
+      const geoSlugs: Array<{ name: string; displayName: string }> = [];
+      const locationLower = (payload.location || '').toLowerCase();
+      const GEO_MAP: Record<string, string> = {
+        us: 'US', uk: 'UK', europe: 'Europe', ireland: 'Ireland',
+        global: 'Global', australia: 'Australia', canada: 'Canada',
+        asia: 'Asia', latam: 'LatAm', 'middle-east': 'Middle East',
+      };
+      for (const [slug, displayName] of Object.entries(GEO_MAP)) {
+        const keyword = slug === 'latam' ? 'latam' : slug.replace('-', ' ');
+        if (locationLower.includes(keyword) || locationLower.includes(slug)) {
+          geoSlugs.push({ name: slug, displayName });
+        }
+      }
+
+      const nicheSlugs: Array<{ name: string; displayName: string }> = [];
+      const audienceLower = (payload.audience || '').toLowerCase();
+      const NICHE_MAP: Record<string, string> = {
+        saas: 'SaaS', ecommerce: 'eCommerce', fintech: 'Fintech', startup: 'Startup',
+        marketing: 'Marketing', fitness: 'Fitness', beauty: 'Beauty', travel: 'Travel',
+        crypto: 'Crypto', ai: 'AI', b2b: 'B2B', b2c: 'B2C', health: 'Health',
+        tech: 'Tech', food: 'Food', fashion: 'Fashion', education: 'Education', finance: 'Finance',
+      };
+      for (const [slug, displayName] of Object.entries(NICHE_MAP)) {
+        if (audienceLower.includes(slug)) {
+          nicheSlugs.push({ name: slug, displayName });
+        }
+      }
+
+      const allTagsToLink = [
+        ...form.tags.map(name => ({ name, displayName: name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), tagType: 'general' as const })),
+        ...geoSlugs.map(t => ({ ...t, tagType: 'geography' as const })),
+        ...nicheSlugs.map(t => ({ ...t, tagType: 'niche' as const })),
+      ];
+
+      for (const { name, displayName, tagType } of allTagsToLink) {
         const { data: tagRow } = await supabase
           .from('tags')
-          .upsert({ name: tagName, display_name: displayName }, { onConflict: 'name' })
+          .upsert({ name, display_name: displayName, tag_type: tagType }, { onConflict: 'name' })
           .select('id')
           .maybeSingle();
         if (tagRow) {
           await supabase
             .from('listing_tags')
-            .insert({ listing_id: insertedListing.id, tag_id: tagRow.id });
+            .insert({ listing_id: insertedListing.id, tag_id: tagRow.id })
+            .then(() => {});
         }
       }
     }

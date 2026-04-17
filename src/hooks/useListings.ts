@@ -14,7 +14,12 @@ export function useListings(filters: FilterState) {
   const fetchListings = useCallback(async () => {
     setLoading(true);
 
-    const hasTagFilter = filters.selectedTags && filters.selectedTags.length > 0;
+    const allTagSlugs = [
+      ...(filters.selectedTags ?? []),
+      ...(filters.selectedGeographies ?? []),
+      ...(filters.selectedNiches ?? []),
+    ];
+    const hasTagFilter = allTagSlugs.length > 0;
 
     let query = supabase.from('listings').select('*');
 
@@ -56,18 +61,6 @@ export function useListings(filters: FilterState) {
 
     let result = (data as Listing[]) || [];
 
-    if (filters.geography) {
-      result = result.filter(l =>
-        l.location.toLowerCase().includes(filters.geography.toLowerCase())
-      );
-    }
-
-    if (filters.niche) {
-      result = result.filter(l =>
-        l.audience.toLowerCase().includes(filters.niche.toLowerCase())
-      );
-    }
-
     if (filters.discountMin > 0) {
       result = result.filter(l => {
         const pct = Math.round(((l.original_price - l.discounted_price) / l.original_price) * 100);
@@ -79,7 +72,7 @@ export function useListings(filters: FilterState) {
       const { data: tagRows } = await supabase
         .from('tags')
         .select('id, name')
-        .in('name', filters.selectedTags);
+        .in('name', allTagSlugs);
 
       if (tagRows && tagRows.length > 0) {
         const tagIds = tagRows.map((t: { id: string }) => t.id);
