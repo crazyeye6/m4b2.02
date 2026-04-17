@@ -113,7 +113,7 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8">
         <div className="mb-6">
           <div className="flex items-center gap-2.5 mb-3">
             <span className={`inline-flex items-center gap-1.5 border text-[11px] font-semibold px-2.5 py-1.5 rounded-full uppercase tracking-wide ${mc.bg} ${mc.color}`}>
