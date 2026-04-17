@@ -23,8 +23,8 @@ const MEDIA_CONFIG = {
   podcast: {
     icon: <Mic className="w-3.5 h-3.5" />,
     label: 'Podcast',
-    color: 'bg-violet-50 text-violet-600 border-violet-100',
-    bar: 'bg-violet-500',
+    color: 'bg-amber-50 text-amber-600 border-amber-100',
+    bar: 'bg-amber-500',
   },
   influencer: {
     icon: <Instagram className="w-3.5 h-3.5" />,

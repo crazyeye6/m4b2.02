@@ -13,7 +13,7 @@ interface ListingPageProps {
 
 const MEDIA_CONFIG = {
   newsletter: { icon: <Mail className="w-4 h-4" />, label: 'Newsletter', color: 'text-sky-600', bg: 'bg-sky-50 border-sky-100' },
-  podcast: { icon: <Mic className="w-4 h-4" />, label: 'Podcast', color: 'text-violet-600', bg: 'bg-violet-50 border-violet-100' },
+  podcast: { icon: <Mic className="w-4 h-4" />, label: 'Podcast', color: 'text-amber-600', bg: 'bg-amber-50 border-amber-100' },
   influencer: { icon: <Instagram className="w-4 h-4" />, label: 'Influencer', color: 'text-rose-500', bg: 'bg-rose-50 border-rose-100' },
 };
 

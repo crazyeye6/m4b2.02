@@ -20,7 +20,7 @@ interface FilterBarProps {
 const CATEGORIES = [
   { value: 'all', label: 'All', icon: <LayoutGrid className="w-3.5 h-3.5" />, activeClass: 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.08]' },
   { value: 'newsletter', label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" />, activeClass: 'bg-sky-50 text-sky-600 border border-sky-100 shadow-sm' },
-  { value: 'podcast', label: 'Podcast', icon: <Mic className="w-3.5 h-3.5" />, activeClass: 'bg-violet-50 text-violet-600 border border-violet-100 shadow-sm' },
+  { value: 'podcast', label: 'Podcast', icon: <Mic className="w-3.5 h-3.5" />, activeClass: 'bg-amber-50 text-amber-600 border border-amber-100 shadow-sm' },
   { value: 'influencer', label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" />, activeClass: 'bg-rose-50 text-rose-500 border border-rose-100 shadow-sm' },
 ];
 
