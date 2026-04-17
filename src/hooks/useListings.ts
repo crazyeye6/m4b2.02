@@ -31,13 +31,10 @@ export function useListings(filters: FilterState) {
     }
 
     if (filters.endingThisWeek) {
-      const now = new Date();
-      const endOfWeek = new Date(now);
-      const day = now.getDay();
-      const daysUntilSunday = day === 0 ? 0 : 7 - day;
-      endOfWeek.setDate(now.getDate() + daysUntilSunday);
-      endOfWeek.setHours(23, 59, 59, 999);
-      query = query.lte('deadline_at', endOfWeek.toISOString());
+      const endOfWindow = new Date();
+      endOfWindow.setDate(endOfWindow.getDate() + 7);
+      endOfWindow.setHours(23, 59, 59, 999);
+      query = query.lte('deadline_at', endOfWindow.toISOString());
     }
 
     if (filters.searchQuery && filters.searchQuery.trim()) {
