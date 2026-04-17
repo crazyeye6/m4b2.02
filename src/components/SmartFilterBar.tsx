@@ -242,6 +242,30 @@ export default function SmartFilterBar({
     <div ref={containerRef} className="bg-white border-b border-black/[0.07] sticky top-[52px] z-50 shadow-sm shadow-black/[0.04]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-2.5">
 
+        {/* Row 0: Media type toggles */}
+        <div className="flex items-center gap-1.5">
+          {([
+            { value: 'newsletter' as const, label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
+            { value: 'podcast' as const, label: 'Podcast', icon: <Mic className="w-3.5 h-3.5" /> },
+            { value: 'influencer' as const, label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" /> },
+          ]).map(c => {
+            const active = filters.category === c.value;
+            return (
+              <button
+                key={c.value}
+                onClick={() => onChange({ category: active ? 'all' : c.value })}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
+                  ${active
+                    ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
+                    : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-black/[0.2] hover:text-[#1d1d1f]'}`}
+              >
+                {c.icon}
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+
         {/* Row 1: Search + tag input */}
         <div ref={searchBoxRef} className="relative">
           <div
@@ -371,30 +395,6 @@ export default function SmartFilterBar({
 
         {/* Row 2: Filters + sort + view */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
-
-          {/* Media type individual toggles */}
-          {([
-            { value: 'newsletter' as const, label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
-            { value: 'podcast' as const, label: 'Podcast', icon: <Mic className="w-3.5 h-3.5" /> },
-            { value: 'influencer' as const, label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" /> },
-          ]).map(c => {
-            const active = filters.category === c.value;
-            return (
-              <button
-                key={c.value}
-                onClick={() => onChange({ category: active ? 'all' : c.value })}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-                  ${active
-                    ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
-                    : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-black/[0.2] hover:text-[#1d1d1f]'}`}
-              >
-                {c.icon}
-                {c.label}
-              </button>
-            );
-          })}
-
-          <div className="w-px h-5 bg-black/[0.08] flex-shrink-0" />
 
           {/* Budget dropdown */}
           <div className="relative flex-shrink-0">
