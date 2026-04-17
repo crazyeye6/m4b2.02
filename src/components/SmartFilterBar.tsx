@@ -523,23 +523,6 @@ export default function SmartFilterBar({
             {openPanel === 'deadline' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
 
-          {/* Best Stats */}
-          <button
-            ref={bestStatsBtnRef}
-            onClick={() => {
-              const next = isBestStats ? 'deadline_asc' : 'best_stats';
-              onChange({ sort: next });
-            }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap ${
-              isBestStats
-                ? 'bg-teal-600 text-white border-teal-600'
-                : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-teal-300 hover:text-teal-700'
-            }`}
-          >
-            <Star className="w-3.5 h-3.5" />
-            Best Stats
-          </button>
-
           {/* Spacer */}
           <div className="flex-1" />
 
