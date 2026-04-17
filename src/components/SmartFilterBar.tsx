@@ -530,8 +530,7 @@ export default function SmartFilterBar({
             className={filterBtnClass(openPanel === 'sort' || !!(filters.sort && filters.sort !== 'deadline_asc'))}
           >
             <ArrowUpDown className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">{currentSort?.label ?? 'Sort'}</span>
-            <span className="sm:hidden">Sort</span>
+            <span>Sort by</span>
             {openPanel === 'sort' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
 
