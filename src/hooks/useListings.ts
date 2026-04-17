@@ -57,7 +57,18 @@ export function useListings(filters: FilterState) {
       });
     }
 
-    query = query.order('deadline_at', { ascending: true });
+    const sort = filters.sort ?? 'deadline_asc';
+    if (sort === 'deadline_asc') {
+      query = query.order('deadline_at', { ascending: true });
+    } else if (sort === 'price_asc') {
+      query = query.order('discounted_price', { ascending: true }).order('deadline_at', { ascending: true });
+    } else if (sort === 'price_desc') {
+      query = query.order('discounted_price', { ascending: false }).order('deadline_at', { ascending: true });
+    } else if (sort === 'newest') {
+      query = query.order('created_at', { ascending: false });
+    } else {
+      query = query.order('deadline_at', { ascending: true });
+    }
 
     const { data, error } = await query;
 
@@ -68,6 +79,9 @@ export function useListings(filters: FilterState) {
     }
 
     let result = (data as Listing[]) || [];
+
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
+    result = result.filter(l => new Date(l.deadline_at).getTime() >= cutoff);
 
     if (filters.discountMin > 0) {
       result = result.filter(l => {
@@ -107,8 +121,19 @@ export function useListings(filters: FilterState) {
       }
     }
 
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-    result = result.filter(l => new Date(l.deadline_at).getTime() >= cutoff);
+    if (sort === 'discount_desc') {
+      result = result.slice().sort((a, b) => {
+        const pctA = (a.original_price - a.discounted_price) / a.original_price;
+        const pctB = (b.original_price - b.discounted_price) / b.original_price;
+        return pctB - pctA;
+      });
+    } else if (sort === 'audience_desc') {
+      result = result.slice().sort((a, b) => {
+        const reachA = a.subscribers ?? a.downloads ?? a.followers ?? 0;
+        const reachB = b.subscribers ?? b.downloads ?? b.followers ?? 0;
+        return reachB - reachA;
+      });
+    }
 
     setListings(result);
     setLoading(false);
