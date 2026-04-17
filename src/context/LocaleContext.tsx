@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import {
   COUNTRY_TO_LANGUAGE,
   COUNTRY_TO_CURRENCY,
+  LANGUAGE_DEFAULT_CURRENCY,
   getCurrencyInfo,
   getLanguageInfo,
   type SupportedLanguage,
@@ -75,6 +76,9 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const handleSetLanguage = useCallback((code: string) => {
     setLangCode(code);
     localStorage.setItem(LS_LANG_KEY, code);
+    const defaultCurrency = LANGUAGE_DEFAULT_CURRENCY[code] ?? 'USD';
+    setCurrencyCode(defaultCurrency);
+    localStorage.setItem(LS_CURRENCY_KEY, defaultCurrency);
   }, []);
 
   const handleSetCurrency = useCallback((code: string) => {

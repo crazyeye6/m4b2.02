@@ -66,6 +66,17 @@ export const COUNTRY_TO_CURRENCY: Record<string, string> = {
   JP: 'JPY',
 };
 
+export const LANGUAGE_DEFAULT_CURRENCY: Record<string, string> = {
+  en: 'USD',
+  de: 'EUR',
+  fr: 'EUR',
+  es: 'EUR',
+  pt: 'EUR',
+  nl: 'EUR',
+  sv: 'SEK',
+  ja: 'JPY',
+};
+
 export function getCurrencyInfo(code: string): SupportedCurrency {
   return SUPPORTED_CURRENCIES.find(c => c.code === code) ?? SUPPORTED_CURRENCIES[0];
 }
