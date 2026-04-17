@@ -14,16 +14,16 @@ const MEDIA_CONFIG = {
   newsletter: {
     icon: <Mail className="w-3.5 h-3.5" />,
     label: 'Newsletter',
-    color: 'bg-sky-50 text-sky-600 border-sky-100',
-    accent: 'from-sky-500 to-sky-600',
-    glow: 'shadow-sky-900/30',
+    color: 'bg-green-50 text-green-600 border-green-100',
+    accent: 'from-green-500 to-green-600',
+    glow: 'shadow-green-900/30',
   },
   podcast: {
     icon: <Mic className="w-3.5 h-3.5" />,
     label: 'Podcast',
-    color: 'bg-amber-50 text-amber-600 border-amber-100',
-    accent: 'from-amber-500 to-amber-600',
-    glow: 'shadow-amber-900/30',
+    color: 'bg-yellow-50 text-yellow-600 border-yellow-100',
+    accent: 'from-yellow-500 to-yellow-600',
+    glow: 'shadow-yellow-900/30',
   },
   influencer: {
     icon: <Instagram className="w-3.5 h-3.5" />,

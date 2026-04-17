@@ -10,8 +10,8 @@ interface DetailModalProps {
 }
 
 const MEDIA_CONFIG = {
-  newsletter: { icon: <Mail className="w-4 h-4" />, label: 'Newsletter', color: 'text-sky-600', bg: 'bg-sky-50 border-sky-200' },
-  podcast: { icon: <Mic className="w-4 h-4" />, label: 'Podcast', color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200' },
+  newsletter: { icon: <Mail className="w-4 h-4" />, label: 'Newsletter', color: 'text-green-600', bg: 'bg-green-50 border-green-200' },
+  podcast: { icon: <Mic className="w-4 h-4" />, label: 'Podcast', color: 'text-yellow-600', bg: 'bg-yellow-50 border-yellow-200' },
   influencer: { icon: <Instagram className="w-4 h-4" />, label: 'Influencer', color: 'text-rose-600', bg: 'bg-rose-50 border-rose-200' },
 };
 

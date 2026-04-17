@@ -17,14 +17,14 @@ const MEDIA_CONFIG = {
   newsletter: {
     icon: <Mail className="w-3.5 h-3.5" />,
     label: 'Newsletter',
-    color: 'bg-sky-50 text-sky-600 border-sky-100',
-    bar: 'bg-sky-500',
+    color: 'bg-green-50 text-green-600 border-green-100',
+    bar: 'bg-green-500',
   },
   podcast: {
     icon: <Mic className="w-3.5 h-3.5" />,
     label: 'Podcast',
-    color: 'bg-amber-50 text-amber-600 border-amber-100',
-    bar: 'bg-amber-500',
+    color: 'bg-yellow-50 text-yellow-600 border-yellow-100',
+    bar: 'bg-yellow-500',
   },
   influencer: {
     icon: <Instagram className="w-3.5 h-3.5" />,
