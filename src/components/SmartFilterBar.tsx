@@ -1,8 +1,7 @@
 import {
   Search, X, Hash, Mail, Mic, Instagram, LayoutGrid,
   ChevronDown, ChevronUp, Check, MapPin, Users, DollarSign,
-  TrendingDown, Clock, ArrowUpDown, Tag as TagIcon,
-  Columns2, Columns3,
+  Zap, Clock, ArrowUpDown, Tag as TagIcon, Columns2, Columns3,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
@@ -46,7 +45,7 @@ const PRICE_RANGES = [
   { label: '$2.5k+', min: 2500, max: 0 },
 ];
 
-type PanelId = 'type' | 'location' | 'niche' | 'price' | 'discount' | 'sort' | null;
+type PanelId = 'price' | 'sort' | null;
 
 function Panel({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
@@ -200,16 +199,6 @@ export default function SmartFilterBar({
 
   const togglePanel = (id: PanelId) => setOpenPanel(p => (p === id ? null : id));
 
-  const toggleGeo = (slug: string) => {
-    const cur = filters.selectedGeographies ?? [];
-    onChange({ selectedGeographies: cur.includes(slug) ? cur.filter(g => g !== slug) : [...cur, slug] });
-  };
-
-  const toggleNiche = (slug: string) => {
-    const cur = filters.selectedNiches ?? [];
-    onChange({ selectedNiches: cur.includes(slug) ? cur.filter(n => n !== slug) : [...cur, slug] });
-  };
-
   const setPriceRange = (min: number, max: number) => {
     if (filters.priceMin === min && filters.priceMax === max) onChange({ priceMin: 0, priceMax: 0 });
     else onChange({ priceMin: min, priceMax: max });
@@ -219,16 +208,17 @@ export default function SmartFilterBar({
 
   const currentSort = SORT_OPTIONS.find(s => s.value === filters.sort);
 
-  const geoCount = (filters.selectedGeographies ?? []).length;
-  const nicheCount = (filters.selectedNiches ?? []).length;
   const tagCount = (filters.selectedTags ?? []).length;
   const hasPrice = filters.priceMin > 0 || filters.priceMax > 0;
   const hasDiscount = filters.discountMin > 0;
   const hasEndingThisWeek = filters.endingThisWeek;
 
+  const geoCount = (filters.selectedGeographies ?? []).length;
+  const nicheCount = (filters.selectedNiches ?? []).length;
+
   const hasAnyFilter =
     filters.category !== 'all' || geoCount > 0 || nicheCount > 0 || tagCount > 0 ||
-    hasPrice || hasDiscount || hasEndingThisWeek || !!filters.searchQuery || tagCount > 0;
+    hasPrice || hasDiscount || hasEndingThisWeek || !!filters.searchQuery;
 
   const allChips: Array<{ label: string; type: 'tag' | 'geo' | 'niche' | 'search'; slug: string }> = [
     ...(filters.searchQuery ? [{ label: `"${filters.searchQuery}"`, type: 'search' as const, slug: filters.searchQuery }] : []),
@@ -376,10 +366,10 @@ export default function SmartFilterBar({
           )}
         </div>
 
-        {/* Row 2: Quick filter pills + sort + view */}
+        {/* Row 2: Filters + sort + view */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
 
-          {/* Category pills */}
+          {/* Media type segmented control */}
           <div className="flex items-center gap-0.5 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-0.5 flex-shrink-0">
             {CATEGORIES.map(c => (
               <button
@@ -398,97 +388,23 @@ export default function SmartFilterBar({
 
           <div className="w-px h-5 bg-black/[0.08] flex-shrink-0" />
 
-          {/* Ending This Week */}
-          <button
-            onClick={() => onChange({ endingThisWeek: !filters.endingThisWeek })}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-              ${hasEndingThisWeek
-                ? 'bg-red-500 text-white border-red-500'
-                : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-red-200 hover:text-red-500'}`}
-          >
-            <Clock className="w-3.5 h-3.5" />
-            Ending This Week
-          </button>
-
-          <div className="w-px h-5 bg-black/[0.08] flex-shrink-0" />
-
-          {/* Location dropdown */}
-          <div className="relative flex-shrink-0">
-            <button
-              onClick={() => { togglePanel('location'); setShowTagDrop(false); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-                ${openPanel === 'location' || geoCount > 0
-                  ? 'bg-sky-50 text-sky-700 border-sky-200'
-                  : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-sky-200 hover:text-sky-600'}`}
-            >
-              <MapPin className="w-3.5 h-3.5" />
-              Location
-              {geoCount > 0 && (
-                <span className="flex items-center justify-center w-4 h-4 rounded-full bg-sky-500 text-white text-[9px] font-bold">{geoCount}</span>
-              )}
-              {openPanel === 'location' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            {openPanel === 'location' && (
-              <Panel onClose={() => setOpenPanel(null)}>
-                <div className="pt-2">
-                  <PanelItem active={geoCount === 0} onClick={() => onChange({ selectedGeographies: [] })}>Any location</PanelItem>
-                  {geoTags.map(tag => (
-                    <PanelItem key={tag.name} active={(filters.selectedGeographies ?? []).includes(tag.name)} onClick={() => toggleGeo(tag.name)}>
-                      {getDisplayName(tag)}
-                    </PanelItem>
-                  ))}
-                </div>
-              </Panel>
-            )}
-          </div>
-
-          {/* Niche dropdown */}
-          <div className="relative flex-shrink-0">
-            <button
-              onClick={() => { togglePanel('niche'); setShowTagDrop(false); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-                ${openPanel === 'niche' || nicheCount > 0
-                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-emerald-200 hover:text-emerald-600'}`}
-            >
-              <Users className="w-3.5 h-3.5" />
-              Niche
-              {nicheCount > 0 && (
-                <span className="flex items-center justify-center w-4 h-4 rounded-full bg-emerald-500 text-white text-[9px] font-bold">{nicheCount}</span>
-              )}
-              {openPanel === 'niche' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            {openPanel === 'niche' && (
-              <Panel onClose={() => setOpenPanel(null)}>
-                <div className="pt-2">
-                  <PanelItem active={nicheCount === 0} onClick={() => onChange({ selectedNiches: [] })}>Any niche</PanelItem>
-                  {nicheTags.map(tag => (
-                    <PanelItem key={tag.name} active={(filters.selectedNiches ?? []).includes(tag.name)} onClick={() => toggleNiche(tag.name)}>
-                      {getDisplayName(tag)}
-                    </PanelItem>
-                  ))}
-                </div>
-              </Panel>
-            )}
-          </div>
-
-          {/* Price dropdown */}
+          {/* Budget dropdown */}
           <div className="relative flex-shrink-0">
             <button
               onClick={() => { togglePanel('price'); setShowTagDrop(false); }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
                 ${openPanel === 'price' || hasPrice
-                  ? 'bg-amber-50 text-amber-700 border-amber-200'
-                  : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-amber-200 hover:text-amber-600'}`}
+                  ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
+                  : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-black/[0.2] hover:text-[#1d1d1f]'}`}
             >
               <DollarSign className="w-3.5 h-3.5" />
-              {matchedPriceRange ? matchedPriceRange.label : 'Price'}
+              {matchedPriceRange ? matchedPriceRange.label : 'Budget'}
               {openPanel === 'price' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             </button>
             {openPanel === 'price' && (
               <Panel onClose={() => setOpenPanel(null)}>
                 <div className="pt-2">
-                  <PanelItem active={!hasPrice} onClick={() => onChange({ priceMin: 0, priceMax: 0 })}>Any price</PanelItem>
+                  <PanelItem active={!hasPrice} onClick={() => onChange({ priceMin: 0, priceMax: 0 })}>Any budget</PanelItem>
                   {PRICE_RANGES.map(r => (
                     <PanelItem key={r.label} active={!!(matchedPriceRange && matchedPriceRange.label === r.label)} onClick={() => setPriceRange(r.min, r.max)}>
                       {r.label}
@@ -499,32 +415,29 @@ export default function SmartFilterBar({
             )}
           </div>
 
-          {/* Discount dropdown */}
-          <div className="relative flex-shrink-0">
-            <button
-              onClick={() => { togglePanel('discount'); setShowTagDrop(false); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-                ${openPanel === 'discount' || hasDiscount
-                  ? 'bg-orange-50 text-orange-700 border-orange-200'
-                  : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-orange-200 hover:text-orange-600'}`}
-            >
-              <TrendingDown className="w-3.5 h-3.5" />
-              {hasDiscount ? `${filters.discountMin}%+ off` : 'Discount'}
-              {openPanel === 'discount' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
-            {openPanel === 'discount' && (
-              <Panel onClose={() => setOpenPanel(null)}>
-                <div className="pt-2">
-                  <PanelItem active={!hasDiscount} onClick={() => onChange({ discountMin: 0 })}>Any discount</PanelItem>
-                  {DISCOUNT_OPTIONS.map(v => (
-                    <PanelItem key={v} active={filters.discountMin === v} onClick={() => onChange({ discountMin: filters.discountMin === v ? 0 : v })}>
-                      {v}%+ off
-                    </PanelItem>
-                  ))}
-                </div>
-              </Panel>
-            )}
-          </div>
+          {/* Deals toggle — any discount at all */}
+          <button
+            onClick={() => onChange({ discountMin: hasDiscount ? 0 : 20 })}
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
+              ${hasDiscount
+                ? 'bg-orange-500 text-white border-orange-500'
+                : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-orange-200 hover:text-orange-600'}`}
+          >
+            <Zap className="w-3.5 h-3.5" />
+            Deals
+          </button>
+
+          {/* Ending Soon toggle */}
+          <button
+            onClick={() => onChange({ endingThisWeek: !filters.endingThisWeek })}
+            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
+              ${hasEndingThisWeek
+                ? 'bg-red-500 text-white border-red-500'
+                : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-red-200 hover:text-red-500'}`}
+          >
+            <Clock className="w-3.5 h-3.5" />
+            Ending Soon
+          </button>
 
           {/* Spacer */}
           <div className="flex-1" />
@@ -596,7 +509,7 @@ export default function SmartFilterBar({
             </div>
           )}
 
-          {/* Result count */}
+          {/* Result count + clear */}
           <div className="flex-shrink-0 flex items-center gap-2">
             {hasAnyFilter && (
               <button
