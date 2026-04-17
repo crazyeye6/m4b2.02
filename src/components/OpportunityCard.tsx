@@ -2,6 +2,7 @@ import { Users, MapPin, Mail, Instagram, Mic, Shield, AlertTriangle, CheckCircle
 import type { Listing } from '../types';
 import CountdownTimer from './CountdownTimer';
 import { resolvePublishDate } from '../lib/dateUtils';
+import { useLocale } from '../context/LocaleContext';
 
 interface OpportunityCardProps {
   listing: Listing;
@@ -69,6 +70,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
   const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
   const savings = listing.original_price - listing.discounted_price;
   const depositAmount = Math.round(listing.discounted_price * 0.1);
+  const { formatPrice } = useLocale();
   const deadlinePassed = new Date(listing.deadline_at).getTime() < Date.now();
   const isLive = listing.status === 'live' && !deadlinePassed;
   const isSecured = listing.status === 'secured' || listing.status === 'expired' || listing.status === 'cancelled' || deadlinePassed;
@@ -159,10 +161,10 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           <div>
             <p className="text-[#86868b] text-[10px] font-medium uppercase tracking-wide mb-1">Price per slot</p>
             <div className="flex items-baseline gap-2">
-              <span className="text-[#1d1d1f] text-2xl font-semibold tracking-[-0.02em]">${listing.discounted_price.toLocaleString()}</span>
-              <span className="text-[#aeaeb2] text-sm line-through">${listing.original_price.toLocaleString()}</span>
+              <span className="text-[#1d1d1f] text-2xl font-semibold tracking-[-0.02em]">{formatPrice(listing.discounted_price)}</span>
+              <span className="text-[#aeaeb2] text-sm line-through">{formatPrice(listing.original_price)}</span>
             </div>
-            <p className="text-green-600 text-[11px] font-semibold mt-0.5">Save ${savings.toLocaleString()}</p>
+            <p className="text-green-600 text-[11px] font-semibold mt-0.5">Save {formatPrice(savings)}</p>
           </div>
           <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-[15px] font-bold px-3 py-1.5 rounded-2xl tabular-nums shadow-sm shadow-orange-500/25">
             -{discount}%
@@ -176,7 +178,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             <p className="text-green-600/70 text-[10px] mt-0.5">Balance paid direct to creator</p>
           </div>
           <div className="text-right">
-            <p className="text-green-700 text-[18px] font-bold tracking-[-0.02em]">${depositAmount.toLocaleString()}</p>
+            <p className="text-green-700 text-[18px] font-bold tracking-[-0.02em]">{formatPrice(depositAmount)}</p>
             <p className="text-green-600/70 text-[10px]">10% now</p>
           </div>
         </div>

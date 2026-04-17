@@ -3,6 +3,7 @@ import { ArrowLeft, MapPin, Users, BarChart2, Shield, Mail, Mic, Instagram, Exte
 import type { Listing } from '../types';
 import CountdownTimer from '../components/CountdownTimer';
 import { supabase } from '../lib/supabase';
+import { useLocale } from '../context/LocaleContext';
 
 interface ListingPageProps {
   listingId: string;
@@ -83,6 +84,7 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
     );
   }
 
+  const { formatPrice } = useLocale();
   const mc = MEDIA_CONFIG[listing.media_type];
   const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
   const savings = listing.original_price - listing.discounted_price;
@@ -133,20 +135,20 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-white border border-black/[0.06] rounded-3xl p-5 shadow-sm">
                 <p className="text-[#86868b] text-[10px] uppercase tracking-widest font-semibold mb-2">Price per slot</p>
-                <p className="text-[#1d1d1f] text-4xl font-semibold mb-1 tracking-[-0.02em]">${listing.discounted_price.toLocaleString()}</p>
+                <p className="text-[#1d1d1f] text-4xl font-semibold mb-1 tracking-[-0.02em]">{formatPrice(listing.discounted_price)}</p>
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="text-[#aeaeb2] text-[13px] line-through">${listing.original_price.toLocaleString()}</span>
+                  <span className="text-[#aeaeb2] text-[13px] line-through">{formatPrice(listing.original_price)}</span>
                   <span className="bg-[#1d1d1f] text-white text-[11px] font-bold px-2 py-0.5 rounded-lg">-{discount}%</span>
-                  <span className="text-green-600 text-[12px] font-semibold">Save ${savings.toLocaleString()}</span>
+                  <span className="text-green-600 text-[12px] font-semibold">Save {formatPrice(savings)}</span>
                 </div>
                 <div className="space-y-2 border-t border-black/[0.06] pt-3">
                   <div className="flex items-center justify-between">
                     <span className="text-green-600 text-[12px] font-semibold">Deposit due now (10%)</span>
-                    <span className="text-green-600 font-semibold text-[14px]">${depositAmount.toLocaleString()}</span>
+                    <span className="text-green-600 font-semibold text-[14px]">{formatPrice(depositAmount)}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[#6e6e73] text-[12px]">Balance direct to creator (90%)</span>
-                    <span className="text-[#1d1d1f] text-[12px] font-medium">${balanceAmount.toLocaleString()}</span>
+                    <span className="text-[#1d1d1f] text-[12px] font-medium">{formatPrice(balanceAmount)}</span>
                   </div>
                 </div>
               </div>
@@ -346,9 +348,9 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
           <div className="lg:col-span-1">
             <div className="sticky top-[108px] space-y-3">
               <div className="bg-white border border-black/[0.06] rounded-3xl p-5 shadow-sm">
-                <p className="text-[#1d1d1f] font-semibold text-2xl mb-0.5 tracking-[-0.02em]">${listing.discounted_price.toLocaleString()}</p>
+                <p className="text-[#1d1d1f] font-semibold text-2xl mb-0.5 tracking-[-0.02em]">{formatPrice(listing.discounted_price)}</p>
                 <div className="flex items-center gap-2 mb-4">
-                  <span className="text-[#aeaeb2] text-[13px] line-through">${listing.original_price.toLocaleString()}</span>
+                  <span className="text-[#aeaeb2] text-[13px] line-through">{formatPrice(listing.original_price)}</span>
                   <span className="bg-[#1d1d1f] text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">-{discount}%</span>
                 </div>
                 <button

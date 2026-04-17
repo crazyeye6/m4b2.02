@@ -1,6 +1,8 @@
-import { Menu, X, User, ChevronDown } from 'lucide-react';
-import { useState } from 'react';
+import { Menu, X, User, ChevronDown, Globe } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLocale } from '../context/LocaleContext';
+import { SUPPORTED_LANGUAGES, SUPPORTED_CURRENCIES } from '../lib/localeConfig';
 
 interface HeaderProps {
   onListSlot: () => void;
@@ -27,9 +29,24 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
       onHowItWorks();
     }
   };
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, profile, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [localeOpen, setLocaleOpen] = useState(false);
+  const localeRef = useRef<HTMLDivElement>(null);
+
+  const { language, currency, setLanguage, setCurrency } = useLocale();
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (localeRef.current && !localeRef.current.contains(e.target as Node)) {
+        setLocaleOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-black/[0.06]">
@@ -72,6 +89,68 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
           </nav>
 
           <div className="hidden md:flex items-center gap-2">
+            {/* Locale selector */}
+            <div className="relative" ref={localeRef}>
+              <button
+                onClick={() => setLocaleOpen(!localeOpen)}
+                className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-[12px] font-medium px-3 py-1.5 rounded-lg border border-[#d2d2d7] hover:border-[#86868b] transition-all"
+                title="Language & Currency"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>{language.flag}</span>
+                <span className="text-[11px] font-semibold text-[#1d1d1f]">{currency.code}</span>
+                <ChevronDown className={`w-3 h-3 transition-transform ${localeOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {localeOpen && (
+                <div className="absolute right-0 top-full mt-2 w-72 bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-2xl shadow-xl shadow-black/10 z-30 overflow-hidden">
+                  <div className="px-4 pt-3.5 pb-2 border-b border-black/[0.06]">
+                    <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest">Language</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 p-2">
+                    {SUPPORTED_LANGUAGES.map(lang => (
+                      <button
+                        key={lang.code}
+                        onClick={() => { setLanguage(lang.code); }}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all text-[12px]
+                          ${language.code === lang.code
+                            ? 'bg-[#1d1d1f] text-white font-semibold'
+                            : 'text-[#3a3a3c] hover:bg-[#f5f5f7]'
+                          }`}
+                      >
+                        <span className="text-[14px]">{lang.flag}</span>
+                        <span className="truncate">{lang.nativeName}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="px-4 pt-2.5 pb-2 border-t border-black/[0.06]">
+                    <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest">Currency</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 p-2 max-h-[220px] overflow-y-auto">
+                    {SUPPORTED_CURRENCIES.map(cur => (
+                      <button
+                        key={cur.code}
+                        onClick={() => { setCurrency(cur.code); setLocaleOpen(false); }}
+                        className={`flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all text-[12px]
+                          ${currency.code === cur.code
+                            ? 'bg-[#1d1d1f] text-white font-semibold'
+                            : 'text-[#3a3a3c] hover:bg-[#f5f5f7]'
+                          }`}
+                      >
+                        <span className="font-bold text-[13px] w-6 flex-shrink-0">{cur.symbol}</span>
+                        <span className="truncate">{cur.code}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="px-4 py-2 border-t border-black/[0.06] bg-[#f5f5f7]">
+                    <p className="text-[10px] text-[#aeaeb2]">Prices are indicative conversions. Payments processed in USD.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {onAdmin && (
               <button
                 onClick={onAdmin}
@@ -166,6 +245,42 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
             className="block text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all"
           >How it works</a>
           <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">For sellers</button>
+
+          {/* Mobile locale selectors */}
+          <div className="pt-2 border-t border-black/[0.06] mt-2">
+            <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest px-3 mb-2">Language</p>
+            <div className="grid grid-cols-4 gap-1">
+              {SUPPORTED_LANGUAGES.map(lang => (
+                <button
+                  key={lang.code}
+                  onClick={() => setLanguage(lang.code)}
+                  className={`flex flex-col items-center gap-0.5 px-2 py-2 rounded-xl text-center transition-all
+                    ${language.code === lang.code ? 'bg-[#1d1d1f] text-white' : 'text-[#3a3a3c] hover:bg-[#f5f5f7]'}`}
+                >
+                  <span className="text-[16px]">{lang.flag}</span>
+                  <span className="text-[9px] font-medium">{lang.code.toUpperCase()}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest px-3 mb-2">Currency</p>
+            <div className="grid grid-cols-4 gap-1">
+              {SUPPORTED_CURRENCIES.slice(0, 8).map(cur => (
+                <button
+                  key={cur.code}
+                  onClick={() => setCurrency(cur.code)}
+                  className={`flex flex-col items-center gap-0.5 px-2 py-2 rounded-xl text-center transition-all
+                    ${currency.code === cur.code ? 'bg-[#1d1d1f] text-white' : 'text-[#3a3a3c] hover:bg-[#f5f5f7]'}`}
+                >
+                  <span className="text-[13px] font-bold">{cur.symbol}</span>
+                  <span className="text-[9px] font-medium">{cur.code}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="flex gap-2 pt-3 border-t border-black/[0.06] mt-2">
             {user ? (
               <>

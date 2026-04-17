@@ -1,4 +1,5 @@
 import { Activity, TrendingDown, DollarSign } from 'lucide-react';
+import { useLocale } from '../context/LocaleContext';
 
 interface StatsBarProps {
   liveCount: number;
@@ -7,6 +8,7 @@ interface StatsBarProps {
 }
 
 export default function StatsBar({ liveCount, avgDiscount, totalSavings }: StatsBarProps) {
+  const { formatPrice } = useLocale();
   const stats = [
     {
       icon: <Activity className="w-4 h-4 text-green-600" />,
@@ -25,7 +27,7 @@ export default function StatsBar({ liveCount, avgDiscount, totalSavings }: Stats
     {
       icon: <DollarSign className="w-4 h-4 text-orange-500" />,
       iconBg: 'bg-orange-50',
-      value: `$${(totalSavings).toLocaleString()}`,
+      value: formatPrice(totalSavings),
       label: 'Total buyer savings',
       pulse: false,
     },
