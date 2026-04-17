@@ -156,6 +156,7 @@ export interface FilterState {
   selectedGeographies: string[];
   priceMin: number;
   priceMax: number;
+  audienceMin: number;
   discountMin: number;
   endingThisWeek: boolean;
   verified: boolean;

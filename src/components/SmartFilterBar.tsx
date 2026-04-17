@@ -1,7 +1,7 @@
 import {
   Search, X, Hash, Mail, Mic, Instagram, LayoutGrid,
   ChevronDown, ChevronUp, Check, MapPin, Users, DollarSign,
-  Zap, Clock, ArrowUpDown, Tag as TagIcon, Columns2, Columns3,
+  Zap, Clock, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
@@ -20,12 +20,6 @@ interface SmartFilterBarProps {
   onReset: () => void;
 }
 
-const CATEGORIES = [
-  { value: 'all' as const, label: 'All', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
-  { value: 'newsletter' as const, label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
-  { value: 'podcast' as const, label: 'Podcast', icon: <Mic className="w-3.5 h-3.5" /> },
-  { value: 'influencer' as const, label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" /> },
-];
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
   { value: 'deadline_asc', label: 'Ending soonest' },
@@ -45,7 +39,16 @@ const PRICE_RANGES = [
   { label: '$2.5k+', min: 2500, max: 0 },
 ];
 
-type PanelId = 'price' | 'sort' | null;
+const AUDIENCE_RANGES = [
+  { label: '1k+', min: 1_000 },
+  { label: '5k+', min: 5_000 },
+  { label: '10k+', min: 10_000 },
+  { label: '50k+', min: 50_000 },
+  { label: '100k+', min: 100_000 },
+  { label: '500k+', min: 500_000 },
+];
+
+type PanelId = 'price' | 'reach' | 'sort' | null;
 
 function Panel({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
@@ -218,7 +221,7 @@ export default function SmartFilterBar({
 
   const hasAnyFilter =
     filters.category !== 'all' || geoCount > 0 || nicheCount > 0 || tagCount > 0 ||
-    hasPrice || hasDiscount || hasEndingThisWeek || !!filters.searchQuery;
+    hasPrice || (filters.audienceMin > 0) || hasDiscount || hasEndingThisWeek || !!filters.searchQuery;
 
   const allChips: Array<{ label: string; type: 'tag' | 'geo' | 'niche' | 'search'; slug: string }> = [
     ...(filters.searchQuery ? [{ label: `"${filters.searchQuery}"`, type: 'search' as const, slug: filters.searchQuery }] : []),
@@ -369,22 +372,27 @@ export default function SmartFilterBar({
         {/* Row 2: Filters + sort + view */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
 
-          {/* Media type segmented control */}
-          <div className="flex items-center gap-0.5 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-0.5 flex-shrink-0">
-            {CATEGORIES.map(c => (
+          {/* Media type individual toggles */}
+          {([
+            { value: 'newsletter' as const, label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
+            { value: 'podcast' as const, label: 'Podcast', icon: <Mic className="w-3.5 h-3.5" /> },
+            { value: 'influencer' as const, label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" /> },
+          ]).map(c => {
+            const active = filters.category === c.value;
+            return (
               <button
                 key={c.value}
-                onClick={() => onChange({ category: c.value })}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[12px] font-medium transition-all whitespace-nowrap
-                  ${filters.category === c.value
-                    ? 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.08]'
-                    : 'text-[#6e6e73] hover:text-[#1d1d1f]'}`}
+                onClick={() => onChange({ category: active ? 'all' : c.value })}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
+                  ${active
+                    ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
+                    : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-black/[0.2] hover:text-[#1d1d1f]'}`}
               >
                 {c.icon}
-                <span>{c.label}</span>
+                {c.label}
               </button>
-            ))}
-          </div>
+            );
+          })}
 
           <div className="w-px h-5 bg-black/[0.08] flex-shrink-0" />
 
@@ -415,7 +423,42 @@ export default function SmartFilterBar({
             )}
           </div>
 
-          {/* Deals toggle — any discount at all */}
+          {/* Reach dropdown */}
+          <div className="relative flex-shrink-0">
+            {(() => {
+              const hasAudience = filters.audienceMin > 0;
+              const matchedAud = AUDIENCE_RANGES.find(r => r.min === filters.audienceMin);
+              return (
+                <>
+                  <button
+                    onClick={() => { togglePanel('reach'); setShowTagDrop(false); }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
+                      ${openPanel === 'reach' || hasAudience
+                        ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
+                        : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-black/[0.2] hover:text-[#1d1d1f]'}`}
+                  >
+                    <TrendingUp className="w-3.5 h-3.5" />
+                    {matchedAud ? matchedAud.label : 'Reach'}
+                    {openPanel === 'reach' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  </button>
+                  {openPanel === 'reach' && (
+                    <Panel onClose={() => setOpenPanel(null)}>
+                      <div className="pt-2">
+                        <PanelItem active={!hasAudience} onClick={() => onChange({ audienceMin: 0 })}>Any size</PanelItem>
+                        {AUDIENCE_RANGES.map(r => (
+                          <PanelItem key={r.min} active={filters.audienceMin === r.min} onClick={() => onChange({ audienceMin: filters.audienceMin === r.min ? 0 : r.min })}>
+                            {r.label} audience
+                          </PanelItem>
+                        ))}
+                      </div>
+                    </Panel>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+
+          {/* Discount toggle */}
           <button
             onClick={() => onChange({ discountMin: hasDiscount ? 0 : 20 })}
             className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
@@ -424,10 +467,10 @@ export default function SmartFilterBar({
                 : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-orange-200 hover:text-orange-600'}`}
           >
             <Zap className="w-3.5 h-3.5" />
-            Deals
+            Discount
           </button>
 
-          {/* Ending Soon toggle */}
+          {/* Ending This Week toggle */}
           <button
             onClick={() => onChange({ endingThisWeek: !filters.endingThisWeek })}
             className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
@@ -436,7 +479,7 @@ export default function SmartFilterBar({
                 : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-red-200 hover:text-red-500'}`}
           >
             <Clock className="w-3.5 h-3.5" />
-            Ending Soon
+            Ending This Week
           </button>
 
           {/* Spacer */}

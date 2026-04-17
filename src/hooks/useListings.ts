@@ -68,6 +68,13 @@ export function useListings(filters: FilterState) {
       });
     }
 
+    if (filters.audienceMin > 0) {
+      result = result.filter(l => {
+        const reach = l.subscribers ?? l.downloads ?? l.followers ?? 0;
+        return reach >= filters.audienceMin;
+      });
+    }
+
     if (hasTagFilter) {
       const { data: tagRows } = await supabase
         .from('tags')

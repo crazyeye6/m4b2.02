@@ -6,6 +6,7 @@ const DEFAULT_FILTERS: FilterState = {
   selectedGeographies: [],
   priceMin: 0,
   priceMax: 0,
+  audienceMin: 0,
   discountMin: 0,
   endingThisWeek: true,
   verified: false,
@@ -25,6 +26,7 @@ export function encodeFiltersToUrl(filters: FilterState, viewMode: ViewMode, col
   if (filters.selectedGeographies.length > 0) p.set('geo', filters.selectedGeographies.join(',')); else p.delete('geo');
   if (filters.priceMin > 0) p.set('pmin', String(filters.priceMin)); else p.delete('pmin');
   if (filters.priceMax > 0) p.set('pmax', String(filters.priceMax)); else p.delete('pmax');
+  if (filters.audienceMin > 0) p.set('aud', String(filters.audienceMin)); else p.delete('aud');
   if (filters.discountMin > 0) p.set('disc', String(filters.discountMin)); else p.delete('disc');
   if (!filters.endingThisWeek) p.set('etw', '0'); else p.delete('etw');
   if (filters.searchQuery) p.set('q', filters.searchQuery); else p.delete('q');
@@ -45,6 +47,7 @@ export function decodeFiltersFromUrl(): { filters: FilterState; viewMode: ViewMo
     selectedGeographies: p.get('geo') ? p.get('geo')!.split(',').filter(Boolean) : [],
     priceMin: Number(p.get('pmin')) || 0,
     priceMax: Number(p.get('pmax')) || 0,
+    audienceMin: Number(p.get('aud')) || 0,
     discountMin: Number(p.get('disc')) || 0,
     endingThisWeek: p.get('etw') === '0' ? false : DEFAULT_FILTERS.endingThisWeek,
     verified: false,
