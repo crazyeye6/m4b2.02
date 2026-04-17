@@ -2,8 +2,7 @@ import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react'
 import Header from './components/Header';
 import Hero from './components/Hero';
 import StatsBar from './components/StatsBar';
-import SearchBar from './components/SearchBar';
-import FilterSidebar from './components/FilterSidebar';
+import SmartFilterBar from './components/SmartFilterBar';
 import ListingsGrid from './components/ListingsGrid';
 import HowItWorks from './components/HowItWorks';
 import Footer from './components/Footer';
@@ -375,83 +374,27 @@ export default function App() {
         />
 
         <div ref={opportunitiesRef} id="opportunities">
-          <div className="bg-white border-b border-black/[0.06] sticky top-[52px] z-50 shadow-sm shadow-black/[0.04]">
-            <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-3">
-              <SearchBar
-                searchQuery={filters.searchQuery}
-                selectedTags={filters.selectedTags}
-                onSearchChange={(q) => updateFilters({ searchQuery: q })}
-                onTagsChange={(tags) => updateFilters({ selectedTags: tags })}
-              />
-            </div>
-          </div>
+          <SmartFilterBar
+            filters={filters}
+            onChange={updateFilters}
+            total={listings.length}
+            viewMode={viewMode}
+            onViewModeChange={handleViewModeChange}
+            columns={columns}
+            onColumnsChange={handleColumnsChange}
+            onReset={handleReset}
+          />
 
           <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex items-start gap-7">
-
-              {/* Sidebar */}
-              <div className="hidden lg:block">
-                <FilterSidebar
-                  filters={filters}
-                  onChange={updateFilters}
-                  total={listings.length}
-                  viewMode={viewMode}
-                  onViewModeChange={handleViewModeChange}
-                  columns={columns}
-                  onColumnsChange={handleColumnsChange}
-                  onReset={handleReset}
-                />
-              </div>
-
-              {/* Main content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-5">
-                  <div>
-                    <h2 className="text-[20px] font-semibold text-[#1d1d1f] tracking-[-0.01em]">Live Opportunities</h2>
-                    <p className="text-[#6e6e73] text-[13px] mt-0.5">
-                      {listings.length} result{listings.length !== 1 ? 's' : ''} &mdash; Secure expiring opportunities before they disappear.
-                    </p>
-                  </div>
-
-                  {/* Mobile view/sort controls */}
-                  <div className="flex items-center gap-2 lg:hidden">
-                    <button
-                      onClick={() => handleViewModeChange(viewMode === 'grid' ? 'list' : 'grid')}
-                      className="flex items-center justify-center w-8 h-8 rounded-xl bg-white border border-black/[0.08] text-[#6e6e73] hover:text-[#1d1d1f] transition-colors"
-                    >
-                      {viewMode === 'grid'
-                        ? (
-                          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                            <line x1="2" y1="4" x2="14" y2="4" />
-                            <line x1="2" y1="8" x2="14" y2="8" />
-                            <line x1="2" y1="12" x2="14" y2="12" />
-                          </svg>
-                        )
-                        : (
-                          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                            <rect x="2" y="2" width="5" height="5" rx="1" />
-                            <rect x="9" y="2" width="5" height="5" rx="1" />
-                            <rect x="2" y="9" width="5" height="5" rx="1" />
-                            <rect x="9" y="9" width="5" height="5" rx="1" />
-                          </svg>
-                        )
-                      }
-                    </button>
-                  </div>
-                </div>
-
-                <ListingsGrid
-                  listings={listings}
-                  loading={loading}
-                  onSecure={handleSecure}
-                  onDetails={handleViewListing}
-                  columns={columns}
-                  viewMode={viewMode}
-                  sort={filters.sort}
-                />
-              </div>
-
-            </div>
+            <ListingsGrid
+              listings={listings}
+              loading={loading}
+              onSecure={handleSecure}
+              onDetails={handleViewListing}
+              columns={columns}
+              viewMode={viewMode}
+              sort={filters.sort}
+            />
           </section>
         </div>
 
