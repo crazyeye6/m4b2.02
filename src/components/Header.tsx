@@ -131,7 +131,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                     {SUPPORTED_CURRENCIES.map(cur => (
                       <button
                         key={cur.code}
-                        onClick={() => { setCurrency(cur.code); setLocaleOpen(false); }}
+                        onClick={() => { setCurrency(cur.code); }}
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all text-[12px]
                           ${currency.code === cur.code
                             ? 'bg-[#1d1d1f] text-white font-semibold'
