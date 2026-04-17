@@ -1,11 +1,11 @@
 import {
   Search, X, Hash, Mail, Mic, Instagram, LayoutGrid,
   ChevronDown, ChevronUp, Check, MapPin, Users, DollarSign,
-  Zap, Clock, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp,
+  Zap, Clock, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp, Calendar,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import type { FilterState, Tag as TagType, SortOption, ViewMode } from '../types';
+import type { FilterState, Tag as TagType, SortOption, ViewMode, DeadlineWindow } from '../types';
 import type { GridColumns } from './ListingsGrid';
 import { filterAndRankTags, getDisplayName, highlightMatch } from './TagInput/utils';
 
@@ -30,7 +30,21 @@ const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
   { value: 'newest', label: 'Newest' },
 ];
 
-const DISCOUNT_OPTIONS = [20, 30, 40, 50];
+const DISCOUNT_OPTIONS = [
+  { label: 'Any discount', value: 0 },
+  { label: '10%+ off', value: 10 },
+  { label: '20%+ off', value: 20 },
+  { label: '30%+ off', value: 30 },
+  { label: '40%+ off', value: 40 },
+  { label: '50%+ off', value: 50 },
+];
+
+const DEADLINE_OPTIONS: Array<{ label: string; value: DeadlineWindow }> = [
+  { label: 'Ending today', value: 'today' },
+  { label: 'Next 3 days', value: '3days' },
+  { label: 'This week', value: '1week' },
+  { label: 'Next 2 weeks', value: '2weeks' },
+];
 const PRICE_RANGES = [
   { label: 'Under $250', min: 0, max: 250 },
   { label: '$250–$500', min: 250, max: 500 },
@@ -48,7 +62,7 @@ const AUDIENCE_RANGES = [
   { label: '500k+', min: 500_000 },
 ];
 
-type PanelId = 'price' | 'reach' | 'sort' | null;
+type PanelId = 'price' | 'reach' | 'discount' | 'deadline' | 'sort' | null;
 
 function Panel({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
   return (
@@ -214,14 +228,17 @@ export default function SmartFilterBar({
   const tagCount = (filters.selectedTags ?? []).length;
   const hasPrice = filters.priceMin > 0 || filters.priceMax > 0;
   const hasDiscount = filters.discountMin > 0;
-  const hasEndingThisWeek = filters.endingThisWeek;
+  const hasDeadline = !!filters.deadlineWindow;
 
   const geoCount = (filters.selectedGeographies ?? []).length;
   const nicheCount = (filters.selectedNiches ?? []).length;
 
   const hasAnyFilter =
     filters.category !== 'all' || geoCount > 0 || nicheCount > 0 || tagCount > 0 ||
-    hasPrice || (filters.audienceMin > 0) || hasDiscount || hasEndingThisWeek || !!filters.searchQuery;
+    hasPrice || (filters.audienceMin > 0) || hasDiscount || hasDeadline || !!filters.searchQuery;
+
+  const matchedDeadline = DEADLINE_OPTIONS.find(d => d.value === filters.deadlineWindow);
+  const matchedDiscount = DISCOUNT_OPTIONS.find(d => d.value === filters.discountMin);
 
   const allChips: Array<{ label: string; type: 'tag' | 'geo' | 'niche' | 'search'; slug: string }> = [
     ...(filters.searchQuery ? [{ label: `"${filters.searchQuery}"`, type: 'search' as const, slug: filters.searchQuery }] : []),
@@ -458,29 +475,68 @@ export default function SmartFilterBar({
             })()}
           </div>
 
-          {/* Discount toggle */}
-          <button
-            onClick={() => onChange({ discountMin: hasDiscount ? 0 : 20 })}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-              ${hasDiscount
-                ? 'bg-orange-500 text-white border-orange-500'
-                : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-orange-200 hover:text-orange-600'}`}
-          >
-            <Zap className="w-3.5 h-3.5" />
-            Discount
-          </button>
+          {/* Discount dropdown */}
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => { togglePanel('discount'); setShowTagDrop(false); }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
+                ${openPanel === 'discount' || hasDiscount
+                  ? 'bg-orange-500 text-white border-orange-500'
+                  : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-orange-200 hover:text-orange-600'}`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              {matchedDiscount && matchedDiscount.value > 0 ? matchedDiscount.label : 'Discount'}
+              {openPanel === 'discount' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+            {openPanel === 'discount' && (
+              <Panel onClose={() => setOpenPanel(null)}>
+                <div className="pt-2">
+                  {DISCOUNT_OPTIONS.map(opt => (
+                    <PanelItem
+                      key={opt.value}
+                      active={filters.discountMin === opt.value}
+                      onClick={() => { onChange({ discountMin: opt.value }); if (opt.value === 0) setOpenPanel(null); }}
+                    >
+                      {opt.label}
+                    </PanelItem>
+                  ))}
+                </div>
+              </Panel>
+            )}
+          </div>
 
-          {/* Ending This Week toggle */}
-          <button
-            onClick={() => onChange({ endingThisWeek: !filters.endingThisWeek })}
-            className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
-              ${hasEndingThisWeek
-                ? 'bg-red-500 text-white border-red-500'
-                : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-red-200 hover:text-red-500'}`}
-          >
-            <Clock className="w-3.5 h-3.5" />
-            Ending This Week
-          </button>
+          {/* Deadline dropdown */}
+          <div className="relative flex-shrink-0">
+            <button
+              onClick={() => { togglePanel('deadline'); setShowTagDrop(false); }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap
+                ${openPanel === 'deadline' || hasDeadline
+                  ? 'bg-red-500 text-white border-red-500'
+                  : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-red-200 hover:text-red-500'}`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              {matchedDeadline ? matchedDeadline.label : 'Deadline'}
+              {openPanel === 'deadline' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+            {openPanel === 'deadline' && (
+              <Panel onClose={() => setOpenPanel(null)}>
+                <div className="pt-2">
+                  <PanelItem active={!hasDeadline} onClick={() => { onChange({ deadlineWindow: null }); setOpenPanel(null); }}>
+                    Any deadline
+                  </PanelItem>
+                  {DEADLINE_OPTIONS.map(opt => (
+                    <PanelItem
+                      key={opt.value}
+                      active={filters.deadlineWindow === opt.value}
+                      onClick={() => { onChange({ deadlineWindow: filters.deadlineWindow === opt.value ? null : opt.value }); }}
+                    >
+                      {opt.label}
+                    </PanelItem>
+                  ))}
+                </div>
+              </Panel>
+            )}
+          </div>
 
           {/* Spacer */}
           <div className="flex-1" />

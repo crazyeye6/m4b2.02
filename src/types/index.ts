@@ -150,6 +150,8 @@ export type SortOption = 'deadline_asc' | 'price_asc' | 'price_desc' | 'discount
 
 export type ViewMode = 'grid' | 'list';
 
+export type DeadlineWindow = 'today' | '3days' | '1week' | '2weeks' | null;
+
 export interface FilterState {
   category: MediaType | 'all';
   selectedNiches: string[];
@@ -158,7 +160,7 @@ export interface FilterState {
   priceMax: number;
   audienceMin: number;
   discountMin: number;
-  endingThisWeek: boolean;
+  deadlineWindow: DeadlineWindow;
   verified: boolean;
   searchQuery: string;
   selectedTags: string[];

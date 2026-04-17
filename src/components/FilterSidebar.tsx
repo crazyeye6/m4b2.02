@@ -171,7 +171,7 @@ export default function FilterSidebar({
     (filters.selectedGeographies?.length ?? 0) > 0,
     filters.priceMin > 0 || filters.priceMax > 0,
     filters.discountMin > 0,
-    filters.endingThisWeek,
+    !!filters.deadlineWindow,
     (filters.selectedTags?.length ?? 0) > 0,
   ].filter(Boolean).length;
 
@@ -252,13 +252,23 @@ export default function FilterSidebar({
           </Section>
 
           {/* Availability */}
-          <Section label="Availability" icon={<Clock className="w-3.5 h-3.5" />} count={filters.endingThisWeek ? 1 : 0} defaultOpen={false}>
-            <CheckRow
-              active={filters.endingThisWeek}
-              onClick={() => onChange({ endingThisWeek: !filters.endingThisWeek })}
-            >
-              Ending this week
-            </CheckRow>
+          <Section label="Deadline" icon={<Clock className="w-3.5 h-3.5" />} count={filters.deadlineWindow ? 1 : 0} defaultOpen={false}>
+            <div className="flex flex-col gap-0.5">
+              {[
+                { label: 'Ending today', value: 'today' as const },
+                { label: 'Next 3 days', value: '3days' as const },
+                { label: 'This week', value: '1week' as const },
+                { label: 'Next 2 weeks', value: '2weeks' as const },
+              ].map(opt => (
+                <CheckRow
+                  key={opt.value}
+                  active={filters.deadlineWindow === opt.value}
+                  onClick={() => onChange({ deadlineWindow: filters.deadlineWindow === opt.value ? null : opt.value })}
+                >
+                  {opt.label}
+                </CheckRow>
+              ))}
+            </div>
           </Section>
 
           {/* Price range */}

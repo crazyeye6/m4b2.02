@@ -1,4 +1,4 @@
-import type { FilterState, SortOption, ViewMode } from '../types';
+import type { FilterState, SortOption, ViewMode, DeadlineWindow } from '../types';
 
 const DEFAULT_FILTERS: FilterState = {
   category: 'all',
@@ -8,7 +8,7 @@ const DEFAULT_FILTERS: FilterState = {
   priceMax: 0,
   audienceMin: 0,
   discountMin: 0,
-  endingThisWeek: true,
+  deadlineWindow: null,
   verified: false,
   searchQuery: '',
   selectedTags: [],
@@ -28,7 +28,7 @@ export function encodeFiltersToUrl(filters: FilterState, viewMode: ViewMode, col
   if (filters.priceMax > 0) p.set('pmax', String(filters.priceMax)); else p.delete('pmax');
   if (filters.audienceMin > 0) p.set('aud', String(filters.audienceMin)); else p.delete('aud');
   if (filters.discountMin > 0) p.set('disc', String(filters.discountMin)); else p.delete('disc');
-  if (!filters.endingThisWeek) p.set('etw', '0'); else p.delete('etw');
+  if (filters.deadlineWindow) p.set('dlw', filters.deadlineWindow); else p.delete('dlw');
   if (filters.searchQuery) p.set('q', filters.searchQuery); else p.delete('q');
   if (filters.selectedTags.length > 0) p.set('tags', filters.selectedTags.join(',')); else p.delete('tags');
   if (filters.sort !== d.sort) p.set('sort', filters.sort); else p.delete('sort');
@@ -41,6 +41,9 @@ export function encodeFiltersToUrl(filters: FilterState, viewMode: ViewMode, col
 export function decodeFiltersFromUrl(): { filters: FilterState; viewMode: ViewMode; columns: number } {
   const p = new URLSearchParams(window.location.search);
 
+  const validDeadlines: DeadlineWindow[] = ['today', '3days', '1week', '2weeks'];
+  const dlwRaw = p.get('dlw') as DeadlineWindow | null;
+
   const filters: FilterState = {
     category: (p.get('cat') as FilterState['category']) || DEFAULT_FILTERS.category,
     selectedNiches: p.get('niche') ? p.get('niche')!.split(',').filter(Boolean) : [],
@@ -49,7 +52,7 @@ export function decodeFiltersFromUrl(): { filters: FilterState; viewMode: ViewMo
     priceMax: Number(p.get('pmax')) || 0,
     audienceMin: Number(p.get('aud')) || 0,
     discountMin: Number(p.get('disc')) || 0,
-    endingThisWeek: p.get('etw') === '0' ? false : DEFAULT_FILTERS.endingThisWeek,
+    deadlineWindow: dlwRaw && validDeadlines.includes(dlwRaw) ? dlwRaw : null,
     verified: false,
     searchQuery: p.get('q') || '',
     selectedTags: p.get('tags') ? p.get('tags')!.split(',').filter(Boolean) : [],

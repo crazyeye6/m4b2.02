@@ -1,6 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import type { Listing, FilterState } from '../types';
+import type { Listing, FilterState, DeadlineWindow } from '../types';
+
+function getDeadlineCutoff(window: DeadlineWindow): string | null {
+  if (!window) return null;
+  const d = new Date();
+  if (window === 'today') d.setHours(23, 59, 59, 999);
+  else if (window === '3days') { d.setDate(d.getDate() + 3); d.setHours(23, 59, 59, 999); }
+  else if (window === '1week') { d.setDate(d.getDate() + 7); d.setHours(23, 59, 59, 999); }
+  else if (window === '2weeks') { d.setDate(d.getDate() + 14); d.setHours(23, 59, 59, 999); }
+  return d.toISOString();
+}
 
 export function useListings(filters: FilterState) {
   const [listings, setListings] = useState<Listing[]>([]);
@@ -35,11 +45,9 @@ export function useListings(filters: FilterState) {
       query = query.gte('discounted_price', filters.priceMin);
     }
 
-    if (filters.endingThisWeek) {
-      const endOfWindow = new Date();
-      endOfWindow.setDate(endOfWindow.getDate() + 7);
-      endOfWindow.setHours(23, 59, 59, 999);
-      query = query.lte('deadline_at', endOfWindow.toISOString());
+    if (filters.deadlineWindow) {
+      const cutoff = getDeadlineCutoff(filters.deadlineWindow);
+      if (cutoff) query = query.lte('deadline_at', cutoff);
     }
 
     if (filters.searchQuery && filters.searchQuery.trim()) {

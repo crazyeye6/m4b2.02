@@ -141,8 +141,9 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
     const cat = CATEGORIES.find(c => c.value === filters.category);
     activeChips.push({ label: cat?.label ?? filters.category, clear: () => onChange({ category: 'all' }) });
   }
-  if (filters.endingThisWeek) {
-    activeChips.push({ label: 'Ending This Week', clear: () => onChange({ endingThisWeek: false }) });
+  if (filters.deadlineWindow) {
+    const labels: Record<string, string> = { today: 'Ending Today', '3days': 'Next 3 Days', '1week': 'This Week', '2weeks': 'Next 2 Weeks' };
+    activeChips.push({ label: labels[filters.deadlineWindow] ?? 'Deadline', clear: () => onChange({ deadlineWindow: null }) });
   }
   if (filters.discountMin > 0) {
     activeChips.push({ label: `${filters.discountMin}%+ off`, clear: () => onChange({ discountMin: 0 }) });
@@ -167,7 +168,7 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
   const reset = () =>
     onChange({
       category: 'all',
-      endingThisWeek: false,
+      deadlineWindow: null,
       discountMin: 0,
       priceMin: 0,
       priceMax: 0,
@@ -203,11 +204,11 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
 
           <div className="w-px h-5 bg-black/[0.08] flex-shrink-0" />
 
-          {/* Ending This Week toggle */}
+          {/* Deadline: This Week shortcut */}
           <button
-            onClick={() => onChange({ endingThisWeek: !filters.endingThisWeek })}
+            onClick={() => onChange({ deadlineWindow: filters.deadlineWindow === '1week' ? null : '1week' })}
             className={`flex-shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[13px] font-medium border transition-all whitespace-nowrap
-              ${filters.endingThisWeek
+              ${filters.deadlineWindow === '1week'
                 ? 'bg-red-500 text-white border-red-500'
                 : 'text-[#6e6e73] border-black/[0.08] hover:border-red-300 hover:text-red-500 bg-white'
               }`}
