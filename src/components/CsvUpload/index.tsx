@@ -103,29 +103,105 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
 
   if (variant === 'compact') {
     return (
-      <div className="bg-[#1d1d1f] rounded-3xl p-6 border border-white/[0.06]">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-white/[0.08] border border-white/[0.12] rounded-2xl flex items-center justify-center shrink-0 mt-0.5">
-            <Upload className="w-5 h-5 text-white/70" />
+      <div className="p-5 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[#1d1d1f] font-semibold text-sm mb-0.5">Upload multiple slots at once</p>
+            <p className="text-[#6e6e73] text-xs leading-relaxed">Download the CSV template, fill in your slots, then upload below.</p>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white/40 text-[11px] font-semibold uppercase tracking-widest mb-1">Bulk upload</p>
-            <h3 className="text-white font-semibold text-base mb-1.5 tracking-[-0.01em]">Upload via CSV</h3>
-            <p className="text-white/50 text-sm mb-4 leading-relaxed">
-              Best for newsletter publishers with multiple sponsorship slots. Upload a CSV and we'll create draft listings for each row.
-            </p>
+          <button
+            onClick={downloadTemplate}
+            className="flex items-center gap-1.5 bg-[#f5f5f7] border border-black/[0.08] hover:border-black/[0.16] text-[#1d1d1f] text-xs font-semibold px-3 py-2 rounded-xl transition-all shrink-0"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download template
+          </button>
+        </div>
+
+        {step !== 'done' && (
+          <DropZone
+            onFile={handleFile}
+            fileName={step !== 'idle' ? fileName : undefined}
+            onClear={handleClear}
+          />
+        )}
+
+        {step === 'error' && headerError && (
+          <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-red-700 font-semibold text-sm">Invalid CSV format</p>
+              <p className="text-red-600 text-xs mt-0.5 leading-relaxed">{headerError}</p>
+            </div>
+          </div>
+        )}
+
+        {submitError && (
+          <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-2xl px-4 py-3">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <p className="text-red-700 text-sm">{submitError}</p>
+          </div>
+        )}
+
+        {step === 'preview' && rows.length > 0 && (
+          <>
+            <PreviewTable
+              rows={rows}
+              onRowChange={(rowIndex, updated) => {
+                setRows(prev => prev.map(r => r.rowIndex === rowIndex ? updated : r));
+              }}
+            />
+            {!user && (
+              <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
+                <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-amber-700 text-sm">You must be signed in to submit. Please log in first.</p>
+              </div>
+            )}
             <div className="flex flex-col sm:flex-row gap-2">
               <button
-                onClick={downloadTemplate}
-                className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.14] border border-white/[0.12] text-white/70 hover:text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition-all"
+                onClick={handleClear}
+                className="flex items-center justify-center gap-2 bg-[#f5f5f7] border border-black/[0.08] hover:border-black/[0.16] text-[#1d1d1f] font-semibold px-4 py-3 rounded-2xl transition-all text-sm"
               >
-                <Download className="w-3.5 h-3.5" />
-                Download template
+                <RotateCcw className="w-4 h-4" />
+                Choose different file
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!user}
+                className="flex items-center justify-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold px-4 py-3 rounded-2xl transition-all text-sm flex-1"
+              >
+                <Upload className="w-4 h-4" />
+                Submit {rows.length} slot{rows.length !== 1 ? 's' : ''} for review
               </button>
             </div>
-            <p className="text-white/30 text-[11px] mt-3">Full upload form available on the "Submit by Email" page.</p>
+          </>
+        )}
+
+        {step === 'submitting' && (
+          <div className="flex items-center justify-center gap-3 py-6">
+            <Loader2 className="w-5 h-5 text-[#1d1d1f] animate-spin" />
+            <p className="text-[#1d1d1f] font-semibold text-sm">Submitting {rows.length} slots…</p>
           </div>
-        </div>
+        )}
+
+        {step === 'done' && (
+          <div className="flex flex-col items-center gap-3 py-6 text-center">
+            <div className="w-12 h-12 bg-green-50 border border-green-200 rounded-full flex items-center justify-center">
+              <CheckCircle className="w-6 h-6 text-green-600" />
+            </div>
+            <div>
+              <p className="text-[#1d1d1f] font-semibold text-sm mb-0.5">{rows.length} slot{rows.length !== 1 ? 's' : ''} submitted</p>
+              <p className="text-[#6e6e73] text-xs">Our team will review and publish your listings shortly.</p>
+            </div>
+            <button
+              onClick={handleClear}
+              className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-xs font-semibold transition-colors mt-1"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Upload another file
+            </button>
+          </div>
+        )}
       </div>
     );
   }
