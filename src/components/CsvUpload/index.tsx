@@ -247,7 +247,12 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
 
             {step === 'preview' && rows.length > 0 && (
               <>
-                <PreviewTable rows={rows} />
+                <PreviewTable
+                  rows={rows}
+                  onRowChange={(rowIndex, updated) => {
+                    setRows(prev => prev.map(r => r.rowIndex === rowIndex ? updated : r));
+                  }}
+                />
                 {!user && (
                   <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4">
                     <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />

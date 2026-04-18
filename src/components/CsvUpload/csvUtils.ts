@@ -96,7 +96,7 @@ function isValidUrl(val: string): boolean {
   }
 }
 
-function validateRow(raw: Record<string, string>, rowIndex: number): CsvRow {
+export function validateRow(raw: Record<string, string>, rowIndex: number): CsvRow {
   const errors: ValidationError[] = [];
 
   const get = (key: string) => (raw[key] ?? '').trim();
