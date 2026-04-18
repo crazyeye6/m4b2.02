@@ -93,8 +93,6 @@ const INITIAL: FormData = {
 
 const MEDIA_TYPES: Array<{ value: MediaType; label: string; icon: React.ReactNode; desc: string }> = [
   { value: 'newsletter', label: 'Newsletter', icon: <Mail className="w-5 h-5" />, desc: 'Email newsletter sponsorships and dedicated sends' },
-  { value: 'podcast', label: 'Podcast', icon: <Mic className="w-5 h-5" />, desc: 'Pre-roll, mid-roll, and post-roll ad placements' },
-  { value: 'influencer', label: 'Influencer', icon: <Instagram className="w-5 h-5" />, desc: 'Social media posts, reels, stories, and videos' },
 ];
 
 const NEWSLETTER_SLOT_TYPES = ['Featured sponsor', 'Banner + mention', 'Dedicated send', 'Native ad', 'Footer sponsor', 'Solo blast'];

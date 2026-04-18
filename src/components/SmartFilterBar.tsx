@@ -321,8 +321,6 @@ export default function SmartFilterBar({
         <div className="flex items-center gap-1.5">
           {([
             { value: 'newsletter' as const, label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
-            { value: 'podcast' as const, label: 'Podcast', icon: <Mic className="w-3.5 h-3.5" /> },
-            { value: 'influencer' as const, label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" /> },
           ]).map(c => {
             const active = filters.category === c.value;
             return (

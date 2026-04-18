@@ -23,8 +23,6 @@ interface FilterSidebarProps {
 const CATEGORIES = [
   { value: 'all', label: 'All types', icon: <LayoutGrid className="w-3.5 h-3.5" /> },
   { value: 'newsletter', label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
-  { value: 'podcast', label: 'Podcast', icon: <Mic className="w-3.5 h-3.5" /> },
-  { value: 'influencer', label: 'Influencer', icon: <Instagram className="w-3.5 h-3.5" /> },
 ];
 
 const DISCOUNT_OPTIONS = [20, 30, 40, 50];
