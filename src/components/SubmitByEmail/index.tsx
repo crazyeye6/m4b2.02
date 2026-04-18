@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Mail, Copy, Check, Zap, Clock, Layers, ArrowRight, Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import { Mail, Copy, Check, Zap, Clock, Layers, ArrowRight, Shield, ChevronDown, ChevronUp, Download } from 'lucide-react';
 
 const SUBMISSION_EMAIL = 'slots@endingthisweek.media';
 
@@ -38,6 +38,61 @@ const MULTI_TEMPLATE =
   '\n\n--- SLOT 2 ---\n' +
   TEMPLATE_FIELDS.map(f => `${f.key}: ${SLOT_2_VALUES[f.key] ?? f.example}`).join('\n');
 
+const DOWNLOAD_TEMPLATE =
+`EndingThisWeek.media — Email Submission Template
+=================================================
+Send this email to: slots@endingthisweek.media
+Subject: New Slots — [Your Media Name]
+
+Instructions:
+- Each slot starts with --- SLOT N ---
+- Replace the example values below with your own details
+- Delete any fields you don't have (optional ones only)
+- Fields marked (required) must be included for fast approval
+- You can add more slots by copying the block and incrementing the number
+
+=================================================
+
+--- SLOT 1 ---
+Media Name: Irish Startup Weekly        (required)
+Media Type: Newsletter                  (required)
+Audience Size: 18,000                   (required)
+Opportunity Type: Sponsored Slot        (required)
+Original Price: €350                    (required)
+Discount Price: €250                    (required)
+Slots Available: 2
+Deadline: Friday 6pm                    (required)
+Category: Startups / Business
+Booking URL: https://your-booking-link.com
+Description: One dedicated sponsor slot available in this week's edition. Your brand gets full header placement and a 150-word write-up to our engaged startup audience.
+
+--- SLOT 2 ---
+Media Name: The Growth Brief            (required)
+Media Type: Newsletter                  (required)
+Audience Size: 42,000                   (required)
+Opportunity Type: Sponsored Slot        (required)
+Original Price: €600                    (required)
+Discount Price: €420                    (required)
+Slots Available: 1
+Deadline: Wednesday 12pm               (required)
+Category: Marketing / Growth
+Booking URL: https://your-booking-link.com
+Description: Exclusive sponsor slot in this Thursday's edition of The Growth Brief. Primary placement above the fold. Your logo, headline, and a 100-word message to 42,000 marketing professionals.
+
+=================================================
+Need help? Reply to any of our emails and we'll assist you.
+`;
+
+function downloadTemplate() {
+  const blob = new Blob([DOWNLOAD_TEMPLATE], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'endingthisweek-slot-template.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 interface SubmitByEmailProps {
   variant?: 'full' | 'compact';
 }
@@ -64,9 +119,22 @@ export default function SubmitByEmail({ variant = 'full' }: SubmitByEmailProps) 
           <div className="flex-1 min-w-0">
             <p className="text-white/40 text-[11px] font-semibold uppercase tracking-widest mb-1">Prefer email?</p>
             <h3 className="text-white font-semibold text-base mb-1.5 tracking-[-0.01em]">Submit your slots by email</h3>
-            <p className="text-white/50 text-sm mb-4 leading-relaxed">
+            <p className="text-white/50 text-sm mb-3 leading-relaxed">
               No form needed. Send one or multiple slots in the structured format and we'll turn them into draft listings for review.
             </p>
+            <div className="mb-3 bg-white/[0.04] border border-white/[0.08] rounded-2xl px-4 py-3">
+              <p className="text-white/40 text-[11px] font-semibold uppercase tracking-widest mb-1.5">Not sure of the format?</p>
+              <p className="text-white/50 text-xs leading-relaxed mb-2.5">
+                Download the template — it includes 2 pre-filled newsletter slots with real example data so you can see exactly how to structure your email. Edit the values, delete what you don't need, and send.
+              </p>
+              <button
+                onClick={downloadTemplate}
+                className="flex items-center gap-2 bg-white/[0.10] hover:bg-white/[0.18] border border-white/[0.14] text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Download example template (.txt)
+              </button>
+            </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
               <div className="flex items-center gap-2 bg-white/[0.06] border border-white/[0.10] rounded-xl px-3.5 py-2.5 flex-1 min-w-0">
                 <Mail className="w-3.5 h-3.5 text-white/35 shrink-0" />
