@@ -111,53 +111,84 @@ export default function SubmitByEmail({ variant = 'full' }: SubmitByEmailProps) 
 
   if (variant === 'compact') {
     return (
-      <div className="bg-[#1d1d1f] rounded-3xl p-6 border border-white/[0.06]">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 bg-white/[0.08] border border-white/[0.12] rounded-2xl flex items-center justify-center shrink-0 mt-0.5">
-            <Mail className="w-5 h-5 text-white/70" />
+      <div className="p-5 space-y-4">
+        {/* Header row — mirrors CSV's download template row */}
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[#1d1d1f] font-semibold text-sm mb-0.5">Send your slots to our inbox</p>
+            <p className="text-[#6e6e73] text-xs leading-relaxed">No form needed — we'll parse and create listings for you.</p>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white/40 text-[11px] font-semibold uppercase tracking-widest mb-1">Prefer email?</p>
-            <h3 className="text-white font-semibold text-base mb-1.5 tracking-[-0.01em]">Submit your slots by email</h3>
-            <p className="text-white/50 text-sm mb-3 leading-relaxed">
-              No form needed. Send one or multiple slots in the structured format and we'll turn them into draft listings for review.
-            </p>
-            <div className="mb-3 bg-white/[0.04] border border-white/[0.08] rounded-2xl px-4 py-3">
-              <p className="text-white/40 text-[11px] font-semibold uppercase tracking-widest mb-1.5">Not sure of the format?</p>
-              <p className="text-white/50 text-xs leading-relaxed mb-2.5">
-                Download the template — it includes 2 pre-filled newsletter slots with real example data so you can see exactly how to structure your email. Edit the values, delete what you don't need, and send.
-              </p>
-              <button
-                onClick={downloadTemplate}
-                className="flex items-center gap-2 bg-white/[0.10] hover:bg-white/[0.18] border border-white/[0.14] text-white text-xs font-semibold px-4 py-2 rounded-xl transition-all"
-              >
-                <Download className="w-3.5 h-3.5" />
-                Download example template (.txt)
-              </button>
+          <button
+            onClick={downloadTemplate}
+            className="flex items-center gap-1.5 bg-[#f5f5f7] border border-black/[0.08] hover:border-black/[0.16] text-[#1d1d1f] text-xs font-semibold px-3 py-2 rounded-xl transition-all shrink-0"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download template
+          </button>
+        </div>
+
+        {/* Email address row */}
+        <div className="flex items-center gap-2 bg-[#f5f5f7] border border-black/[0.08] rounded-2xl px-4 py-3">
+          <Mail className="w-4 h-4 text-[#86868b] shrink-0" />
+          <span className="text-[#1d1d1f] font-mono text-sm tracking-tight flex-1 select-all truncate">{SUBMISSION_EMAIL}</span>
+          <button
+            onClick={() => copy(SUBMISSION_EMAIL, setEmailCopied)}
+            className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all shrink-0 ${
+              emailCopied
+                ? 'bg-green-100 text-green-700 border border-green-200'
+                : 'bg-white border border-black/[0.08] hover:border-black/[0.16] text-[#1d1d1f]'
+            }`}
+          >
+            {emailCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+            {emailCopied ? 'Copied!' : 'Copy'}
+          </button>
+          <a
+            href={`mailto:${SUBMISSION_EMAIL}`}
+            className="flex items-center gap-1.5 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all shrink-0"
+          >
+            <Mail className="w-3.5 h-3.5" />
+            Open in mail
+          </a>
+        </div>
+
+        {/* Template preview — collapsible */}
+        <div className="bg-[#fafafa] border border-black/[0.06] rounded-2xl overflow-hidden">
+          <button
+            onClick={() => setShowMulti(v => !v)}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-black/[0.02] transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-[#1d1d1f] font-semibold text-xs">Email template format</span>
+              <span className="bg-[#1d1d1f] text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wide">preview</span>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-              <div className="flex items-center gap-2 bg-white/[0.06] border border-white/[0.10] rounded-xl px-3.5 py-2.5 flex-1 min-w-0">
-                <Mail className="w-3.5 h-3.5 text-white/35 shrink-0" />
-                <span className="text-white/80 text-sm font-mono truncate">{SUBMISSION_EMAIL}</span>
-              </div>
-              <div className="flex gap-2 shrink-0">
+            <ChevronDown className={`w-3.5 h-3.5 text-[#aeaeb2] transition-transform ${showMulti ? 'rotate-180' : ''}`} />
+          </button>
+          {showMulti && (
+            <div className="border-t border-black/[0.06] px-4 py-4 space-y-1">
+              {TEMPLATE_FIELDS.map(({ key, example, required }) => (
+                <div key={key} className="flex items-baseline gap-2 leading-6">
+                  <span className="font-mono text-xs text-[#6e6e73] shrink-0 w-36">{key}:</span>
+                  <span className="font-mono text-xs text-[#1d1d1f]">{example}</span>
+                  {required && (
+                    <span className="text-[9px] font-bold text-red-400 uppercase tracking-wide shrink-0 self-center">req</span>
+                  )}
+                </div>
+              ))}
+              <div className="pt-3 border-t border-black/[0.06] mt-3">
                 <button
-                  onClick={() => copy(SUBMISSION_EMAIL, setEmailCopied)}
-                  className="flex items-center gap-1.5 bg-white/[0.08] hover:bg-white/[0.14] border border-white/[0.12] text-white/70 hover:text-white text-xs font-semibold px-3.5 py-2.5 rounded-xl transition-all"
+                  onClick={() => copy(SINGLE_TEMPLATE, setSingleCopied)}
+                  className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl transition-all ${
+                    singleCopied
+                      ? 'bg-green-100 text-green-700 border border-green-200'
+                      : 'bg-[#1d1d1f] text-white hover:bg-[#3a3a3c]'
+                  }`}
                 >
-                  {emailCopied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
-                  {emailCopied ? 'Copied!' : 'Copy'}
+                  {singleCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                  {singleCopied ? 'Copied!' : 'Copy template'}
                 </button>
-                <a
-                  href={`mailto:${SUBMISSION_EMAIL}`}
-                  className="flex items-center gap-1.5 bg-white text-[#1d1d1f] hover:bg-white/90 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition-all"
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                  Open email
-                </a>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     );
