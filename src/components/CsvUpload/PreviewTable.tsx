@@ -13,6 +13,7 @@ const EDITABLE_COLS: CsvColumnKey[] = [
   'newsletter_name',
   'subscriber_count',
   'niche',
+  'audience_description',
   'sponsorship_type',
   'original_price',
   'discount_price',
@@ -35,6 +36,7 @@ const COL_LABELS: Record<CsvColumnKey, string> = {
   newsletter_name: 'Newsletter',
   subscriber_count: 'Subscribers',
   niche: 'Niche',
+  audience_description: 'Audience description',
   sponsorship_type: 'Sponsorship type',
   original_price: 'Orig. price',
   discount_price: 'Disc. price',
@@ -107,7 +109,7 @@ function EditRowModal({ row, onSave, onClose }: EditRowModalProps) {
                   {COL_LABELS[col]}
                   {colDef?.required && <span className="ml-1 text-red-400">*</span>}
                 </label>
-                {col === 'description' ? (
+                {col === 'description' || col === 'audience_description' ? (
                   <textarea
                     value={draft[col]}
                     onChange={e => setDraft(d => ({ ...d, [col]: e.target.value }))}

@@ -2,6 +2,7 @@ export const CSV_COLUMNS = [
   { key: 'newsletter_name', label: 'newsletter_name', required: true },
   { key: 'subscriber_count', label: 'subscriber_count', required: true },
   { key: 'niche', label: 'niche', required: true },
+  { key: 'audience_description', label: 'audience_description', required: false },
   { key: 'sponsorship_type', label: 'sponsorship_type', required: true },
   { key: 'original_price', label: 'original_price', required: true },
   { key: 'discount_price', label: 'discount_price', required: true },
@@ -18,6 +19,7 @@ export interface CsvRow {
   newsletter_name: string;
   subscriber_count: string;
   niche: string;
+  audience_description: string;
   sponsorship_type: string;
   original_price: string;
   discount_price: string;

@@ -7,6 +7,7 @@ const TEMPLATE_FIELDS = [
   { key: 'Media Name', example: 'SaaS Growth Weekly', required: true },
   { key: 'Media Type', example: 'Newsletter', required: true },
   { key: 'Audience Size', example: '48,000', required: true },
+  { key: 'Audience Description', example: 'SaaS founders, growth marketers, B2B decision-makers', required: false },
   { key: 'Opportunity Type', example: 'Featured sponsor', required: true },
   { key: 'Original Price', example: '$1,200', required: true },
   { key: 'Discount Price', example: '$840', required: true },
@@ -21,6 +22,7 @@ const SLOT_2_VALUES: Record<string, string> = {
   'Media Name': 'The Founder Brief',
   'Media Type': 'Newsletter',
   'Audience Size': '32,000',
+  'Audience Description': 'Early-stage founders, startup operators, angel investors',
   'Opportunity Type': 'Dedicated send',
   'Original Price': '$900',
   'Discount Price': '$630',
@@ -57,6 +59,7 @@ Instructions:
 Media Name: SaaS Growth Weekly          (required)
 Media Type: Newsletter                  (required)
 Audience Size: 48,000                   (required)
+Audience Description: SaaS founders, growth marketers, B2B decision-makers
 Opportunity Type: Featured sponsor      (required)
 Original Price: $1,200                  (required)
 Discount Price: $840                    (required)
@@ -70,6 +73,7 @@ Description: Featured sponsor slot in our Thursday edition reaching 48k SaaS fou
 Media Name: The Founder Brief           (required)
 Media Type: Newsletter                  (required)
 Audience Size: 32,000                   (required)
+Audience Description: Early-stage founders, startup operators, angel investors
 Opportunity Type: Dedicated send        (required)
 Original Price: $900                    (required)
 Discount Price: $630                    (required)

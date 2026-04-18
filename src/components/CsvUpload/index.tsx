@@ -86,6 +86,7 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
       slots_available: row.slots_available,
       deadline: row.deadline,
       category: row.niche,
+      audience_description: row.audience_description,
       booking_url: row.booking_url,
       description: row.description,
       validation_errors: row.errors,

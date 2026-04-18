@@ -6,6 +6,7 @@ const TEMPLATE_ROWS = [
     newsletter_name: 'SaaS Growth Weekly',
     subscriber_count: '48000',
     niche: 'SaaS / B2B',
+    audience_description: 'SaaS founders, growth marketers, B2B decision-makers',
     sponsorship_type: 'Featured sponsor',
     original_price: '1200',
     discount_price: '840',
@@ -18,6 +19,7 @@ const TEMPLATE_ROWS = [
     newsletter_name: 'The Founder Brief',
     subscriber_count: '32000',
     niche: 'Startups / Business',
+    audience_description: 'Early-stage founders, startup operators, angel investors',
     sponsorship_type: 'Dedicated send',
     original_price: '900',
     discount_price: '630',
@@ -30,6 +32,7 @@ const TEMPLATE_ROWS = [
     newsletter_name: 'Growth Dispatch',
     subscriber_count: '39000',
     niche: 'Marketing / Growth',
+    audience_description: 'Performance marketers, growth hackers, DTC brand managers',
     sponsorship_type: 'Solo blast',
     original_price: '2200',
     discount_price: '1540',
@@ -101,6 +104,7 @@ export function validateRow(raw: Record<string, string>, rowIndex: number): CsvR
   const newsletter_name = get('newsletter_name');
   const subscriber_count = get('subscriber_count');
   const niche = get('niche');
+  const audience_description = get('audience_description');
   const sponsorship_type = get('sponsorship_type');
   const original_price = get('original_price');
   const discount_price = get('discount_price');
@@ -137,6 +141,7 @@ export function validateRow(raw: Record<string, string>, rowIndex: number): CsvR
     newsletter_name,
     subscriber_count,
     niche,
+    audience_description,
     sponsorship_type,
     original_price,
     discount_price,
