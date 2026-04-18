@@ -1,10 +1,8 @@
 import type { Listing } from '../types';
 
-const DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+const ENGLISH_DAY_NAMES = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-function nextDateForDayName(name: string): Date | null {
-  const idx = DAY_NAMES.indexOf(name.toLowerCase().trim());
-  if (idx === -1) return null;
+function nextDateForDayIndex(idx: number): Date {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diff = (idx - today.getDay() + 7) % 7 || 7;
@@ -25,8 +23,8 @@ function extractDateFromLabel(label: string): Date | null {
     if (!isNaN(parsed.getTime())) return parsed;
   }
 
-  const dayName = nextDateForDayName(clean);
-  if (dayName) return dayName;
+  const dayIdx = ENGLISH_DAY_NAMES.indexOf(clean.toLowerCase().trim());
+  if (dayIdx !== -1) return nextDateForDayIndex(dayIdx);
 
   return null;
 }
@@ -36,7 +34,10 @@ export interface ResolvedPublishDate {
   calDate: string;
 }
 
-export function resolvePublishDate(listing: Pick<Listing, 'posting_date_start' | 'date_label'>): ResolvedPublishDate {
+export function resolvePublishDate(
+  listing: Pick<Listing, 'posting_date_start' | 'date_label'>,
+  locale = 'en-GB',
+): ResolvedPublishDate {
   let resolvedDate: Date | null = null;
 
   if (listing.posting_date_start) {
@@ -47,8 +48,8 @@ export function resolvePublishDate(listing: Pick<Listing, 'posting_date_start' |
 
   if (resolvedDate && !isNaN(resolvedDate.getTime())) {
     return {
-      weekday: resolvedDate.toLocaleDateString('en-GB', { weekday: 'long' }),
-      calDate: resolvedDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
+      weekday: resolvedDate.toLocaleDateString(locale, { weekday: 'long' }),
+      calDate: resolvedDate.toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' }),
     };
   }
 
@@ -56,4 +57,8 @@ export function resolvePublishDate(listing: Pick<Listing, 'posting_date_start' |
     weekday: '',
     calDate: listing.date_label ?? '',
   };
+}
+
+export function formatDeadlineDate(deadline: string, locale = 'en-GB'): string {
+  return new Date(deadline).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 }

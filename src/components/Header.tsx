@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../context/LocaleContext';
 import { SUPPORTED_LANGUAGES, SUPPORTED_CURRENCIES } from '../lib/localeConfig';
+import { useTranslations } from '../hooks/useTranslations';
 
 interface HeaderProps {
   onListSlot: () => void;
@@ -37,6 +38,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
   const localeRef = useRef<HTMLDivElement>(null);
 
   const { language, currency, setLanguage, setCurrency } = useLocale();
+  const tx = useTranslations();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -71,20 +73,20 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
               onClick={handleOpportunities}
               className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
             >
-              Opportunities
+              {tx.nav.opportunities}
             </button>
             <a
               href="#how-it-works"
               onClick={handleHowItWorks}
               className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
             >
-              How it works
+              {tx.nav.howItWorks}
             </a>
             <button
               onClick={onListSlot}
               className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
             >
-              For sellers
+              {tx.nav.forSellers}
             </button>
           </nav>
 
@@ -105,7 +107,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
               {localeOpen && (
                 <div className="absolute right-0 top-full mt-2 w-72 bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-2xl shadow-xl shadow-black/10 z-30 overflow-hidden">
                   <div className="px-4 pt-3.5 pb-2 border-b border-black/[0.06]">
-                    <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest">Language</p>
+                    <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest">{tx.locale.language}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-1 p-2">
                     {SUPPORTED_LANGUAGES.map(lang => (
@@ -125,7 +127,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                   </div>
 
                   <div className="px-4 pt-2.5 pb-2 border-t border-black/[0.06]">
-                    <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest">Currency</p>
+                    <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest">{tx.locale.currency}</p>
                   </div>
                   <div className="grid grid-cols-2 gap-1 p-2 max-h-[220px] overflow-y-auto">
                     {SUPPORTED_CURRENCIES.map(cur => (
@@ -145,7 +147,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                   </div>
 
                   <div className="px-4 py-2 border-t border-black/[0.06] bg-[#f5f5f7]">
-                    <p className="text-[10px] text-[#aeaeb2]">Prices are indicative conversions. Payments processed in USD.</p>
+                    <p className="text-[10px] text-[#aeaeb2]">{tx.locale.priceNote}</p>
                   </div>
                 </div>
               )}
@@ -156,7 +158,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                 onClick={onAdmin}
                 className="text-[#6e6e73] hover:text-[#1d1d1f] text-[12px] font-medium px-3 py-1.5 rounded-lg border border-[#d2d2d7] hover:border-[#86868b] transition-all"
               >
-                Admin
+                {tx.nav.admin}
               </button>
             )}
             {user ? (
@@ -193,13 +195,13 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                           onClick={() => { setDropdownOpen(false); onDashboard(); }}
                           className="w-full text-left px-4 py-2 text-[13px] text-[#1d1d1f] hover:bg-[#f5f5f7] transition-colors"
                         >
-                          Dashboard
+                          {tx.nav.dashboard}
                         </button>
                         <button
                           onClick={() => { setDropdownOpen(false); signOut(); }}
                           className="w-full text-left px-4 py-2 text-[13px] text-[#ff3b30] hover:bg-[#f5f5f7] transition-colors"
                         >
-                          Sign out
+                          {tx.nav.signOut}
                         </button>
                       </div>
                     </div>
@@ -212,13 +214,13 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                   onClick={onSignIn}
                   className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-1.5 rounded-xl border border-[#d2d2d7] hover:border-[#86868b] transition-all"
                 >
-                  Sign in
+                  {tx.nav.signIn}
                 </button>
                 <button
                   onClick={onListSlot}
                   className="bg-green-500 hover:bg-green-400 active:bg-green-600 text-white text-[13px] font-semibold px-4 py-1.5 rounded-xl transition-all shadow-sm shadow-green-500/20"
                 >
-                  List a Slot
+                  {tx.nav.listSlot}
                 </button>
               </>
             )}
@@ -235,7 +237,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
 
       {mobileOpen && (
         <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-4 py-3 space-y-0.5">
-          <button onClick={() => { handleOpportunities(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">Opportunities</button>
+          <button onClick={() => { handleOpportunities(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">{tx.nav.opportunities}</button>
           <a
             href="#how-it-works"
             onClick={(e) => {
@@ -243,12 +245,12 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
               setMobileOpen(false);
             }}
             className="block text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all"
-          >How it works</a>
-          <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">For sellers</button>
+          >{tx.nav.howItWorks}</a>
+          <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">{tx.nav.forSellers}</button>
 
           {/* Mobile locale selectors */}
           <div className="pt-2 border-t border-black/[0.06] mt-2">
-            <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest px-3 mb-2">Language</p>
+            <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest px-3 mb-2">{tx.locale.language}</p>
             <div className="grid grid-cols-4 gap-1">
               {SUPPORTED_LANGUAGES.map(lang => (
                 <button
@@ -265,7 +267,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
           </div>
 
           <div className="pt-2">
-            <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest px-3 mb-2">Currency</p>
+            <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest px-3 mb-2">{tx.locale.currency}</p>
             <div className="grid grid-cols-4 gap-1">
               {SUPPORTED_CURRENCIES.slice(0, 8).map(cur => (
                 <button
@@ -284,13 +286,13 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
           <div className="flex gap-2 pt-3 border-t border-black/[0.06] mt-2">
             {user ? (
               <>
-                <button onClick={() => { onDashboard(); setMobileOpen(false); }} className="flex-1 text-[#1d1d1f] text-[13px] font-medium px-4 py-2.5 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-all">Dashboard</button>
-                <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex-1 text-[#ff3b30] text-[13px] font-medium px-4 py-2.5 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-all">Sign out</button>
+                <button onClick={() => { onDashboard(); setMobileOpen(false); }} className="flex-1 text-[#1d1d1f] text-[13px] font-medium px-4 py-2.5 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-all">{tx.nav.dashboard}</button>
+                <button onClick={() => { signOut(); setMobileOpen(false); }} className="flex-1 text-[#ff3b30] text-[13px] font-medium px-4 py-2.5 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-all">{tx.nav.signOut}</button>
               </>
             ) : (
               <>
-                <button onClick={() => { onSignIn(); setMobileOpen(false); }} className="flex-1 text-[#1d1d1f] text-[13px] font-medium px-4 py-2.5 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-all">Sign in</button>
-                <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="flex-1 bg-green-500 hover:bg-green-400 text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl transition-all">List a Slot</button>
+                <button onClick={() => { onSignIn(); setMobileOpen(false); }} className="flex-1 text-[#1d1d1f] text-[13px] font-medium px-4 py-2.5 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-all">{tx.nav.signIn}</button>
+                <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="flex-1 bg-green-500 hover:bg-green-400 text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl transition-all">{tx.nav.listSlot}</button>
               </>
             )}
           </div>

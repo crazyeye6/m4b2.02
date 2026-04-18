@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Mail, AlertTriangle, Building2, User, Globe, ChevronDown } from 'lucide-react';
 import type { BuyerFormData, PurchaseType } from '../../types';
 import { COUNTRIES, getCountryInfo } from '../../lib/vat';
+import { useTranslations } from '../../hooks/useTranslations';
 
 interface FastEntryProps {
   form: BuyerFormData;
@@ -11,6 +12,7 @@ interface FastEntryProps {
 
 export default function FastEntry({ form, onChange, onContinue }: FastEntryProps) {
   const [error, setError] = useState('');
+  const tx = useTranslations();
 
   useEffect(() => {
     if (error) setError('');
@@ -20,15 +22,15 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
     const email = form.buyer_email.trim();
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!email) {
-      setError('Email address is required');
+      setError(tx.entry.emailRequired);
       return;
     }
     if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
+      setError(tx.entry.emailInvalid);
       return;
     }
     if (email.length > 254) {
-      setError('Email address is too long');
+      setError(tx.entry.emailTooLong);
       return;
     }
     setError('');
@@ -45,16 +47,16 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-[#1d1d1f] font-bold text-base mb-1">Reserve your slot</h3>
-        <p className="text-[#6e6e73] text-sm">Takes under 60 seconds. No account required.</p>
+        <h3 className="text-[#1d1d1f] font-bold text-base mb-1">{tx.entry.title}</h3>
+        <p className="text-[#6e6e73] text-sm">{tx.entry.subtitle}</p>
       </div>
 
       <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
-        <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold mb-3">Purchase type</p>
+        <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold mb-3">{tx.entry.purchaseType}</p>
         <div className="grid grid-cols-2 gap-2">
           {([
-            { type: 'business' as PurchaseType, icon: <Building2 className="w-4 h-4" />, label: 'Business', sub: 'Company / brand' },
-            { type: 'individual' as PurchaseType, icon: <User className="w-4 h-4" />, label: 'Personal', sub: 'Individual buyer' },
+            { type: 'business' as PurchaseType, icon: <Building2 className="w-4 h-4" />, label: tx.entry.business, sub: tx.entry.businessSub },
+            { type: 'individual' as PurchaseType, icon: <User className="w-4 h-4" />, label: tx.entry.personal, sub: tx.entry.personalSub },
           ]).map(({ type, icon, label, sub }) => (
             <button
               key={type}
@@ -79,7 +81,7 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
       <div className="space-y-3">
         <div>
           <label className="block text-xs font-semibold text-[#86868b] uppercase tracking-wider mb-1.5">
-            Email address <span className="text-red-500">*</span>
+            {tx.entry.email} <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#aeaeb2]" />
@@ -92,15 +94,15 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
               className={inputCls + ' pl-10'}
             />
           </div>
-          <p className="text-[#aeaeb2] text-xs mt-1">Booking confirmation sent here</p>
+          <p className="text-[#aeaeb2] text-xs mt-1">{tx.entry.emailConfirm}</p>
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-[#86868b] uppercase tracking-wider mb-1.5">
             <Globe className="inline w-3.5 h-3.5 mr-1 mb-0.5 text-[#aeaeb2]" />
-            Country <span className="text-red-500">*</span>
+            {tx.entry.country} <span className="text-red-500">*</span>
             {(countryInfo.isEU || countryInfo.isGBR) && (
-              <span className="ml-2 text-[10px] text-[#6e6e73] font-normal normal-case">· VAT territory</span>
+              <span className="ml-2 text-[10px] text-[#6e6e73] font-normal normal-case">· {tx.entry.vatTerritory}</span>
             )}
           </label>
           <div className="relative">
@@ -117,7 +119,7 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
           </div>
           {countryInfo.currency !== 'USD' && (
             <p className="text-[#aeaeb2] text-xs mt-1">
-              Local currency: {countryInfo.currencySymbol} {countryInfo.currency}
+              {tx.entry.localCurrency} {countryInfo.currencySymbol} {countryInfo.currency}
             </p>
           )}
         </div>
@@ -134,11 +136,11 @@ export default function FastEntry({ form, onChange, onContinue }: FastEntryProps
         onClick={handleContinue}
         className="w-full bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-bold py-3.5 rounded-2xl transition-all text-sm"
       >
-        Continue
+        {tx.entry.continue}
       </button>
 
       <p className="text-[#aeaeb2] text-xs text-center leading-relaxed">
-        Your data is used only for booking purposes. We collect only what's necessary.
+        {tx.entry.privacyNote}
       </p>
     </div>
   );

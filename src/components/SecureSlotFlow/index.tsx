@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { X, Check } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useTranslations } from '../../hooks/useTranslations';
 import { sendBookingConfirmationEmails } from '../../lib/email';
 import type { Listing, BuyerFormData, DepositBooking } from '../../types';
 import { calculateVAT, detectUserCountry, getCountryInfo } from '../../lib/vat';
@@ -26,14 +27,6 @@ interface PaymentSuccessResult {
 
 export type Step = 'entry' | 'details' | 'booking' | 'summary' | 'payment' | 'confirmation';
 
-const STEPS: { key: Step; label: string }[] = [
-  { key: 'entry', label: 'Email' },
-  { key: 'details', label: 'Details' },
-  { key: 'booking', label: 'Campaign' },
-  { key: 'summary', label: 'Review' },
-  { key: 'payment', label: 'Pay' },
-  { key: 'confirmation', label: 'Done' },
-];
 
 function storageKey(listingId: string) {
   return `etw_checkout:${listingId}`;
@@ -80,6 +73,15 @@ function buildInitialForm(
 
 export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = false }: SecureSlotFlowProps) {
   const { user, profile } = useAuth();
+  const tx = useTranslations();
+  const STEPS: { key: Step; label: string }[] = [
+    { key: 'entry', label: tx.flow.stepEmail },
+    { key: 'details', label: tx.flow.stepDetails },
+    { key: 'booking', label: tx.flow.stepCampaign },
+    { key: 'summary', label: tx.flow.stepReview },
+    { key: 'payment', label: tx.flow.stepPay },
+    { key: 'confirmation', label: tx.flow.stepDone },
+  ];
   const [step, setStep] = useState<Step>('entry');
   const [form, setForm] = useState<BuyerFormData>(() => buildInitialForm(profile, user, listing.id));
   const [vatNumberValid, setVatNumberValid] = useState<boolean | null>(null);
@@ -244,7 +246,7 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
           <div className="flex items-start justify-between mb-5">
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <span className="text-[10px] font-bold text-[#6e6e73] uppercase tracking-widest">Secure Slot</span>
+                <span className="text-[10px] font-bold text-[#6e6e73] uppercase tracking-widest">{tx.checkout.secureSlot}</span>
               </div>
               <h2 className="text-[#1d1d1f] font-bold text-base leading-tight truncate max-w-[280px]">
                 {listing.property_name}

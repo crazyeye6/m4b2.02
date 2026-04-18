@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Tag, CalendarDays, MessageSquare, AlertTriangle } from 'lucide-react';
 import type { BuyerFormData, Listing } from '../../types';
+import { useTranslations } from '../../hooks/useTranslations';
 
 interface BookingInfoProps {
   form: BuyerFormData;
@@ -12,10 +13,11 @@ interface BookingInfoProps {
 
 export default function BookingInfo({ form, onChange, listing, onContinue, onBack }: BookingInfoProps) {
   const [error, setError] = useState('');
+  const tx = useTranslations();
 
   const handleContinue = () => {
-    if (!form.brand_name.trim()) { setError('Brand name is required'); return; }
-    if (form.brand_name.trim().length > 200) { setError('Brand name is too long (max 200 characters)'); return; }
+    if (!form.brand_name.trim()) { setError(tx.booking.brandRequired); return; }
+    if (form.brand_name.trim().length > 200) { setError(tx.booking.brandTooLong); return; }
     setError('');
     onContinue();
   };
@@ -23,8 +25,8 @@ export default function BookingInfo({ form, onChange, listing, onContinue, onBac
   return (
     <div className="space-y-5">
       <div>
-        <h3 className="text-[#1d1d1f] font-bold text-base mb-1">Campaign details</h3>
-        <p className="text-[#6e6e73] text-sm">Shared with the creator to brief your campaign.</p>
+        <h3 className="text-[#1d1d1f] font-bold text-base mb-1">{tx.booking.title}</h3>
+        <p className="text-[#6e6e73] text-sm">{tx.booking.subtitle}</p>
       </div>
 
       <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-3 flex items-start gap-3">
@@ -48,28 +50,28 @@ export default function BookingInfo({ form, onChange, listing, onContinue, onBac
         <div>
           <label className="block text-xs font-semibold text-[#86868b] uppercase tracking-wider mb-1.5">
             <Tag className="inline w-3.5 h-3.5 mr-1 mb-0.5" />
-            Brand name <span className="text-red-500">*</span>
+            {tx.booking.brandName} <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
             value={form.brand_name}
             onChange={e => onChange({ brand_name: e.target.value })}
-            placeholder="e.g. Acme, MyBrand, ProductName"
+            placeholder={tx.booking.brandPlaceholder}
             maxLength={200}
             className={inputCls}
           />
-          <p className="text-[#aeaeb2] text-xs mt-1">The brand being advertised in this slot</p>
+          <p className="text-[#aeaeb2] text-xs mt-1">{tx.booking.brandHint}</p>
         </div>
 
         <div>
           <label className="block text-xs font-semibold text-[#86868b] uppercase tracking-wider mb-1.5">
             <MessageSquare className="inline w-3.5 h-3.5 mr-1 mb-0.5" />
-            Campaign note <span className="text-[#aeaeb2] font-normal normal-case">(optional)</span>
+            {tx.booking.campaignNote} <span className="text-[#aeaeb2] font-normal normal-case">({tx.details.optional})</span>
           </label>
           <textarea
             value={form.campaign_note}
             onChange={e => onChange({ campaign_note: e.target.value })}
-            placeholder="Brief description of your campaign, product, or any preferences for the creator..."
+            placeholder={tx.booking.campaignPlaceholder}
             rows={3}
             maxLength={500}
             className={inputCls + ' resize-none'}
@@ -83,13 +85,13 @@ export default function BookingInfo({ form, onChange, listing, onContinue, onBac
           onClick={onBack}
           className="px-5 py-3.5 rounded-2xl border border-black/[0.08] hover:border-black/[0.15] text-[#6e6e73] hover:text-[#1d1d1f] text-sm font-medium transition-all"
         >
-          Back
+          {tx.booking.back}
         </button>
         <button
           onClick={handleContinue}
           className="flex-1 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-bold py-3.5 rounded-2xl transition-all text-sm"
         >
-          Review & Pay
+          {tx.booking.reviewAndPay}
         </button>
       </div>
     </div>

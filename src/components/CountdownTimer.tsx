@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Clock } from 'lucide-react';
+import { useTranslations } from '../hooks/useTranslations';
 
 interface CountdownTimerProps {
   deadline: string;
@@ -28,6 +29,7 @@ function calcTimeLeft(deadline: string): TimeLeft {
 
 export default function CountdownTimer({ deadline, compact = false }: CountdownTimerProps) {
   const [time, setTime] = useState<TimeLeft>(() => calcTimeLeft(deadline));
+  const tx = useTranslations();
 
   useEffect(() => {
     const id = setInterval(() => setTime(calcTimeLeft(deadline)), 1000);
@@ -41,7 +43,7 @@ export default function CountdownTimer({ deadline, compact = false }: CountdownT
     return (
       <div className="inline-flex items-center gap-1.5 bg-red-50 border border-red-100 text-red-500 text-[11px] font-semibold px-2.5 py-1.5 rounded-full tracking-wide">
         <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
-        Closed
+        {tx.countdown.closed}
       </div>
     );
   }
@@ -54,8 +56,8 @@ export default function CountdownTimer({ deadline, compact = false }: CountdownT
       : 'bg-[#f5f5f7] border-black/[0.06] text-[#6e6e73]';
 
     const label = time.days > 0
-      ? `${time.days}d ${time.hours}h to claim`
-      : `${time.hours}h ${time.minutes}m to claim`;
+      ? `${time.days}${tx.countdown.days} ${time.hours}${tx.countdown.hours} ${tx.countdown.toClaim}`
+      : `${time.hours}${tx.countdown.hours} ${time.minutes}${tx.countdown.minutes} ${tx.countdown.toClaim}`;
 
     return (
       <div className={`inline-flex items-center gap-1.5 border text-[11px] font-semibold px-2.5 py-1.5 rounded-full ${bg}`}>
@@ -74,15 +76,15 @@ export default function CountdownTimer({ deadline, compact = false }: CountdownT
       <div className="flex items-center gap-1 text-[12px] font-mono font-semibold tracking-tight">
         {time.days > 0 && (
           <>
-            <span>{time.days}<span className="font-normal text-[10px] opacity-50">d</span></span>
+            <span>{time.days}<span className="font-normal text-[10px] opacity-50">{tx.countdown.days}</span></span>
             <span className="opacity-25">:</span>
           </>
         )}
-        <span>{pad(time.hours)}<span className="font-normal text-[10px] opacity-50">h</span></span>
+        <span>{pad(time.hours)}<span className="font-normal text-[10px] opacity-50">{tx.countdown.hours}</span></span>
         <span className="opacity-25">:</span>
-        <span>{pad(time.minutes)}<span className="font-normal text-[10px] opacity-50">m</span></span>
+        <span>{pad(time.minutes)}<span className="font-normal text-[10px] opacity-50">{tx.countdown.minutes}</span></span>
         <span className="opacity-25">:</span>
-        <span>{pad(time.seconds)}<span className="font-normal text-[10px] opacity-50">s</span></span>
+        <span>{pad(time.seconds)}<span className="font-normal text-[10px] opacity-50">{tx.countdown.seconds}</span></span>
       </div>
     </div>
   );

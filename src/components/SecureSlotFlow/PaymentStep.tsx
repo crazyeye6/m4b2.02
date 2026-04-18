@@ -4,6 +4,8 @@ import type { BuyerFormData, Listing } from '../../types';
 import type { VatCalculation } from '../../lib/vat';
 import { loadStripe, type Stripe, type StripeElements } from '@stripe/stripe-js';
 import { supabase } from '../../lib/supabase';
+import { useLocale } from '../../context/LocaleContext';
+import { useTranslations } from '../../hooks/useTranslations';
 
 interface PaymentStepProps {
   listing: Listing;
@@ -90,6 +92,9 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
   const [error, setError] = useState('');
   const [noKey, setNoKey] = useState(false);
 
+  const { formatPrice, language } = useLocale();
+  const tx = useTranslations();
+
   const mountRef = useRef<HTMLDivElement | null>(null);
   const stripeRef = useRef<Stripe | null>(null);
   const elementsRef = useRef<StripeElements | null>(null);
@@ -119,6 +124,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
 
       const elements = stripe.elements({
         clientSecret: intent.client_secret,
+        locale: language.code as 'en' | 'de' | 'fr' | 'es' | 'pt' | 'nl' | 'sv' | 'ja',
         appearance: {
           theme: 'flat',
           variables: {
@@ -188,7 +194,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
       setError(e instanceof Error ? e.message : String(e));
       setLoading(false);
     }
-  }, [listing, form, vat, slotsCount]);
+  }, [listing, form, vat, slotsCount, language.code]);
 
   useEffect(() => {
     initialise();
@@ -205,7 +211,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
 
     const { error: submitError } = await elementsRef.current.submit();
     if (submitError) {
-      setError(submitError.message ?? 'Payment failed');
+      setError(submitError.message ?? tx.payment.paymentFailed);
       setProcessing(false);
       return;
     }
@@ -224,7 +230,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
     });
 
     if (confirmError) {
-      setError(confirmError.message ?? 'Payment failed');
+      setError(confirmError.message ?? tx.payment.paymentFailed);
       setProcessing(false);
       return;
     }
@@ -236,10 +242,10 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
         reference_number: intentRef.current.reference_number,
       });
       if (result && result.ok === false) {
-        setError(result.error ?? 'Payment succeeded but booking could not be finalised. Please contact support with reference ' + intentRef.current.reference_number);
+        setError(result.error ?? tx.payment.bookingError.replace('{ref}', intentRef.current.reference_number));
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Unexpected error after payment. Please contact support with reference ' + intentRef.current.reference_number);
+      setError(e instanceof Error ? e.message : tx.payment.bookingError.replace('{ref}', intentRef.current.reference_number));
     } finally {
       setProcessing(false);
     }
@@ -249,7 +255,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
     return (
       <div className="flex items-center gap-3 bg-orange-50 border border-orange-200 text-orange-700 text-sm px-4 py-3 rounded-2xl">
         <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-        Payments are not yet configured. Please contact the site administrator to add the Stripe key in Admin &rarr; Settings.
+        {tx.payment.notConfigured}
       </div>
     );
   }
@@ -259,30 +265,30 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
       <div className="bg-[#f5f5f7] border border-green-200 rounded-2xl p-4">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold mb-1">Booking deposit</p>
-            <p className="text-[#1d1d1f] text-3xl font-black tabular-nums">${depositTotal.toLocaleString()}</p>
-            <p className="text-[#aeaeb2] text-xs mt-1">Charged by EndingThisWeek.media</p>
+            <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold mb-1">{tx.payment.bookingDeposit}</p>
+            <p className="text-[#1d1d1f] text-3xl font-black tabular-nums">{formatPrice(depositTotal)}</p>
+            <p className="text-[#aeaeb2] text-xs mt-1">{tx.payment.chargedBy}</p>
           </div>
           <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-xl px-2.5 py-1.5">
             <Lock className="w-3.5 h-3.5 text-green-600" />
-            <span className="text-green-700 text-xs font-semibold">Secured</span>
+            <span className="text-green-700 text-xs font-semibold">{tx.payment.securedBadge}</span>
           </div>
         </div>
         <div className="mt-3 pt-3 border-t border-black/[0.06] space-y-1.5 text-xs">
           <div className="flex justify-between">
-            <span className="text-[#aeaeb2]">Deposit (10%)</span>
-            <span className="text-[#6e6e73]">${depositSubtotal.toLocaleString()}</span>
+            <span className="text-[#aeaeb2]">{tx.payment.depositPct}</span>
+            <span className="text-[#6e6e73]">{formatPrice(depositSubtotal)}</span>
           </div>
           {vat.vatApplies && (
             <div className="flex justify-between">
               <span className="text-[#aeaeb2]">{vat.vatLabel}</span>
-              <span className="text-[#6e6e73]">${vat.vatAmount.toFixed(2)}</span>
+              <span className="text-[#6e6e73]">{formatPrice(vat.vatAmount)}</span>
             </div>
           )}
           {vat.reverseCharge && (
             <div className="flex justify-between">
-              <span className="text-[#6e6e73]">Reverse charge (0% VAT)</span>
-              <span className="text-[#6e6e73]">$0.00</span>
+              <span className="text-[#6e6e73]">{tx.payment.reverseCharge}</span>
+              <span className="text-[#6e6e73]">{formatPrice(0)}</span>
             </div>
           )}
         </div>
@@ -298,7 +304,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
                 onClick={() => initialise()}
                 className="mt-1.5 text-xs font-semibold underline hover:no-underline"
               >
-                Try again
+                {tx.payment.tryAgain}
               </button>
             )}
           </div>
@@ -307,13 +313,13 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
 
       <div className="bg-white border border-black/[0.08] rounded-2xl overflow-hidden">
         <div className="px-4 py-3 border-b border-black/[0.06]">
-          <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold">Payment details</p>
+          <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold">{tx.payment.paymentDetails}</p>
         </div>
         <div className="p-4 min-h-[120px] relative">
           {(loading || !stripeReady) && (
             <div className="absolute inset-0 flex items-center justify-center gap-2 text-[#aeaeb2] text-sm">
               <Loader2 className="w-4 h-4 animate-spin" />
-              Preparing secure payment...
+              {tx.payment.preparingPayment}
             </div>
           )}
           <div
@@ -325,8 +331,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
 
       <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-3">
         <p className="text-[#6e6e73] text-xs leading-relaxed">
-          You are paying a 10% booking deposit to reserve this media placement.
-          The remaining balance is paid directly to the media owner.
+          {tx.payment.depositNote}
         </p>
       </div>
 
@@ -336,7 +341,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
           disabled={processing}
           className="px-5 py-3.5 rounded-2xl border border-black/[0.08] hover:border-black/[0.15] text-[#6e6e73] hover:text-[#1d1d1f] text-sm font-medium transition-all disabled:opacity-50"
         >
-          Back
+          {tx.payment.back}
         </button>
         <button
           onClick={handleSubmit}
@@ -346,12 +351,12 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
           {processing ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Processing...
+              {tx.payment.processing}
             </>
           ) : (
             <>
               <Lock className="w-4 h-4" />
-              Pay ${depositTotal.toLocaleString()} deposit
+              {tx.payment.pay.replace('{amount}', formatPrice(depositTotal))}
             </>
           )}
         </button>
@@ -359,7 +364,7 @@ export default function PaymentStep({ listing, form, vat, depositSubtotal, depos
 
       <div className="flex items-center justify-center gap-1.5 text-xs text-[#aeaeb2]">
         <Shield className="w-3 h-3" />
-        <span>Secured by Stripe · 256-bit encryption · PCI DSS compliant</span>
+        <span>{tx.payment.stripeNote}</span>
       </div>
     </div>
   );

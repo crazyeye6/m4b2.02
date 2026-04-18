@@ -14,10 +14,22 @@ const LS_LANG_KEY = 'etw_language';
 const LS_CURRENCY_KEY = 'etw_currency';
 const LS_COUNTRY_KEY = 'etw_detected_country';
 
+const LANG_TO_LOCALE: Record<string, string> = {
+  en: 'en-GB',
+  de: 'de-DE',
+  fr: 'fr-FR',
+  es: 'es-ES',
+  pt: 'pt-PT',
+  nl: 'nl-NL',
+  sv: 'sv-SE',
+  ja: 'ja-JP',
+};
+
 interface LocaleContextValue {
   language: SupportedLanguage;
   currency: SupportedCurrency;
   detectedCountry: string;
+  browserLocale: string;
   setLanguage: (code: string) => void;
   setCurrency: (code: string) => void;
   convertPrice: (usdAmount: number) => number;
@@ -88,6 +100,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   const currency = getCurrencyInfo(currencyCode || 'USD');
   const language = getLanguageInfo(langCode || 'en');
+  const browserLocale = LANG_TO_LOCALE[language.code] ?? 'en-GB';
 
   const convertPrice = useCallback((usdAmount: number) => {
     return Math.round(usdAmount * currency.rateFromUSD);
@@ -95,18 +108,24 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   const formatPrice = useCallback((usdAmount: number) => {
     const converted = convertPrice(usdAmount);
-    const isHighValue = currency.code === 'JPY' || currency.code === 'KRW';
-    if (isHighValue) {
+    try {
+      return new Intl.NumberFormat(browserLocale, {
+        style: 'currency',
+        currency: currency.code,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(converted);
+    } catch {
       return `${currency.symbol}${converted.toLocaleString()}`;
     }
-    return `${currency.symbol}${converted.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
-  }, [convertPrice, currency]);
+  }, [convertPrice, currency, browserLocale]);
 
   return (
     <LocaleContext.Provider value={{
       language,
       currency,
       detectedCountry,
+      browserLocale,
       setLanguage: handleSetLanguage,
       setCurrency: handleSetCurrency,
       convertPrice,

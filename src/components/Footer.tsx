@@ -1,3 +1,4 @@
+import { useTranslations } from '../hooks/useTranslations';
 
 interface FooterProps {
   onTerms?: () => void;
@@ -5,6 +6,7 @@ interface FooterProps {
 }
 
 export default function Footer({ onTerms, onPrivacy }: FooterProps) {
+  const tx = useTranslations();
   return (
     <footer className="bg-[#1d1d1f] mt-0">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -28,21 +30,21 @@ export default function Footer({ onTerms, onPrivacy }: FooterProps) {
               onClick={onPrivacy}
               className="text-white/50 hover:text-white text-[13px] transition-colors"
             >
-              Privacy
+              {tx.footer.privacy}
             </button>
             <button
               onClick={onTerms}
               className="text-white/50 hover:text-white text-[13px] transition-colors"
             >
-              Terms
+              {tx.footer.terms}
             </button>
-            <a href="mailto:legal@endingthisweek.media" className="text-white/50 hover:text-white text-[13px] transition-colors">Contact</a>
+            <a href="mailto:legal@endingthisweek.media" className="text-white/50 hover:text-white text-[13px] transition-colors">{tx.footer.contact}</a>
           </div>
         </div>
 
         <div className="mt-8 text-center">
           <p className="text-white font-bold text-[13px]">
-            Last-minute media slots. Priced to move.
+            {tx.footer.tagline}
           </p>
           <p className="text-white/30 text-[12px] mt-2">
             &copy; 2026 EndingThisWeek.media. All rights reserved.
