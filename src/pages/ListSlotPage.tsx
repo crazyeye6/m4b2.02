@@ -5,6 +5,7 @@ import { sendSlotListedEmail } from '../lib/email';
 import { useAuth } from '../context/AuthContext';
 import TagInput from '../components/TagInput';
 import SubmitByEmail from '../components/SubmitByEmail';
+import CsvUpload from '../components/CsvUpload';
 import type { MediaType } from '../types';
 
 interface ListSlotPageProps {
@@ -357,7 +358,10 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
           </p>
         </div>
 
-        <SubmitByEmail variant="compact" />
+        <div className="space-y-3">
+          <SubmitByEmail variant="compact" />
+          <CsvUpload variant="compact" />
+        </div>
 
         <div className="flex items-center gap-4 my-8">
           <div className="flex-1 h-px bg-black/[0.08]" />

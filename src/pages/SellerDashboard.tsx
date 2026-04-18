@@ -3,6 +3,7 @@ import { BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import SubmitByEmail from '../components/SubmitByEmail';
+import CsvUpload from '../components/CsvUpload';
 import type { Listing, ListingStatus, DepositBooking, BookingStatus } from '../types';
 
 interface SellerDashboardProps {
@@ -163,14 +164,16 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
                 action={{ label: 'List a Slot', onClick: onListSlot }}
               />
               <SubmitByEmail variant="compact" />
+              <CsvUpload variant="compact" />
             </div>
           ) : (
             <div className="space-y-3">
               {listings.map(l => (
                 <ListingCard key={l.id} listing={l} onClick={() => setSelectedListing(l)} />
               ))}
-              <div className="pt-2">
+              <div className="pt-2 space-y-3">
                 <SubmitByEmail variant="compact" />
+                <CsvUpload variant="compact" />
               </div>
             </div>
           )
