@@ -19,9 +19,9 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
           </div>
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-semibold text-white leading-[1.05] tracking-[-0.03em] mb-6">
-            Newsletter ad slots ending this week
+            Every week, thousands of newsletter ad slots go unsold.
             <br />
-            <span className="italic text-white/60">— before they're gone</span>
+            <span className="italic text-white/60">We turn them into opportunities.</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-white/55 max-w-xl mx-auto mb-10 leading-relaxed font-light">
