@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package, Link, Twitter, Instagram, Youtube, Mic } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import SubmitByEmail from '../components/SubmitByEmail';
 import type { Listing, ListingStatus, DepositBooking, BookingStatus } from '../types';
 
 interface SellerDashboardProps {
@@ -154,17 +155,23 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
           </div>
         ) : tab === 'listings' ? (
           listings.length === 0 ? (
-            <EmptyState
-              icon={<Package className="w-8 h-8 text-[#aeaeb2]" />}
-              title="No listings yet"
-              description="List your first slot to start receiving bookings."
-              action={{ label: 'List a Slot', onClick: onListSlot }}
-            />
+            <div className="space-y-6">
+              <EmptyState
+                icon={<Package className="w-8 h-8 text-[#aeaeb2]" />}
+                title="No listings yet"
+                description="List your first slot to start receiving bookings."
+                action={{ label: 'List a Slot', onClick: onListSlot }}
+              />
+              <SubmitByEmail variant="compact" />
+            </div>
           ) : (
             <div className="space-y-3">
               {listings.map(l => (
                 <ListingCard key={l.id} listing={l} onClick={() => setSelectedListing(l)} />
               ))}
+              <div className="pt-2">
+                <SubmitByEmail variant="compact" />
+              </div>
             </div>
           )
         ) : tab === 'bookings' ? (

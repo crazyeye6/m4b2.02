@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { sendSlotListedEmail } from '../lib/email';
 import { useAuth } from '../context/AuthContext';
 import TagInput from '../components/TagInput';
+import SubmitByEmail from '../components/SubmitByEmail';
 import type { MediaType } from '../types';
 
 interface ListSlotPageProps {
@@ -354,6 +355,14 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
           <p className="text-[#6e6e73] text-[17px] font-light">
             Fill unsold inventory before the deadline. Buyers discover your opportunity and can secure it instantly.
           </p>
+        </div>
+
+        <SubmitByEmail variant="compact" />
+
+        <div className="flex items-center gap-4 my-8">
+          <div className="flex-1 h-px bg-black/[0.08]" />
+          <span className="text-[#aeaeb2] text-xs font-medium uppercase tracking-widest">or fill the form below</span>
+          <div className="flex-1 h-px bg-black/[0.08]" />
         </div>
 
         <div className="space-y-8">

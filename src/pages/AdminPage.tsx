@@ -4,13 +4,50 @@ import type { DepositBooking, RefundRequest, BookingStatus, RefundStatus } from 
 import {
   Shield, AlertTriangle, CheckCircle, RefreshCw, X, ChevronDown, Users,
   DollarSign, FileText, RotateCcw, Ban, Play, Loader2, Eye, Settings, Key, Save, EyeOff,
+  Mail, Clock, XCircle, ThumbsUp, ThumbsDown, ExternalLink,
 } from 'lucide-react';
+
+interface EmailSubmission {
+  id: string;
+  sender_email: string;
+  sender_name: string;
+  subject: string;
+  raw_body: string;
+  slot_count: number;
+  created_at: string;
+}
+
+interface EmailSubmissionSlot {
+  id: string;
+  submission_id: string;
+  status: 'pending_review' | 'parsed_ok' | 'needs_review' | 'approved' | 'rejected' | 'published' | 'expired';
+  slot_index: number;
+  media_name: string;
+  media_type: string;
+  audience_size: string;
+  opportunity_type: string;
+  original_price: string;
+  discount_price: string;
+  slots_available: string;
+  deadline: string;
+  category: string;
+  booking_url: string;
+  description: string;
+  raw_slot_text: string;
+  admin_notes: string;
+  reviewed_by: string;
+  reviewed_at: string | null;
+  listing_id: string | null;
+  created_at: string;
+  updated_at: string;
+  submission?: EmailSubmission;
+}
 
 interface AdminPageProps {
   onBack: () => void;
 }
 
-type AdminTab = 'bookings' | 'refunds' | 'settings';
+type AdminTab = 'bookings' | 'refunds' | 'email_submissions' | 'settings';
 
 const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string }> = {
   pending_payment: { label: 'Pending Payment', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
@@ -29,13 +66,15 @@ export default function AdminPage({ onBack }: AdminPageProps) {
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<DepositBooking | null>(null);
   const [selectedRefund, setSelectedRefund] = useState<(RefundRequest & { booking?: DepositBooking }) | null>(null);
+  const [emailSlots, setEmailSlots] = useState<EmailSubmissionSlot[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState<EmailSubmissionSlot | null>(null);
   const [updating, setUpdating] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [refundDecisionReason, setRefundDecisionReason] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const [bookingsRes, refundsRes] = await Promise.all([
+    const [bookingsRes, refundsRes, emailSlotsRes] = await Promise.all([
       supabase
         .from('deposit_bookings')
         .select('*, listing:listings(property_name, media_owner_name, media_company_name, slot_type, date_label)')
@@ -44,10 +83,15 @@ export default function AdminPage({ onBack }: AdminPageProps) {
         .from('refund_requests')
         .select('*')
         .order('created_at', { ascending: false }),
+      supabase
+        .from('email_submission_slots')
+        .select('*, submission:email_submissions(id, sender_email, sender_name, subject, raw_body, created_at)')
+        .order('created_at', { ascending: false }),
     ]);
 
     if (bookingsRes.data) setBookings(bookingsRes.data as DepositBooking[]);
     if (refundsRes.data) setRefunds(refundsRes.data as RefundRequest[]);
+    if (emailSlotsRes.data) setEmailSlots(emailSlotsRes.data as EmailSubmissionSlot[]);
     setLoading(false);
   }, []);
 
@@ -95,11 +139,29 @@ export default function AdminPage({ onBack }: AdminPageProps) {
     setUpdating(false);
   };
 
+  const updateEmailSlotStatus = async (id: string, status: EmailSubmissionSlot['status'], notes?: string) => {
+    setUpdating(true);
+    await supabase
+      .from('email_submission_slots')
+      .update({
+        status,
+        admin_notes: notes ?? '',
+        reviewed_at: new Date().toISOString(),
+        reviewed_by: 'Admin',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id);
+    await fetchData();
+    setSelectedSlot(null);
+    setUpdating(false);
+  };
+
   const stats = {
     total: bookings.length,
     secured: bookings.filter(b => b.status === 'secured').length,
     totalDeposits: bookings.filter(b => b.payment_status === 'paid').reduce((s, b) => s + b.deposit_amount, 0),
     pendingRefunds: refunds.filter(r => r.status === 'pending').length,
+    pendingEmailSlots: emailSlots.filter(s => s.status === 'pending_review' || s.status === 'needs_review').length,
   };
 
   return (
@@ -134,15 +196,16 @@ export default function AdminPage({ onBack }: AdminPageProps) {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
           <StatCard icon={<Users className="w-4 h-4 text-[#86868b]" />} label="Total Bookings" value={stats.total} />
           <StatCard icon={<CheckCircle className="w-4 h-4 text-green-600" />} label="Secured" value={stats.secured} highlight />
           <StatCard icon={<DollarSign className="w-4 h-4 text-[#86868b]" />} label="Deposits Collected" value={`$${stats.totalDeposits.toLocaleString()}`} />
           <StatCard icon={<AlertTriangle className="w-4 h-4 text-orange-500" />} label="Pending Refunds" value={stats.pendingRefunds} warn={stats.pendingRefunds > 0} />
+          <StatCard icon={<Mail className="w-4 h-4 text-blue-500" />} label="Email Queue" value={stats.pendingEmailSlots} warn={stats.pendingEmailSlots > 0} />
         </div>
 
-        <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit">
-          {([['bookings', 'Bookings'], ['refunds', 'Refund Requests'], ['settings', 'Settings']] as [AdminTab, string][]).map(([key, label]) => (
+        <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit flex-wrap">
+          {([['bookings', 'Bookings'], ['refunds', 'Refund Requests'], ['email_submissions', 'Email Submissions'], ['settings', 'Settings']] as [AdminTab, string][]).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
@@ -156,6 +219,11 @@ export default function AdminPage({ onBack }: AdminPageProps) {
               {key === 'refunds' && stats.pendingRefunds > 0 && (
                 <span className="ml-2 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
                   {stats.pendingRefunds}
+                </span>
+              )}
+              {key === 'email_submissions' && stats.pendingEmailSlots > 0 && (
+                <span className="ml-2 bg-blue-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                  {stats.pendingEmailSlots}
                 </span>
               )}
             </button>
@@ -173,6 +241,8 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             const booking = bookings.find(b => b.id === r.deposit_booking_id);
             setSelectedRefund({ ...r, booking });
           }} />
+        ) : tab === 'email_submissions' ? (
+          <EmailSubmissionsTable slots={emailSlots} onSelect={setSelectedSlot} />
         ) : (
           <SettingsPanel />
         )}
@@ -199,6 +269,295 @@ export default function AdminPage({ onBack }: AdminPageProps) {
           updating={updating}
         />
       )}
+
+      {selectedSlot && (
+        <EmailSlotDetailPanel
+          slot={selectedSlot}
+          onStatusChange={(status, notes) => updateEmailSlotStatus(selectedSlot.id, status, notes)}
+          onClose={() => setSelectedSlot(null)}
+          updating={updating}
+        />
+      )}
+    </div>
+  );
+}
+
+const EMAIL_SLOT_STATUS_CONFIG: Record<EmailSubmissionSlot['status'], { label: string; color: string; bg: string }> = {
+  pending_review: { label: 'Pending Review', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+  parsed_ok: { label: 'Parsed OK', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
+  needs_review: { label: 'Needs Review', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
+  approved: { label: 'Approved', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
+  rejected: { label: 'Rejected', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]' },
+  published: { label: 'Published', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
+  expired: { label: 'Expired', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]' },
+};
+
+function EmailSubmissionsTable({ slots, onSelect }: { slots: EmailSubmissionSlot[]; onSelect: (s: EmailSubmissionSlot) => void }) {
+  const [statusFilter, setStatusFilter] = useState<'all' | EmailSubmissionSlot['status']>('all');
+
+  const filtered = statusFilter === 'all' ? slots : slots.filter(s => s.status === statusFilter);
+
+  if (slots.length === 0) {
+    return (
+      <div className="text-center py-16 text-[#aeaeb2]">
+        <Mail className="w-10 h-10 mx-auto mb-3 opacity-30" />
+        <p className="font-medium mb-1">No email submissions yet</p>
+        <p className="text-xs">Opportunities submitted via slots@endingthisweek.media will appear here</p>
+      </div>
+    );
+  }
+
+  const pendingCount = slots.filter(s => s.status === 'pending_review' || s.status === 'needs_review').length;
+
+  return (
+    <div className="space-y-4">
+      {pendingCount > 0 && (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl px-5 py-3.5 flex items-center gap-3">
+          <Clock className="w-4 h-4 text-blue-600 shrink-0" />
+          <p className="text-blue-700 text-sm font-medium">{pendingCount} slot{pendingCount > 1 ? 's' : ''} awaiting review</p>
+        </div>
+      )}
+
+      <div className="flex items-center gap-2 flex-wrap">
+        {(['all', 'pending_review', 'needs_review', 'parsed_ok', 'approved', 'rejected', 'published'] as const).map(s => (
+          <button
+            key={s}
+            onClick={() => setStatusFilter(s)}
+            className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${
+              statusFilter === s
+                ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]'
+                : 'bg-white text-[#6e6e73] border-black/[0.08] hover:border-black/[0.16]'
+            }`}
+          >
+            {s === 'all' ? `All (${slots.length})` : EMAIL_SLOT_STATUS_CONFIG[s]?.label || s}
+          </button>
+        ))}
+      </div>
+
+      <div className="bg-white border border-black/[0.06] rounded-3xl overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-black/[0.06]">
+                <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Slot</th>
+                <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Sender</th>
+                <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Media</th>
+                <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Type</th>
+                <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Pricing</th>
+                <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Status</th>
+                <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Received</th>
+                <th className="px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-black/[0.04]">
+              {filtered.map(slot => {
+                const sc = EMAIL_SLOT_STATUS_CONFIG[slot.status];
+                return (
+                  <tr key={slot.id} className="hover:bg-[#f5f5f7] transition-colors">
+                    <td className="px-4 py-3">
+                      <span className="font-mono text-xs text-[#6e6e73] font-semibold">#{slot.slot_index}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-[#1d1d1f] text-sm font-medium">{slot.submission?.sender_name || '—'}</p>
+                      <p className="text-[#aeaeb2] text-xs">{slot.submission?.sender_email}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-[#1d1d1f] text-sm">{slot.media_name || <span className="text-[#aeaeb2]">—</span>}</p>
+                      <p className="text-[#aeaeb2] text-xs capitalize">{slot.media_type}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="text-[#6e6e73] text-xs">{slot.opportunity_type || '—'}</p>
+                    </td>
+                    <td className="px-4 py-3">
+                      {slot.discount_price ? (
+                        <div>
+                          <p className="text-green-600 font-bold text-sm">{slot.discount_price}</p>
+                          {slot.original_price && (
+                            <p className="text-[#aeaeb2] text-xs line-through">{slot.original_price}</p>
+                          )}
+                        </div>
+                      ) : <span className="text-[#aeaeb2] text-xs">—</span>}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center gap-1 border text-[11px] font-semibold px-2 py-0.5 rounded-lg ${sc.bg} ${sc.color}`}>
+                        {sc.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-[#aeaeb2] text-xs">{new Date(slot.created_at).toLocaleDateString()}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => onSelect(slot)}
+                        className="flex items-center gap-1 text-[#6e6e73] hover:text-[#1d1d1f] text-xs transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        Review
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EmailSlotDetailPanel({ slot, onStatusChange, onClose, updating }: {
+  slot: EmailSubmissionSlot;
+  onStatusChange: (status: EmailSubmissionSlot['status'], notes: string) => void;
+  onClose: () => void;
+  updating: boolean;
+}) {
+  const [notes, setNotes] = useState(slot.admin_notes || '');
+  const [showRaw, setShowRaw] = useState(false);
+  const sc = EMAIL_SLOT_STATUS_CONFIG[slot.status];
+
+  const fields = [
+    { label: 'Media Name', value: slot.media_name },
+    { label: 'Media Type', value: slot.media_type },
+    { label: 'Audience Size', value: slot.audience_size },
+    { label: 'Opportunity Type', value: slot.opportunity_type },
+    { label: 'Original Price', value: slot.original_price },
+    { label: 'Discount Price', value: slot.discount_price },
+    { label: 'Slots Available', value: slot.slots_available },
+    { label: 'Deadline', value: slot.deadline },
+    { label: 'Category', value: slot.category },
+    { label: 'Booking URL', value: slot.booking_url },
+  ].filter(f => f.value);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white border border-black/[0.08] rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl shadow-black/[0.12]">
+        <div className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-black/[0.06] px-6 py-4 flex items-center justify-between z-10">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-[#f5f5f7] border border-black/[0.08] rounded-xl flex items-center justify-center">
+              <Mail className="w-4 h-4 text-[#1d1d1f]" />
+            </div>
+            <div>
+              <h2 className="text-[#1d1d1f] font-semibold">Email Submission — Slot #{slot.slot_index}</h2>
+              <p className="text-[#6e6e73] text-xs mt-0.5">{slot.submission?.sender_email}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-[#aeaeb2] hover:text-[#1d1d1f] transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7]">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          <div className="flex items-center gap-3">
+            <span className={`inline-flex items-center gap-1 border text-[11px] font-semibold px-2.5 py-1 rounded-lg ${sc.bg} ${sc.color}`}>
+              {sc.label}
+            </span>
+            <span className="text-[#aeaeb2] text-xs">Received {new Date(slot.created_at).toLocaleString()}</span>
+          </div>
+
+          <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
+            <p className="text-[#86868b] text-[11px] font-semibold uppercase tracking-wider mb-3">Parsed Fields</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {fields.map(f => (
+                <div key={f.label} className="bg-white border border-black/[0.06] rounded-xl p-3">
+                  <p className="text-[#86868b] text-[10px] font-semibold uppercase tracking-wide mb-0.5">{f.label}</p>
+                  <p className="text-[#1d1d1f] text-sm font-medium break-words">
+                    {f.label === 'Booking URL' ? (
+                      <a href={f.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
+                        {f.value} <ExternalLink className="w-3 h-3 shrink-0" />
+                      </a>
+                    ) : f.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+            {slot.description && (
+              <div className="mt-2.5 bg-white border border-black/[0.06] rounded-xl p-3">
+                <p className="text-[#86868b] text-[10px] font-semibold uppercase tracking-wide mb-0.5">Description</p>
+                <p className="text-[#1d1d1f] text-sm leading-relaxed">{slot.description}</p>
+              </div>
+            )}
+          </div>
+
+          {slot.submission?.raw_body && (
+            <div>
+              <button
+                onClick={() => setShowRaw(v => !v)}
+                className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-xs font-medium transition-colors"
+              >
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showRaw ? 'rotate-180' : ''}`} />
+                {showRaw ? 'Hide' : 'Show'} source email
+              </button>
+              {showRaw && (
+                <pre className="mt-2 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4 text-xs text-[#6e6e73] font-mono leading-relaxed overflow-x-auto whitespace-pre-wrap max-h-48 overflow-y-auto">
+                  {slot.submission.raw_body}
+                </pre>
+              )}
+            </div>
+          )}
+
+          <div>
+            <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Admin Notes</label>
+            <textarea
+              value={notes}
+              onChange={e => setNotes(e.target.value)}
+              placeholder="Internal notes about this submission..."
+              rows={3}
+              className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all resize-none"
+            />
+          </div>
+
+          {(slot.status === 'pending_review' || slot.status === 'parsed_ok' || slot.status === 'needs_review') && (
+            <div className="flex gap-3">
+              <button
+                onClick={() => onStatusChange('approved', notes)}
+                disabled={updating}
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-40 text-white font-semibold py-3 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
+              >
+                {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
+                Approve
+              </button>
+              <button
+                onClick={() => onStatusChange('needs_review', notes)}
+                disabled={updating}
+                className="flex-1 bg-orange-50 hover:bg-orange-100 border border-orange-200 disabled:opacity-40 text-orange-700 font-semibold py-3 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
+              >
+                <Clock className="w-4 h-4" />
+                Needs Review
+              </button>
+              <button
+                onClick={() => onStatusChange('rejected', notes)}
+                disabled={updating}
+                className="flex-1 bg-[#f5f5f7] hover:bg-white border border-black/[0.08] disabled:opacity-40 text-[#6e6e73] font-semibold py-3 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
+              >
+                <ThumbsDown className="w-4 h-4" />
+                Reject
+              </button>
+            </div>
+          )}
+
+          {slot.status === 'approved' && (
+            <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
+              <div>
+                <p className="text-green-700 font-semibold text-sm">Approved</p>
+                {slot.reviewed_at && <p className="text-green-600 text-xs mt-0.5">Reviewed {new Date(slot.reviewed_at).toLocaleString()}</p>}
+              </div>
+            </div>
+          )}
+
+          {slot.status === 'rejected' && (
+            <div className="bg-[#f5f5f7] border border-black/[0.08] rounded-2xl p-4 flex items-center gap-3">
+              <XCircle className="w-5 h-5 text-[#86868b] shrink-0" />
+              <div>
+                <p className="text-[#6e6e73] font-semibold text-sm">Rejected</p>
+                {slot.admin_notes && <p className="text-[#aeaeb2] text-xs mt-0.5">{slot.admin_notes}</p>}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
