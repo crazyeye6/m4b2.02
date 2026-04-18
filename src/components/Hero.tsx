@@ -18,14 +18,14 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
             Live opportunities available now
           </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-semibold text-white leading-[1.05] tracking-[-0.03em] mb-6 italic">
-            media deals
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-semibold text-white leading-[1.05] tracking-[-0.03em] mb-6">
+            Media slots ending this week
             <br />
-            ending this week
+            <span className="italic text-white/60">— before they're gone</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-white/55 max-w-xl mx-auto mb-10 leading-relaxed font-light">
-            Last-minute newsletter, podcast, and influencer slots — priced to move, secured in 10 seconds.
+            Last-minute newsletter, podcast & influencer placements — discounted, verified, and ready to book.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
