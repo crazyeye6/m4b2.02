@@ -4,31 +4,31 @@ import { Mail, Copy, Check, Zap, Clock, Layers, ArrowRight, Shield, ChevronDown,
 const SUBMISSION_EMAIL = 'slots@endingthisweek.media';
 
 const TEMPLATE_FIELDS = [
-  { key: 'Media Name', example: 'Irish Startup Weekly', required: true },
+  { key: 'Media Name', example: 'SaaS Growth Weekly', required: true },
   { key: 'Media Type', example: 'Newsletter', required: true },
-  { key: 'Audience Size', example: '18,000', required: true },
-  { key: 'Opportunity Type', example: 'Sponsored Slot', required: true },
-  { key: 'Original Price', example: '€350', required: true },
-  { key: 'Discount Price', example: '€250', required: true },
+  { key: 'Audience Size', example: '48,000', required: true },
+  { key: 'Opportunity Type', example: 'Featured sponsor', required: true },
+  { key: 'Original Price', example: '$1,200', required: true },
+  { key: 'Discount Price', example: '$840', required: true },
   { key: 'Slots Available', example: '2', required: false },
-  { key: 'Deadline', example: 'Friday 6pm', required: true },
-  { key: 'Category', example: 'Startups / Business', required: false },
-  { key: 'Booking URL', example: 'https://example.com', required: false },
-  { key: 'Description', example: 'One dedicated sponsor slot available in this week\'s edition.', required: false },
+  { key: 'Deadline', example: 'Wednesday 5pm', required: true },
+  { key: 'Category', example: 'SaaS / B2B', required: false },
+  { key: 'Booking URL', example: 'https://example.com/advertise', required: false },
+  { key: 'Description', example: 'Featured sponsor slot in our Thursday edition reaching 48k SaaS founders and growth marketers.', required: false },
 ];
 
 const SLOT_2_VALUES: Record<string, string> = {
-  'Media Name': 'Founder Playbook Podcast',
-  'Media Type': 'Podcast',
-  'Audience Size': '25,000 downloads/month',
-  'Opportunity Type': 'Mid-roll Ad',
-  'Original Price': '€500',
-  'Discount Price': '€325',
+  'Media Name': 'The Founder Brief',
+  'Media Type': 'Newsletter',
+  'Audience Size': '32,000',
+  'Opportunity Type': 'Dedicated send',
+  'Original Price': '$900',
+  'Discount Price': '$630',
   'Slots Available': '1',
-  'Deadline': 'Thursday 5pm',
-  'Category': 'Business / Entrepreneurship',
-  'Booking URL': 'https://example.com',
-  'Description': 'Mid-roll placement in this week\'s upcoming episode.',
+  'Deadline': 'Sunday 6pm',
+  'Category': 'Startups / Business',
+  'Booking URL': 'https://example.com/founder-brief',
+  'Description': 'A dedicated send to 32k early-stage founders. Your brand owns the entire edition.',
 };
 
 const SINGLE_TEMPLATE = TEMPLATE_FIELDS.map(f => `${f.key}: ${f.example}`).join('\n');
@@ -42,7 +42,7 @@ const DOWNLOAD_TEMPLATE =
 `EndingThisWeek.media — Email Submission Template
 =================================================
 Send this email to: slots@endingthisweek.media
-Subject: New Slots — [Your Media Name]
+Subject: New Slots — [Your Newsletter Name]
 
 Instructions:
 - Each slot starts with --- SLOT N ---
@@ -54,30 +54,30 @@ Instructions:
 =================================================
 
 --- SLOT 1 ---
-Media Name: Irish Startup Weekly        (required)
+Media Name: SaaS Growth Weekly          (required)
 Media Type: Newsletter                  (required)
-Audience Size: 18,000                   (required)
-Opportunity Type: Sponsored Slot        (required)
-Original Price: €350                    (required)
-Discount Price: €250                    (required)
+Audience Size: 48,000                   (required)
+Opportunity Type: Featured sponsor      (required)
+Original Price: $1,200                  (required)
+Discount Price: $840                    (required)
 Slots Available: 2
-Deadline: Friday 6pm                    (required)
-Category: Startups / Business
+Deadline: Wednesday 5pm                 (required)
+Category: SaaS / B2B
 Booking URL: https://your-booking-link.com
-Description: One dedicated sponsor slot available in this week's edition. Your brand gets full header placement and a 150-word write-up to our engaged startup audience.
+Description: Featured sponsor slot in our Thursday edition reaching 48k SaaS founders and growth marketers. Full header placement, logo, and a 150-word write-up.
 
 --- SLOT 2 ---
-Media Name: The Growth Brief            (required)
+Media Name: The Founder Brief           (required)
 Media Type: Newsletter                  (required)
-Audience Size: 42,000                   (required)
-Opportunity Type: Sponsored Slot        (required)
-Original Price: €600                    (required)
-Discount Price: €420                    (required)
+Audience Size: 32,000                   (required)
+Opportunity Type: Dedicated send        (required)
+Original Price: $900                    (required)
+Discount Price: $630                    (required)
 Slots Available: 1
-Deadline: Wednesday 12pm               (required)
-Category: Marketing / Growth
+Deadline: Sunday 6pm                    (required)
+Category: Startups / Business
 Booking URL: https://your-booking-link.com
-Description: Exclusive sponsor slot in this Thursday's edition of The Growth Brief. Primary placement above the fold. Your logo, headline, and a 100-word message to 42,000 marketing professionals.
+Description: A dedicated send to 32k early-stage founders. Your brand owns the entire edition — full creative control, your subject line, your message.
 
 =================================================
 Need help? Reply to any of our emails and we'll assist you.
