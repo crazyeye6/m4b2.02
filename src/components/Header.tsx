@@ -1,5 +1,6 @@
 import { Menu, X, User, ChevronDown, Globe } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../context/LocaleContext';
 import { SUPPORTED_LANGUAGES, SUPPORTED_CURRENCIES } from '../lib/localeConfig';
@@ -34,6 +35,8 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, profile, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
+  const userBtnRef = useRef<HTMLButtonElement>(null);
   const [localeOpen, setLocaleOpen] = useState(false);
   const localeRef = useRef<HTMLDivElement>(null);
 
@@ -164,7 +167,14 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
             {user ? (
               <div className="relative">
                 <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  ref={userBtnRef}
+                  onClick={() => {
+                    if (!dropdownOpen && userBtnRef.current) {
+                      const rect = userBtnRef.current.getBoundingClientRect();
+                      setDropdownPos({ top: rect.bottom + 8, right: window.innerWidth - rect.right });
+                    }
+                    setDropdownOpen(!dropdownOpen);
+                  }}
                   className="flex items-center gap-2 bg-[#f5f5f7] border border-[#d2d2d7] hover:border-[#86868b] text-[#1d1d1f] text-[13px] font-medium px-3 py-1.5 rounded-xl transition-all"
                 >
                   <div className="w-5 h-5 bg-[#1d1d1f] rounded-full flex items-center justify-center">
@@ -173,10 +183,13 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                   <span className="max-w-[120px] truncate">{profile?.display_name || user.email}</span>
                   <ChevronDown className={`w-3 h-3 text-[#6e6e73] transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
                 </button>
-                {dropdownOpen && (
+                {dropdownOpen && createPortal(
                   <>
-                    <div className="fixed inset-0 z-10" onClick={() => setDropdownOpen(false)} />
-                    <div className="absolute right-0 top-full mt-2 w-52 bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-2xl shadow-xl shadow-black/10 z-20 overflow-hidden">
+                    <div className="fixed inset-0 z-[199]" onClick={() => setDropdownOpen(false)} />
+                    <div
+                      className="fixed w-52 bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-2xl shadow-xl shadow-black/10 z-[200] overflow-hidden"
+                      style={dropdownPos}
+                    >
                       <div className="px-4 py-3 border-b border-black/[0.06]">
                         <p className="text-[#1d1d1f] text-[12px] font-semibold truncate">{profile?.display_name || 'Account'}</p>
                         <p className="text-[#6e6e73] text-[11px] truncate mt-0.5">{user.email}</p>
@@ -205,7 +218,8 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                         </button>
                       </div>
                     </div>
-                  </>
+                  </>,
+                  document.body
                 )}
               </div>
             ) : (
