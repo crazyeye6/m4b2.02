@@ -678,7 +678,7 @@ function EmptyState({ icon, title, description, action }: {
   action?: { label: string; onClick: () => void };
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-20 gap-3">
+    <div className="flex flex-col items-center justify-center py-8 gap-3">
       <div className="w-14 h-14 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl flex items-center justify-center">
         {icon}
       </div>
