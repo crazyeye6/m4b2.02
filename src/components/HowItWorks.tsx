@@ -1,20 +1,20 @@
-import { Search, CreditCard, MessageSquare, TrendingDown } from 'lucide-react';
+import { Search, CreditCard, FileText, Mail } from 'lucide-react';
 
 const STEPS = [
   {
     icon: <Search className="w-4 h-4 text-sky-600" />,
     iconBg: 'bg-sky-50',
     number: '01',
-    title: 'Browse available slots',
-    description: 'Filter by channel, niche, geography, and budget. Each listing shows real audience data, the ad slot date, and a countdown to the claim deadline.',
+    title: 'Browse newsletter slots',
+    description: 'Filter by niche, subscriber count, geography, and budget. Each listing shows real audience data, the send date, and a countdown to the booking deadline.',
     note: null,
   },
   {
-    icon: <TrendingDown className="w-4 h-4 text-orange-500" />,
+    icon: <Mail className="w-4 h-4 text-orange-500" />,
     iconBg: 'bg-orange-50',
     number: '02',
-    title: 'Find a deal worth taking',
-    description: 'Sellers discount unsold inventory to fill it fast. You get access to premium placements at 20–50% below standard rate.',
+    title: 'Find a newsletter worth sponsoring',
+    description: 'Publishers discount unsold sponsorship slots to fill them fast. You get premium newsletter placements at 20–50% below the standard rate.',
     note: null,
   },
   {
@@ -22,15 +22,15 @@ const STEPS = [
     iconBg: 'bg-green-50',
     number: '03',
     title: 'Pay 10% to reserve',
-    description: 'Pay a 10% deposit to lock in your slot immediately. Your details and a booking reference are sent to the creator straight away.',
-    note: '90% paid direct to creator',
+    description: 'Pay a 10% deposit to lock in your sponsorship immediately. Your details and a booking reference are sent to the newsletter publisher straight away.',
+    note: '90% paid direct to publisher',
   },
   {
-    icon: <MessageSquare className="w-4 h-4 text-rose-500" />,
+    icon: <FileText className="w-4 h-4 text-rose-500" />,
     iconBg: 'bg-rose-50',
     number: '04',
-    title: 'Finalise with the creator',
-    description: "The creator's contact details are released after deposit. You settle the balance directly and finalise your campaign brief together.",
+    title: 'Send your ad copy',
+    description: "The publisher's contact details are released after deposit. You settle the balance directly and hand over your ad copy before the send date.",
     note: null,
   },
 ];
@@ -46,10 +46,10 @@ export default function HowItWorks({ onListSlot }: HowItWorksProps) {
         <div className="max-w-2xl mb-14">
           <p className="text-[12px] font-semibold uppercase tracking-widest text-[#86868b] mb-4">How it works</p>
           <h2 className="text-4xl font-semibold text-[#1d1d1f] mb-4 leading-tight tracking-[-0.02em]">
-            Reserve a slot in minutes,<br />pay the creator directly.
+            Reserve a newsletter slot in minutes,<br />pay the publisher directly.
           </h2>
           <p className="text-[#6e6e73] text-[17px] leading-relaxed font-light">
-            A 10% deposit locks in your listing. The remaining 90% is settled directly between you and the creator — fast, flexible, and commercial.
+            A 10% deposit locks in your sponsorship. The remaining 90% is settled directly with the newsletter publisher — fast, flexible, and commercial.
           </p>
         </div>
 
@@ -84,8 +84,8 @@ export default function HowItWorks({ onListSlot }: HowItWorksProps) {
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
           {[
             { label: 'Deposit only', value: '10%', sub: 'Charged by platform to reserve', color: 'text-green-600' },
-            { label: 'Balance paid', value: 'Direct', sub: 'Creator invoices you separately', color: 'text-sky-600' },
-            { label: 'Seller contact', value: 'Instant', sub: 'Released after deposit confirmed', color: 'text-orange-500' },
+            { label: 'Balance paid', value: 'Direct', sub: 'Publisher invoices you separately', color: 'text-sky-600' },
+            { label: 'Publisher contact', value: 'Instant', sub: 'Released after deposit confirmed', color: 'text-orange-500' },
           ].map((item, i) => (
             <div key={i} className="bg-[#f5f5f7] rounded-3xl p-5 text-center">
               <p className={`font-bold text-[22px] tracking-[-0.02em] mb-0.5 ${item.color}`}>{item.value}</p>
@@ -97,8 +97,8 @@ export default function HowItWorks({ onListSlot }: HowItWorksProps) {
 
         <div className="mt-12 bg-[#1d1d1f] rounded-3xl p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
-            <h3 className="text-white font-semibold text-[17px] mb-1 tracking-[-0.01em]">Are you a publisher or creator?</h3>
-            <p className="text-white/55 text-[14px]">List your unsold ad slots and set a deadline for interest — giving buyers time to get their copy ready before the promotional opportunity runs.</p>
+            <h3 className="text-white font-semibold text-[17px] mb-1 tracking-[-0.01em]">Got an unsold newsletter sponsorship this week?</h3>
+            <p className="text-white/55 text-[14px]">List it on EndingThisWeek and fill your slot before it goes out. Set a deadline, discount your rate, and let buyers come to you.</p>
           </div>
           <button onClick={onListSlot} className="flex-shrink-0 bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap shadow-lg shadow-green-500/25">
             List a Slot Free

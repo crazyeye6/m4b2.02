@@ -10,38 +10,36 @@ interface PreviewTableProps {
 }
 
 const EDITABLE_COLS: CsvColumnKey[] = [
-  'media_name',
-  'media_type',
-  'audience_size',
-  'opportunity_type',
+  'newsletter_name',
+  'subscriber_count',
+  'niche',
+  'sponsorship_type',
   'original_price',
   'discount_price',
   'slots_available',
   'deadline',
-  'category',
   'booking_url',
   'description',
 ];
 
 const VISIBLE_COLS: CsvColumnKey[] = [
-  'media_name',
-  'media_type',
+  'newsletter_name',
+  'subscriber_count',
+  'sponsorship_type',
   'original_price',
   'discount_price',
   'deadline',
-  'audience_size',
 ];
 
 const COL_LABELS: Record<CsvColumnKey, string> = {
-  media_name: 'Media name',
-  media_type: 'Media type',
-  audience_size: 'Audience',
-  opportunity_type: 'Opportunity type',
+  newsletter_name: 'Newsletter',
+  subscriber_count: 'Subscribers',
+  niche: 'Niche',
+  sponsorship_type: 'Sponsorship type',
   original_price: 'Orig. price',
   discount_price: 'Disc. price',
   slots_available: 'Slots',
   deadline: 'Deadline',
-  category: 'Category',
   booking_url: 'Booking URL',
   description: 'Description',
 };

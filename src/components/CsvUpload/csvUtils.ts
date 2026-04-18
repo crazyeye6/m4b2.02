@@ -3,41 +3,38 @@ import { CSV_COLUMNS } from './types';
 
 const TEMPLATE_ROWS = [
   {
-    media_name: 'SaaS Growth Weekly',
-    media_type: 'Newsletter',
-    audience_size: '48000',
-    opportunity_type: 'Featured sponsor',
+    newsletter_name: 'SaaS Growth Weekly',
+    subscriber_count: '48000',
+    niche: 'SaaS / B2B',
+    sponsorship_type: 'Featured sponsor',
     original_price: '1200',
     discount_price: '840',
     slots_available: '2',
     deadline: 'Wednesday 5pm',
-    category: 'SaaS / B2B',
     booking_url: 'https://example.com/advertise',
     description: 'Featured sponsor slot in our Thursday edition reaching 48k SaaS founders and growth marketers.',
   },
   {
-    media_name: 'The Founder Brief',
-    media_type: 'Newsletter',
-    audience_size: '32000',
-    opportunity_type: 'Dedicated send',
+    newsletter_name: 'The Founder Brief',
+    subscriber_count: '32000',
+    niche: 'Startups / Business',
+    sponsorship_type: 'Dedicated send',
     original_price: '900',
     discount_price: '630',
     slots_available: '1',
     deadline: 'Sunday 6pm',
-    category: 'Startups / Business',
     booking_url: 'https://example.com/founder-brief',
     description: 'A dedicated send to 32k early-stage founders. Your brand owns the entire edition.',
   },
   {
-    media_name: 'Growth Dispatch',
-    media_type: 'Newsletter',
-    audience_size: '39000',
-    opportunity_type: 'Solo blast',
+    newsletter_name: 'Growth Dispatch',
+    subscriber_count: '39000',
+    niche: 'Marketing / Growth',
+    sponsorship_type: 'Solo blast',
     original_price: '2200',
     discount_price: '1540',
     slots_available: '1',
     deadline: 'Saturday 12pm',
-    category: 'Marketing / Growth',
     booking_url: 'https://example.com/growth-dispatch',
     description: 'Solo blast to 39k performance marketers. Entire send is your brand — full creative control.',
   },
@@ -58,7 +55,7 @@ export function downloadTemplate() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'opportunity-template.csv';
+  a.download = 'newsletter-slots-template.csv';
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -101,19 +98,18 @@ export function validateRow(raw: Record<string, string>, rowIndex: number): CsvR
 
   const get = (key: string) => (raw[key] ?? '').trim();
 
-  const media_name = get('media_name');
-  const media_type = get('media_type');
-  const audience_size = get('audience_size');
-  const opportunity_type = get('opportunity_type');
+  const newsletter_name = get('newsletter_name');
+  const subscriber_count = get('subscriber_count');
+  const niche = get('niche');
+  const sponsorship_type = get('sponsorship_type');
   const original_price = get('original_price');
   const discount_price = get('discount_price');
   const slots_available = get('slots_available');
   const deadline = get('deadline');
-  const category = get('category');
   const booking_url = get('booking_url');
   const description = get('description');
 
-  const required: CsvColumnKey[] = ['media_name', 'media_type', 'audience_size', 'opportunity_type', 'original_price', 'discount_price', 'deadline'];
+  const required: CsvColumnKey[] = ['newsletter_name', 'subscriber_count', 'niche', 'sponsorship_type', 'original_price', 'discount_price', 'deadline'];
   for (const field of required) {
     if (!get(field)) {
       errors.push({ field, severity: 'error', message: `${field.replace(/_/g, ' ')} is required` });
@@ -138,15 +134,14 @@ export function validateRow(raw: Record<string, string>, rowIndex: number): CsvR
 
   return {
     rowIndex,
-    media_name,
-    media_type,
-    audience_size,
-    opportunity_type,
+    newsletter_name,
+    subscriber_count,
+    niche,
+    sponsorship_type,
     original_price,
     discount_price,
     slots_available,
     deadline,
-    category,
     booking_url,
     description,
     errors,

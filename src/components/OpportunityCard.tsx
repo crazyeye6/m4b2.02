@@ -1,4 +1,5 @@
-import { Users, MapPin, Mail, Instagram, Mic, Shield, AlertTriangle, CheckCircle, Clock, Eye, Lock, Zap, CalendarClock } from 'lucide-react';
+import { Users, MapPin, Mail, Shield, AlertTriangle, CheckCircle, Clock, Eye, Lock, Zap, CalendarClock } from 'lucide-react';
+/* Kept for future re-enablement: Instagram, Mic */
 import type { Listing } from '../types';
 import CountdownTimer from './CountdownTimer';
 import { resolvePublishDate, formatDeadlineDate } from '../lib/dateUtils';
@@ -18,6 +19,7 @@ const MEDIA_CONFIG = {
     accent: 'from-green-500 to-green-600',
     glow: 'shadow-green-900/30',
   },
+  /* Future: podcast and influencer configs preserved here
   podcast: {
     icon: <Mic className="w-3.5 h-3.5" />,
     color: 'bg-yellow-50 text-yellow-600 border-yellow-100',
@@ -30,7 +32,12 @@ const MEDIA_CONFIG = {
     accent: 'from-rose-500 to-rose-600',
     glow: 'shadow-rose-900/30',
   },
+  */
 };
+
+function getMediaConfig(mediaType: string) {
+  return MEDIA_CONFIG[mediaType as keyof typeof MEDIA_CONFIG] ?? MEDIA_CONFIG.newsletter;
+}
 
 function fmtCompact(n: number, locale: string): string {
   try {
@@ -43,7 +50,7 @@ function fmtCompact(n: number, locale: string): string {
 }
 
 export default function OpportunityCard({ listing, onSecure, onDetails }: OpportunityCardProps) {
-  const mc = MEDIA_CONFIG[listing.media_type];
+  const mc = getMediaConfig(listing.media_type);
   const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
   const savings = listing.original_price - listing.discounted_price;
   const depositAmount = Math.round(listing.discounted_price * 0.1);
@@ -66,14 +73,6 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
       case 'secured': return 'Secured';
       case 'expired': return tx.card.closed;
       default: return '';
-    }
-  })();
-
-  const mediaLabel = (() => {
-    switch (listing.media_type) {
-      case 'newsletter': return 'Newsletter';
-      case 'podcast': return 'Podcast';
-      case 'influencer': return 'Influencer';
     }
   })();
 
@@ -118,7 +117,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         <div className="flex items-center justify-between mb-3 gap-3">
           <span className={`inline-flex items-center gap-1.5 border text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide flex-shrink-0 ${mc.color}`}>
             {mc.icon}
-            {mediaLabel}
+            Newsletter
           </span>
 
           {isLive && (
@@ -196,27 +195,17 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         </div>
 
         <div className="grid grid-cols-3 gap-2 mb-4">
-          {listing.media_type === 'newsletter' && (
-            <>
-              <StatPill label={tx.card.subscribers} value={fmtCompact(listing.subscribers || 0, browserLocale)} />
-              <StatPill label={tx.card.openRate} value={listing.open_rate || '—'} accent />
-              <StatPill label={tx.card.ctr} value={listing.ctr || '—'} />
-            </>
-          )}
-          {listing.media_type === 'podcast' && (
-            <>
-              <StatPill label={tx.card.downloadsEp} value={fmtCompact(listing.downloads || 0, browserLocale)} />
-              <StatPill label={tx.card.adType} value={listing.ad_type || '—'} accent />
-              <StatPill label={tx.card.location} value={listing.location.split('/')[0].trim()} />
-            </>
-          )}
-          {listing.media_type === 'influencer' && (
-            <>
-              <StatPill label={tx.card.followers} value={fmtCompact(listing.followers || 0, browserLocale)} />
-              <StatPill label={tx.card.engagement} value={listing.engagement_rate || '—'} accent />
-              <StatPill label={tx.card.deliverable} value={listing.deliverable || '—'} />
-            </>
-          )}
+          <StatPill label={tx.card.subscribers} value={fmtCompact(listing.subscribers || 0, browserLocale)} />
+          <StatPill label={tx.card.openRate} value={listing.open_rate || '—'} accent />
+          <StatPill label={tx.card.ctr} value={listing.ctr || '—'} />
+          {/* Future podcast stats:
+          <StatPill label={tx.card.downloadsEp} value={fmtCompact(listing.downloads || 0, browserLocale)} />
+          <StatPill label={tx.card.adType} value={listing.ad_type || '—'} accent />
+          Future influencer stats:
+          <StatPill label={tx.card.followers} value={fmtCompact(listing.followers || 0, browserLocale)} />
+          <StatPill label={tx.card.engagement} value={listing.engagement_rate || '—'} accent />
+          <StatPill label={tx.card.deliverable} value={listing.deliverable || '—'} />
+          */}
         </div>
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[11px] text-[#6e6e73]">

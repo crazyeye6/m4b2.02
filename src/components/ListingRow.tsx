@@ -1,7 +1,8 @@
 import {
-  Mail, Mic, Instagram, MapPin, Users, Lock, Zap, Eye,
+  Mail, MapPin, Users, Lock, Zap, Eye,
   CheckCircle, Clock, AlertTriangle, CalendarClock,
 } from 'lucide-react';
+/* Kept for future re-enablement: Mic, Instagram */
 import type { Listing } from '../types';
 import { resolvePublishDate } from '../lib/dateUtils';
 import { useLocale } from '../context/LocaleContext';
@@ -13,26 +14,27 @@ interface ListingRowProps {
   onDetails: (listing: Listing) => void;
 }
 
-const MEDIA_CONFIG = {
-  newsletter: {
-    icon: <Mail className="w-3.5 h-3.5" />,
-    label: 'Newsletter',
-    color: 'bg-green-50 text-green-600 border-green-100',
-    bar: 'bg-green-500',
-  },
-  podcast: {
-    icon: <Mic className="w-3.5 h-3.5" />,
-    label: 'Podcast',
-    color: 'bg-yellow-50 text-yellow-600 border-yellow-100',
-    bar: 'bg-yellow-500',
-  },
-  influencer: {
-    icon: <Instagram className="w-3.5 h-3.5" />,
-    label: 'Influencer',
-    color: 'bg-rose-50 text-rose-500 border-rose-100',
-    bar: 'bg-rose-500',
-  },
+const NEWSLETTER_CONFIG = {
+  icon: <Mail className="w-3.5 h-3.5" />,
+  label: 'Newsletter',
+  color: 'bg-green-50 text-green-600 border-green-100',
+  bar: 'bg-green-500',
 };
+
+/* Future: podcast and influencer configs preserved here
+const PODCAST_CONFIG = {
+  icon: <Mic className="w-3.5 h-3.5" />,
+  label: 'Podcast',
+  color: 'bg-yellow-50 text-yellow-600 border-yellow-100',
+  bar: 'bg-yellow-500',
+};
+const INFLUENCER_CONFIG = {
+  icon: <Instagram className="w-3.5 h-3.5" />,
+  label: 'Influencer',
+  color: 'bg-rose-50 text-rose-500 border-rose-100',
+  bar: 'bg-rose-500',
+};
+*/
 
 function fmt(n: number): string {
   if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
@@ -50,7 +52,7 @@ function StatCell({ label, value, accent }: { label: string; value: string; acce
 }
 
 export default function ListingRow({ listing, onSecure, onDetails }: ListingRowProps) {
-  const mc = MEDIA_CONFIG[listing.media_type];
+  const mc = NEWSLETTER_CONFIG;
   const { formatPrice } = useLocale();
 
   const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
@@ -90,7 +92,6 @@ export default function ListingRow({ listing, onSecure, onDetails }: ListingRowP
 
       <div className="flex items-center gap-4 px-5 py-4 pl-6">
 
-        {/* Media badge + name */}
         <div className="flex-1 min-w-0 flex items-start gap-3">
           <div className="flex-shrink-0 pt-0.5">
             <span className={`inline-flex items-center gap-1.5 border text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${mc.color}`}>
@@ -117,37 +118,25 @@ export default function ListingRow({ listing, onSecure, onDetails }: ListingRowP
           </div>
         </div>
 
-        {/* Stats */}
         <div className="hidden lg:flex items-center gap-4 flex-shrink-0">
-          {listing.media_type === 'newsletter' && (
-            <>
-              <StatCell label="Subscribers" value={fmt(listing.subscribers || 0)} />
-              <StatCell label="Open rate" value={listing.open_rate || '—'} accent />
-              <StatCell label="CTR" value={listing.ctr || '—'} />
-            </>
-          )}
-          {listing.media_type === 'podcast' && (
-            <>
-              <StatCell label="Downloads/ep" value={fmt(listing.downloads || 0)} />
-              <StatCell label="Ad type" value={listing.ad_type || '—'} accent />
-            </>
-          )}
-          {listing.media_type === 'influencer' && (
-            <>
-              <StatCell label="Followers" value={fmt(listing.followers || 0)} />
-              <StatCell label="Engagement" value={listing.engagement_rate || '—'} accent />
-            </>
-          )}
+          <StatCell label="Subscribers" value={fmt(listing.subscribers || 0)} />
+          <StatCell label="Open rate" value={listing.open_rate || '—'} accent />
+          <StatCell label="CTR" value={listing.ctr || '—'} />
+          {/* Future podcast stats:
+          <StatCell label="Downloads/ep" value={fmt(listing.downloads || 0)} />
+          <StatCell label="Ad type" value={listing.ad_type || '—'} accent />
+          Future influencer stats:
+          <StatCell label="Followers" value={fmt(listing.followers || 0)} />
+          <StatCell label="Engagement" value={listing.engagement_rate || '—'} accent />
+          */}
         </div>
 
-        {/* Publish date */}
         <div className="hidden md:block flex-shrink-0 text-center min-w-[80px]">
-          <p className="text-[10px] text-[#aeaeb2] uppercase tracking-wide font-medium">Publish</p>
+          <p className="text-[10px] text-[#aeaeb2] uppercase tracking-wide font-medium">Send date</p>
           <p className="text-[12px] font-bold text-[#1d1d1f] mt-0.5">{weekday || calDate || '—'}</p>
           {weekday && <p className="text-[10px] text-[#6e6e73]">{calDate}</p>}
         </div>
 
-        {/* Book by */}
         <div className="hidden sm:flex flex-col items-center flex-shrink-0 min-w-[90px]">
           <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-semibold ${isLive ? 'bg-orange-50 text-orange-600' : 'bg-[#f5f5f7] text-[#6e6e73]'}`}>
             <CalendarClock className="w-3 h-3" />
@@ -179,7 +168,6 @@ export default function ListingRow({ listing, onSecure, onDetails }: ListingRowP
           )}
         </div>
 
-        {/* Price */}
         <div className="flex-shrink-0 text-right min-w-[100px]">
           <div className="flex items-center gap-1.5 justify-end">
             <span className="text-[#aeaeb2] text-[11px] line-through">{formatPrice(listing.original_price)}</span>
@@ -190,7 +178,6 @@ export default function ListingRow({ listing, onSecure, onDetails }: ListingRowP
           <p className="text-[#aeaeb2] text-[10px] mt-0.5">Deposit: {formatPrice(depositAmount)}</p>
         </div>
 
-        {/* CTA */}
         <div className="flex-shrink-0 flex flex-col gap-1.5 min-w-[110px]">
           <button
             onClick={() => !isSecured && onSecure(listing)}

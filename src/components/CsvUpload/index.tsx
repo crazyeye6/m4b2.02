@@ -77,15 +77,15 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
       batch_id: batch.id,
       row_index: row.rowIndex,
       status: (row.hasErrors ? 'needs_review' : 'pending_review') as string,
-      media_name: row.media_name,
-      media_type: row.media_type,
-      audience_size: row.audience_size,
-      opportunity_type: row.opportunity_type,
+      media_name: row.newsletter_name,
+      media_type: 'newsletter',
+      audience_size: row.subscriber_count,
+      opportunity_type: row.sponsorship_type,
       original_price: row.original_price,
       discount_price: row.discount_price,
       slots_available: row.slots_available,
       deadline: row.deadline,
-      category: row.category,
+      category: row.niche,
       booking_url: row.booking_url,
       description: row.description,
       validation_errors: row.errors,
@@ -112,7 +112,7 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
             <p className="text-white/40 text-[11px] font-semibold uppercase tracking-widest mb-1">Bulk upload</p>
             <h3 className="text-white font-semibold text-base mb-1.5 tracking-[-0.01em]">Upload via CSV</h3>
             <p className="text-white/50 text-sm mb-4 leading-relaxed">
-              Best for agencies or creators with multiple opportunities. Upload a CSV and we'll create draft listings for each row.
+              Best for newsletter publishers with multiple sponsorship slots. Upload a CSV and we'll create draft listings for each row.
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <button
@@ -140,10 +140,10 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
             Bulk Upload
           </div>
           <h2 className="text-3xl sm:text-4xl font-semibold text-[#1d1d1f] tracking-[-0.02em] mb-3">
-            Upload multiple opportunities via CSV
+            Upload multiple newsletter slots via CSV
           </h2>
           <p className="text-[#6e6e73] text-lg max-w-xl mx-auto leading-relaxed">
-            Upload a file with your available slots and we'll create draft listings for review. Best for agencies or creators with multiple opportunities.
+            Upload a file with your available sponsorship slots and we'll create draft listings for review. Best for newsletter publishers with multiple opportunities.
           </p>
         </div>
 
@@ -185,7 +185,7 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
                   <span className="w-2.5 h-2.5 rounded-full bg-black/[0.08]" />
                   <span className="w-2.5 h-2.5 rounded-full bg-black/[0.08]" />
                 </div>
-                <span className="text-[#aeaeb2] text-xs ml-1">opportunity-template.csv — header row</span>
+                <span className="text-[#aeaeb2] text-xs ml-1">newsletter-slots-template.csv — header row</span>
               </div>
               <div className="p-5 overflow-x-auto">
                 <div className="flex flex-wrap gap-2">

@@ -350,9 +350,9 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             <Zap className="w-3 h-3" />
             For sellers
           </div>
-          <h1 className="text-4xl font-semibold text-[#1d1d1f] mb-3 tracking-[-0.02em]">List your slot</h1>
+          <h1 className="text-4xl font-semibold text-[#1d1d1f] mb-3 tracking-[-0.02em]">List your newsletter slot</h1>
           <p className="text-[#6e6e73] text-[17px] font-light">
-            Fill unsold inventory before the deadline. Buyers discover your opportunity and can secure it instantly.
+            Got an unsold sponsorship this week? List it and fill your slot before it goes out.
           </p>
         </div>
 

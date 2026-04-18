@@ -14,7 +14,7 @@ export default function StatsBar({ liveCount, avgDiscount, totalSavings }: Stats
       icon: <Activity className="w-4 h-4 text-green-600" />,
       iconBg: 'bg-green-50',
       value: liveCount.toString(),
-      label: 'Live opportunities',
+      label: 'Newsletter slots live',
       pulse: true,
     },
     {
