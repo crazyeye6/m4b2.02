@@ -1,11 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Mail, ChevronLeft, CheckCircle, AlertTriangle, Loader2, DollarSign, Users, BarChart2, Tag, Shield, Zap, Plus, X, CircleUser as UserCircle, ArrowRight, ChevronRight, Info, Upload, ChevronDown } from 'lucide-react';
+import { Mail, ChevronLeft, CheckCircle, AlertTriangle, Loader2, DollarSign, Users, BarChart2, Tag, Shield, Zap, Plus, X, CircleUser as UserCircle, ArrowRight, ChevronRight, Info } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { sendSlotListedEmail } from '../lib/email';
 import { useAuth } from '../context/AuthContext';
 import TagInput from '../components/TagInput';
-import SubmitByEmail from '../components/SubmitByEmail';
-import CsvUpload from '../components/CsvUpload';
 import type { MediaType } from '../types';
 
 interface ListSlotPageProps {
@@ -112,7 +110,6 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [altMethod, setAltMethod] = useState<'email' | 'csv' | null>(null);
 
   const set = <K extends keyof FormData>(key: K, value: FormData[K]) =>
     setForm(prev => ({ ...prev, [key]: value }));
@@ -348,67 +345,6 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             Got an unsold sponsorship this week? Fill your slot before it goes out.
           </p>
         </div>
-
-        {/* Alt submission options — two large option cards */}
-        {step === 1 && (
-          <div className="mb-8">
-            <p className="text-[#6e6e73] text-[13px] font-medium mb-3">Prefer not to fill a form?</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* Email option */}
-              <div className={`rounded-3xl border transition-all overflow-hidden ${altMethod === 'email' ? 'border-[#1d1d1f]/20 shadow-md' : 'border-black/[0.06] shadow-sm'}`}>
-                <button
-                  type="button"
-                  onClick={() => setAltMethod(prev => prev === 'email' ? null : 'email')}
-                  className="w-full bg-white hover:bg-[#fafafa] transition-colors p-5 text-left"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="w-11 h-11 bg-[#1d1d1f] rounded-2xl flex items-center justify-center shrink-0">
-                      <Mail className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[#1d1d1f] font-semibold text-[15px] mb-1 tracking-[-0.01em]">Submit your slots by email</p>
-                      <p className="text-[#6e6e73] text-[13px] leading-relaxed">No form needed — send us your slot details and we'll build the listing for you.</p>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-[#aeaeb2] shrink-0 mt-1 transition-transform ${altMethod === 'email' ? 'rotate-180' : ''}`} />
-                  </div>
-                </button>
-                {altMethod === 'email' && (
-                  <div className="border-t border-black/[0.06]">
-                    <SubmitByEmail variant="compact" />
-                  </div>
-                )}
-              </div>
-
-              {/* CSV option */}
-              <div className={`rounded-3xl border transition-all overflow-hidden ${altMethod === 'csv' ? 'border-[#1d1d1f]/20 shadow-md' : 'border-black/[0.06] shadow-sm'}`}>
-                <button
-                  type="button"
-                  onClick={() => setAltMethod(prev => prev === 'csv' ? null : 'csv')}
-                  className="w-full bg-white hover:bg-[#fafafa] transition-colors p-5 text-left"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="w-11 h-11 bg-[#1d1d1f] rounded-2xl flex items-center justify-center shrink-0">
-                      <Upload className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[#1d1d1f] font-semibold text-[15px] mb-1 tracking-[-0.01em]">Upload via CSV</p>
-                      <p className="text-[#6e6e73] text-[13px] leading-relaxed">Got multiple slots? Upload them all at once with our CSV template.</p>
-                    </div>
-                    <ChevronDown className={`w-4 h-4 text-[#aeaeb2] shrink-0 mt-1 transition-transform ${altMethod === 'csv' ? 'rotate-180' : ''}`} />
-                  </div>
-                </button>
-                {altMethod === 'csv' && (
-                  <div className="border-t border-black/[0.06]">
-                    <CsvUpload variant="compact" />
-                  </div>
-                )}
-              </div>
-            </div>
-            {(altMethod === 'email' || altMethod === 'csv') && (
-              <p className="text-center text-[#aeaeb2] text-[12px] mt-4">Or scroll down to fill the form instead</p>
-            )}
-          </div>
-        )}
 
         {/* Step indicator */}
         <div className="flex items-center gap-0 mb-8">
