@@ -5,7 +5,9 @@ import {
   Shield, AlertTriangle, CheckCircle, RefreshCw, X, ChevronDown, Users,
   DollarSign, FileText, RotateCcw, Ban, Play, Loader2, Eye, Settings, Key, Save, EyeOff,
   Mail, Clock, XCircle, ThumbsUp, ThumbsDown, ExternalLink, Upload,
+  Zap, AlertCircle, Send, BarChart2, Globe, Percent,
 } from 'lucide-react';
+import { parseEmailBody, confidenceLabel, fieldConfidenceColor } from '../lib/emailParser';
 
 interface EmailSubmission {
   id: string;
@@ -40,6 +42,17 @@ interface EmailSubmissionSlot {
   listing_id: string | null;
   created_at: string;
   updated_at: string;
+  open_rate?: string;
+  geography?: string;
+  placement_type?: string;
+  send_date?: string;
+  deadline_date?: string;
+  sample_link?: string;
+  past_advertisers_text?: string;
+  publisher_name?: string;
+  confidence_score?: number;
+  field_confidence?: Record<string, number>;
+  missing_fields?: string[];
   submission?: EmailSubmission;
 }
 
@@ -97,7 +110,7 @@ const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: strin
 };
 
 export default function AdminPage({ onBack }: AdminPageProps) {
-  const [tab, setTab] = useState<AdminTab>('bookings');
+  const [tab, setTab] = useState<AdminTab>('email_submissions');
   const [bookings, setBookings] = useState<DepositBooking[]>([]);
   const [refunds, setRefunds] = useState<RefundRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -183,7 +196,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
     setUpdating(false);
   };
 
-  const updateEmailSlotStatus = async (id: string, status: EmailSubmissionSlot['status'], notes?: string) => {
+  const updateEmailSlotStatus = async (id: string, status: EmailSubmissionSlot['status'], notes?: string, extraFields?: Partial<EmailSubmissionSlot>) => {
     setUpdating(true);
     await supabase
       .from('email_submission_slots')
@@ -193,10 +206,27 @@ export default function AdminPage({ onBack }: AdminPageProps) {
         reviewed_at: new Date().toISOString(),
         reviewed_by: 'Admin',
         updated_at: new Date().toISOString(),
+        ...(extraFields ?? {}),
       })
       .eq('id', id);
     await fetchData();
     setSelectedSlot(null);
+    setUpdating(false);
+  };
+
+  const publishEmailSlot = async (id: string, notes?: string) => {
+    setUpdating(true);
+    try {
+      const { error } = await supabase.rpc('publish_email_slot_to_listing', { slot_id: id });
+      if (error) throw error;
+      if (notes) {
+        await supabase.from('email_submission_slots').update({ admin_notes: notes }).eq('id', id);
+      }
+      await fetchData();
+      setSelectedSlot(null);
+    } catch (err) {
+      console.error('Publish failed:', err);
+    }
     setUpdating(false);
   };
 
@@ -264,11 +294,17 @@ export default function AdminPage({ onBack }: AdminPageProps) {
           <StatCard icon={<DollarSign className="w-4 h-4 text-[#86868b]" />} label="Deposits Collected" value={`$${stats.totalDeposits.toLocaleString()}`} />
           <StatCard icon={<AlertTriangle className="w-4 h-4 text-orange-500" />} label="Pending Refunds" value={stats.pendingRefunds} warn={stats.pendingRefunds > 0} />
           <StatCard icon={<Mail className="w-4 h-4 text-blue-500" />} label="Email Queue" value={stats.pendingEmailSlots} warn={stats.pendingEmailSlots > 0} />
-          <StatCard icon={<Upload className="w-4 h-4 text-violet-500" />} label="CSV Queue" value={stats.pendingCsvSlots} warn={stats.pendingCsvSlots > 0} />
+          <StatCard icon={<Upload className="w-4 h-4 text-[#6e6e73]" />} label="CSV Queue" value={stats.pendingCsvSlots} warn={stats.pendingCsvSlots > 0} />
         </div>
 
         <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit flex-wrap">
-          {([['bookings', 'Bookings'], ['refunds', 'Refund Requests'], ['email_submissions', 'Email Submissions'], ['csv_uploads', 'CSV Uploads'], ['settings', 'Settings']] as [AdminTab, string][]).map(([key, label]) => (
+          {([
+            ['email_submissions', 'Email Inbox'],
+            ['bookings', 'Bookings'],
+            ['refunds', 'Refund Requests'],
+            ['csv_uploads', 'CSV Uploads'],
+            ['settings', 'Settings'],
+          ] as [AdminTab, string][]).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
@@ -302,6 +338,8 @@ export default function AdminPage({ onBack }: AdminPageProps) {
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-6 h-6 text-[#1d1d1f] animate-spin" />
           </div>
+        ) : tab === 'email_submissions' ? (
+          <EmailSubmissionsTable slots={emailSlots} onSelect={setSelectedSlot} />
         ) : tab === 'bookings' ? (
           <BookingsTable bookings={bookings} onSelect={setSelectedBooking} />
         ) : tab === 'refunds' ? (
@@ -309,8 +347,6 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             const booking = bookings.find(b => b.id === r.deposit_booking_id);
             setSelectedRefund({ ...r, booking });
           }} />
-        ) : tab === 'email_submissions' ? (
-          <EmailSubmissionsTable slots={emailSlots} onSelect={setSelectedSlot} />
         ) : tab === 'csv_uploads' ? (
           <CsvUploadsTable slots={csvSlots} onSelect={setSelectedCsvSlot} />
         ) : (
@@ -343,7 +379,8 @@ export default function AdminPage({ onBack }: AdminPageProps) {
       {selectedSlot && (
         <EmailSlotDetailPanel
           slot={selectedSlot}
-          onStatusChange={(status, notes) => updateEmailSlotStatus(selectedSlot.id, status, notes)}
+          onStatusChange={(status, notes, extraFields) => updateEmailSlotStatus(selectedSlot.id, status, notes, extraFields)}
+          onPublish={(notes) => publishEmailSlot(selectedSlot.id, notes)}
           onClose={() => setSelectedSlot(null)}
           updating={updating}
         />
@@ -362,8 +399,8 @@ export default function AdminPage({ onBack }: AdminPageProps) {
 }
 
 const EMAIL_SLOT_STATUS_CONFIG: Record<EmailSubmissionSlot['status'], { label: string; color: string; bg: string }> = {
-  pending_review: { label: 'Pending Review', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
-  parsed_ok: { label: 'Parsed OK', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
+  pending_review: { label: 'New Submission', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+  parsed_ok: { label: 'Parsed Draft', color: 'text-teal-700', bg: 'bg-teal-50 border-teal-200' },
   needs_review: { label: 'Needs Review', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
   approved: { label: 'Approved', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
   rejected: { label: 'Rejected', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]' },
@@ -371,10 +408,37 @@ const EMAIL_SLOT_STATUS_CONFIG: Record<EmailSubmissionSlot['status'], { label: s
   expired: { label: 'Expired', color: 'text-[#6e6e73]', bg: 'bg-[#f5f5f7] border-black/[0.08]' },
 };
 
+function ConfidencePill({ score }: { score: number }) {
+  const { label, color, bg } = confidenceLabel(score);
+  return (
+    <span className={`inline-flex items-center gap-1 border text-[10px] font-semibold px-2 py-0.5 rounded-lg ${bg} ${color}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${score >= 80 ? 'bg-green-500' : score >= 50 ? 'bg-amber-500' : 'bg-red-500'}`} />
+      {label} {score > 0 ? `· ${score}%` : ''}
+    </span>
+  );
+}
+
 function EmailSubmissionsTable({ slots, onSelect }: { slots: EmailSubmissionSlot[]; onSelect: (s: EmailSubmissionSlot) => void }) {
   const [statusFilter, setStatusFilter] = useState<'all' | EmailSubmissionSlot['status']>('all');
 
-  const filtered = statusFilter === 'all' ? slots : slots.filter(s => s.status === statusFilter);
+  const slotsWithParsed = slots.map(slot => {
+    if (slot.confidence_score !== undefined && slot.confidence_score > 0) return slot;
+    if (!slot.submission?.raw_body) return slot;
+    try {
+      const parsed = parseEmailBody(slot.submission.raw_body);
+      const match = parsed[slot.slot_index - 1] ?? parsed[0];
+      if (!match) return slot;
+      return {
+        ...slot,
+        confidence_score: match.confidence_score,
+        missing_fields: match.missing_fields,
+      };
+    } catch {
+      return slot;
+    }
+  });
+
+  const filtered = statusFilter === 'all' ? slotsWithParsed : slotsWithParsed.filter(s => s.status === statusFilter);
 
   if (slots.length === 0) {
     return (
@@ -387,13 +451,33 @@ function EmailSubmissionsTable({ slots, onSelect }: { slots: EmailSubmissionSlot
   }
 
   const pendingCount = slots.filter(s => s.status === 'pending_review' || s.status === 'needs_review').length;
+  const publishedCount = slots.filter(s => s.status === 'published').length;
 
   return (
     <div className="space-y-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-2">
+        <div className="bg-white border border-black/[0.06] rounded-2xl p-4">
+          <p className="text-[#86868b] text-xs mb-1">Total Submissions</p>
+          <p className="text-[#1d1d1f] font-bold text-xl">{slots.length}</p>
+        </div>
+        <div className={`bg-white border rounded-2xl p-4 ${pendingCount > 0 ? 'border-blue-200' : 'border-black/[0.06]'}`}>
+          <p className="text-[#86868b] text-xs mb-1">Awaiting Review</p>
+          <p className={`font-bold text-xl ${pendingCount > 0 ? 'text-blue-600' : 'text-[#1d1d1f]'}`}>{pendingCount}</p>
+        </div>
+        <div className="bg-white border border-black/[0.06] rounded-2xl p-4">
+          <p className="text-[#86868b] text-xs mb-1">Published Live</p>
+          <p className="text-green-600 font-bold text-xl">{publishedCount}</p>
+        </div>
+        <div className="bg-white border border-black/[0.06] rounded-2xl p-4">
+          <p className="text-[#86868b] text-xs mb-1">Unique Senders</p>
+          <p className="text-[#1d1d1f] font-bold text-xl">{new Set(slots.map(s => s.submission?.sender_email)).size}</p>
+        </div>
+      </div>
+
       {pendingCount > 0 && (
         <div className="bg-blue-50 border border-blue-200 rounded-2xl px-5 py-3.5 flex items-center gap-3">
           <Clock className="w-4 h-4 text-blue-600 shrink-0" />
-          <p className="text-blue-700 text-sm font-medium">{pendingCount} slot{pendingCount > 1 ? 's' : ''} awaiting review</p>
+          <p className="text-blue-700 text-sm font-medium">{pendingCount} submission{pendingCount > 1 ? 's' : ''} awaiting review — click any row to open the review panel</p>
         </div>
       )}
 
@@ -417,12 +501,12 @@ function EmailSubmissionsTable({ slots, onSelect }: { slots: EmailSubmissionSlot
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-black/[0.06]">
-                <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Slot</th>
+              <tr className="border-b border-black/[0.06] bg-[#fafafa]">
                 <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Sender</th>
-                <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Media</th>
+                <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Media Brand</th>
                 <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Type</th>
                 <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Pricing</th>
+                <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Confidence</th>
                 <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Status</th>
                 <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Received</th>
                 <th className="px-4 py-3" />
@@ -431,23 +515,27 @@ function EmailSubmissionsTable({ slots, onSelect }: { slots: EmailSubmissionSlot
             <tbody className="divide-y divide-black/[0.04]">
               {filtered.map(slot => {
                 const sc = EMAIL_SLOT_STATUS_CONFIG[slot.status];
+                const conf = slot.confidence_score ?? 0;
+                const missing = slot.missing_fields ?? [];
                 return (
-                  <tr key={slot.id} className="hover:bg-[#f5f5f7] transition-colors">
-                    <td className="px-4 py-3">
-                      <span className="font-mono text-xs text-[#6e6e73] font-semibold">#{slot.slot_index}</span>
-                    </td>
-                    <td className="px-4 py-3">
+                  <tr
+                    key={slot.id}
+                    className="hover:bg-[#f5f5f7] transition-colors cursor-pointer"
+                    onClick={() => onSelect(slot)}
+                  >
+                    <td className="px-4 py-3.5">
                       <p className="text-[#1d1d1f] text-sm font-medium">{slot.submission?.sender_name || '—'}</p>
                       <p className="text-[#aeaeb2] text-xs">{slot.submission?.sender_email}</p>
                     </td>
-                    <td className="px-4 py-3">
-                      <p className="text-[#1d1d1f] text-sm">{slot.media_name || <span className="text-[#aeaeb2]">—</span>}</p>
-                      <p className="text-[#aeaeb2] text-xs capitalize">{slot.media_type}</p>
+                    <td className="px-4 py-3.5">
+                      <p className="text-[#1d1d1f] text-sm font-medium">{slot.media_name || <span className="text-[#aeaeb2]">—</span>}</p>
+                      {slot.category && <p className="text-[#aeaeb2] text-xs">{slot.category}</p>}
                     </td>
-                    <td className="px-4 py-3">
-                      <p className="text-[#6e6e73] text-xs">{slot.opportunity_type || '—'}</p>
+                    <td className="px-4 py-3.5">
+                      <p className="text-[#6e6e73] text-xs capitalize">{slot.media_type || 'newsletter'}</p>
+                      <p className="text-[#aeaeb2] text-xs">{slot.opportunity_type || (slot as any).placement_type || '—'}</p>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3.5">
                       {slot.discount_price ? (
                         <div>
                           <p className="text-green-600 font-bold text-sm">{slot.discount_price}</p>
@@ -457,18 +545,25 @@ function EmailSubmissionsTable({ slots, onSelect }: { slots: EmailSubmissionSlot
                         </div>
                       ) : <span className="text-[#aeaeb2] text-xs">—</span>}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3.5">
+                      <ConfidencePill score={conf} />
+                      {missing.length > 0 && (
+                        <p className="text-[#aeaeb2] text-[10px] mt-0.5">{missing.length} field{missing.length > 1 ? 's' : ''} missing</p>
+                      )}
+                    </td>
+                    <td className="px-4 py-3.5">
                       <span className={`inline-flex items-center gap-1 border text-[11px] font-semibold px-2 py-0.5 rounded-lg ${sc.bg} ${sc.color}`}>
                         {sc.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3.5">
                       <span className="text-[#aeaeb2] text-xs">{new Date(slot.created_at).toLocaleDateString()}</span>
+                      <p className="text-[#aeaeb2] text-[10px]">{new Date(slot.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3.5">
                       <button
-                        onClick={() => onSelect(slot)}
-                        className="flex items-center gap-1 text-[#6e6e73] hover:text-[#1d1d1f] text-xs transition-colors"
+                        onClick={e => { e.stopPropagation(); onSelect(slot); }}
+                        className="flex items-center gap-1 text-[#6e6e73] hover:text-[#1d1d1f] text-xs transition-colors font-medium"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         Review
@@ -485,41 +580,73 @@ function EmailSubmissionsTable({ slots, onSelect }: { slots: EmailSubmissionSlot
   );
 }
 
-function EmailSlotDetailPanel({ slot, onStatusChange, onClose, updating }: {
+function EmailSlotDetailPanel({ slot, onStatusChange, onPublish, onClose, updating }: {
   slot: EmailSubmissionSlot;
-  onStatusChange: (status: EmailSubmissionSlot['status'], notes: string) => void;
+  onStatusChange: (status: EmailSubmissionSlot['status'], notes: string, extraFields?: Partial<EmailSubmissionSlot>) => void;
+  onPublish: (notes: string) => void;
   onClose: () => void;
   updating: boolean;
 }) {
   const [notes, setNotes] = useState(slot.admin_notes || '');
   const [showRaw, setShowRaw] = useState(false);
+  const [parsedFields, setParsedFields] = useState<ReturnType<typeof parseEmailBody>[0] | null>(null);
   const sc = EMAIL_SLOT_STATUS_CONFIG[slot.status];
 
-  const fields = [
-    { label: 'Media Name', value: slot.media_name },
-    { label: 'Media Type', value: slot.media_type },
-    { label: 'Audience Size', value: slot.audience_size },
-    { label: 'Opportunity Type', value: slot.opportunity_type },
-    { label: 'Original Price', value: slot.original_price },
-    { label: 'Discount Price', value: slot.discount_price },
-    { label: 'Slots Available', value: slot.slots_available },
-    { label: 'Deadline', value: slot.deadline },
-    { label: 'Category', value: slot.category },
-    { label: 'Booking URL', value: slot.booking_url },
-  ].filter(f => f.value);
+  useEffect(() => {
+    if (slot.submission?.raw_body) {
+      try {
+        const parsed = parseEmailBody(slot.submission.raw_body);
+        const match = parsed[slot.slot_index - 1] ?? parsed[0];
+        if (match) setParsedFields(match);
+      } catch {
+        setParsedFields(null);
+      }
+    }
+  }, [slot]);
+
+  const confScore = slot.confidence_score ?? parsedFields?.confidence_score ?? 0;
+  const missingFields = slot.missing_fields ?? parsedFields?.missing_fields ?? [];
+  const fieldConf = slot.field_confidence ?? parsedFields?.field_confidence ?? {};
+
+  const REQUIRED_FOR_PUBLISH = ['media_name', 'media_type', 'audience_size', 'original_price', 'discount_price', 'deadline_date'];
+  const canPublish = REQUIRED_FOR_PUBLISH.every(f =>
+    fieldConf[f] > 0 ||
+    [slot.media_name, slot.media_type, slot.audience_size, slot.original_price, slot.discount_price, slot.deadline].some(Boolean)
+  );
+
+  const displayFields = [
+    { label: 'Newsletter Name', value: slot.media_name, key: 'media_name' },
+    { label: 'Publisher', value: slot.publisher_name || '', key: 'publisher_name' },
+    { label: 'Media Type', value: slot.media_type, key: 'media_type' },
+    { label: 'Category', value: slot.category, key: 'category' },
+    { label: 'Audience Size', value: slot.audience_size, key: 'audience_size' },
+    { label: 'Open Rate', value: slot.open_rate || '', key: 'open_rate' },
+    { label: 'Geography', value: slot.geography || '', key: 'geography' },
+    { label: 'Placement Type', value: slot.placement_type || slot.opportunity_type, key: 'placement_type' },
+    { label: 'Send Date', value: slot.send_date || '', key: 'send_date' },
+    { label: 'Deadline', value: slot.deadline_date || slot.deadline, key: 'deadline_date' },
+    { label: 'Rate Card Price', value: slot.original_price, key: 'original_price' },
+    { label: 'This Week Price', value: slot.discount_price, key: 'discount_price' },
+    { label: 'Slots Available', value: slot.slots_available, key: 'slots_available' },
+    { label: 'Sample Link', value: slot.sample_link || '', key: 'sample_link' },
+    { label: 'Past Advertisers', value: slot.past_advertisers_text || '', key: 'past_advertisers_text' },
+    { label: 'Booking URL', value: slot.booking_url, key: 'booking_url' },
+  ];
+
+  const isUrl = (val: string) => val.startsWith('http');
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white border border-black/[0.08] rounded-3xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl shadow-black/[0.12]">
+      <div className="relative bg-white border border-black/[0.08] rounded-3xl w-full max-w-2xl max-h-[94vh] overflow-y-auto shadow-2xl shadow-black/[0.12]">
         <div className="sticky top-0 bg-white/95 backdrop-blur-xl border-b border-black/[0.06] px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-[#f5f5f7] border border-black/[0.08] rounded-xl flex items-center justify-center">
               <Mail className="w-4 h-4 text-[#1d1d1f]" />
             </div>
             <div>
-              <h2 className="text-[#1d1d1f] font-semibold">Email Submission — Slot #{slot.slot_index}</h2>
-              <p className="text-[#6e6e73] text-xs mt-0.5">{slot.submission?.sender_email}</p>
+              <h2 className="text-[#1d1d1f] font-semibold">{slot.media_name || 'Email Submission'} — Slot #{slot.slot_index}</h2>
+              <p className="text-[#6e6e73] text-xs mt-0.5">{slot.submission?.sender_email} · {new Date(slot.created_at).toLocaleString()}</p>
             </div>
           </div>
           <button onClick={onClose} className="text-[#aeaeb2] hover:text-[#1d1d1f] transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7]">
@@ -528,35 +655,101 @@ function EmailSlotDetailPanel({ slot, onStatusChange, onClose, updating }: {
         </div>
 
         <div className="p-6 space-y-5">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <span className={`inline-flex items-center gap-1 border text-[11px] font-semibold px-2.5 py-1 rounded-lg ${sc.bg} ${sc.color}`}>
               {sc.label}
             </span>
-            <span className="text-[#aeaeb2] text-xs">Received {new Date(slot.created_at).toLocaleString()}</span>
+            <ConfidencePill score={confScore} />
+            {missingFields.length > 0 && (
+              <span className="inline-flex items-center gap-1 border border-red-200 bg-red-50 text-red-700 text-[10px] font-semibold px-2 py-0.5 rounded-lg">
+                <AlertCircle className="w-3 h-3" />
+                {missingFields.length} required field{missingFields.length > 1 ? 's' : ''} missing
+              </span>
+            )}
           </div>
 
-          <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
-            <p className="text-[#86868b] text-[11px] font-semibold uppercase tracking-wider mb-3">Parsed Fields</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {fields.map(f => (
-                <div key={f.label} className="bg-white border border-black/[0.06] rounded-xl p-3">
-                  <p className="text-[#86868b] text-[10px] font-semibold uppercase tracking-wide mb-0.5">{f.label}</p>
-                  <p className="text-[#1d1d1f] text-sm font-medium break-words">
-                    {f.label === 'Booking URL' ? (
-                      <a href={f.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
-                        {f.value} <ExternalLink className="w-3 h-3 shrink-0" />
-                      </a>
-                    ) : f.value}
-                  </p>
-                </div>
-              ))}
+          {slot.submission?.subject && (
+            <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl px-4 py-3">
+              <p className="text-[#86868b] text-[10px] font-semibold uppercase tracking-wide mb-0.5">Email Subject</p>
+              <p className="text-[#1d1d1f] text-sm font-medium">{slot.submission.subject}</p>
             </div>
+          )}
+
+          {missingFields.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-2xl p-4">
+              <p className="text-red-700 font-semibold text-sm mb-2 flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4" />
+                Missing required fields
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {missingFields.map(f => (
+                  <span key={f} className="bg-red-100 border border-red-200 text-red-700 text-xs font-semibold px-2 py-0.5 rounded-lg">
+                    {f.replace(/_/g, ' ')}
+                  </span>
+                ))}
+              </div>
+              <p className="text-red-600 text-xs mt-2">These fields are required to publish this listing. Add them manually or flag for seller to resubmit.</p>
+            </div>
+          )}
+
+          <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
+            <p className="text-[#86868b] text-[11px] font-semibold uppercase tracking-wider mb-3">Extracted Fields</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {displayFields.map(f => {
+                const confVal = fieldConf[f.key] ?? (f.value ? 60 : 0);
+                const borderClass = fieldConfidenceColor(confVal);
+                const hasValue = Boolean(f.value?.trim());
+                return (
+                  <div key={f.label} className={`bg-white border rounded-xl p-3 ${hasValue ? borderClass : 'border-red-100 bg-red-50/30'}`}>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <p className="text-[#86868b] text-[10px] font-semibold uppercase tracking-wide">{f.label}</p>
+                      {hasValue && confVal >= 80 && <span className="w-1.5 h-1.5 bg-green-400 rounded-full" />}
+                      {hasValue && confVal >= 50 && confVal < 80 && <span className="w-1.5 h-1.5 bg-amber-400 rounded-full" />}
+                      {hasValue && confVal < 50 && <span className="w-1.5 h-1.5 bg-orange-400 rounded-full" />}
+                      {!hasValue && <span className="w-1.5 h-1.5 bg-red-300 rounded-full" />}
+                    </div>
+                    {hasValue ? (
+                      isUrl(f.value) ? (
+                        <a href={f.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs flex items-center gap-1 break-all">
+                          {f.value} <ExternalLink className="w-3 h-3 shrink-0" />
+                        </a>
+                      ) : (
+                        <p className="text-[#1d1d1f] text-sm font-medium break-words">{f.value}</p>
+                      )
+                    ) : (
+                      <p className="text-red-400 text-xs italic">Not found in email</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
             {slot.description && (
-              <div className="mt-2.5 bg-white border border-black/[0.06] rounded-xl p-3">
+              <div className="mt-2 bg-white border border-black/[0.06] rounded-xl p-3">
                 <p className="text-[#86868b] text-[10px] font-semibold uppercase tracking-wide mb-0.5">Description</p>
                 <p className="text-[#1d1d1f] text-sm leading-relaxed">{slot.description}</p>
               </div>
             )}
+          </div>
+
+          <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[#86868b] text-[11px] font-semibold uppercase tracking-wider">Confidence Breakdown</p>
+              <span className={`text-xs font-bold ${confScore >= 80 ? 'text-green-600' : confScore >= 50 ? 'text-amber-600' : 'text-red-600'}`}>
+                {confScore}%
+              </span>
+            </div>
+            <div className="w-full bg-black/[0.06] rounded-full h-1.5 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${confScore >= 80 ? 'bg-green-500' : confScore >= 50 ? 'bg-amber-500' : 'bg-red-500'}`}
+                style={{ width: `${confScore}%` }}
+              />
+            </div>
+            <p className="text-[#aeaeb2] text-[10px] mt-1.5">
+              {confScore >= 80 ? 'High confidence — ready for fast-track approval' :
+               confScore >= 50 ? 'Medium confidence — review flagged fields before approving' :
+               'Low confidence — manual review required before publishing'}
+            </p>
           </div>
 
           {slot.submission?.raw_body && (
@@ -587,51 +780,75 @@ function EmailSlotDetailPanel({ slot, onStatusChange, onClose, updating }: {
             />
           </div>
 
-          {(slot.status === 'pending_review' || slot.status === 'parsed_ok' || slot.status === 'needs_review') && (
-            <div className="flex gap-3">
-              <button
-                onClick={() => onStatusChange('approved', notes)}
-                disabled={updating}
-                className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-40 text-white font-semibold py-3 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
-              >
-                {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
-                Approve
-              </button>
-              <button
-                onClick={() => onStatusChange('needs_review', notes)}
-                disabled={updating}
-                className="flex-1 bg-orange-50 hover:bg-orange-100 border border-orange-200 disabled:opacity-40 text-orange-700 font-semibold py-3 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
-              >
-                <Clock className="w-4 h-4" />
-                Needs Review
-              </button>
-              <button
-                onClick={() => onStatusChange('rejected', notes)}
-                disabled={updating}
-                className="flex-1 bg-[#f5f5f7] hover:bg-white border border-black/[0.08] disabled:opacity-40 text-[#6e6e73] font-semibold py-3 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
-              >
-                <ThumbsDown className="w-4 h-4" />
-                Reject
-              </button>
-            </div>
-          )}
-
-          {slot.status === 'approved' && (
+          {slot.status === 'published' ? (
             <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-3">
               <CheckCircle className="w-5 h-5 text-green-600 shrink-0" />
               <div>
-                <p className="text-green-700 font-semibold text-sm">Approved</p>
-                {slot.reviewed_at && <p className="text-green-600 text-xs mt-0.5">Reviewed {new Date(slot.reviewed_at).toLocaleString()}</p>}
+                <p className="text-green-700 font-semibold text-sm">Published to Marketplace</p>
+                {slot.listing_id && <p className="text-green-600 text-xs mt-0.5">Listing ID: {slot.listing_id}</p>}
+                {slot.reviewed_at && <p className="text-green-600 text-xs">Published {new Date(slot.reviewed_at).toLocaleString()}</p>}
               </div>
             </div>
-          )}
-
-          {slot.status === 'rejected' && (
+          ) : slot.status === 'rejected' ? (
             <div className="bg-[#f5f5f7] border border-black/[0.08] rounded-2xl p-4 flex items-center gap-3">
               <XCircle className="w-5 h-5 text-[#86868b] shrink-0" />
               <div>
                 <p className="text-[#6e6e73] font-semibold text-sm">Rejected</p>
                 {slot.admin_notes && <p className="text-[#aeaeb2] text-xs mt-0.5">{slot.admin_notes}</p>}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {slot.status === 'approved' && (
+                <button
+                  onClick={() => onPublish(notes)}
+                  disabled={updating}
+                  className="w-full bg-green-600 hover:bg-green-700 disabled:opacity-40 text-white font-semibold py-3.5 rounded-2xl transition-all text-sm flex items-center justify-center gap-2 shadow-sm shadow-green-600/20"
+                >
+                  {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                  Publish to Marketplace
+                </button>
+              )}
+
+              <div className={`flex gap-3 ${slot.status === 'approved' ? '' : ''}`}>
+                {slot.status !== 'approved' && (
+                  <button
+                    onClick={() => onStatusChange('approved', notes)}
+                    disabled={updating}
+                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-40 text-white font-semibold py-3 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
+                  >
+                    {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
+                    Approve
+                  </button>
+                )}
+                {slot.status === 'approved' && (
+                  <button
+                    onClick={() => onStatusChange('needs_review', notes)}
+                    disabled={updating}
+                    className="flex-1 bg-orange-50 hover:bg-orange-100 border border-orange-200 disabled:opacity-40 text-orange-700 font-semibold py-3 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
+                  >
+                    <Clock className="w-4 h-4" />
+                    Send Back
+                  </button>
+                )}
+                {slot.status !== 'approved' && (
+                  <button
+                    onClick={() => onStatusChange('needs_review', notes)}
+                    disabled={updating}
+                    className="flex-1 bg-orange-50 hover:bg-orange-100 border border-orange-200 disabled:opacity-40 text-orange-700 font-semibold py-3 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
+                  >
+                    <Clock className="w-4 h-4" />
+                    Flag Review
+                  </button>
+                )}
+                <button
+                  onClick={() => onStatusChange('rejected', notes)}
+                  disabled={updating}
+                  className="flex-1 bg-[#f5f5f7] hover:bg-white border border-black/[0.08] disabled:opacity-40 text-[#6e6e73] font-semibold py-3 rounded-2xl transition-all text-sm flex items-center justify-center gap-2"
+                >
+                  <ThumbsDown className="w-4 h-4" />
+                  Reject
+                </button>
               </div>
             </div>
           )}
@@ -694,7 +911,7 @@ function CsvUploadsTable({ slots, onSelect }: { slots: CsvUploadSlot[]; onSelect
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-black/[0.06]">
+              <tr className="border-b border-black/[0.06] bg-[#fafafa]">
                 <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Row</th>
                 <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Batch / File</th>
                 <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Media</th>
@@ -943,7 +1160,7 @@ function BookingsTable({ bookings, onSelect }: { bookings: DepositBooking[]; onS
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-black/[0.06]">
+            <tr className="border-b border-black/[0.06] bg-[#fafafa]">
               <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Reference</th>
               <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Buyer</th>
               <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Opportunity</th>
@@ -1028,7 +1245,7 @@ function RefundsTable({ refunds, bookings, onSelect }: {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-black/[0.06]">
+            <tr className="border-b border-black/[0.06] bg-[#fafafa]">
               <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Reference</th>
               <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Buyer</th>
               <th className="text-left px-4 py-3 text-[10px] text-[#86868b] font-semibold uppercase tracking-wider">Category</th>
@@ -1418,3 +1635,5 @@ function InfoBlock({ label, value, sub, highlight }: { label: string; value: str
     </div>
   );
 }
+
+const _unused = { BarChart2, Globe, Percent, Zap };

@@ -164,17 +164,17 @@ export function scoreListings(listings: Listing[], prefs: BuyerPreferences): Sco
       const finalScore = Math.round(matchScore * 0.7 + dealScore * 0.3);
 
       const explanationParts: string[] = [];
-      if (cat.matched) explanationParts.push(`Matches ${cat.matched} audience`);
-      if (bud.within) explanationParts.push('Within budget');
-      if (geo.matched) explanationParts.push(`${geo.matched} targeting`);
+      if (cat.matched) explanationParts.push(`Matches your ${cat.matched} category preferences`);
+      if (bud.within) explanationParts.push('Fits your budget');
+      if (geo.matched) explanationParts.push(`Suitable for your ${geo.matched} target geography`);
       if (eng.highlight && explanationParts.length < 3) explanationParts.push(eng.highlight.split('—')[0].trim());
-      if (tim.reason && explanationParts.length < 3) explanationParts.push('Timing aligns');
-      if (explanationParts.length === 0) explanationParts.push('Relevant to your profile');
+      if (tim.reason && explanationParts.length < 3) explanationParts.push('Strong timing match');
+      if (explanationParts.length === 0) explanationParts.push('Relevant to your buyer profile');
       const explanationLine = explanationParts.slice(0, 3).join(' · ');
 
       const reasons: string[] = [];
       if (cat.matched) {
-        reasons.push(`Matches your selected ${cat.matched} category`);
+        reasons.push(`Matches your ${cat.matched} category preferences`);
       } else if (!prefs.categories.length) {
         reasons.push('No category filter set — showing all niches');
       }
@@ -182,9 +182,9 @@ export function scoreListings(listings: Listing[], prefs: BuyerPreferences): Sco
         const sizeLabel = prefs.audienceSize === 'small' ? 'niche (<30K)' : prefs.audienceSize === 'mid' ? 'mid-size (10–150K)' : 'large reach (50K+)';
         reasons.push(`Audience size fits your ${sizeLabel} preference`);
       }
-      if (bud.within) reasons.push('Price is within your selected budget range');
-      if (geo.matched) reasons.push(`Audience overlaps with your ${geo.matched} targeting`);
-      if (tim.reason) reasons.push(tim.reason);
+      if (bud.within) reasons.push('Fits your budget — priced within your selected range');
+      if (geo.matched) reasons.push(`Suitable for your ${geo.matched} target geography`);
+      if (tim.reason) reasons.push(`Strong timing match — ${tim.reason.toLowerCase()}`);
       if (eng.highlight) reasons.push(eng.highlight);
       if (reasons.length === 0) {
         reasons.push('Relevant based on your buyer profile');

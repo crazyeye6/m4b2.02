@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, MapPin, TrendingDown, Clock, ArrowRight, ChevronDown, Sparkles } from 'lucide-react';
+import { Users, MapPin, TrendingDown, Clock, ArrowRight, ChevronDown, Sparkles, Zap } from 'lucide-react';
 import type { ScoredListing } from '../../lib/matchScore';
 import type { Listing } from '../../types';
 import MatchScoreBadge from './MatchScoreBadge';
@@ -29,6 +29,11 @@ export default function RecommendedCard({ scored, onView }: Props) {
     score >= 65 ? 'border-teal-200' :
     'border-slate-200';
 
+  const topBarColor =
+    score >= 85 ? 'from-emerald-400 to-teal-400' :
+    score >= 65 ? 'from-teal-400 to-cyan-400' :
+    'from-slate-300 to-slate-400';
+
   const dealLabel =
     dealScore >= 80 ? 'Exceptional Deal' :
     dealScore >= 60 ? 'Strong Deal' :
@@ -40,11 +45,34 @@ export default function RecommendedCard({ scored, onView }: Props) {
     dealScore >= 60 ? 'bg-amber-50 border-amber-200 text-amber-700' :
     'bg-slate-50 border-slate-200 text-slate-600';
 
+  const dealDotColor =
+    dealScore >= 80 ? 'bg-orange-400' :
+    dealScore >= 60 ? 'bg-amber-400' :
+    'bg-slate-400';
+
+  const whyIconColor =
+    score >= 85 ? 'text-emerald-500' :
+    score >= 65 ? 'text-teal-500' :
+    'text-slate-400';
+
+  const whyBg =
+    score >= 85 ? 'bg-emerald-50 border-emerald-100' :
+    score >= 65 ? 'bg-teal-50 border-teal-100' :
+    'bg-slate-50 border-slate-100';
+
+  const whyTextColor =
+    score >= 85 ? 'text-emerald-700' :
+    score >= 65 ? 'text-teal-700' :
+    'text-slate-600';
+
+  const whyDotColor =
+    score >= 85 ? 'bg-emerald-400' :
+    score >= 65 ? 'bg-teal-400' :
+    'bg-slate-400';
+
   return (
     <div className={`relative bg-white rounded-2xl border ${borderColor} shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all duration-200 hover:-translate-y-0.5 overflow-hidden flex flex-col`}>
-      {score >= 85 && (
-        <div className="h-0.5 bg-gradient-to-r from-emerald-400 to-teal-400" />
-      )}
+      <div className={`h-0.5 bg-gradient-to-r ${topBarColor}`} />
 
       <div className="p-5 flex-1 flex flex-col">
         {/* Header row */}
@@ -63,8 +91,8 @@ export default function RecommendedCard({ scored, onView }: Props) {
 
         {/* Explanation line */}
         <div className="mb-3 flex items-start gap-1.5">
-          <Sparkles className="w-3 h-3 text-emerald-500 flex-shrink-0 mt-0.5" />
-          <p className="text-[11px] text-emerald-700 font-medium leading-snug">{explanationLine}</p>
+          <Sparkles className={`w-3 h-3 ${whyIconColor} flex-shrink-0 mt-0.5`} />
+          <p className={`text-[11px] font-medium leading-snug ${whyTextColor}`}>{explanationLine}</p>
         </div>
 
         {/* Tags row */}
@@ -107,6 +135,7 @@ export default function RecommendedCard({ scored, onView }: Props) {
               <TrendingDown className="w-3 h-3" />-{discount}%
             </span>
             <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${dealColors}`}>
+              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${dealDotColor}`} />
               {dealScore} · {dealLabel}
             </span>
             <div className="flex items-center gap-1 text-[10px] text-slate-500">
@@ -117,23 +146,26 @@ export default function RecommendedCard({ scored, onView }: Props) {
         </div>
 
         {/* Why this match — expandable inline */}
-        <div className="mb-4 rounded-xl border border-slate-100 overflow-hidden">
+        <div className={`mb-4 rounded-xl border overflow-hidden ${whyBg}`}>
           <button
             onClick={() => setShowWhy(p => !p)}
-            className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 hover:bg-slate-100 transition-colors"
+            className="w-full flex items-center justify-between px-3 py-2 hover:brightness-95 transition-all"
           >
             <div className="flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-emerald-500" />
+              <Zap className={`w-3 h-3 ${whyIconColor}`} />
               <span className="text-[11px] font-semibold text-slate-700">Why this match?</span>
+              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${whyTextColor} bg-white/60`}>
+                {reasons.length} reason{reasons.length !== 1 ? 's' : ''}
+              </span>
             </div>
             <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${showWhy ? 'rotate-180' : ''}`} />
           </button>
           {showWhy && (
-            <ul className="px-3 py-2.5 space-y-1.5 bg-white border-t border-slate-100">
+            <ul className="px-3 py-2.5 space-y-2 bg-white/70 border-t border-white/50">
               {reasons.map((r, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full flex-shrink-0 mt-1.5" />
-                  <p className="text-[11px] text-slate-600 leading-snug">{r}</p>
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 mt-1.5 ${whyDotColor}`} />
+                  <p className="text-[11px] text-slate-700 leading-snug font-medium">{r}</p>
                 </li>
               ))}
             </ul>
