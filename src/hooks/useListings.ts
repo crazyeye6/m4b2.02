@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
+import { calcDynamicPrice } from '../lib/dynamicPricing';
 import type { Listing, FilterState, DeadlineWindow } from '../types';
 
 function getDeadlineCutoff(window: DeadlineWindow): string | null {
@@ -83,6 +84,14 @@ export function useListings(filters: FilterState) {
     const cutoff = Date.now() - 24 * 60 * 60 * 1000;
     result = result.filter(l => new Date(l.deadline_at).getTime() >= cutoff);
 
+    result = result.map(l => {
+      const pricing = calcDynamicPrice(l.original_price, l.deadline_at);
+      return {
+        ...l,
+        discounted_price: pricing.currentPrice,
+      };
+    });
+
     if (filters.discountMin > 0) {
       result = result.filter(l => {
         const pct = Math.round(((l.original_price - l.discounted_price) / l.original_price) * 100);
@@ -151,7 +160,10 @@ export function useListings(filters: FilterState) {
           : 0;
         const cpm = cpms[i];
         const cpmScore = isFinite(cpm) && maxCpm > 0 ? 1 - cpm / maxCpm : 0;
-        const composite = audienceScore * 0.40 + discountScore * 0.35 + cpmScore * 0.25;
+        const deadline = new Date(l.deadline_at).getTime();
+        const hoursLeft = Math.max(0, (deadline - Date.now()) / (1000 * 60 * 60));
+        const urgencyScore = hoursLeft < 24 ? 1 : hoursLeft < 72 ? 0.75 : hoursLeft < 120 ? 0.5 : 0.25;
+        const composite = audienceScore * 0.30 + discountScore * 0.25 + cpmScore * 0.20 + urgencyScore * 0.25;
         return { listing: l, score: composite };
       });
 
@@ -165,15 +177,19 @@ export function useListings(filters: FilterState) {
   const fetchStats = useCallback(async () => {
     const { data } = await supabase
       .from('listings')
-      .select('original_price, discounted_price, status');
+      .select('original_price, deadline_at, status');
 
     if (!data) return;
     const live = data.filter(l => l.status === 'live');
-    const totalSavings = data.reduce((s, l) => s + (l.original_price - l.discounted_price), 0);
-    const avgDiscount = data.length
+    const priced = data.map(l => {
+      const pricing = calcDynamicPrice(l.original_price, l.deadline_at);
+      return { ...l, discounted_price: pricing.currentPrice };
+    });
+    const totalSavings = priced.reduce((s, l) => s + (l.original_price - l.discounted_price), 0);
+    const avgDiscount = priced.length
       ? Math.round(
-          data.reduce((s, l) => s + ((l.original_price - l.discounted_price) / l.original_price) * 100, 0) /
-            data.length
+          priced.reduce((s, l) => s + ((l.original_price - l.discounted_price) / l.original_price) * 100, 0) /
+            priced.length
         )
       : 0;
 

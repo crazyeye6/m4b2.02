@@ -1,5 +1,6 @@
 import type { Listing } from '../types';
 import type { BuyerPreferences } from '../hooks/useBuyerPreferences';
+import { getDiscountTier, getDiscountPct } from './dynamicPricing';
 
 export interface ScoredListing {
   listing: Listing;
@@ -121,21 +122,24 @@ function calcEngagementScore(listing: Listing): { score: number; highlight: stri
 }
 
 function calcDealScore(listing: Listing): number {
-  const pct = ((listing.original_price - listing.discounted_price) / listing.original_price) * 100;
   const now = Date.now();
   const deadline = new Date(listing.deadline_at).getTime();
   const diffHours = (deadline - now) / (1000 * 60 * 60);
 
-  let score = 0;
-  if (pct >= 50) score += 60;
-  else if (pct >= 35) score += 45;
-  else if (pct >= 20) score += 30;
-  else if (pct >= 10) score += 15;
+  const tier = getDiscountTier(listing.deadline_at);
+  const discountPct = getDiscountPct(tier);
 
-  if (diffHours <= 12) score += 40;
-  else if (diffHours <= 24) score += 30;
-  else if (diffHours <= 48) score += 20;
-  else if (diffHours <= 72) score += 10;
+  let score = 0;
+
+  if (discountPct >= 30) score += 50;
+  else if (discountPct >= 20) score += 35;
+  else if (discountPct >= 10) score += 20;
+
+  if (diffHours <= 12) score += 50;
+  else if (diffHours <= 24) score += 40;
+  else if (diffHours <= 48) score += 25;
+  else if (diffHours <= 72) score += 15;
+  else if (diffHours <= 120) score += 8;
 
   return Math.min(100, score);
 }
@@ -188,7 +192,7 @@ export function scoreListings(listings: Listing[], prefs: BuyerPreferences): Sco
       if (eng.highlight) reasons.push(eng.highlight);
       if (reasons.length === 0) {
         reasons.push('Relevant based on your buyer profile');
-        reasons.push('Live deal with active pricing');
+        reasons.push('Live deal with automatic time-based pricing');
       }
 
       const label: ScoredListing['label'] =

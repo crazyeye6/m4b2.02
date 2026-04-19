@@ -1,12 +1,12 @@
 import {
   Mail, MapPin, Users, Lock, Zap, Eye,
-  CheckCircle, Clock, AlertTriangle, CalendarClock,
+  CheckCircle, Clock, AlertTriangle, CalendarClock, Flame, TrendingDown,
 } from 'lucide-react';
-/* Kept for future re-enablement: Mic, Instagram */
 import type { Listing } from '../types';
 import { resolvePublishDate } from '../lib/dateUtils';
 import { useLocale } from '../context/LocaleContext';
 import CountdownTimer from './CountdownTimer';
+import { calcDynamicPrice, TIER_STYLES } from '../lib/dynamicPricing';
 
 interface ListingRowProps {
   listing: Listing;
@@ -20,21 +20,6 @@ const NEWSLETTER_CONFIG = {
   color: 'bg-green-50 text-green-600 border-green-100',
   bar: 'bg-green-500',
 };
-
-/* Future: podcast and influencer configs preserved here
-const PODCAST_CONFIG = {
-  icon: <Mic className="w-3.5 h-3.5" />,
-  label: 'Podcast',
-  color: 'bg-yellow-50 text-yellow-600 border-yellow-100',
-  bar: 'bg-yellow-500',
-};
-const INFLUENCER_CONFIG = {
-  icon: <Instagram className="w-3.5 h-3.5" />,
-  label: 'Influencer',
-  color: 'bg-rose-50 text-rose-500 border-rose-100',
-  bar: 'bg-rose-500',
-};
-*/
 
 function fmt(n: number): string {
   if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
@@ -55,9 +40,12 @@ export default function ListingRow({ listing, onSecure, onDetails }: ListingRowP
   const mc = NEWSLETTER_CONFIG;
   const { formatPrice } = useLocale();
 
-  const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
-  const savings = listing.original_price - listing.discounted_price;
-  const depositAmount = Math.round(listing.discounted_price * 0.1);
+  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
+  const { currentPrice, discountPct, savings, tier, urgencyLabel } = pricing;
+  const tierStyle = TIER_STYLES[tier];
+  const depositAmount = Math.round(currentPrice * 0.1);
+  const hasDiscount = discountPct > 0;
+
   const deadlinePassed = new Date(listing.deadline_at).getTime() < Date.now();
   const isLive = listing.status === 'live' && !deadlinePassed;
   const isSecured =
@@ -78,6 +66,8 @@ export default function ListingRow({ listing, onSecure, onDetails }: ListingRowP
     listing.status === 'pending_review' ? <AlertTriangle className="w-3.5 h-3.5 text-yellow-500" /> :
     null;
 
+  const urgencyBarClass = tier === 'last_chance' ? 'bg-red-500' : tier === 'mid' ? 'bg-orange-500' : tier === 'early' ? 'bg-amber-400' : mc.bar;
+
   return (
     <div
       className={`relative bg-white rounded-2xl border transition-all duration-200 overflow-hidden
@@ -88,16 +78,22 @@ export default function ListingRow({ listing, onSecure, onDetails }: ListingRowP
             : 'border-black/[0.06]'
         }`}
     >
-      <div className={`absolute left-0 top-0 bottom-0 w-1 ${mc.bar}`} />
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${urgencyBarClass}`} />
 
       <div className="flex items-center gap-4 px-5 py-4 pl-6">
 
         <div className="flex-1 min-w-0 flex items-start gap-3">
-          <div className="flex-shrink-0 pt-0.5">
+          <div className="flex-shrink-0 pt-0.5 flex flex-col gap-1.5">
             <span className={`inline-flex items-center gap-1.5 border text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wide ${mc.color}`}>
               {mc.icon}
               {mc.label}
             </span>
+            {isLive && urgencyLabel && (
+              <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${tierStyle.badge}`}>
+                {tier === 'last_chance' && <Flame className="w-2 h-2" />}
+                {urgencyLabel}
+              </span>
+            )}
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -122,13 +118,6 @@ export default function ListingRow({ listing, onSecure, onDetails }: ListingRowP
           <StatCell label="Subscribers" value={fmt(listing.subscribers || 0)} />
           <StatCell label="Open rate" value={listing.open_rate || '—'} accent />
           <StatCell label="CTR" value={listing.ctr || '—'} />
-          {/* Future podcast stats:
-          <StatCell label="Downloads/ep" value={fmt(listing.downloads || 0)} />
-          <StatCell label="Ad type" value={listing.ad_type || '—'} accent />
-          Future influencer stats:
-          <StatCell label="Followers" value={fmt(listing.followers || 0)} />
-          <StatCell label="Engagement" value={listing.engagement_rate || '—'} accent />
-          */}
         </div>
 
         <div className="hidden md:block flex-shrink-0 text-center min-w-[80px]">
@@ -168,13 +157,25 @@ export default function ListingRow({ listing, onSecure, onDetails }: ListingRowP
           )}
         </div>
 
-        <div className="flex-shrink-0 text-right min-w-[100px]">
-          <div className="flex items-center gap-1.5 justify-end">
-            <span className="text-[#aeaeb2] text-[11px] line-through">{formatPrice(listing.original_price)}</span>
-            <span className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg">-{discount}%</span>
-          </div>
-          <p className="text-[18px] font-bold text-[#1d1d1f] tabular-nums tracking-tight">{formatPrice(listing.discounted_price)}</p>
-          <p className="text-green-600 text-[10px] font-semibold">Save {formatPrice(savings)}</p>
+        <div className="flex-shrink-0 text-right min-w-[110px]">
+          {hasDiscount ? (
+            <>
+              <div className="flex items-center gap-1.5 justify-end">
+                <span className="text-[#aeaeb2] text-[11px] line-through">{formatPrice(listing.original_price)}</span>
+                <span className={`text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg ${tierStyle.badge}`}>-{discountPct}%</span>
+              </div>
+              <p className="text-[18px] font-bold text-[#1d1d1f] tabular-nums tracking-tight">{formatPrice(currentPrice)}</p>
+              <div className="flex items-center justify-end gap-1">
+                <TrendingDown className="w-3 h-3 text-green-600" />
+                <p className="text-green-600 text-[10px] font-semibold">Save {formatPrice(savings)}</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-[18px] font-bold text-[#1d1d1f] tabular-nums tracking-tight">{formatPrice(currentPrice)}</p>
+              <p className="text-[10px] text-[#aeaeb2]">Full price</p>
+            </>
+          )}
           <p className="text-[#aeaeb2] text-[10px] mt-0.5">Deposit: {formatPrice(depositAmount)}</p>
         </div>
 

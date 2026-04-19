@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package, Link, Twitter, Instagram, Youtube, Mic, TrendingUp, ShieldCheck, Sparkles } from 'lucide-react';
+import { BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package, Link, Twitter, Instagram, Youtube, Mic, TrendingUp, ShieldCheck, Sparkles, TrendingDown, Info } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import SubmitByEmail from '../components/SubmitByEmail';
 import CsvUpload from '../components/CsvUpload';
 import type { Listing, ListingStatus, DepositBooking, BookingStatus } from '../types';
+import { calcDynamicPrice, TIER_STYLES } from '../lib/dynamicPricing';
 
 interface SellerDashboardProps {
   onBack: () => void;
@@ -204,6 +205,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
               </div>
             ) : (
               <div className="space-y-3">
+                <AutoPricingBanner />
                 {listings.map(l => (
                   <ListingCard key={l.id} listing={l} onClick={() => setSelectedListing(l)} />
                 ))}
@@ -364,7 +366,10 @@ function InsightCard({ label, value, sub }: { label: string; value: string; sub:
 
 function ListingCard({ listing, onClick }: { listing: Listing; onClick: () => void }) {
   const sc = LISTING_STATUS_CONFIG[listing.status] || LISTING_STATUS_CONFIG.live;
-  const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
+  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
+  const { currentPrice, discountPct, tier, urgencyLabel } = pricing;
+  const tierStyle = TIER_STYLES[tier];
+  const hasDiscount = discountPct > 0;
   const deadline = new Date(listing.deadline_at);
   const hoursLeft = Math.max(0, Math.floor((deadline.getTime() - Date.now()) / 3600000));
 
@@ -375,20 +380,31 @@ function ListingCard({ listing, onClick }: { listing: Listing; onClick: () => vo
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className={`inline-flex items-center gap-1 border text-[10px] font-semibold px-2 py-0.5 rounded-lg ${sc.bg} ${sc.color}`}>
               {sc.label}
             </span>
-            <span className="bg-[#f5f5f7] border border-black/[0.08] text-[#1d1d1f] text-[10px] font-bold px-2 py-0.5 rounded-lg">
-              -{discount}%
-            </span>
+            {hasDiscount && (
+              <span className={`text-white text-[10px] font-bold px-2 py-0.5 rounded-lg ${tierStyle.badge}`}>
+                -{discountPct}% auto-discount
+              </span>
+            )}
+            {urgencyLabel && (
+              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg ${tierStyle.bg} ${tier === 'last_chance' ? 'text-red-700' : tier === 'mid' ? 'text-orange-700' : 'text-amber-700'} border ${tierStyle.border}`}>
+                {urgencyLabel}
+              </span>
+            )}
           </div>
           <h3 className="text-[#1d1d1f] font-semibold text-sm truncate">{listing.property_name}</h3>
           <p className="text-[#6e6e73] text-xs mt-0.5">{listing.media_company_name} · {listing.slot_type}</p>
         </div>
         <div className="text-right flex-shrink-0">
-          <p className="text-[#1d1d1f] font-bold">${listing.discounted_price.toLocaleString()}</p>
-          <p className="text-[#aeaeb2] text-xs line-through">${listing.original_price.toLocaleString()}</p>
+          <p className="text-[#1d1d1f] font-bold">${currentPrice.toLocaleString()}</p>
+          {hasDiscount ? (
+            <p className="text-[#aeaeb2] text-xs line-through">${listing.original_price.toLocaleString()}</p>
+          ) : (
+            <p className="text-[#aeaeb2] text-xs">base price</p>
+          )}
           <ChevronRight className="w-4 h-4 text-[#aeaeb2] group-hover:text-[#6e6e73] ml-auto mt-1 transition-colors" />
         </div>
       </div>
@@ -409,7 +425,10 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
   onRefetch: () => void;
 }) {
   const sc = LISTING_STATUS_CONFIG[listing.status] || LISTING_STATUS_CONFIG.live;
-  const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
+  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
+  const { currentPrice, discountPct, tier, urgencyLabel } = pricing;
+  const tierStyle = TIER_STYLES[tier];
+  const hasDiscount = discountPct > 0;
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [newStatus, setNewStatus] = useState<ListingStatus>(listing.status);
 
@@ -449,11 +468,19 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <InfoBlock label="Discounted price" value={`$${listing.discounted_price.toLocaleString()}`} green />
-            <InfoBlock label="Original price" value={`$${listing.original_price.toLocaleString()}`} />
-            <InfoBlock label="Discount" value={`-${discount}%`} />
+            <InfoBlock label="Current price (live)" value={`$${currentPrice.toLocaleString()}`} green />
+            <InfoBlock label="Base price" value={`$${listing.original_price.toLocaleString()}`} />
+            <InfoBlock label="Auto-discount" value={hasDiscount ? `-${discountPct}%` : 'None yet'} />
             <InfoBlock label="Slots remaining" value={`${listing.slots_remaining} / ${listing.slots_total || '?'}`} />
           </div>
+          {urgencyLabel && (
+            <div className={`flex items-center gap-2 rounded-xl px-3 py-2 ${tierStyle.bg} border ${tierStyle.border}`}>
+              <TrendingDown className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
+              <p className={`text-[12px] font-medium ${tier === 'last_chance' ? 'text-red-700' : tier === 'mid' ? 'text-orange-700' : 'text-amber-700'}`}>
+                {urgencyLabel} — {discountPct}% auto-discount currently applied
+              </p>
+            </div>
+          )}
 
           <div className="bg-[#f5f5f7] rounded-2xl border border-black/[0.06] p-4">
             <p className="text-[#86868b] text-xs font-semibold mb-3 uppercase tracking-wider">Audience & Reach</p>
@@ -739,6 +766,58 @@ function SellerProfilePanel({ profile, userEmail, onSaved }: {
           <li>· Respond to buyer enquiries promptly to maintain a high completion rate.</li>
           <li>· Keep your listing's deadline accurate — expired listings are automatically hidden.</li>
         </ul>
+      </div>
+
+      <AutoPricingExplainer />
+    </div>
+  );
+}
+
+function AutoPricingBanner() {
+  return (
+    <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+      <TrendingDown className="w-4 h-4 text-slate-500 flex-shrink-0" />
+      <p className="text-[12px] text-slate-600 leading-snug flex-1">
+        <span className="font-semibold text-slate-800">Automatic pricing active.</span>{' '}
+        Prices automatically reduce as your deadline approaches to help fill unsold slots. You set the base price — we handle the rest.
+      </p>
+    </div>
+  );
+}
+
+function AutoPricingExplainer() {
+  return (
+    <div className="bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-2xl p-5">
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-7 h-7 bg-slate-900 rounded-xl flex items-center justify-center flex-shrink-0">
+          <TrendingDown className="w-3.5 h-3.5 text-white" />
+        </div>
+        <div>
+          <p className="text-[#1d1d1f] font-semibold text-sm">Automatic time-based pricing</p>
+          <p className="text-[#6e6e73] text-xs">Applied to all your listings</p>
+        </div>
+      </div>
+      <p className="text-[#6e6e73] text-xs leading-relaxed mb-4">
+        You set a base price only. The platform automatically applies discounts as your Book By deadline approaches — helping fill unsold slots without you having to compete on price.
+      </p>
+      <div className="grid grid-cols-2 gap-2">
+        {[
+          { label: 'Full price', sub: '5+ days left', style: 'bg-white text-[#1d1d1f] border border-black/[0.08]' },
+          { label: '−10%', sub: '3–5 days left', style: 'bg-amber-50 text-amber-700 border border-amber-200' },
+          { label: '−20%', sub: '1–3 days left', style: 'bg-orange-50 text-orange-700 border border-orange-200' },
+          { label: '−30%', sub: 'Under 24h', style: 'bg-red-50 text-red-700 border border-red-200' },
+        ].map((row, i) => (
+          <div key={i} className={`rounded-xl p-2.5 text-center ${row.style}`}>
+            <p className="text-[13px] font-bold">{row.label}</p>
+            <p className="text-[10px] mt-0.5 opacity-70">{row.sub}</p>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-start gap-2 mt-3 bg-white border border-black/[0.06] rounded-xl px-3 py-2">
+        <Info className="w-3.5 h-3.5 text-[#86868b] flex-shrink-0 mt-0.5" />
+        <p className="text-[11px] text-[#6e6e73] leading-snug">
+          Discounts are calculated live by the platform. Your base price is always shown as the original rate, and buyers see the current discounted price with a clear explanation.
+        </p>
       </div>
     </div>
   );

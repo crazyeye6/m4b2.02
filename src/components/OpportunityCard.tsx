@@ -1,10 +1,10 @@
-import { Users, MapPin, Mail, Shield, AlertTriangle, CheckCircle, Clock, Eye, Lock, Zap, CalendarClock } from 'lucide-react';
-/* Kept for future re-enablement: Instagram, Mic */
+import { Users, MapPin, Mail, Shield, AlertTriangle, CheckCircle, Clock, Eye, Lock, Zap, CalendarClock, Flame, TrendingDown } from 'lucide-react';
 import type { Listing } from '../types';
 import CountdownTimer from './CountdownTimer';
 import { resolvePublishDate, formatDeadlineDate } from '../lib/dateUtils';
 import { useLocale } from '../context/LocaleContext';
 import { useTranslations } from '../hooks/useTranslations';
+import { calcDynamicPrice, TIER_STYLES } from '../lib/dynamicPricing';
 
 interface OpportunityCardProps {
   listing: Listing;
@@ -19,20 +19,6 @@ const MEDIA_CONFIG = {
     accent: 'from-green-500 to-green-600',
     glow: 'shadow-green-900/30',
   },
-  /* Future: podcast and influencer configs preserved here
-  podcast: {
-    icon: <Mic className="w-3.5 h-3.5" />,
-    color: 'bg-yellow-50 text-yellow-600 border-yellow-100',
-    accent: 'from-yellow-500 to-yellow-600',
-    glow: 'shadow-yellow-900/30',
-  },
-  influencer: {
-    icon: <Instagram className="w-3.5 h-3.5" />,
-    color: 'bg-rose-50 text-rose-500 border-rose-100',
-    accent: 'from-rose-500 to-rose-600',
-    glow: 'shadow-rose-900/30',
-  },
-  */
 };
 
 function getMediaConfig(mediaType: string) {
@@ -51,16 +37,19 @@ function fmtCompact(n: number, locale: string): string {
 
 export default function OpportunityCard({ listing, onSecure, onDetails }: OpportunityCardProps) {
   const mc = getMediaConfig(listing.media_type);
-  const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
-  const savings = listing.original_price - listing.discounted_price;
-  const depositAmount = Math.round(listing.discounted_price * 0.1);
   const { formatPrice, browserLocale } = useLocale();
   const tx = useTranslations();
+
+  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
+  const { currentPrice, discountPct, savings, tier, urgencyLabel } = pricing;
+  const tierStyle = TIER_STYLES[tier];
+  const depositAmount = Math.round(currentPrice * 0.1);
 
   const deadlinePassed = new Date(listing.deadline_at).getTime() < Date.now();
   const isLive = listing.status === 'live' && !deadlinePassed;
   const isSecured = listing.status === 'secured' || listing.status === 'expired' || listing.status === 'cancelled' || deadlinePassed;
   const isScarce = listing.slots_remaining <= 2;
+  const hasDiscount = discountPct > 0;
 
   const { weekday, calDate } = resolvePublishDate(listing, browserLocale);
   const deadlineFormatted = formatDeadlineDate(listing.deadline_at, browserLocale);
@@ -97,10 +86,16 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
   })();
   void statusIcon;
 
+  const urgencyRingClass = tier === 'last_chance'
+    ? 'ring-2 ring-red-400/30'
+    : tier === 'mid'
+    ? 'ring-2 ring-orange-300/30'
+    : '';
+
   return (
     <div
       className={`relative bg-white rounded-3xl flex flex-col transition-all duration-200 overflow-hidden
-        ${isLive ? 'shadow-sm shadow-black/[0.06] hover:shadow-lg hover:shadow-black/[0.10] border border-black/[0.06] hover:border-black/[0.10]' : ''}
+        ${isLive ? `shadow-sm shadow-black/[0.06] hover:shadow-lg hover:shadow-black/[0.10] border border-black/[0.06] hover:border-black/[0.10] ${urgencyRingClass}` : ''}
         ${listing.status === 'securing' && !deadlinePassed ? 'border border-orange-200 shadow-sm' : ''}
         ${listing.status === 'pending_review' && !deadlinePassed ? 'border border-yellow-200 shadow-sm' : ''}
         ${listing.status === 'secured' ? 'border border-black/[0.06] opacity-50' : ''}
@@ -108,6 +103,9 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         ${deadlinePassed && listing.status !== 'secured' && listing.status !== 'expired' && listing.status !== 'cancelled' ? 'border border-black/[0.06] opacity-40' : ''}
       `}
     >
+      {isLive && hasDiscount && tier !== 'none' && (
+        <div className={`h-0.5 w-full ${tier === 'last_chance' ? 'bg-red-500' : tier === 'mid' ? 'bg-orange-500' : 'bg-amber-400'}`} />
+      )}
       {listing.status !== 'live' && statusAccent && (
         <div className={`h-0.5 w-full ${statusAccent.replace('border-t-', 'bg-')}`} />
       )}
@@ -120,25 +118,33 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             Newsletter
           </span>
 
-          {isLive && (
-            <div className="flex items-center gap-1.5 flex-shrink-0">
-              <span className={`text-[10px] font-semibold ${isScarce ? 'text-orange-500' : 'text-[#6e6e73]'}`}>
-                {listing.slots_remaining} {listing.slots_remaining === 1 ? tx.card.slot : tx.card.slots}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {isLive && urgencyLabel && (
+              <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${tierStyle.badge}`}>
+                {tier === 'last_chance' && <Flame className="w-2.5 h-2.5" />}
+                {urgencyLabel}
               </span>
-              <div className="flex gap-0.5">
-                {Array.from({ length: Math.min(listing.slots_total || 5, 5) }).map((_, i) => (
-                  <span
-                    key={i}
-                    className={`block w-2 h-2 rounded-full ${
-                      i < listing.slots_remaining
-                        ? isScarce ? 'bg-orange-400' : 'bg-green-500'
-                        : 'bg-[#e5e5ea]'
-                    }`}
-                  />
-                ))}
+            )}
+            {isLive && (
+              <div className="flex items-center gap-1.5">
+                <span className={`text-[10px] font-semibold ${isScarce ? 'text-orange-500' : 'text-[#6e6e73]'}`}>
+                  {listing.slots_remaining} {listing.slots_remaining === 1 ? tx.card.slot : tx.card.slots}
+                </span>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: Math.min(listing.slots_total || 5, 5) }).map((_, i) => (
+                    <span
+                      key={i}
+                      className={`block w-2 h-2 rounded-full ${
+                        i < listing.slots_remaining
+                          ? isScarce ? 'bg-orange-400' : 'bg-green-500'
+                          : 'bg-[#e5e5ea]'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2 mb-4">
@@ -169,19 +175,45 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           <p className={`text-[12px] font-bold ml-auto ${isLive ? 'text-orange-600' : 'text-[#1d1d1f]'}`}>{deadlineFormatted}</p>
         </div>
 
-        <div className="flex items-center justify-between mb-3 bg-[#f5f5f7] rounded-2xl p-3.5">
+        <div className={`flex items-center justify-between mb-3 rounded-2xl p-3.5 ${hasDiscount && isLive ? (tier === 'last_chance' ? 'bg-red-50' : tier === 'mid' ? 'bg-orange-50' : 'bg-amber-50') : 'bg-[#f5f5f7]'}`}>
           <div>
             <p className="text-[#86868b] text-[10px] font-medium uppercase tracking-wide mb-1">{tx.card.pricePerSlot}</p>
             <div className="flex items-baseline gap-2">
-              <span className="text-[#1d1d1f] text-2xl font-semibold tracking-[-0.02em]">{formatPrice(listing.discounted_price)}</span>
-              <span className="text-[#aeaeb2] text-sm line-through">{formatPrice(listing.original_price)}</span>
+              <span className="text-[#1d1d1f] text-2xl font-semibold tracking-[-0.02em]">{formatPrice(currentPrice)}</span>
+              {hasDiscount && (
+                <span className="text-[#aeaeb2] text-sm line-through">{formatPrice(listing.original_price)}</span>
+              )}
             </div>
-            <p className="text-green-600 text-[11px] font-semibold mt-0.5">{tx.card.save} {formatPrice(savings)}</p>
+            {hasDiscount && (
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <TrendingDown className="w-3 h-3 text-green-600" />
+                <p className="text-green-600 text-[11px] font-semibold">{tx.card.save} {formatPrice(savings)}</p>
+              </div>
+            )}
           </div>
-          <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-[15px] font-bold px-3 py-1.5 rounded-2xl tabular-nums shadow-sm shadow-orange-500/25">
-            -{discount}%
-          </div>
+          {hasDiscount ? (
+            <div className={`text-white text-[15px] font-bold px-3 py-1.5 rounded-2xl tabular-nums shadow-sm ${tierStyle.badge}`}>
+              -{discountPct}%
+            </div>
+          ) : (
+            <div className="bg-[#1d1d1f] text-white text-[11px] font-semibold px-2.5 py-1 rounded-xl">
+              Full price
+            </div>
+          )}
         </div>
+
+        {hasDiscount && isLive && (
+          <div className={`flex items-start gap-2 mb-3 rounded-xl px-3 py-2 ${tierStyle.bg} border ${tierStyle.border}`}>
+            <TrendingDown className="w-3 h-3 flex-shrink-0 mt-0.5 text-current opacity-70" />
+            <p className={`text-[10px] font-medium leading-snug ${tier === 'last_chance' ? 'text-red-700' : tier === 'mid' ? 'text-orange-700' : 'text-amber-700'}`}>
+              {tier === 'last_chance'
+                ? 'Final discount applied — this slot closes in under 24 hours'
+                : tier === 'mid'
+                ? '20% off applied — price was reduced because the deadline is approaching'
+                : '10% off applied — early discount as the book-by date nears'}
+            </p>
+          </div>
+        )}
 
         <div className="flex items-center justify-between mb-4 bg-green-50 rounded-2xl px-3.5 py-3">
           <div>
@@ -198,14 +230,6 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           <StatPill label={tx.card.subscribers} value={fmtCompact(listing.subscribers || 0, browserLocale)} />
           <StatPill label={tx.card.openRate} value={listing.open_rate || '—'} accent />
           <StatPill label={tx.card.ctr} value={listing.ctr || '—'} />
-          {/* Future podcast stats:
-          <StatPill label={tx.card.downloadsEp} value={fmtCompact(listing.downloads || 0, browserLocale)} />
-          <StatPill label={tx.card.adType} value={listing.ad_type || '—'} accent />
-          Future influencer stats:
-          <StatPill label={tx.card.followers} value={fmtCompact(listing.followers || 0, browserLocale)} />
-          <StatPill label={tx.card.engagement} value={listing.engagement_rate || '—'} accent />
-          <StatPill label={tx.card.deliverable} value={listing.deliverable || '—'} />
-          */}
         </div>
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[11px] text-[#6e6e73]">
@@ -238,6 +262,11 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
 
         <div className="mt-auto pt-2 flex flex-col gap-2">
           {isLive && <CountdownTimer deadline={listing.deadline_at} compact />}
+          {isLive && !hasDiscount && (
+            <p className="text-[10px] text-center text-[#aeaeb2]">
+              Price reduces automatically as the deadline approaches
+            </p>
+          )}
           <button
             onClick={() => !isSecured && onSecure(listing)}
             disabled={isSecured}

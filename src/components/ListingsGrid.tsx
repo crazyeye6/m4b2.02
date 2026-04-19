@@ -2,6 +2,7 @@ import { Loader2, SearchX } from 'lucide-react';
 import type { Listing, SortOption, ViewMode } from '../types';
 import OpportunityCard from './OpportunityCard';
 import ListingRow from './ListingRow';
+import { getDiscountTier, getDiscountPct } from '../lib/dynamicPricing';
 
 export type GridColumns = 1 | 2 | 3;
 
@@ -21,19 +22,33 @@ const GRID_CLASS: Record<GridColumns, string> = {
   3: 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
 };
 
+function urgencyScore(l: Listing): number {
+  const tier = getDiscountTier(l.deadline_at);
+  const discountPct = getDiscountPct(tier);
+  const deadline = new Date(l.deadline_at).getTime();
+  const hoursLeft = Math.max(0, (deadline - Date.now()) / (1000 * 60 * 60));
+  const urgency = hoursLeft < 24 ? 1 : hoursLeft < 72 ? 0.75 : hoursLeft < 120 ? 0.5 : 0.25;
+  return urgency * 0.6 + (discountPct / 30) * 0.4;
+}
+
 function sortListings(listings: Listing[], sort: SortOption): Listing[] {
   const arr = [...listings];
   switch (sort) {
     case 'deadline_asc':
-      return arr.sort((a, b) => new Date(a.deadline_at).getTime() - new Date(b.deadline_at).getTime());
+      return arr.sort((a, b) => {
+        const uA = urgencyScore(a);
+        const uB = urgencyScore(b);
+        if (Math.abs(uA - uB) > 0.1) return uB - uA;
+        return new Date(a.deadline_at).getTime() - new Date(b.deadline_at).getTime();
+      });
     case 'price_asc':
       return arr.sort((a, b) => a.discounted_price - b.discounted_price);
     case 'price_desc':
       return arr.sort((a, b) => b.discounted_price - a.discounted_price);
     case 'discount_desc':
       return arr.sort((a, b) => {
-        const da = ((a.original_price - a.discounted_price) / a.original_price);
-        const db = ((b.original_price - b.discounted_price) / b.original_price);
+        const da = getDiscountPct(getDiscountTier(a.deadline_at));
+        const db = getDiscountPct(getDiscountTier(b.deadline_at));
         return db - da;
       });
     case 'audience_desc':
@@ -57,12 +72,11 @@ function sortListings(listings: Listing[], sort: SortOption): Listing[] {
         .map((l, i) => {
           const reach = reaches[i];
           const audienceScore = reach > 0 ? Math.log10(reach) / maxLog : 0;
-          const discountScore = l.original_price > 0
-            ? (l.original_price - l.discounted_price) / l.original_price
-            : 0;
+          const discountScore = getDiscountPct(getDiscountTier(l.deadline_at)) / 30;
           const cpm = cpms[i];
           const cpmScore = isFinite(cpm) && maxCpm > 0 ? 1 - cpm / maxCpm : 0;
-          return { listing: l, score: audienceScore * 0.40 + discountScore * 0.35 + cpmScore * 0.25 };
+          const uScore = urgencyScore(l);
+          return { listing: l, score: audienceScore * 0.30 + discountScore * 0.20 + cpmScore * 0.20 + uScore * 0.30 };
         })
         .sort((a, b) => b.score - a.score)
         .map(s => s.listing);

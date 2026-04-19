@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, MapPin, Users, BarChart2, Shield, Mail, Mic, Instagram, ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe, Linkedin, Twitter, Youtube, Share2, Copy, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Users, BarChart2, Shield, Mail, Mic, Instagram, ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe, Linkedin, Twitter, Youtube, Share2, Copy, Check, Loader2, Flame, TrendingDown, AlertTriangle } from 'lucide-react';
 import type { Listing } from '../types';
 import CountdownTimer from '../components/CountdownTimer';
 import { supabase } from '../lib/supabase';
 import { useLocale } from '../context/LocaleContext';
+import { calcDynamicPrice, TIER_STYLES } from '../lib/dynamicPricing';
 
 interface ListingPageProps {
   listingId: string;
@@ -86,10 +87,12 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
 
   const { formatPrice } = useLocale();
   const mc = MEDIA_CONFIG[listing.media_type];
-  const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
-  const savings = listing.original_price - listing.discounted_price;
-  const depositAmount = Math.round(listing.discounted_price * 0.1);
-  const balanceAmount = listing.discounted_price - depositAmount;
+  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
+  const { currentPrice, discountPct, savings, tier, urgencyLabel } = pricing;
+  const tierStyle = TIER_STYLES[tier];
+  const hasDiscount = discountPct > 0;
+  const depositAmount = Math.round(currentPrice * 0.1);
+  const balanceAmount = currentPrice - depositAmount;
   const isSecured = listing.status === 'secured' || listing.status === 'expired' || listing.status === 'cancelled';
 
   return (
@@ -115,11 +118,17 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-8">
         <div className="mb-6">
-          <div className="flex items-center gap-2.5 mb-3">
+          <div className="flex items-center gap-2.5 mb-3 flex-wrap">
             <span className={`inline-flex items-center gap-1.5 border text-[11px] font-semibold px-2.5 py-1.5 rounded-full uppercase tracking-wide ${mc.bg} ${mc.color}`}>
               {mc.icon}
               {mc.label}
             </span>
+            {urgencyLabel && (
+              <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-full ${tierStyle.badge}`}>
+                {tier === 'last_chance' && <Flame className="w-3 h-3" />}
+                {urgencyLabel}
+              </span>
+            )}
             {listing.slots_remaining === 1 && (
               <span className="text-[11px] font-semibold text-orange-600 bg-orange-50 border border-orange-100 px-2.5 py-1.5 rounded-full">
                 Last slot
@@ -133,14 +142,30 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-white border border-black/[0.06] rounded-3xl p-5 shadow-sm">
+              <div className={`bg-white border rounded-3xl p-5 shadow-sm ${hasDiscount ? tierStyle.border : 'border-black/[0.06]'}`}>
                 <p className="text-[#86868b] text-[10px] uppercase tracking-widest font-semibold mb-2">Price per slot</p>
-                <p className="text-[#1d1d1f] text-4xl font-semibold mb-1 tracking-[-0.02em]">{formatPrice(listing.discounted_price)}</p>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-[#aeaeb2] text-[13px] line-through">{formatPrice(listing.original_price)}</span>
-                  <span className="bg-[#1d1d1f] text-white text-[11px] font-bold px-2 py-0.5 rounded-lg">-{discount}%</span>
-                  <span className="text-green-600 text-[12px] font-semibold">Save {formatPrice(savings)}</span>
+                <p className="text-[#1d1d1f] text-4xl font-semibold mb-1 tracking-[-0.02em]">{formatPrice(currentPrice)}</p>
+                <div className="flex items-center gap-2 mb-3">
+                  {hasDiscount && (
+                    <>
+                      <span className="text-[#aeaeb2] text-[13px] line-through">{formatPrice(listing.original_price)}</span>
+                      <span className={`text-white text-[11px] font-bold px-2 py-0.5 rounded-lg ${tierStyle.badge}`}>-{discountPct}%</span>
+                      <span className="text-green-600 text-[12px] font-semibold">Save {formatPrice(savings)}</span>
+                    </>
+                  )}
                 </div>
+                {hasDiscount && (
+                  <div className={`flex items-start gap-2 rounded-xl px-3 py-2 mb-3 ${tierStyle.bg} border ${tierStyle.border}`}>
+                    <TrendingDown className="w-3.5 h-3.5 flex-shrink-0 mt-0.5 opacity-70" />
+                    <p className={`text-[11px] font-medium leading-snug ${tier === 'last_chance' ? 'text-red-700' : tier === 'mid' ? 'text-orange-700' : 'text-amber-700'}`}>
+                      {tier === 'last_chance'
+                        ? 'Final 30% discount — this slot closes in under 24 hours. Act now to lock in this price.'
+                        : tier === 'mid'
+                        ? '20% off automatically applied — 3–5 days remaining. Price may hold but the slot won\'t.'
+                        : '10% early-bird discount applied — more than 3 days remaining.'}
+                    </p>
+                  </div>
+                )}
                 <div className="space-y-2 border-t border-black/[0.06] pt-3">
                   <div className="flex items-center justify-between">
                     <span className="text-green-600 text-[12px] font-semibold">Deposit due now (10%)</span>
@@ -294,6 +319,33 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
               </PageSection>
             )}
 
+            <PageSection title="How pricing works" icon={<TrendingDown className="w-4 h-4 text-[#6e6e73]" />}>
+              <div className="space-y-3">
+                <p className="text-[#6e6e73] text-[13px] leading-relaxed">
+                  Prices on this platform are set by sellers and then reduced automatically as the booking deadline approaches. You do not need to negotiate — the discount is applied for you.
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { label: 'Full price', sub: 'More than 5 days left', color: 'bg-[#f5f5f7] text-[#1d1d1f]' },
+                    { label: '−10%', sub: '3–5 days left', color: 'bg-amber-50 text-amber-700 border border-amber-200' },
+                    { label: '−20%', sub: '1–3 days left', color: 'bg-orange-50 text-orange-700 border border-orange-200' },
+                    { label: '−30%', sub: 'Under 24 hours', color: 'bg-red-50 text-red-700 border border-red-200' },
+                  ].map((row, i) => (
+                    <div key={i} className={`rounded-2xl p-3 text-center ${row.color}`}>
+                      <p className="text-[14px] font-bold">{row.label}</p>
+                      <p className="text-[10px] mt-0.5 opacity-70">{row.sub}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className={`flex items-start gap-2 rounded-xl px-3 py-2.5 bg-amber-50 border border-amber-200`}>
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-amber-600 mt-0.5" />
+                  <p className="text-[12px] text-amber-700 leading-snug">
+                    Waiting for a deeper discount means risking losing the slot to another buyer. Book early to be certain.
+                  </p>
+                </div>
+              </div>
+            </PageSection>
+
             <PageSection title="How booking works" icon={<Info className="w-4 h-4 text-[#6e6e73]" />}>
               <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-3xl p-5 space-y-4">
                 <div>
@@ -347,11 +399,21 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
 
           <div className="lg:col-span-1">
             <div className="sticky top-[108px] space-y-3">
-              <div className="bg-white border border-black/[0.06] rounded-3xl p-5 shadow-sm">
-                <p className="text-[#1d1d1f] font-semibold text-2xl mb-0.5 tracking-[-0.02em]">{formatPrice(listing.discounted_price)}</p>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-[#aeaeb2] text-[13px] line-through">{formatPrice(listing.original_price)}</span>
-                  <span className="bg-[#1d1d1f] text-white text-[10px] font-bold px-2 py-0.5 rounded-lg">-{discount}%</span>
+              <div className={`bg-white border rounded-3xl p-5 shadow-sm ${hasDiscount ? tierStyle.border : 'border-black/[0.06]'}`}>
+                <p className="text-[#1d1d1f] font-semibold text-2xl mb-0.5 tracking-[-0.02em]">{formatPrice(currentPrice)}</p>
+                <div className="flex items-center gap-2 mb-4 flex-wrap">
+                  {hasDiscount && (
+                    <>
+                      <span className="text-[#aeaeb2] text-[13px] line-through">{formatPrice(listing.original_price)}</span>
+                      <span className={`text-white text-[10px] font-bold px-2 py-0.5 rounded-lg ${tierStyle.badge}`}>-{discountPct}%</span>
+                    </>
+                  )}
+                  {urgencyLabel && (
+                    <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${tierStyle.badge}`}>
+                      {tier === 'last_chance' && <Flame className="w-2.5 h-2.5" />}
+                      {urgencyLabel}
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={!isSecured ? () => onSecure(listing) : undefined}
