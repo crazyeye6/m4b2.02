@@ -1,15 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save, Bell, Tag, BellOff } from 'lucide-react';
+import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save, Bell, Tag, BellOff, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import type { DepositBooking, BookingStatus, RefundReasonCategory } from '../types';
+import { useBuyerPreferences } from '../hooks/useBuyerPreferences';
+import { useListings } from '../hooks/useListings';
+import { DEFAULT_FILTERS } from '../lib/urlState';
+import RecommendedSection from '../components/RecommendedSection';
+import PreferencesModal from '../components/PreferencesModal';
+import type { DepositBooking, BookingStatus, RefundReasonCategory, Listing } from '../types';
 import type { DigestPreferences, UserProfile } from '../context/AuthContext';
 
 interface BuyerDashboardProps {
   onBack: () => void;
+  onViewListing?: (listing: Listing) => void;
 }
 
-type DashTab = 'bookings' | 'alerts' | 'profile';
+type DashTab = 'bookings' | 'recommended' | 'alerts' | 'profile';
 
 const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
   pending_payment: { label: 'Pending Payment', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200', icon: <Clock className="w-3.5 h-3.5" /> },
@@ -30,13 +36,16 @@ const REFUND_CATEGORIES: { value: RefundReasonCategory; label: string }[] = [
   { value: 'other', label: 'Other reason' },
 ];
 
-export default function BuyerDashboard({ onBack }: BuyerDashboardProps) {
+export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboardProps) {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const [tab, setTab] = useState<DashTab>('bookings');
   const [bookings, setBookings] = useState<DepositBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<DepositBooking | null>(null);
   const [showRefundModal, setShowRefundModal] = useState(false);
+  const [showPrefsModal, setShowPrefsModal] = useState(false);
+  const { prefs, setPrefs } = useBuyerPreferences();
+  const { listings } = useListings(DEFAULT_FILTERS);
 
   const fetchBookings = useCallback(async () => {
     if (!user?.email) return;
@@ -104,17 +113,18 @@ export default function BuyerDashboard({ onBack }: BuyerDashboardProps) {
           <StatCard icon={<Clock className="w-4 h-4 text-orange-500" />} label="Pending Payment" value={stats.pending} warn={stats.pending > 0} />
         </div>
 
-        <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit">
-          {([['bookings', 'My Bookings'], ['alerts', 'Alert Preferences'], ['profile', 'Profile']] as [DashTab, string][]).map(([key, label]) => (
+        <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit flex-wrap">
+          {([['bookings', 'My Bookings'], ['recommended', 'Recommended'], ['alerts', 'Alert Preferences'], ['profile', 'Profile']] as [DashTab, string][]).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                 tab === key
                   ? 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.06]'
                   : 'text-[#6e6e73] hover:text-[#1d1d1f]'
               }`}
             >
+              {key === 'recommended' && <Sparkles className="w-3.5 h-3.5 text-emerald-500" />}
               {label}
             </button>
           ))}
@@ -144,6 +154,43 @@ export default function BuyerDashboard({ onBack }: BuyerDashboardProps) {
           )
         )}
 
+        {tab === 'recommended' && (
+          prefs.hasCompletedOnboarding && listings.length > 0 ? (
+            <div className="-mx-4 sm:-mx-6 lg:-mx-8">
+              <RecommendedSection
+                listings={listings}
+                prefs={prefs}
+                onView={(listing) => {
+                  if (onViewListing) {
+                    onViewListing(listing);
+                  } else {
+                    onBack();
+                  }
+                }}
+                onEditPrefs={() => setShowPrefsModal(true)}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20 gap-4 text-center max-w-sm mx-auto">
+              <div className="w-14 h-14 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center">
+                <Sparkles className="w-7 h-7 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-[#1d1d1f] font-semibold mb-1">Set up your preferences first</p>
+                <p className="text-[#6e6e73] text-sm">
+                  Configure your matching preferences in Alert Preferences to see personalized slot recommendations here.
+                </p>
+              </div>
+              <button
+                onClick={() => setTab('alerts')}
+                className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-5 py-2.5 rounded-2xl text-sm transition-all"
+              >
+                Set Alert Preferences
+              </button>
+            </div>
+          )
+        )}
+
         {tab === 'alerts' && (
           <AlertPreferencesPanel profile={profile} onSaved={refreshProfile} />
         )}
@@ -165,6 +212,14 @@ export default function BuyerDashboard({ onBack }: BuyerDashboardProps) {
         <RefundRequestModal
           booking={selectedBooking}
           onClose={() => { setShowRefundModal(false); setSelectedBooking(null); fetchBookings(); }}
+        />
+      )}
+
+      {showPrefsModal && (
+        <PreferencesModal
+          prefs={prefs}
+          onSave={(partial) => setPrefs(partial)}
+          onClose={() => setShowPrefsModal(false)}
         />
       )}
     </div>

@@ -7,9 +7,9 @@ import ListingsGrid from './components/ListingsGrid';
 import HowItWorks from './components/HowItWorks';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
-import RecommendedSection from './components/RecommendedSection';
 import PreferencesOnboarding from './components/PreferencesOnboarding';
 import PreferencesModal from './components/PreferencesModal';
+import SmartMatchCallout from './components/SmartMatchCallout';
 import { useBuyerPreferences } from './hooks/useBuyerPreferences';
 
 const ListSlotPage = lazy(() => import('./pages/ListSlotPage'));
@@ -306,6 +306,12 @@ export default function App() {
       <Suspense fallback={<PageFallback />}>
         <BuyerDashboard
           onBack={() => { goHome(); window.scrollTo(0, 0); }}
+          onViewListing={(listing) => {
+            setListingId(listing.id);
+            setListingInUrl(listing.id);
+            setPage('listing');
+            window.scrollTo(0, 0);
+          }}
         />
       </Suspense>
     );
@@ -382,15 +388,6 @@ export default function App() {
           totalSavings={stats.totalSavings}
         />
 
-        {prefs.hasCompletedOnboarding && !loading && listings.length > 0 && (
-          <RecommendedSection
-            listings={listings}
-            prefs={prefs}
-            onView={handleViewListing}
-            onEditPrefs={() => setShowPrefsModal(true)}
-          />
-        )}
-
         <div ref={opportunitiesRef} id="opportunities">
           <SmartFilterBar
             filters={filters}
@@ -415,6 +412,12 @@ export default function App() {
             />
           </section>
         </div>
+
+        <SmartMatchCallout
+          isLoggedIn={!!profile}
+          onSignIn={() => setShowAuthModal(true)}
+          onDashboard={handleDashboard}
+        />
 
         <HowItWorks onListSlot={handleListSlot} />
       </main>
