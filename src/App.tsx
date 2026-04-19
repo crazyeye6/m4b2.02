@@ -427,6 +427,7 @@ export default function App() {
             listingId={listingId}
             onBack={handleBackFromListing}
             onSecure={handleSecure}
+            onViewMediaProfile={handleViewMediaProfile}
           />
         </Suspense>
         {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}

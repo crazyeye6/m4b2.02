@@ -7,6 +7,7 @@ interface DetailModalProps {
   listing: Listing;
   onClose: () => void;
   onSecure: () => void;
+  onViewMediaProfile?: (profileId: string) => void;
 }
 
 const MEDIA_CONFIG = {
@@ -21,7 +22,7 @@ function fmt(n: number): string {
   return String(n);
 }
 
-export default function DetailModal({ listing, onClose, onSecure }: DetailModalProps) {
+export default function DetailModal({ listing, onClose, onSecure, onViewMediaProfile }: DetailModalProps) {
   const mc = MEDIA_CONFIG[listing.media_type];
   const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
   const savings = listing.original_price - listing.discounted_price;
@@ -43,7 +44,16 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
             </div>
             <div>
               <h2 className="text-[#1d1d1f] font-bold text-lg leading-tight">{listing.property_name}</h2>
-              <p className="text-[#6e6e73] text-sm">{listing.media_company_name}</p>
+              {listing.media_profile_id && onViewMediaProfile ? (
+                <button
+                  onClick={() => { onClose(); onViewMediaProfile(listing.media_profile_id!); }}
+                  className="text-sky-600 hover:text-sky-700 hover:underline text-sm text-left transition-colors"
+                >
+                  {listing.media_company_name}
+                </button>
+              ) : (
+                <p className="text-[#6e6e73] text-sm">{listing.media_company_name}</p>
+              )}
             </div>
           </div>
           <button onClick={onClose} className="text-[#aeaeb2] hover:text-[#1d1d1f] transition-colors ml-4 flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f5f5f7]">
@@ -138,7 +148,12 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
           </Section>
 
           {listing.media_profile && (
-            <MediaProfileSection profile={listing.media_profile} />
+            <MediaProfileSection
+              profile={listing.media_profile}
+              onViewProfile={listing.media_profile_id && onViewMediaProfile
+                ? () => { onClose(); onViewMediaProfile(listing.media_profile_id!); }
+                : undefined}
+            />
           )}
 
           <Section title="About the seller" icon={<Shield className="w-4 h-4 text-[#6e6e73]" />}>
@@ -148,9 +163,27 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
                   {listing.media_owner_name[0]}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[#1d1d1f] font-semibold">{listing.media_owner_name}</p>
+                  {listing.media_profile_id && onViewMediaProfile ? (
+                    <button
+                      onClick={() => { onClose(); onViewMediaProfile(listing.media_profile_id!); }}
+                      className="text-[#1d1d1f] font-semibold hover:text-sky-600 transition-colors text-left"
+                    >
+                      {listing.media_owner_name}
+                    </button>
+                  ) : (
+                    <p className="text-[#1d1d1f] font-semibold">{listing.media_owner_name}</p>
+                  )}
                   <p className="text-[#6e6e73] text-sm">{listing.media_company_name}</p>
                   <p className="text-[#aeaeb2] text-xs mt-1">{listing.location}</p>
+                  {listing.media_profile_id && onViewMediaProfile && (
+                    <button
+                      onClick={() => { onClose(); onViewMediaProfile(listing.media_profile_id!); }}
+                      className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-sky-600 hover:text-sky-700 hover:underline transition-colors"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      View full newsletter profile
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -370,7 +403,7 @@ function SellerLink({ href, icon, label }: { href: string; icon: React.ReactNode
   );
 }
 
-function MediaProfileSection({ profile }: { profile: MediaProfile }) {
+function MediaProfileSection({ profile, onViewProfile }: { profile: MediaProfile; onViewProfile?: () => void }) {
   function fmtSubs(n: number | null): string {
     if (!n) return '—';
     if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
@@ -380,9 +413,20 @@ function MediaProfileSection({ profile }: { profile: MediaProfile }) {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
-        <FileText className="w-4 h-4 text-[#6e6e73]" />
-        <h3 className="text-[#1d1d1f] text-sm font-semibold uppercase tracking-wide">Newsletter Profile</h3>
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2">
+          <FileText className="w-4 h-4 text-[#6e6e73]" />
+          <h3 className="text-[#1d1d1f] text-sm font-semibold uppercase tracking-wide">Newsletter Profile</h3>
+        </div>
+        {onViewProfile && (
+          <button
+            onClick={onViewProfile}
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-sky-600 hover:text-sky-700 hover:underline transition-colors flex-shrink-0"
+          >
+            <ExternalLink className="w-3 h-3" />
+            View full profile
+          </button>
+        )}
       </div>
 
       <div className="rounded-2xl border border-black/[0.06] overflow-hidden">

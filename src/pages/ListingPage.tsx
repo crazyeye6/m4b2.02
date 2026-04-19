@@ -10,6 +10,7 @@ interface ListingPageProps {
   listingId: string;
   onBack: () => void;
   onSecure: (listing: Listing) => void;
+  onViewMediaProfile?: (profileId: string) => void;
 }
 
 const MEDIA_CONFIG = {
@@ -24,7 +25,7 @@ function fmt(n: number): string {
   return String(n);
 }
 
-export default function ListingPage({ listingId, onBack, onSecure }: ListingPageProps) {
+export default function ListingPage({ listingId, onBack, onSecure, onViewMediaProfile }: ListingPageProps) {
   const [listing, setListing] = useState<Listing | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -136,7 +137,16 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
             )}
           </div>
           <h1 className="text-2xl sm:text-3xl font-semibold text-[#1d1d1f] mb-1 tracking-[-0.02em]">{listing.property_name}</h1>
-          <p className="text-[#6e6e73] text-[15px]">{listing.media_company_name}</p>
+          {listing.media_profile_id && onViewMediaProfile ? (
+            <button
+              onClick={() => onViewMediaProfile(listing.media_profile_id!)}
+              className="text-sky-600 hover:text-sky-700 hover:underline text-[15px] text-left transition-colors"
+            >
+              {listing.media_company_name}
+            </button>
+          ) : (
+            <p className="text-[#6e6e73] text-[15px]">{listing.media_company_name}</p>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -253,9 +263,27 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
                     {listing.media_owner_name[0]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[#1d1d1f] font-semibold text-[15px]">{listing.media_owner_name}</p>
+                    {listing.media_profile_id && onViewMediaProfile ? (
+                      <button
+                        onClick={() => onViewMediaProfile(listing.media_profile_id!)}
+                        className="text-[#1d1d1f] font-semibold text-[15px] hover:text-sky-600 transition-colors text-left"
+                      >
+                        {listing.media_owner_name}
+                      </button>
+                    ) : (
+                      <p className="text-[#1d1d1f] font-semibold text-[15px]">{listing.media_owner_name}</p>
+                    )}
                     <p className="text-[#6e6e73] text-[13px]">{listing.media_company_name}</p>
                     <p className="text-[#aeaeb2] text-[12px] mt-0.5">{listing.location}</p>
+                    {listing.media_profile_id && onViewMediaProfile && (
+                      <button
+                        onClick={() => onViewMediaProfile(listing.media_profile_id!)}
+                        className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-semibold text-sky-600 hover:text-sky-700 hover:underline transition-colors"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        View full newsletter profile
+                      </button>
+                    )}
                   </div>
                 </div>
 
