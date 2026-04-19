@@ -92,7 +92,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
   const { currentPrice, discountPct, savings, tier, urgencyLabel } = pricing;
   const tierStyle = TIER_STYLES[tier];
   const hasDiscount = discountPct > 0;
-  const depositAmount = Math.round(currentPrice * 0.1);
+  const depositAmount = Math.round(currentPrice * 0.05);
   const balanceAmount = currentPrice - depositAmount;
   const isSecured = listing.status === 'secured' || listing.status === 'expired' || listing.status === 'cancelled';
 
@@ -178,11 +178,11 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                 )}
                 <div className="space-y-2 border-t border-black/[0.06] pt-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-green-600 text-[12px] font-semibold">Deposit due now (10%)</span>
+                    <span className="text-green-600 text-[12px] font-semibold">Deposit due now (5%)</span>
                     <span className="text-green-600 font-semibold text-[14px]">{formatPrice(depositAmount)}</span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-[#6e6e73] text-[12px]">Balance direct to creator (90%)</span>
+                    <span className="text-[#6e6e73] text-[12px]">Balance direct to creator (95%)</span>
                     <span className="text-[#1d1d1f] text-[12px] font-medium">{formatPrice(balanceAmount)}</span>
                   </div>
                 </div>
@@ -377,11 +377,11 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
             <PageSection title="How booking works" icon={<Info className="w-4 h-4 text-[#6e6e73]" />}>
               <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-3xl p-5 space-y-4">
                 <div>
-                  <p className="text-[#1d1d1f] text-[12px] font-semibold mb-2">Pay 10% deposit today</p>
+                  <p className="text-[#1d1d1f] text-[12px] font-semibold mb-2">Pay 5% deposit today</p>
                   <ul className="space-y-1.5">
                     {[
                       'Your deposit is collected by EndingThisWeek.media',
-                      'The creator handles the remaining 90% directly',
+                      'The creator handles the remaining 95% directly',
                       'The seller will invoice you after confirmation',
                       'Seller contact details released after deposit',
                     ].map((item, i) => (
@@ -458,7 +458,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                 {!isSecured && (
                   <div className="flex items-center justify-center gap-1.5">
                     <Clock className="w-3 h-3 text-[#aeaeb2]" />
-                    <p className="text-[#aeaeb2] text-[11px] text-center">10% deposit · Balance to creator</p>
+                    <p className="text-[#aeaeb2] text-[11px] text-center">5% deposit · Balance to creator</p>
                   </div>
                 )}
               </div>
@@ -552,7 +552,7 @@ function FaqItem({ q, a, open, onToggle }: { q: string; a: string; open: boolean
 const FAQ_ITEMS = [
   {
     q: 'What does the deposit do?',
-    a: 'The 10% deposit reserves your slot and prevents it being taken by another buyer. It confirms your intent to the creator and activates the booking process.',
+    a: 'The 5% deposit reserves your slot and prevents it being taken by another buyer. It confirms your intent to the creator and activates the booking process.',
   },
   {
     q: 'Who gets the deposit?',
@@ -560,7 +560,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'When do I pay the creator?',
-    a: 'After your deposit is confirmed, the creator or seller will contact you directly to arrange the remaining 90% balance using normal commercial practice for their niche.',
+    a: 'After your deposit is confirmed, the creator or seller will contact you directly to arrange the remaining 95% balance using normal commercial practice for their niche.',
   },
   {
     q: 'How do refunds work?',

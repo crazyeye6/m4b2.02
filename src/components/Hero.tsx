@@ -113,7 +113,7 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
               {[
                 { icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />, text: 'Auto discounts up to 30% as deadlines near' },
                 { icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />, text: 'Personalised match scoring per buyer' },
-                { icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />, text: 'Reserve with 10% — balance direct to publisher' },
+                { icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />, text: 'Reserve with 5% — balance direct to publisher' },
               ].map(b => (
                 <span key={b.text} className="inline-flex items-center gap-2 text-[12px] text-slate-500 font-medium">
                   {b.icon}{b.text}
@@ -216,7 +216,7 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                     <div className="w-7 h-7 rounded-full bg-teal-600 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
                     <div>
                       <p className="text-[12px] font-bold text-slate-800 leading-snug">You see the right deals — with urgency</p>
-                      <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">Prices auto-drop up to 30% as slots near expiry. Lock in with a 10% deposit in seconds.</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">Prices auto-drop up to 30% as slots near expiry. Lock in with a 5% deposit in seconds.</p>
                     </div>
                   </div>
 
@@ -224,7 +224,7 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                   <div className="mt-1 grid grid-cols-3 gap-2 pt-3 border-t border-slate-100">
                     {[
                       { val: '30%', label: 'max. discount', color: 'text-orange-500' },
-                      { val: '10%', label: 'deposit to lock', color: 'text-teal-600' },
+                      { val: '5%', label: 'deposit to lock', color: 'text-teal-600' },
                       { val: '<10s', label: 'to secure a slot', color: 'text-slate-800' },
                     ].map(s => (
                       <div key={s.label} className="text-center">

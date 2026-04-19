@@ -801,7 +801,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
               <div className="space-y-2 mt-3">
                 {[
                   'Your slot goes live immediately on the marketplace',
-                  'Buyers browse and can reserve your slot with a 10% deposit',
+                  'Buyers browse and can reserve your slot with a 5% deposit',
                   "You'll be notified when a buyer secures — then you exchange contact details",
                   'Buyer sends ad copy, you send the newsletter, balance is paid direct to you',
                 ].map((item, i) => (

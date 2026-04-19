@@ -94,7 +94,7 @@ export default function TermsPage({ onBack }: TermsPageProps) {
               <li>All information submitted during booking — including company name, email, billing details, and campaign messaging — is accurate.</li>
               <li>They have the authority and budget to complete the transaction.</li>
               <li>They will promptly respond to Seller communications following a confirmed booking.</li>
-              <li>They understand that the Platform collects a 10% deposit and that the remaining 90% balance is to be settled directly with the Seller off-platform.</li>
+              <li>They understand that the Platform collects a 5% deposit and that the remaining 95% balance is to be settled directly with the Seller off-platform.</li>
               <li>They will supply any required creative assets, copy, or campaign briefs to the Seller in a timely manner.</li>
               <li>They will not submit fraudulent, defamatory, or illegal advertising content to Sellers.</li>
             </ul>
@@ -113,10 +113,10 @@ export default function TermsPage({ onBack }: TermsPageProps) {
           </p>
         </Section>
 
-        <Section title="5. Deposits, Payments & the 10%/90% Model">
+        <Section title="5. Deposits, Payments & the 5%/95% Model">
           <SubSection title="5.1 Deposit Collection">
             <p>
-              When a Buyer secures a slot, the Platform collects a deposit equal to 10% of the listed slot price (the "Deposit"). The Deposit is processed via third-party payment provider Stripe. By completing a payment, you also agree to Stripe's terms of service.
+              When a Buyer secures a slot, the Platform collects a deposit equal to 5% of the listed slot price (the "Deposit"). The Deposit is processed via third-party payment provider Stripe. By completing a payment, you also agree to Stripe's terms of service.
             </p>
             <p className="mt-2">
               The Deposit is non-refundable except in limited circumstances described in Section 6 (Refunds). Submission of payment constitutes acceptance of these Terms and acknowledgment that the Deposit is only refundable under the stated Refund Policy.
@@ -125,7 +125,7 @@ export default function TermsPage({ onBack }: TermsPageProps) {
 
           <SubSection title="5.2 Balance Payment">
             <p>
-              The remaining 90% balance of the slot price ("Balance") is not collected by EndingThisWeek.media. It is the sole responsibility of the Buyer and Seller to agree and transact the Balance directly between themselves. EndingThisWeek.media has no involvement in, and accepts no liability for, any dispute arising from Balance payment, non-payment, or delayed payment.
+              The remaining 95% balance of the slot price ("Balance") is not collected by EndingThisWeek.media. It is the sole responsibility of the Buyer and Seller to agree and transact the Balance directly between themselves. EndingThisWeek.media has no involvement in, and accepts no liability for, any dispute arising from Balance payment, non-payment, or delayed payment.
             </p>
           </SubSection>
 

@@ -90,7 +90,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const totalPrice = listing.discounted_price * slotsCount;
-    const depositSubtotal = Math.round(totalPrice * 0.1);
+    const depositSubtotal = Math.round(totalPrice * 0.05);
     const vatAmount = vatApplies && !reverseCharge ? Math.round(depositSubtotal * vatRate) : 0;
     const depositTotal = depositSubtotal + vatAmount;
     const balanceAmount = totalPrice - depositSubtotal;

@@ -21,9 +21,9 @@ const STEPS = [
     icon: <CreditCard className="w-4 h-4 text-green-600" />,
     iconBg: 'bg-green-50',
     number: '03',
-    title: 'Pay 10% to reserve',
-    description: 'Pay a 10% deposit to lock in your sponsorship immediately. Your details and a booking reference are sent to the newsletter publisher straight away.',
-    note: '90% paid direct to publisher',
+    title: 'Pay 5% to reserve',
+    description: 'Pay a 5% deposit to lock in your sponsorship immediately. Your details and a booking reference are sent to the newsletter publisher straight away.',
+    note: '95% paid direct to publisher',
   },
   {
     icon: <FileText className="w-4 h-4 text-rose-500" />,
@@ -49,7 +49,7 @@ export default function HowItWorks({ onListSlot }: HowItWorksProps) {
             Reserve a newsletter slot in minutes,<br />pay the publisher directly.
           </h2>
           <p className="text-[#6e6e73] text-[17px] leading-relaxed font-light">
-            A 10% deposit locks in your sponsorship. The remaining 90% is settled directly with the newsletter publisher — fast, flexible, and commercial.
+            A 5% deposit locks in your sponsorship. The remaining 95% is settled directly with the newsletter publisher — fast, flexible, and commercial.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export default function HowItWorks({ onListSlot }: HowItWorksProps) {
 
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
           {[
-            { label: 'Deposit only', value: '10%', sub: 'Charged by platform to reserve', color: 'text-green-600' },
+            { label: 'Deposit only', value: '5%', sub: 'Charged by platform to reserve', color: 'text-green-600' },
             { label: 'Balance paid', value: 'Direct', sub: 'Publisher invoices you separately', color: 'text-sky-600' },
             { label: 'Publisher contact', value: 'Instant', sub: 'Released after deposit confirmed', color: 'text-orange-500' },
           ].map((item, i) => (

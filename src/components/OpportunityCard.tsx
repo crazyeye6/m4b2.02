@@ -44,7 +44,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
   const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
   const { currentPrice, discountPct, savings, tier, urgencyLabel } = pricing;
   const tierStyle = TIER_STYLES[tier];
-  const depositAmount = Math.round(currentPrice * 0.1);
+  const depositAmount = Math.round(currentPrice * 0.05);
 
   const deadlinePassed = new Date(listing.deadline_at).getTime() < Date.now();
   const isLive = listing.status === 'live' && !deadlinePassed;

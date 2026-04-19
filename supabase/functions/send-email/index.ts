@@ -163,12 +163,12 @@ function buildWelcomeBuyer(data: Record<string, unknown>) {
     <ol style="color:#6e6e73;font-size:14px;line-height:1.9;padding-left:22px;margin:0 0 24px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">
       <li>Browse available slots filtered by niche, geography, and budget</li>
       <li>Find a deal worth taking &mdash; real audience data, live countdown timers</li>
-      <li>Pay a 10% deposit to lock in your slot instantly</li>
+      <li>Pay a 5% deposit to lock in your slot instantly</li>
       <li>Contact the creator directly and finalise the campaign</li>
     </ol>
     ${ctaButton("Browse Opportunities &rarr;", SITE_URL)}
     ${divider()}
-    ${infoBox(`<p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 6px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Why a 10% deposit?</p><p style="color:#6e6e73;font-size:13px;margin:0;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Your deposit reserves the slot and releases the creator&apos;s contact details. The remaining 90% is paid directly to the creator &mdash; no platform cut on the balance.</p>`, "green")}
+    ${infoBox(`<p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 6px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Why a 5% deposit?</p><p style="color:#6e6e73;font-size:13px;margin:0;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Your deposit reserves the slot and releases the creator&apos;s contact details. The remaining 95% is paid directly to the creator &mdash; no platform cut on the balance.</p>`, "green")}
     ${p("If you have any questions, reply to this email and we&apos;ll help you out.", "color:#aeaeb2;font-size:12px;")}
   `;
   return { subject: "Welcome to EndingThisWeek.media", html: wrapEmail(content, `Last-minute ad slots at 20–50% off — welcome, ${name}!`) };
@@ -232,8 +232,8 @@ function buildBookingConfirmationBuyer(data: Record<string, unknown>) {
       dataRow("Creator", ownerName) +
       dataRow("Slot type", slotType) +
       dataRow("Posting date", dateLabel) +
-      dataRow("Deposit paid (10%)", `${currency}${depositAmount}`) +
-      dataRow("Balance to creator (90%)", `${currency}${balanceAmount}`) +
+      dataRow("Deposit paid (5%)", `${currency}${depositAmount}`) +
+      dataRow("Balance to creator (95%)", `${currency}${balanceAmount}`) +
       dataRow("Total campaign value", `${currency}${totalPrice}`)
     )}
     ${contactSection}
@@ -276,7 +276,7 @@ function buildBookingConfirmationSeller(data: Record<string, unknown>) {
 
   const content = `
     ${h1("New booking received!")}
-    ${p(`Hi ${sellerName}, a buyer has secured a slot on <strong style="color:#1d1d1f;">${propertyName}</strong>. Their 10% deposit has been collected by the platform.`)}
+    ${p(`Hi ${sellerName}, a buyer has secured a slot on <strong style="color:#1d1d1f;">${propertyName}</strong>. Their 5% deposit has been collected by the platform.`)}
     <p style="color:#6e6e73;font-size:13px;margin:0 0 24px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Booking reference: <span style="color:#1d1d1f;font-family:ui-monospace,'SF Mono',monospace;font-weight:700;background:#f5f5f7;padding:2px 8px;border-radius:6px;">${ref}</span></p>
     ${infoBox(`
       <p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 10px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Buyer contact details</p>

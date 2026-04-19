@@ -26,7 +26,7 @@ export default function DetailModal({ listing, onClose, onSecure, onViewMediaPro
   const mc = MEDIA_CONFIG[listing.media_type];
   const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
   const savings = listing.original_price - listing.discounted_price;
-  const depositAmount = Math.round(listing.discounted_price * 0.1);
+  const depositAmount = Math.round(listing.discounted_price * 0.05);
   const balanceAmount = listing.discounted_price - depositAmount;
   const isSecured = listing.status === 'secured' || listing.status === 'expired' || listing.status === 'cancelled';
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -73,11 +73,11 @@ export default function DetailModal({ listing, onClose, onSecure, onViewMediaPro
               </div>
               <div className="space-y-1.5 border-t border-black/[0.06] pt-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-green-600 text-xs font-semibold">Deposit due now (10%)</span>
+                  <span className="text-green-600 text-xs font-semibold">Deposit due now (5%)</span>
                   <span className="text-green-600 font-bold text-sm">${depositAmount.toLocaleString()}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-[#6e6e73] text-xs">Balance direct to creator (90%)</span>
+                  <span className="text-[#6e6e73] text-xs">Balance direct to creator (95%)</span>
                   <span className="text-[#1d1d1f] text-xs font-medium">${balanceAmount.toLocaleString()}</span>
                 </div>
               </div>
@@ -266,11 +266,11 @@ export default function DetailModal({ listing, onClose, onSecure, onViewMediaPro
           <Section title="How booking works" icon={<Info className="w-4 h-4 text-blue-500" />}>
             <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4 space-y-4">
               <div>
-                <p className="text-blue-700 text-xs font-semibold mb-2">Pay 10% deposit today</p>
+                <p className="text-blue-700 text-xs font-semibold mb-2">Pay 5% deposit today</p>
                 <ul className="space-y-1.5">
                   {[
                     'Your deposit is collected by EndingThisWeek.media',
-                    'The creator handles the remaining 90% directly',
+                    'The creator handles the remaining 95% directly',
                     'The seller will invoice you after confirmation',
                     'Seller contact details released after deposit',
                   ].map((item, i) => (
@@ -335,7 +335,7 @@ export default function DetailModal({ listing, onClose, onSecure, onViewMediaPro
           {!isSecured && (
             <div className="flex items-center justify-center gap-1.5 mt-2">
               <Clock className="w-3 h-3 text-[#aeaeb2]" />
-              <p className="text-[#aeaeb2] text-xs text-center">Reserve with 10% deposit · Balance paid direct to creator</p>
+              <p className="text-[#aeaeb2] text-xs text-center">Reserve with 5% deposit · Balance paid direct to creator</p>
             </div>
           )}
         </div>
@@ -368,7 +368,7 @@ function StatCard({ label, value, highlight }: { label: string; value: string; h
 const FAQ_ITEMS = [
   {
     q: 'What does the deposit do?',
-    a: 'The 10% deposit reserves your slot and prevents it being taken by another buyer. It confirms your intent to the creator and activates the booking process.',
+    a: 'The 5% deposit reserves your slot and prevents it being taken by another buyer. It confirms your intent to the creator and activates the booking process.',
   },
   {
     q: 'Who gets the deposit?',
@@ -376,7 +376,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'When do I pay the creator?',
-    a: 'After your deposit is confirmed, the creator or seller will contact you directly to arrange the remaining 90% balance using normal commercial practice for their niche.',
+    a: 'After your deposit is confirmed, the creator or seller will contact you directly to arrange the remaining 95% balance using normal commercial practice for their niche.',
   },
   {
     q: 'How do refunds work?',

@@ -90,7 +90,7 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
 
   const slotsCount = 1;
   const totalPrice = listing.discounted_price * slotsCount;
-  const depositSubtotal = Math.round(totalPrice * 0.1);
+  const depositSubtotal = Math.round(totalPrice * 0.05);
 
   const vat = useMemo(() =>
     calculateVAT(depositSubtotal, form.buyer_country_code, form.purchase_type, vatNumberValid === true),
