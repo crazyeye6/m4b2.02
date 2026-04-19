@@ -62,3 +62,13 @@ export function resolvePublishDate(
 export function formatDeadlineDate(deadline: string, locale = 'en-GB'): string {
   return new Date(deadline).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 }
+
+export function formatCountdown(deadline: string): string {
+  const ms = new Date(deadline).getTime() - Date.now();
+  if (ms <= 0) return 'Expired';
+  const hours = Math.floor(ms / 3600000);
+  if (hours < 24) return `${hours}h left`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return '1 day left';
+  return `${days} days left`;
+}

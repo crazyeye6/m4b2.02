@@ -7,6 +7,10 @@ import ListingsGrid from './components/ListingsGrid';
 import HowItWorks from './components/HowItWorks';
 import Footer from './components/Footer';
 import AuthModal from './components/AuthModal';
+import RecommendedSection from './components/RecommendedSection';
+import PreferencesOnboarding from './components/PreferencesOnboarding';
+import PreferencesModal from './components/PreferencesModal';
+import { useBuyerPreferences } from './hooks/useBuyerPreferences';
 
 const ListSlotPage = lazy(() => import('./pages/ListSlotPage'));
 const ListingPage = lazy(() => import('./pages/ListingPage'));
@@ -93,10 +97,20 @@ export default function App() {
   });
 
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPrefsModal, setShowPrefsModal] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const opportunitiesRef = useRef<HTMLDivElement>(null);
+  const { prefs, setPrefs } = useBuyerPreferences();
 
   const { profile } = useAuth();
   const { listings, loading, stats, updateListingStatus, refetch } = useListings(filters);
+
+  useEffect(() => {
+    if (!loading && listings.length > 0 && !prefs.hasCompletedOnboarding && page === 'home') {
+      const t = setTimeout(() => setShowOnboarding(true), 1200);
+      return () => clearTimeout(t);
+    }
+  }, [loading, listings.length, prefs.hasCompletedOnboarding, page]);
 
   const syncUrl = useCallback((f: FilterState, v: ViewMode, c: GridColumns) => {
     encodeFiltersToUrl(f, v, c);
@@ -373,6 +387,15 @@ export default function App() {
           totalSavings={stats.totalSavings}
         />
 
+        {prefs.hasCompletedOnboarding && !loading && listings.length > 0 && (
+          <RecommendedSection
+            listings={listings}
+            prefs={prefs}
+            onView={handleViewListing}
+            onEditPrefs={() => setShowPrefsModal(true)}
+          />
+        )}
+
         <div ref={opportunitiesRef} id="opportunities">
           <SmartFilterBar
             filters={filters}
@@ -408,6 +431,21 @@ export default function App() {
 
       {showAuthModal && (
         <AuthModal onClose={() => setShowAuthModal(false)} />
+      )}
+
+      {showOnboarding && (
+        <PreferencesOnboarding
+          onSave={(partial) => { setPrefs(partial); setShowOnboarding(false); }}
+          onSkip={() => { setPrefs({ hasCompletedOnboarding: true }); setShowOnboarding(false); }}
+        />
+      )}
+
+      {showPrefsModal && (
+        <PreferencesModal
+          prefs={prefs}
+          onSave={(partial) => setPrefs(partial)}
+          onClose={() => setShowPrefsModal(false)}
+        />
       )}
     </div>
   );

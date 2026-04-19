@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { ArrowRight, Mail, Inbox, TrendingDown, Clock, Zap, ArrowRightLeft } from 'lucide-react';
+import { ArrowRight, Mail, Inbox, TrendingDown, Clock, Zap, ArrowRight as ArrowRightIcon } from 'lucide-react';
 
 interface HeroProps {
   onBrowse: () => void;
@@ -72,7 +72,7 @@ function OpportunityCard({ card, index }: { card: typeof STRUCTURED_CARDS[0]; in
   const countdown = useLiveCountdown(card.hours, card.mins);
   return (
     <div
-      className="structured-card bg-white rounded-xl border border-slate-100 shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-3.5"
+      className="structured-card bg-white rounded-xl border border-slate-100 shadow-[0_2px_16px_rgba(0,0,0,0.06)] p-3.5 cursor-default"
       style={{ animationDelay: `${600 + index * 120}ms` }}
     >
       <div className="flex items-start justify-between mb-2.5">
@@ -82,7 +82,7 @@ function OpportunityCard({ card, index }: { card: typeof STRUCTURED_CARDS[0]; in
           </div>
           <div>
             <p className="text-[12px] font-semibold text-slate-900 leading-tight">{card.name}</p>
-            <p className="text-[10px] text-slate-400 leading-tight">{card.niche} · {card.subs}</p>
+            <p className="text-[10px] text-slate-400 leading-tight">{card.niche} · {card.subs} subs</p>
           </div>
         </div>
         <span className="inline-flex items-center gap-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full tracking-wide">
@@ -99,6 +99,10 @@ function OpportunityCard({ card, index }: { card: typeof STRUCTURED_CARDS[0]; in
           {countdown}
         </div>
       </div>
+      <div className="mt-2.5 pt-2.5 border-t border-slate-50 flex items-center justify-between">
+        <span className="text-[9px] text-emerald-600 font-semibold">View Deal</span>
+        <ArrowRightIcon className="w-3 h-3 text-emerald-500" />
+      </div>
     </div>
   );
 }
@@ -113,73 +117,70 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
 
   return (
     <section className="relative overflow-hidden bg-white">
-      {/* Grid lines — financial terminal feel */}
+      {/* Subtle grid — financial terminal feel */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
           backgroundImage: `
-            linear-gradient(rgba(15,23,42,0.035) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(15,23,42,0.035) 1px, transparent 1px)
+            linear-gradient(rgba(15,23,42,0.032) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(15,23,42,0.032) 1px, transparent 1px)
           `,
           backgroundSize: '56px 56px',
-          maskImage: 'radial-gradient(ellipse 120% 100% at 50% 0%, black 30%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(ellipse 120% 100% at 50% 0%, black 30%, transparent 100%)',
+          maskImage: 'radial-gradient(ellipse 130% 110% at 50% 0%, black 20%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(ellipse 130% 110% at 50% 0%, black 20%, transparent 100%)',
         }}
       />
 
-      {/* Soft tint gradient overlay */}
+      {/* Soft ambient gradient */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(160deg, rgba(240,253,244,0.5) 0%, rgba(255,255,255,0) 50%, rgba(240,249,255,0.3) 100%)',
+          background: 'linear-gradient(150deg, rgba(236,253,245,0.55) 0%, rgba(255,255,255,0) 45%, rgba(240,249,255,0.25) 100%)',
         }}
       />
 
       <div className="relative max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:pt-32 lg:pb-20">
-        <div className="grid lg:grid-cols-[1fr_600px] gap-14 lg:gap-10 items-center">
+        <div className="grid lg:grid-cols-[1fr_580px] gap-16 lg:gap-12 items-center">
 
           {/* LEFT — Copy + CTAs */}
           <div
             style={{
               opacity: visible ? 1 : 0,
-              transform: visible ? 'translateY(0)' : 'translateY(20px)',
+              transform: visible ? 'translateY(0)' : 'translateY(22px)',
               transition: 'opacity 0.5s ease, transform 0.5s ease',
             }}
           >
             {/* Eyebrow */}
-            <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-semibold px-3.5 py-1.5 rounded-full mb-7 tracking-wide uppercase">
+            <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-semibold px-3.5 py-1.5 rounded-full mb-8 tracking-widest uppercase">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse flex-shrink-0" />
-              Newsletter advertising, structured
+              Industry inbox + matching engine
             </div>
 
             {/* Headline */}
             <h1
               className="font-bold text-slate-900 tracking-[-0.045em] leading-[1.0] mb-5"
-              style={{ fontSize: 'clamp(42px, 5.5vw, 72px)' }}
+              style={{ fontSize: 'clamp(40px, 5.5vw, 70px)' }}
             >
               The inbox for{' '}
               <br className="hidden sm:block" />
               newsletter{' '}
-              <span
-                className="relative inline-block"
-                style={{ color: '#0f766e' }}
-              >
+              <span className="relative inline-block" style={{ color: '#0f766e' }}>
                 advertising.
                 <span
-                  className="absolute -bottom-1 left-0 right-0 h-[3px] rounded-full"
-                  style={{ background: 'linear-gradient(90deg, #0f766e, #14b8a6)' }}
+                  className="absolute left-0 right-0 h-[3px] rounded-full"
+                  style={{ bottom: '-3px', background: 'linear-gradient(90deg, #0f766e, #14b8a6)' }}
                 />
               </span>
             </h1>
 
             {/* Subheadline */}
-            <p className="text-[18px] sm:text-[20px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[480px]">
+            <p className="text-[18px] sm:text-[20px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[490px]">
               We organize, surface, and match the best promo opportunities — all in one place.
             </p>
 
             {/* Support line */}
-            <p className="text-[13px] text-slate-400 font-medium mb-10 tracking-wide uppercase">
-              No more clutter. Just the right deals.
+            <p className="text-[14px] text-slate-400 font-medium mb-10 max-w-[420px]">
+              Stop digging through emails. See the right deals instantly.
             </p>
 
             {/* CTAs */}
@@ -200,9 +201,9 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
               </button>
             </div>
 
-            {/* Trust */}
-            <p className="mt-7 text-[11px] text-slate-400 font-medium tracking-wide">
-              No subscription required · Pay per booking · Instant confirmation
+            {/* Trust line */}
+            <p className="mt-7 text-[12px] text-slate-400 font-medium tracking-wide">
+              Curated from real publisher inventory. No spam. No noise.
             </p>
           </div>
 
@@ -211,8 +212,8 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
             className="hidden lg:block"
             style={{
               opacity: visible ? 1 : 0,
-              transform: visible ? 'translateY(0)' : 'translateY(28px)',
-              transition: 'opacity 0.6s ease 0.12s, transform 0.6s ease 0.12s',
+              transform: visible ? 'translateY(0)' : 'translateY(30px)',
+              transition: 'opacity 0.65s ease 0.14s, transform 0.65s ease 0.14s',
             }}
           >
             <div className="flex items-stretch gap-3">
@@ -222,27 +223,22 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                 className="flex-1 rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.05)]"
                 style={{ minWidth: 0 }}
               >
-                {/* Panel header */}
                 <div className="px-3.5 pt-3 pb-2.5 border-b border-slate-200 bg-white flex items-center gap-2">
                   <Inbox className="w-3.5 h-3.5 text-slate-400" />
                   <span className="text-[11px] font-semibold text-slate-500 tracking-wide uppercase">Your Inbox</span>
                   <span className="ml-auto text-[10px] bg-red-100 text-red-500 font-bold px-1.5 py-0.5 rounded-full">47 unread</span>
                 </div>
-
-                {/* Messy email rows */}
                 <div className="divide-y divide-slate-100">
                   {MESSY_EMAILS.map((email, i) => (
                     <div
                       key={i}
-                      className={`px-3.5 py-2.5 ${email.read ? 'opacity-60' : ''}`}
-                      style={{
-                        animation: `emailSlide 0.4s ease both`,
-                        animationDelay: `${300 + i * 60}ms`,
-                      }}
+                      className={`px-3.5 py-2.5 ${email.read ? 'opacity-55' : ''}`}
+                      style={{ animation: 'emailSlide 0.4s ease both', animationDelay: `${300 + i * 60}ms` }}
                     >
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        {!email.read && <span className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />}
-                        {email.read && <span className="w-1.5 h-1.5 flex-shrink-0" />}
+                        {!email.read
+                          ? <span className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />
+                          : <span className="w-1.5 h-1.5 flex-shrink-0" />}
                         <p className="text-[10px] font-semibold text-slate-700 truncate">{email.from}</p>
                         <span className="ml-auto text-[9px] text-slate-400 flex-shrink-0">{email.time}</span>
                       </div>
@@ -250,30 +246,19 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                     </div>
                   ))}
                 </div>
-
-                {/* Blur overlay at bottom */}
-                <div
-                  className="h-12 pointer-events-none"
-                  style={{
-                    background: 'linear-gradient(to bottom, transparent, rgba(248,250,252,0.95))',
-                  }}
-                />
-
-                {/* Label */}
+                <div className="h-12 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent, rgba(248,250,252,0.96))' }} />
                 <div className="px-3.5 pb-3 text-center">
                   <span className="text-[9px] text-slate-400 font-medium uppercase tracking-widest">Messy. Manual. Slow.</span>
                 </div>
               </div>
 
-              {/* Arrow connector */}
+              {/* Connector */}
               <div className="flex flex-col items-center justify-center gap-2 flex-shrink-0">
                 <div
-                  className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center shadow-[0_4px_16px_rgba(15,23,42,0.2)]"
-                  style={{
-                    animation: 'arrowPulse 2s ease-in-out infinite',
-                  }}
+                  className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center shadow-[0_4px_16px_rgba(15,23,42,0.22)]"
+                  style={{ animation: 'connectorPulse 2.2s ease-in-out infinite' }}
                 >
-                  <ArrowRightLeft className="w-3.5 h-3.5 text-white" />
+                  <Zap className="w-3.5 h-3.5 text-white" />
                 </div>
                 <span className="text-[8px] text-slate-400 font-semibold uppercase tracking-widest text-center leading-tight">
                   Structured<br />by us
@@ -282,10 +267,9 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
 
               {/* OPPORTUNITIES — Clean */}
               <div
-                className="flex-1 rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.07)]"
+                className="flex-1 rounded-2xl border border-emerald-100 bg-white overflow-hidden shadow-[0_4px_28px_rgba(0,0,0,0.08)]"
                 style={{ minWidth: 0 }}
               >
-                {/* Panel header */}
                 <div className="px-3.5 pt-3 pb-2.5 border-b border-slate-100 flex items-center gap-2">
                   <Zap className="w-3.5 h-3.5 text-emerald-500" />
                   <span className="text-[11px] font-semibold text-slate-700 tracking-wide uppercase">Live Deals</span>
@@ -293,24 +277,19 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                     {STRUCTURED_CARDS.length} matched
                   </span>
                 </div>
-
-                {/* Cards */}
                 <div className="p-2.5 flex flex-col gap-2">
                   {STRUCTURED_CARDS.map((card, i) => (
                     <OpportunityCard key={card.id} card={card} index={i} />
                   ))}
                 </div>
-
-                {/* Label */}
                 <div className="px-3.5 pb-3 text-center">
                   <span className="text-[9px] text-emerald-600 font-semibold uppercase tracking-widest">Organized. Matched. Ready.</span>
                 </div>
               </div>
             </div>
 
-            {/* Caption below */}
             <p className="text-center text-[10px] text-slate-400 font-medium mt-3">
-              We turn inbox chaos into structured ad opportunities
+              We turn inbox chaos into structured advertising opportunities
             </p>
           </div>
         </div>
@@ -328,9 +307,9 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
           from { opacity: 0; transform: translateX(10px); }
           to { opacity: 1; transform: translateX(0); }
         }
-        @keyframes arrowPulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(15,23,42,0.2); }
-          50% { transform: scale(1.08); box-shadow: 0 6px 22px rgba(15,23,42,0.28); }
+        @keyframes connectorPulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(15,23,42,0.22); }
+          50% { transform: scale(1.09); box-shadow: 0 6px 24px rgba(15,23,42,0.3); }
         }
       `}</style>
     </section>
