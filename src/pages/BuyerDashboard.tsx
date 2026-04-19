@@ -15,7 +15,7 @@ interface BuyerDashboardProps {
   onViewListing?: (listing: Listing) => void;
 }
 
-type DashTab = 'bookings' | 'recommended' | 'alerts' | 'profile';
+type DashTab = 'recommended' | 'bookings' | 'alerts' | 'profile';
 
 const STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
   pending_payment: { label: 'Pending Payment', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200', icon: <Clock className="w-3.5 h-3.5" /> },
@@ -38,7 +38,7 @@ const REFUND_CATEGORIES: { value: RefundReasonCategory; label: string }[] = [
 
 export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboardProps) {
   const { user, profile, signOut, refreshProfile } = useAuth();
-  const [tab, setTab] = useState<DashTab>('bookings');
+  const [tab, setTab] = useState<DashTab>('recommended');
   const [bookings, setBookings] = useState<DepositBooking[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState<DepositBooking | null>(null);
@@ -114,7 +114,7 @@ export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboard
         </div>
 
         <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit flex-wrap">
-          {([['bookings', 'My Bookings'], ['recommended', 'Recommended'], ['alerts', 'Alert Preferences'], ['profile', 'Profile']] as [DashTab, string][]).map(([key, label]) => (
+          {([['recommended', 'Recommended'], ['bookings', 'My Bookings'], ['alerts', 'Alert Preferences'], ['profile', 'Profile']] as [DashTab, string][]).map(([key, label]) => (
             <button
               key={key}
               onClick={() => setTab(key)}
