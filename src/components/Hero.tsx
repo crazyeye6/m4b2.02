@@ -53,24 +53,6 @@ const STRUCTURED_CARDS = [
     matchScore: 87,
     reasons: ['Top SaaS newsletter', 'Strong engagement'],
   },
-  {
-    id: 3,
-    name: 'Dev Digest',
-    publisher: 'Developer Weekly',
-    niche: 'Software / Dev',
-    geo: 'US / Europe',
-    subs: 120_000,
-    openRate: '35%',
-    ctr: '2.3%',
-    price: 1350,
-    original: 3000,
-    discount: 55,
-    hours: 0,
-    mins: 43,
-    urgent: true,
-    matchScore: 81,
-    reasons: ['High reach', 'Closing in 43 min'],
-  },
 ];
 
 function compactNum(n: number): string {
@@ -379,7 +361,7 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                     {STRUCTURED_CARDS.length} active
                   </span>
                 </div>
-                <div className="p-3 grid grid-cols-3 gap-2.5">
+                <div className="p-3 grid grid-cols-2 gap-3">
                   {STRUCTURED_CARDS.map((card, i) => (
                     <LiveCard key={card.id} card={card} index={i} />
                   ))}
