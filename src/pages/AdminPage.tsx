@@ -8,6 +8,7 @@ import {
   Zap, AlertCircle, Send, BarChart2, Globe, Percent,
 } from 'lucide-react';
 import { parseEmailBody, confidenceLabel, fieldConfidenceColor } from '../lib/emailParser';
+import { sendAdminSlotPublishedEmail } from '../lib/email';
 
 interface EmailSubmission {
   id: string;
@@ -222,6 +223,43 @@ export default function AdminPage({ onBack }: AdminPageProps) {
       if (notes) {
         await supabase.from('email_submission_slots').update({ admin_notes: notes }).eq('id', id);
       }
+
+      const { data: slot } = await supabase
+        .from('email_submission_slots')
+        .select('*, submission:email_submissions(sender_email, sender_name), listing_id')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (slot?.listing_id) {
+        const { data: listing } = await supabase
+          .from('listings')
+          .select('property_name, media_type, original_price, discounted_price, slots_remaining, deadline_at, seller_email')
+          .eq('id', slot.listing_id)
+          .maybeSingle();
+
+        const senderEmail = (slot.submission as { sender_email?: string } | null)?.sender_email;
+        const senderName = (slot.submission as { sender_name?: string } | null)?.sender_name;
+        const toEmail = listing?.seller_email || senderEmail;
+
+        if (toEmail && listing) {
+          const origPrice = Number(slot.original_price || 0);
+          const discPrice = Number(slot.discount_price || 0);
+          const discount = origPrice > 0 ? Math.round(((origPrice - discPrice) / origPrice) * 100) : 0;
+          sendAdminSlotPublishedEmail(toEmail, {
+            property_name: listing.property_name,
+            media_type: listing.media_type,
+            original_price: listing.original_price || origPrice,
+            discounted_price: listing.discounted_price || discPrice,
+            discount,
+            slots_remaining: listing.slots_remaining ?? slot.slots_available ?? 1,
+            deadline_at: listing.deadline_at || slot.deadline_date || slot.deadline || '',
+            seller_name: senderName || '',
+            seller_email: toEmail,
+            submission_ref: id.slice(0, 8).toUpperCase(),
+          });
+        }
+      }
+
       await fetchData();
       setSelectedSlot(null);
     } catch (err) {

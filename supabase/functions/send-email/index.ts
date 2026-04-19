@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
+const SITE_URL = "https://endingthisweek.media";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
@@ -13,6 +15,7 @@ interface EmailPayload {
     | "booking_confirmation_buyer"
     | "booking_confirmation_seller"
     | "slot_listed"
+    | "admin_slot_published"
     | "opportunity_digest"
     | "contact_form";
   to: string;
@@ -28,7 +31,7 @@ function brandHeader() {
             <table cellpadding="0" cellspacing="0">
               <tr>
                 <td style="background:#1d1d1f;border-radius:8px;width:32px;height:32px;text-align:center;vertical-align:middle;">
-                  <span style="color:#ffffff;font-size:15px;font-weight:900;line-height:32px;">⚡</span>
+                  <span style="color:#ffffff;font-size:15px;font-weight:900;line-height:32px;">&#9889;</span>
                 </td>
                 <td style="padding-left:10px;">
                   <span style="color:#1d1d1f;font-size:15px;font-weight:700;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;letter-spacing:-0.3px;">EndingThisWeek<span style="color:#16a34a;">.media</span></span>
@@ -42,20 +45,24 @@ function brandHeader() {
   `;
 }
 
-function brandFooter() {
+function brandFooter(includeUnsubscribe = false, unsubLink = "") {
+  const unsub = includeUnsubscribe && unsubLink
+    ? `<p style="color:#aeaeb2;font-size:11px;margin:6px 0 0 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;"><a href="${unsubLink}" style="color:#aeaeb2;text-decoration:underline;">Unsubscribe from digest emails</a></p>`
+    : "";
   return `
     <div style="background:#f5f5f7;padding:24px 40px;border-top:1px solid rgba(0,0,0,0.06);margin-top:0;">
       <p style="color:#aeaeb2;font-size:12px;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">
-        EndingThisWeek.media — last-minute advertising slots at discounted rates
+        EndingThisWeek.media &mdash; last-minute advertising slots at discounted rates
       </p>
       <p style="color:#aeaeb2;font-size:11px;margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">
         You're receiving this because you have an account on EndingThisWeek.media.
       </p>
+      ${unsub}
     </div>
   `;
 }
 
-function wrapEmail(content: string, preheader = "") {
+function wrapEmail(content: string, preheader = "", includeUnsubscribe = false, unsubLink = "") {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -71,7 +78,7 @@ function wrapEmail(content: string, preheader = "") {
         <table cellpadding="0" cellspacing="0" width="600" style="max-width:600px;width:100%;background:#ffffff;border:1px solid rgba(0,0,0,0.08);border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
           <tr><td>${brandHeader()}</td></tr>
           <tr><td style="padding:36px 40px;">${content}</td></tr>
-          <tr><td>${brandFooter()}</td></tr>
+          <tr><td>${brandFooter(includeUnsubscribe, unsubLink)}</td></tr>
         </table>
       </td>
     </tr>
@@ -82,6 +89,10 @@ function wrapEmail(content: string, preheader = "") {
 
 function h1(text: string) {
   return `<h1 style="color:#1d1d1f;font-size:24px;font-weight:700;margin:0 0 10px 0;line-height:1.25;letter-spacing:-0.4px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;">${text}</h1>`;
+}
+
+function h2(text: string) {
+  return `<h2 style="color:#1d1d1f;font-size:17px;font-weight:700;margin:0 0 12px 0;line-height:1.3;letter-spacing:-0.2px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;">${text}</h2>`;
 }
 
 function p(text: string, style = "") {
@@ -139,22 +150,26 @@ function infoBox(content: string, variant: "green" | "blue" | "orange" = "green"
   `;
 }
 
+function statPill(label: string, value: string) {
+  return `<span style="display:inline-block;background:#f5f5f7;border:1px solid rgba(0,0,0,0.08);border-radius:8px;padding:4px 10px;font-size:11px;color:#3a3a3c;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;margin:0 4px 4px 0;"><span style="color:#aeaeb2;">${label}:</span> <strong style="color:#1d1d1f;">${value}</strong></span>`;
+}
+
 function buildWelcomeBuyer(data: Record<string, unknown>) {
   const name = String(data.display_name || "there");
   const content = `
     ${h1(`Welcome, ${name}!`)}
-    ${p("You now have access to last-minute advertising slots at 20–50% below standard rates. Newsletters, podcasts, and influencer placements — all expiring soon.")}
-    ${labelText("Here's how to get started:")}
+    ${p("You now have access to last-minute advertising slots at 20&ndash;50% below standard rates. Newsletters, podcasts, and influencer placements &mdash; all expiring soon.")}
+    ${labelText("Here&apos;s how to get started:")}
     <ol style="color:#6e6e73;font-size:14px;line-height:1.9;padding-left:22px;margin:0 0 24px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">
       <li>Browse available slots filtered by niche, geography, and budget</li>
-      <li>Find a deal worth taking — real audience data, live countdown timers</li>
+      <li>Find a deal worth taking &mdash; real audience data, live countdown timers</li>
       <li>Pay a 10% deposit to lock in your slot instantly</li>
       <li>Contact the creator directly and finalise the campaign</li>
     </ol>
-    ${ctaButton("Browse Opportunities →", "https://endingthistweek.media")}
+    ${ctaButton("Browse Opportunities &rarr;", SITE_URL)}
     ${divider()}
-    ${infoBox(`<p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 6px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Why a 10% deposit?</p><p style="color:#6e6e73;font-size:13px;margin:0;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Your deposit reserves the slot and releases the creator's contact details. The remaining 90% is paid directly to the creator — no platform cut on the balance.</p>`, "green")}
-    ${p("If you have any questions, reply to this email and we'll help you out.", "color:#aeaeb2;font-size:12px;")}
+    ${infoBox(`<p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 6px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Why a 10% deposit?</p><p style="color:#6e6e73;font-size:13px;margin:0;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Your deposit reserves the slot and releases the creator&apos;s contact details. The remaining 90% is paid directly to the creator &mdash; no platform cut on the balance.</p>`, "green")}
+    ${p("If you have any questions, reply to this email and we&apos;ll help you out.", "color:#aeaeb2;font-size:12px;")}
   `;
   return { subject: "Welcome to EndingThisWeek.media", html: wrapEmail(content, `Last-minute ad slots at 20–50% off — welcome, ${name}!`) };
 }
@@ -163,19 +178,19 @@ function buildWelcomeSeller(data: Record<string, unknown>) {
   const name = String(data.display_name || "there");
   const content = `
     ${h1(`Welcome, ${name}!`)}
-    ${p("Your seller account is ready. List your unsold advertising slots and fill your inventory before the deadline — at a price that works for buyers and still works for you.")}
+    ${p("Your seller account is ready. List your unsold advertising slots and fill your inventory before the deadline &mdash; at a price that works for buyers and still works for you.")}
     ${labelText("Getting listed is free and takes less than 5 minutes:")}
     <ol style="color:#6e6e73;font-size:14px;line-height:1.9;padding-left:22px;margin:0 0 24px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">
       <li>Fill in your media details (newsletter, podcast, or influencer slot)</li>
       <li>Set your original rate and discounted price</li>
-      <li>Add real audience data — this is what buyers look for</li>
-      <li>Set a deadline and publish — buyers can book instantly</li>
+      <li>Add real audience data &mdash; this is what buyers look for</li>
+      <li>Set a deadline and publish &mdash; buyers can book instantly</li>
     </ol>
-    ${ctaButton("List a Slot Free →", "https://endingthistweek.media")}
+    ${ctaButton("List a Slot Free &rarr;", `${SITE_URL}/list`)}
     ${divider()}
-    ${infoBox(`<p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 6px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">How payouts work</p><p style="color:#6e6e73;font-size:13px;margin:0;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Buyers pay a 10% platform deposit to reserve your slot. You receive a booking notification with buyer details. The remaining 90% is paid directly to you — you invoice the buyer through your normal commercial process.</p>`, "green")}
+    ${infoBox(`<p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 6px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">How payouts work</p><p style="color:#6e6e73;font-size:13px;margin:0;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Buyers pay a 10% platform deposit to reserve your slot. You receive a booking notification with buyer details. The remaining 90% is paid directly to you &mdash; you invoice the buyer through your normal commercial process.</p>`, "green")}
   `;
-  return { subject: "You're listed — start receiving bookings", html: wrapEmail(content, `List your first slot and start filling unsold inventory, ${name}`) };
+  return { subject: "Welcome to EndingThisWeek.media — list your first slot", html: wrapEmail(content, `List your first slot and start filling unsold inventory, ${name}`) };
 }
 
 function buildBookingConfirmationBuyer(data: Record<string, unknown>) {
@@ -184,20 +199,27 @@ function buildBookingConfirmationBuyer(data: Record<string, unknown>) {
   const ownerName = String(data.media_owner_name || "—");
   const dateLabel = String(data.date_label || "—");
   const slotType = String(data.slot_type || "—");
-  const depositAmount = Number(data.deposit_amount || 0).toLocaleString();
-  const balanceAmount = Number(data.balance_amount || 0).toLocaleString();
-  const totalPrice = Number(data.total_price || 0).toLocaleString();
+  const depositAmount = Number(data.deposit_amount || 0).toLocaleString("en-GB");
+  const balanceAmount = Number(data.balance_amount || 0).toLocaleString("en-GB");
+  const totalPrice = Number(data.total_price || 0).toLocaleString("en-GB");
   const sellerEmail = String(data.seller_email || "");
   const sellerName = String(data.seller_name || ownerName);
+  const sellerPhone = String(data.seller_phone || "");
+  const sellerWebsite = String(data.seller_website || "");
   const buyerName = String(data.buyer_name || "there");
+  const currency = String(data.currency || "$");
+
+  const contactRows = [
+    sellerEmail ? `<p style="color:#6e6e73;font-size:13px;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;"><a href="mailto:${sellerEmail}" style="color:#16a34a;text-decoration:none;">${sellerEmail}</a></p>` : "",
+    sellerPhone ? `<p style="color:#6e6e73;font-size:13px;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${sellerPhone}</p>` : "",
+    sellerWebsite ? `<p style="color:#6e6e73;font-size:13px;margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;"><a href="${sellerWebsite}" style="color:#16a34a;text-decoration:none;">${sellerWebsite}</a></p>` : "",
+  ].filter(Boolean).join("");
 
   const contactSection = sellerEmail
     ? infoBox(`
-        <p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 8px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Creator contact — released after deposit</p>
-        <p style="color:#1d1d1f;font-size:14px;font-weight:600;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${sellerName}</p>
-        <p style="color:#6e6e73;font-size:13px;margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">
-          <a href="mailto:${sellerEmail}" style="color:#16a34a;text-decoration:none;">${sellerEmail}</a>
-        </p>
+        <p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 8px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Creator contact &mdash; released after deposit</p>
+        <p style="color:#1d1d1f;font-size:14px;font-weight:600;margin:0 0 6px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${sellerName}</p>
+        ${contactRows}
       `, "green")
     : "";
 
@@ -210,9 +232,9 @@ function buildBookingConfirmationBuyer(data: Record<string, unknown>) {
       dataRow("Creator", ownerName) +
       dataRow("Slot type", slotType) +
       dataRow("Posting date", dateLabel) +
-      dataRow("Deposit paid (10%)", `$${depositAmount}`) +
-      dataRow("Balance to creator (90%)", `$${balanceAmount}`) +
-      dataRow("Total campaign value", `$${totalPrice}`)
+      dataRow("Deposit paid (10%)", `${currency}${depositAmount}`) +
+      dataRow("Balance to creator (90%)", `${currency}${balanceAmount}`) +
+      dataRow("Total campaign value", `${currency}${totalPrice}`)
     )}
     ${contactSection}
     ${divider()}
@@ -220,10 +242,10 @@ function buildBookingConfirmationBuyer(data: Record<string, unknown>) {
     <ol style="color:#6e6e73;font-size:14px;line-height:1.9;padding-left:22px;margin:0 0 24px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">
       <li>Contact the creator using their details above</li>
       <li>Confirm final campaign details and creative requirements</li>
-      <li>Arrange the remaining $${balanceAmount} balance directly with the creator</li>
+      <li>Arrange the remaining ${currency}${balanceAmount} balance directly with the creator</li>
       <li>Submit your creative within 24 hours of confirming</li>
     </ol>
-    ${ctaButton("View Your Booking →", "https://endingthistweek.media")}
+    ${ctaButton("View Your Bookings &rarr;", `${SITE_URL}/buyer`)}
     ${p("Keep this email as your booking record. If you have issues, reply here.", "color:#aeaeb2;font-size:12px;")}
   `;
   return {
@@ -241,14 +263,15 @@ function buildBookingConfirmationSeller(data: Record<string, unknown>) {
   const buyerPhone = String(data.buyer_phone || "");
   const buyerWebsite = String(data.buyer_website || "");
   const buyerCountry = String(data.buyer_country || "—");
-  const depositAmount = Number(data.deposit_amount || 0).toLocaleString();
-  const balanceAmount = Number(data.balance_amount || 0).toLocaleString();
+  const depositAmount = Number(data.deposit_amount || 0).toLocaleString("en-GB");
+  const balanceAmount = Number(data.balance_amount || 0).toLocaleString("en-GB");
   const dateLabel = String(data.date_label || "—");
   const message = String(data.message_to_creator || "");
   const sellerName = String(data.seller_name || "there");
+  const currency = String(data.currency || "$");
 
   const messageSection = message
-    ? `${divider()}<p style="color:#1d1d1f;font-size:14px;font-weight:600;margin:0 0 8px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Message from buyer</p><p style="color:#6e6e73;font-size:14px;line-height:1.65;margin:0 0 24px 0;font-style:italic;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">"${message}"</p>`
+    ? `${divider()}<p style="color:#1d1d1f;font-size:14px;font-weight:600;margin:0 0 8px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Message from buyer</p><p style="color:#6e6e73;font-size:14px;line-height:1.65;margin:0 0 24px 0;font-style:italic;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">&ldquo;${message}&rdquo;</p>`
     : "";
 
   const content = `
@@ -257,7 +280,7 @@ function buildBookingConfirmationSeller(data: Record<string, unknown>) {
     <p style="color:#6e6e73;font-size:13px;margin:0 0 24px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Booking reference: <span style="color:#1d1d1f;font-family:ui-monospace,'SF Mono',monospace;font-weight:700;background:#f5f5f7;padding:2px 8px;border-radius:6px;">${ref}</span></p>
     ${infoBox(`
       <p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 10px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Buyer contact details</p>
-      <p style="color:#1d1d1f;font-size:14px;font-weight:600;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${buyerName} — ${buyerCompany}</p>
+      <p style="color:#1d1d1f;font-size:14px;font-weight:600;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${buyerName} &mdash; ${buyerCompany}</p>
       <p style="color:#6e6e73;font-size:13px;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;"><a href="mailto:${buyerEmail}" style="color:#16a34a;text-decoration:none;">${buyerEmail}</a></p>
       ${buyerPhone ? `<p style="color:#6e6e73;font-size:13px;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${buyerPhone}</p>` : ""}
       ${buyerWebsite ? `<p style="color:#6e6e73;font-size:13px;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;"><a href="${buyerWebsite}" style="color:#16a34a;text-decoration:none;">${buyerWebsite}</a></p>` : ""}
@@ -266,8 +289,8 @@ function buildBookingConfirmationSeller(data: Record<string, unknown>) {
     ${dataTable(
       dataRow("Slot", propertyName) +
       dataRow("Posting date", dateLabel) +
-      dataRow("Platform deposit (paid)", `$${depositAmount}`) +
-      dataRow("Your balance to collect", `$${balanceAmount}`)
+      dataRow("Platform deposit (paid)", `${currency}${depositAmount}`) +
+      dataRow("Your balance to collect", `${currency}${balanceAmount}`)
     )}
     ${messageSection}
     ${divider()}
@@ -275,10 +298,10 @@ function buildBookingConfirmationSeller(data: Record<string, unknown>) {
     <ol style="color:#6e6e73;font-size:14px;line-height:1.9;padding-left:22px;margin:0 0 24px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">
       <li>Contact the buyer at ${buyerEmail} to confirm the booking</li>
       <li>Agree on creative requirements and submission deadline</li>
-      <li>Invoice the buyer for the $${balanceAmount} balance using your standard process</li>
+      <li>Invoice the buyer for the ${currency}${balanceAmount} balance using your standard process</li>
       <li>Deliver the campaign on the agreed date</li>
     </ol>
-    ${ctaButton("View Booking Dashboard →", "https://endingthistweek.media")}
+    ${ctaButton("View Seller Dashboard &rarr;", `${SITE_URL}/seller`)}
   `;
   return {
     subject: `New booking on ${propertyName} — ${buyerName} [${ref}]`,
@@ -289,24 +312,34 @@ function buildBookingConfirmationSeller(data: Record<string, unknown>) {
 function buildSlotListed(data: Record<string, unknown>) {
   const propertyName = String(data.property_name || "—");
   const mediaType = String(data.media_type || "—");
-  const discountedPrice = Number(data.discounted_price || 0).toLocaleString();
+  const discountedPrice = Number(data.discounted_price || 0).toLocaleString("en-GB");
+  const originalPrice = Number(data.original_price || 0).toLocaleString("en-GB");
   const discount = Number(data.discount || 0);
   const deadline = String(data.deadline_at || "—");
   const sellerName = String(data.seller_name || "there");
   const slotsRemaining = Number(data.slots_remaining || 1);
+  const subscribers = data.subscribers ? Number(data.subscribers).toLocaleString("en-GB") : null;
+  const openRate = data.open_rate ? String(data.open_rate) : null;
 
   const deadlineDate = new Date(deadline);
   const deadlineStr = isNaN(deadlineDate.getTime())
     ? deadline
     : deadlineDate.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 
+  const statsRow = [
+    subscribers ? `${subscribers} subscribers` : null,
+    openRate ? `${openRate} open rate` : null,
+  ].filter(Boolean).join(" &middot; ");
+
   const content = `
     ${h1("Your listing is live!")}
-    ${p(`Hi ${sellerName}, your ${mediaType} slot has been submitted and is now visible to buyers on EndingThisWeek.media.`)}
+    ${p(`Hi ${sellerName}, your <strong style="color:#1d1d1f;">${mediaType}</strong> slot is now visible to buyers on EndingThisWeek.media.`)}
+    ${statsRow ? `<p style="color:#6e6e73;font-size:13px;margin:0 0 20px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${statsRow}</p>` : ""}
     ${dataTable(
       dataRow("Listing", propertyName) +
       dataRow("Media type", mediaType.charAt(0).toUpperCase() + mediaType.slice(1)) +
-      dataRow("Discounted price", `$${discountedPrice}`) +
+      dataRow("Rate card price", `$${originalPrice}`) +
+      dataRow("Your discounted price", `$${discountedPrice}`) +
       dataRow("Discount", `-${discount}%`) +
       dataRow("Slots available", String(slotsRemaining)) +
       dataRow("Deadline", deadlineStr)
@@ -314,13 +347,13 @@ function buildSlotListed(data: Record<string, unknown>) {
     ${infoBox(`
       <p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 8px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Tips to get booked faster</p>
       <ul style="color:#6e6e73;font-size:13px;line-height:1.9;padding-left:18px;margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">
-        <li>Make sure your seller email is correct — bookings come direct to your inbox</li>
-        <li>A higher discount (30%+) drives significantly more interest</li>
-        <li>Respond to buyer enquiries within a few hours</li>
-        <li>Past advertiser logos build trust — add them if you can</li>
+        <li>Make sure your seller email is correct &mdash; bookings come direct to your inbox</li>
+        <li>A higher discount (30%+) drives significantly more buyer interest</li>
+        <li>Respond to buyer enquiries within a few hours to maximise conversions</li>
+        <li>Past advertiser names build trust &mdash; add them in your profile if you can</li>
       </ul>
     `, "green")}
-    ${ctaButton("View Your Dashboard →", "https://endingthistweek.media")}
+    ${ctaButton("View Your Dashboard &rarr;", `${SITE_URL}/seller`)}
     ${p("You'll receive an email notification the moment a buyer secures your slot.", "color:#aeaeb2;font-size:12px;")}
   `;
   return {
@@ -329,9 +362,54 @@ function buildSlotListed(data: Record<string, unknown>) {
   };
 }
 
+function buildAdminSlotPublished(data: Record<string, unknown>) {
+  const propertyName = String(data.property_name || "—");
+  const mediaType = String(data.media_type || "—");
+  const sellerName = String(data.seller_name || "there");
+  const sellerEmail = String(data.seller_email || "");
+  const discountedPrice = Number(data.discounted_price || 0).toLocaleString("en-GB");
+  const originalPrice = Number(data.original_price || 0).toLocaleString("en-GB");
+  const discount = Number(data.discount || 0);
+  const slotsRemaining = Number(data.slots_remaining || 1);
+  const deadline = String(data.deadline_at || "—");
+  const submissionRef = String(data.submission_ref || "");
+
+  const deadlineDate = new Date(deadline);
+  const deadlineStr = isNaN(deadlineDate.getTime())
+    ? deadline
+    : deadlineDate.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+
+  const content = `
+    ${h1("Your slot has been approved and is now live!")}
+    ${p(`Hi ${sellerName}, your submission has been reviewed and approved by our team. Your <strong style="color:#1d1d1f;">${mediaType}</strong> slot is now visible to buyers across the platform.`)}
+    ${submissionRef ? `<p style="color:#6e6e73;font-size:13px;margin:0 0 24px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Submission reference: <span style="color:#1d1d1f;font-family:ui-monospace,'SF Mono',monospace;font-weight:700;background:#f5f5f7;padding:2px 8px;border-radius:6px;">${submissionRef}</span></p>` : ""}
+    ${dataTable(
+      dataRow("Listing", propertyName) +
+      dataRow("Media type", mediaType.charAt(0).toUpperCase() + mediaType.slice(1)) +
+      dataRow("Rate card price", `$${originalPrice}`) +
+      dataRow("Discounted price", `$${discountedPrice}`) +
+      dataRow("Discount", `-${discount}%`) +
+      dataRow("Slots available", String(slotsRemaining)) +
+      dataRow("Deadline", deadlineStr)
+    )}
+    ${infoBox(`
+      <p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 6px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">What happens next</p>
+      <p style="color:#6e6e73;font-size:13px;margin:0;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Buyers can now find your slot in the marketplace. When someone secures a slot, you&apos;ll receive their contact details and campaign brief directly by email. Respond quickly to maximise your bookings.</p>
+    `, "green")}
+    ${sellerEmail ? infoBox(`<p style="color:#1e40af;font-size:13px;font-weight:600;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Booking notifications go to:</p><p style="color:#6e6e73;font-size:13px;margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${sellerEmail}</p>`, "blue") : ""}
+    ${ctaButton("View Live Listing &rarr;", SITE_URL)}
+  `;
+  return {
+    subject: `Approved — ${propertyName} is now live on EndingThisWeek.media`,
+    html: wrapEmail(content, `Your ${mediaType} slot has been approved and is now live for buyers to book`),
+  };
+}
+
 function buildOpportunityDigest(data: Record<string, unknown>) {
   const buyerName = String(data.buyer_name || "there");
   const listings = (data.listings as Array<Record<string, unknown>>) || [];
+  const unsubToken = String(data.unsub_token || "");
+  const unsubLink = unsubToken ? `${SITE_URL}/unsubscribe?token=${unsubToken}` : `${SITE_URL}/buyer`;
 
   const mediaTypeStyles: Record<string, { bg: string; border: string; color: string }> = {
     newsletter:  { bg: "#eff6ff", border: "#bfdbfe", color: "#2563eb" },
@@ -342,12 +420,34 @@ function buildOpportunityDigest(data: Record<string, unknown>) {
   const listingCards = listings
     .slice(0, 6)
     .map((l) => {
-      const discount = Math.round(
-        ((Number(l.original_price) - Number(l.discounted_price)) / Number(l.original_price)) * 100
-      );
+      const origPrice = Number(l.original_price || 0);
+      const discPrice = Number(l.discounted_price || 0);
+      const discount = origPrice > 0 ? Math.round(((origPrice - discPrice) / origPrice) * 100) : 0;
       const typeKey = String(l.media_type || "").toLowerCase();
       const typeStyle = mediaTypeStyles[typeKey] || { bg: "#f5f5f7", border: "rgba(0,0,0,0.08)", color: "#6e6e73" };
-      const typeLabel = String(l.media_type || "").charAt(0).toUpperCase() + String(l.media_type || "").slice(1);
+      const typeLabel = typeKey.charAt(0).toUpperCase() + typeKey.slice(1);
+
+      const subscriberCount = l.subscribers ? Number(l.subscribers).toLocaleString("en-GB") : null;
+      const openRate = l.open_rate ? String(l.open_rate) : null;
+      const audience = String(l.audience || "");
+      const location = String(l.location || "");
+      const tags = (l.tags as Array<{ name?: string; tag?: { name?: string } }> || [])
+        .slice(0, 3)
+        .map(t => t.name || t.tag?.name || "")
+        .filter(Boolean);
+
+      const statsHtml = [
+        subscriberCount ? statPill("Subscribers", subscriberCount) : null,
+        openRate ? statPill("Open rate", openRate) : null,
+        audience && !subscriberCount ? statPill("Audience", audience) : null,
+        location ? statPill("Location", location) : null,
+      ].filter(Boolean).join("");
+
+      const tagsHtml = tags.length > 0
+        ? tags.map(t => `<span style="display:inline-block;background:#f5f5f7;border:1px solid rgba(0,0,0,0.06);border-radius:6px;padding:2px 8px;font-size:10px;color:#6e6e73;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;margin:0 3px 3px 0;">${t}</span>`).join("")
+        : "";
+
+      const listingUrl = l.id ? `${SITE_URL}/listing/${l.id}` : SITE_URL;
 
       return `
         <tr>
@@ -357,22 +457,25 @@ function buildOpportunityDigest(data: Record<string, unknown>) {
                 <td style="padding:20px;">
                   <table cellpadding="0" cellspacing="0" width="100%">
                     <tr>
-                      <td>
-                        <span style="display:inline-block;background:${typeStyle.bg};border:1px solid ${typeStyle.border};color:${typeStyle.color};font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${typeLabel}</span>
-                        <p style="color:#1d1d1f;font-size:15px;font-weight:700;margin:0 0 3px 0;letter-spacing:-0.2px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;">${String(l.property_name)}</p>
-                        <p style="color:#6e6e73;font-size:13px;margin:0 0 14px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${String(l.media_owner_name)} · ${String(l.location)}</p>
+                      <td style="vertical-align:top;">
+                        <span style="display:inline-block;background:${typeStyle.bg};border:1px solid ${typeStyle.border};color:${typeStyle.color};font-size:10px;font-weight:700;padding:3px 9px;border-radius:6px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${typeLabel}</span>
+                        <p style="color:#1d1d1f;font-size:15px;font-weight:700;margin:0 0 2px 0;letter-spacing:-0.2px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;">${String(l.property_name || "")}</p>
+                        <p style="color:#6e6e73;font-size:13px;margin:0 0 10px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${String(l.media_owner_name || "")}</p>
                       </td>
-                      <td style="text-align:right;vertical-align:top;padding-left:12px;">
+                      <td style="text-align:right;vertical-align:top;padding-left:12px;white-space:nowrap;">
                         <div style="display:inline-block;background:#1d1d1f;color:#ffffff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">-${discount}%</div>
                       </td>
                     </tr>
+                    ${statsHtml ? `<tr><td colspan="2" style="padding-bottom:10px;">${statsHtml}</td></tr>` : ""}
+                    ${tagsHtml ? `<tr><td colspan="2" style="padding-bottom:10px;">${tagsHtml}</td></tr>` : ""}
                     <tr>
-                      <td>
-                        <span style="color:#1d1d1f;font-size:22px;font-weight:700;letter-spacing:-0.5px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;">$${Number(l.discounted_price).toLocaleString()}</span>
-                        <span style="color:#aeaeb2;font-size:13px;text-decoration:line-through;margin-left:8px;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">$${Number(l.original_price).toLocaleString()}</span>
+                      <td style="vertical-align:bottom;">
+                        <span style="color:#1d1d1f;font-size:22px;font-weight:700;letter-spacing:-0.5px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;">$${discPrice.toLocaleString("en-GB")}</span>
+                        <span style="color:#aeaeb2;font-size:13px;text-decoration:line-through;margin-left:8px;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">$${origPrice.toLocaleString("en-GB")}</span>
                       </td>
                       <td style="text-align:right;vertical-align:bottom;">
-                        <p style="color:#aeaeb2;font-size:12px;margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${String(l.date_label)}</p>
+                        <p style="color:#aeaeb2;font-size:12px;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">${String(l.date_label || "")}</p>
+                        <a href="${listingUrl}" style="display:inline-block;background:#f5f5f7;border:1px solid rgba(0,0,0,0.08);color:#1d1d1f;font-size:11px;font-weight:600;padding:5px 12px;border-radius:8px;text-decoration:none;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">View slot &rarr;</a>
                       </td>
                     </tr>
                   </table>
@@ -386,20 +489,19 @@ function buildOpportunityDigest(data: Record<string, unknown>) {
     .join("");
 
   const content = `
-    ${h1(`${listings.length} new opportunities for you`)}
-    ${p(`Hi ${buyerName}, here are this week's best last-minute advertising slots. These are expiring soon — act fast.`)}
+    ${h1(`${listings.length} new opportunit${listings.length === 1 ? "y" : "ies"} for you`)}
+    ${p(`Hi ${buyerName}, here are this week&apos;s best last-minute advertising slots matched to your interests. These are expiring soon &mdash; act fast.`)}
     ${divider()}
     <table cellpadding="0" cellspacing="0" width="100%">
       ${listingCards}
     </table>
-    ${ctaButton("See All Opportunities →", "https://endingthistweek.media")}
+    ${ctaButton("See All Opportunities &rarr;", SITE_URL)}
     ${divider()}
-    ${p("Slots fill up fast. Each listing shows a live countdown — when it's gone, it's gone.", "color:#aeaeb2;font-size:12px;")}
-    ${p(`<a href="https://endingthistweek.media/unsubscribe" style="color:#aeaeb2;text-decoration:underline;">Unsubscribe from digest emails</a>`, "color:#aeaeb2;font-size:11px;")}
+    ${p("Slots fill up fast. Each listing shows a live countdown &mdash; when it&apos;s gone, it&apos;s gone.", "color:#aeaeb2;font-size:12px;")}
   `;
   return {
-    subject: `${listings.length} expiring ad slots this week — don't miss out`,
-    html: wrapEmail(content, `${listings.length} last-minute advertising slots matched to your interests`),
+    subject: `${listings.length} expiring ad slot${listings.length === 1 ? "" : "s"} matched to your interests`,
+    html: wrapEmail(content, `${listings.length} last-minute advertising slots matched to your interests`, true, unsubLink),
   };
 }
 
@@ -416,7 +518,7 @@ function buildContactForm(data: Record<string, unknown>) {
       dataRow("Email", `<a href="mailto:${email}" style="color:#16a34a;text-decoration:none;">${email}</a>`) +
       dataRow("Subject", subject)
     )}
-    <p style="color:#1d1d1f;font-size:14px;font-weight:600;margin:0 0 10px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Message</p>
+    ${h2("Message")}
     <div style="background:#f5f5f7;border:1px solid rgba(0,0,0,0.06);border-radius:12px;padding:18px 20px;margin:0 0 24px 0;">
       <p style="color:#3a3a3c;font-size:14px;line-height:1.7;margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;white-space:pre-wrap;">${message}</p>
     </div>
@@ -469,6 +571,9 @@ Deno.serve(async (req: Request) => {
         break;
       case "slot_listed":
         emailContent = buildSlotListed(data);
+        break;
+      case "admin_slot_published":
+        emailContent = buildAdminSlotPublished(data);
         break;
       case "opportunity_digest":
         emailContent = buildOpportunityDigest(data);

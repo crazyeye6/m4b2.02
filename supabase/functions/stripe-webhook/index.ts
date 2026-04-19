@@ -50,6 +50,80 @@ async function verifyStripeSignature(
   }
 }
 
+async function sendBookingEmails(
+  supabaseUrl: string,
+  serviceRoleKey: string,
+  bookingId: string,
+) {
+  const supabase = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+
+  const { data: booking } = await supabase
+    .from("deposit_bookings")
+    .select(`
+      *,
+      listing:listings(
+        property_name, media_owner_name, date_label, slot_type,
+        seller_email, seller_phone, seller_website, media_type
+      )
+    `)
+    .eq("id", bookingId)
+    .maybeSingle();
+
+  if (!booking) return;
+
+  const listing = booking.listing as Record<string, unknown> | null;
+  const emailUrl = `${supabaseUrl}/functions/v1/send-email`;
+  const headers = {
+    "Authorization": `Bearer ${serviceRoleKey}`,
+    "Content-Type": "application/json",
+  };
+
+  const sharedData = {
+    reference_number: booking.reference_number,
+    property_name: listing?.property_name ?? "—",
+    media_owner_name: listing?.media_owner_name ?? "—",
+    date_label: listing?.date_label ?? "—",
+    slot_type: listing?.slot_type ?? "—",
+    deposit_amount: booking.deposit_amount,
+    balance_amount: booking.balance_amount,
+    total_price: booking.total_price,
+    seller_name: listing?.media_owner_name ?? "—",
+    seller_email: listing?.seller_email ?? "",
+    seller_phone: listing?.seller_phone ?? "",
+    seller_website: listing?.seller_website ?? "",
+    buyer_name: booking.buyer_name,
+    buyer_email: booking.buyer_email,
+    buyer_company: booking.buyer_company,
+    buyer_phone: booking.buyer_phone ?? "",
+    buyer_website: booking.buyer_website ?? "",
+    buyer_country: booking.buyer_country,
+    message_to_creator: booking.message_to_creator ?? "",
+  };
+
+  await Promise.allSettled([
+    fetch(emailUrl, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        type: "booking_confirmation_buyer",
+        to: booking.buyer_email,
+        data: sharedData,
+      }),
+    }),
+    listing?.seller_email
+      ? fetch(emailUrl, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            type: "booking_confirmation_seller",
+            to: String(listing.seller_email),
+            data: sharedData,
+          }),
+        })
+      : Promise.resolve(),
+  ]);
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -140,6 +214,10 @@ Deno.serve(async (req: Request) => {
             })
             .eq("id", booking.listing_id);
         }
+
+        EdgeRuntime.waitUntil(
+          sendBookingEmails(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, booking.id)
+        );
       }
     } else if (type === "payment_intent.payment_failed") {
       await supabase

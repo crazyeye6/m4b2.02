@@ -7,6 +7,7 @@ type EmailType =
   | "booking_confirmation_buyer"
   | "booking_confirmation_seller"
   | "slot_listed"
+  | "admin_slot_published"
   | "opportunity_digest";
 
 async function sendEmail(type: EmailType, to: string, data: Record<string, unknown>) {
@@ -44,6 +45,13 @@ export function sendSlotListedEmail(
   listingData: Record<string, unknown>
 ) {
   return sendEmail("slot_listed", to, listingData);
+}
+
+export function sendAdminSlotPublishedEmail(
+  to: string,
+  listingData: Record<string, unknown>
+) {
+  return sendEmail("admin_slot_published", to, listingData);
 }
 
 export function sendOpportunityDigest(

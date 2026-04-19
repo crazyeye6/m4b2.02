@@ -30,6 +30,8 @@ interface Listing {
   audience: string;
   slots_remaining: number;
   deadline_at: string;
+  subscribers?: number | null;
+  open_rate?: string | null;
   tags?: Array<{ tag: { name: string } }>;
 }
 
@@ -60,7 +62,9 @@ function scoreListingForBuyer(listing: Listing, buyer: BuyerProfile): number {
 
   if (buyer.digest_locations.length > 0) {
     const loc = listing.location?.toLowerCase() || "";
-    const matched = buyer.digest_locations.some(dl => loc.includes(dl.toLowerCase()) || dl.toLowerCase() === "global");
+    const matched = buyer.digest_locations.some(
+      dl => loc.includes(dl.toLowerCase()) || dl.toLowerCase() === "global"
+    );
     if (matched) score += 5;
     else if (!buyer.digest_locations.includes("Global")) return -1;
   }
@@ -72,6 +76,20 @@ function scoreListingForBuyer(listing: Listing, buyer: BuyerProfile): number {
     );
     score += matchedTags.length * 3;
   }
+
+  const discountPct = listing.original_price > 0
+    ? ((listing.original_price - listing.discounted_price) / listing.original_price) * 100
+    : 0;
+  if (discountPct >= 40) score += 3;
+  else if (discountPct >= 25) score += 1;
+
+  if (listing.subscribers && listing.subscribers >= 10000) score += 2;
+
+  const hoursUntilDeadline = listing.deadline_at
+    ? (new Date(listing.deadline_at).getTime() - Date.now()) / 1000 / 60 / 60
+    : Infinity;
+  if (hoursUntilDeadline <= 48) score += 2;
+  else if (hoursUntilDeadline <= 120) score += 1;
 
   return score;
 }
@@ -118,7 +136,7 @@ Deno.serve(async (req: Request) => {
       .select(`
         id, media_type, property_name, media_owner_name, location,
         original_price, discounted_price, date_label, audience,
-        slots_remaining, deadline_at,
+        slots_remaining, deadline_at, subscribers, open_rate,
         tags:listing_tags(tag:tags(name))
       `)
       .eq("status", "live")
@@ -204,7 +222,10 @@ Deno.serve(async (req: Request) => {
         results.push({ email: targetEmail, listings_matched: 0, sent: false, reason: "no_matching_listings" });
       } else {
         await sendDigestEmail(targetEmail, buyer.display_name || "there", scored);
-        await supabase.from("user_profiles").update({ digest_last_sent_at: new Date().toISOString() }).eq("id", buyer.id);
+        await supabase
+          .from("user_profiles")
+          .update({ digest_last_sent_at: new Date().toISOString() })
+          .eq("id", buyer.id);
         sentCount = 1;
         results.push({ email: targetEmail, listings_matched: scored.length, sent: true });
       }
@@ -236,7 +257,10 @@ Deno.serve(async (req: Request) => {
         }
 
         await sendDigestEmail(email, buyer.display_name || "there", scored);
-        await supabase.from("user_profiles").update({ digest_last_sent_at: new Date().toISOString() }).eq("id", buyer.id);
+        await supabase
+          .from("user_profiles")
+          .update({ digest_last_sent_at: new Date().toISOString() })
+          .eq("id", buyer.id);
         sentCount++;
         results.push({ email, listings_matched: scored.length, sent: true });
       }
