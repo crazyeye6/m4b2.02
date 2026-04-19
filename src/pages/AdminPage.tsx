@@ -1583,9 +1583,15 @@ function EmailsPanel() {
         },
         body: JSON.stringify({ type, to: buyerEmail.trim(), data: { display_name: buyerName.trim() || buyerEmail.trim() } }),
       });
-      setWelcomeResult({ ok: res.ok, message: res.ok ? `Welcome email sent to ${buyerEmail.trim()}.` : 'Failed to send email.' });
-    } catch {
-      setWelcomeResult({ ok: false, message: 'Network error sending email.' });
+      if (res.ok) {
+        setWelcomeResult({ ok: true, message: `Welcome email sent to ${buyerEmail.trim()}.` });
+      } else {
+        const body = await res.json().catch(() => ({}));
+        const detail = body?.error || body?.message || `HTTP ${res.status}`;
+        setWelcomeResult({ ok: false, message: `Failed to send email: ${detail}` });
+      }
+    } catch (e) {
+      setWelcomeResult({ ok: false, message: `Network error: ${e}` });
     }
     setWelcomeLoading(false);
   };
@@ -1628,13 +1634,26 @@ function EmailsPanel() {
 
       const SEND = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
       const headers = { Authorization: `Bearer ${ANON_KEY}`, 'Content-Type': 'application/json' };
-      await Promise.all([
+      const [buyerRes, sellerRes] = await Promise.all([
         fetch(SEND, { method: 'POST', headers, body: JSON.stringify({ type: 'booking_confirmation_buyer', to: booking.buyer_email, data: emailData }) }),
-        listing?.seller_email ? fetch(SEND, { method: 'POST', headers, body: JSON.stringify({ type: 'booking_confirmation_seller', to: listing.seller_email, data: emailData }) }) : Promise.resolve(),
+        listing?.seller_email ? fetch(SEND, { method: 'POST', headers, body: JSON.stringify({ type: 'booking_confirmation_seller', to: listing.seller_email, data: emailData }) }) : Promise.resolve(new Response(null, { status: 200 })),
       ]);
-      setBookingResult({ ok: true, message: `Booking confirmation resent to ${booking.buyer_email}${listing?.seller_email ? ` and ${listing.seller_email}` : ''}.` });
-    } catch {
-      setBookingResult({ ok: false, message: 'Failed to resend booking emails.' });
+      const errors: string[] = [];
+      if (!buyerRes.ok) {
+        const b = await buyerRes.json().catch(() => ({}));
+        errors.push(`Buyer: ${b?.error || `HTTP ${buyerRes.status}`}`);
+      }
+      if (listing?.seller_email && !sellerRes.ok) {
+        const b = await sellerRes.json().catch(() => ({}));
+        errors.push(`Seller: ${b?.error || `HTTP ${sellerRes.status}`}`);
+      }
+      if (errors.length) {
+        setBookingResult({ ok: false, message: `Some emails failed — ${errors.join('; ')}` });
+      } else {
+        setBookingResult({ ok: true, message: `Booking confirmation resent to ${booking.buyer_email}${listing?.seller_email ? ` and ${listing.seller_email}` : ''}.` });
+      }
+    } catch (e) {
+      setBookingResult({ ok: false, message: `Failed to resend booking emails: ${e}` });
     }
     setBookingLoading(false);
   };
