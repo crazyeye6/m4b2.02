@@ -46,7 +46,7 @@ export function useListings(filters: FilterState) {
     ];
     const hasTagFilter = allTagSlugs.length > 0;
 
-    let query = supabase.from('listings').select('*');
+    let query = supabase.from('listings').select('*').eq('status', 'live');
 
     if (filters.category !== 'all') {
       query = query.eq('media_type', filters.category);
@@ -100,9 +100,6 @@ export function useListings(filters: FilterState) {
     }
 
     let result = (data as Listing[]) || [];
-
-    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-    result = result.filter(l => new Date(l.deadline_at).getTime() >= cutoff);
 
     result = result.map(l => {
       const pricing = calcDynamicPrice(l.original_price, l.deadline_at);

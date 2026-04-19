@@ -204,11 +204,43 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
                 <CsvUpload variant="compact" />
               </div>
             ) : (
-              <div className="space-y-3">
-                <AutoPricingBanner />
-                {listings.map(l => (
-                  <ListingCard key={l.id} listing={l} onClick={() => setSelectedListing(l)} />
-                ))}
+              <div className="space-y-6">
+                {(() => {
+                  const activeListings = listings.filter(l => l.status !== 'expired' && l.status !== 'cancelled');
+                  const expiredListings = listings.filter(l => l.status === 'expired' || l.status === 'cancelled');
+                  return (
+                    <>
+                      {activeListings.length > 0 && (
+                        <div className="space-y-3">
+                          <AutoPricingBanner />
+                          {activeListings.map(l => (
+                            <ListingCard key={l.id} listing={l} onClick={() => setSelectedListing(l)} />
+                          ))}
+                        </div>
+                      )}
+                      {expiredListings.length > 0 && (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-[#1d1d1f] font-semibold text-sm">Expired & Cancelled</h3>
+                            <span className="text-[#6e6e73] text-xs bg-[#f5f5f7] border border-black/[0.06] px-2 py-0.5 rounded-lg">{expiredListings.length}</span>
+                          </div>
+                          <p className="text-[#86868b] text-xs">These slots have passed their deadline. You can edit and re-publish them with a new date.</p>
+                          {expiredListings.map(l => (
+                            <ListingCard key={l.id} listing={l} onClick={() => setSelectedListing(l)} />
+                          ))}
+                        </div>
+                      )}
+                      {activeListings.length === 0 && expiredListings.length === 0 && (
+                        <EmptyState
+                          icon={<Package className="w-8 h-8 text-[#aeaeb2]" />}
+                          title="No listings yet"
+                          description="List your first slot to start receiving bookings."
+                          action={{ label: 'List a Slot', onClick: onListSlot }}
+                        />
+                      )}
+                    </>
+                  );
+                })()}
                 <div className="pt-2 space-y-3">
                   <SubmitByEmail variant="compact" />
                   <CsvUpload variant="compact" />
@@ -431,6 +463,10 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
   const hasDiscount = discountPct > 0;
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [newStatus, setNewStatus] = useState<ListingStatus>(listing.status);
+  const [republishDeadline, setRepublishDeadline] = useState('');
+  const [republishSlots, setRepublishSlots] = useState(String(listing.slots_remaining));
+  const [republishing, setRepublishing] = useState(false);
+  const isExpired = listing.status === 'expired' || listing.status === 'cancelled';
 
   const updateStatus = async () => {
     setUpdatingStatus(true);
@@ -440,6 +476,19 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
     await onRefetch();
     onClose();
     setUpdatingStatus(false);
+  };
+
+  const republish = async () => {
+    if (!republishDeadline) return;
+    setRepublishing(true);
+    await supabase.from('listings').update({
+      status: 'live',
+      deadline_at: new Date(republishDeadline).toISOString(),
+      slots_remaining: parseInt(republishSlots, 10) || listing.slots_remaining,
+    }).eq('id', listing.id);
+    await onRefetch();
+    onClose();
+    setRepublishing(false);
   };
 
   return (
@@ -504,6 +553,45 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
                   <span key={a} className="text-xs text-[#6e6e73] bg-[#f5f5f7] border border-black/[0.08] px-2 py-0.5 rounded-lg">{a}</span>
                 ))}
               </div>
+            </div>
+          )}
+
+          {isExpired && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-3">
+              <div className="flex items-center gap-2">
+                <RefreshCw className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <p className="text-amber-800 font-semibold text-sm">Re-publish this listing</p>
+              </div>
+              <p className="text-amber-700 text-xs">Set a new booking deadline and available slots to make this listing live again.</p>
+              <div className="space-y-2">
+                <div>
+                  <label className="block text-[11px] text-amber-700 font-semibold uppercase tracking-wider mb-1">New booking deadline</label>
+                  <input
+                    type="datetime-local"
+                    value={republishDeadline}
+                    onChange={e => setRepublishDeadline(e.target.value)}
+                    className="w-full bg-white border border-amber-200 focus:border-amber-400 rounded-xl px-3 py-2 text-[#1d1d1f] text-sm outline-none transition-all [color-scheme:light]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] text-amber-700 font-semibold uppercase tracking-wider mb-1">Available slots</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={republishSlots}
+                    onChange={e => setRepublishSlots(e.target.value)}
+                    className="w-full bg-white border border-amber-200 focus:border-amber-400 rounded-xl px-3 py-2 text-[#1d1d1f] text-sm outline-none transition-all"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={republish}
+                disabled={republishing || !republishDeadline}
+                className="w-full bg-amber-600 hover:bg-amber-700 disabled:opacity-40 text-white font-semibold py-2.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2"
+              >
+                {republishing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                Re-publish Listing
+              </button>
             </div>
           )}
 
