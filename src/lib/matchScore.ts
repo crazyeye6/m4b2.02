@@ -13,17 +13,6 @@ export interface ScoredListing {
   explanationLine: string;
 }
 
-const CATEGORY_MAP: Record<string, string[]> = {
-  SaaS: ['saas', 'b2b', 'software', 'tech', 'developer', 'startup', 'productivity'],
-  Marketing: ['marketing', 'growth', 'seo', 'content', 'advertising', 'social'],
-  Business: ['business', 'entrepreneurship', 'founder', 'leadership', 'management'],
-  Finance: ['finance', 'investing', 'personal-finance', 'fintech', 'crypto', 'money'],
-  'E-commerce': ['ecommerce', 'e-commerce', 'shopify', 'retail', 'dtc', 'consumer'],
-  Creator: ['creator', 'creator-economy', 'youtube', 'podcast', 'newsletter', 'media'],
-  Tech: ['tech', 'technology', 'ai', 'ml', 'data', 'engineering', 'developer'],
-  DTC: ['dtc', 'direct-to-consumer', 'brand', 'consumer', 'ecommerce'],
-};
-
 const LOCATION_MAP: Record<string, string[]> = {
   UK: ['uk', 'united-kingdom', 'britain', 'england', 'london'],
   Ireland: ['ireland', 'dublin', 'ie'],
@@ -43,11 +32,20 @@ function tagMatches(listing: Listing, keywords: string[]): boolean {
   return keywords.some(kw => tags.some(t => t.includes(kw)) || audience.includes(kw) || location.includes(kw));
 }
 
-function calcCategoryScore(listing: Listing, prefs: BuyerPreferences): { score: number; matched: string | null } {
-  if (!prefs.categories.length) return { score: 50, matched: null };
-  for (const cat of prefs.categories) {
-    const kws = CATEGORY_MAP[cat] ?? [];
-    if (tagMatches(listing, kws)) return { score: 100, matched: cat };
+function calcTagScore(listing: Listing, prefs: BuyerPreferences): { score: number; matched: string | null } {
+  if (!prefs.tags || !prefs.tags.length) return { score: 50, matched: null };
+  const listingTagSlugs = (listing.tags ?? []).map(t => normalise(t.name));
+  const audience = normalise(listing.audience ?? '');
+  const location = normalise(listing.location ?? '');
+  for (const slug of prefs.tags) {
+    const norm = normalise(slug);
+    if (
+      listingTagSlugs.some(t => t === norm || t.includes(norm)) ||
+      audience.includes(norm) ||
+      location.includes(norm)
+    ) {
+      return { score: 100, matched: slug };
+    }
   }
   return { score: 0, matched: null };
 }
@@ -148,7 +146,7 @@ export function scoreListings(listings: Listing[], prefs: BuyerPreferences): Sco
   return listings
     .filter(l => l.status === 'live')
     .map(listing => {
-      const cat = calcCategoryScore(listing, prefs);
+      const cat = calcTagScore(listing, prefs);
       const aud = calcAudienceScore(listing, prefs);
       const bud = calcBudgetScore(listing, prefs);
       const geo = calcGeographyScore(listing, prefs);
@@ -168,7 +166,7 @@ export function scoreListings(listings: Listing[], prefs: BuyerPreferences): Sco
       const finalScore = Math.round(matchScore * 0.7 + dealScore * 0.3);
 
       const explanationParts: string[] = [];
-      if (cat.matched) explanationParts.push(`Matches your ${cat.matched} category preferences`);
+      if (cat.matched) explanationParts.push(`Matches your "${cat.matched}" tag preference`);
       if (bud.within) explanationParts.push('Fits your budget');
       if (geo.matched) explanationParts.push(`Suitable for your ${geo.matched} target geography`);
       if (eng.highlight && explanationParts.length < 3) explanationParts.push(eng.highlight.split('—')[0].trim());
@@ -178,9 +176,9 @@ export function scoreListings(listings: Listing[], prefs: BuyerPreferences): Sco
 
       const reasons: string[] = [];
       if (cat.matched) {
-        reasons.push(`Matches your ${cat.matched} category preferences`);
-      } else if (!prefs.categories.length) {
-        reasons.push('No category filter set — showing all niches');
+        reasons.push(`Matches your "${cat.matched}" tag preference`);
+      } else if (!prefs.tags?.length) {
+        reasons.push('No tag filter set — showing all niches');
       }
       if (aud.matched && prefs.audienceSize) {
         const sizeLabel = prefs.audienceSize === 'small' ? 'niche (<30K)' : prefs.audienceSize === 'mid' ? 'mid-size (10–150K)' : 'large reach (50K+)';

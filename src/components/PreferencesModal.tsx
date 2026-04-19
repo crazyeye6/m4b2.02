@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Check, Sparkles, ArrowRight } from 'lucide-react';
-import type { BuyerPreferences, PrefCategory, PrefLocation, PrefGoal, PrefTiming, PrefAudienceSize } from '../hooks/useBuyerPreferences';
+import type { BuyerPreferences, PrefLocation, PrefGoal, PrefTiming, PrefAudienceSize } from '../hooks/useBuyerPreferences';
+import TagInput from './TagInput';
 
 interface Props {
   prefs: BuyerPreferences;
@@ -8,7 +9,6 @@ interface Props {
   onClose: () => void;
 }
 
-const CATEGORIES: PrefCategory[] = ['SaaS', 'Marketing', 'Business', 'Finance', 'E-commerce', 'Creator', 'Tech', 'DTC'];
 const LOCATIONS: PrefLocation[] = ['UK', 'Ireland', 'US', 'Europe', 'Global'];
 const GOALS: Array<{ value: PrefGoal; label: string; desc: string }> = [
   { value: 'awareness', label: 'Brand Awareness', desc: 'Reach new audiences broadly' },
@@ -51,16 +51,13 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
 }
 
 export default function PreferencesModal({ prefs, onSave, onClose }: Props) {
-  const [cats, setCats] = useState<PrefCategory[]>(prefs.categories);
+  const [tags, setTags] = useState<string[]>(prefs.tags ?? []);
   const [locs, setLocs] = useState<PrefLocation[]>(prefs.locations);
   const [goal, setGoal] = useState<PrefGoal | null>(prefs.goal);
   const [timing, setTiming] = useState<PrefTiming | null>(prefs.timing);
   const [audSize, setAudSize] = useState<PrefAudienceSize | null>(prefs.audienceSize);
   const [budgetMin, setBudgetMin] = useState(prefs.budgetMin);
   const [budgetMax, setBudgetMax] = useState(prefs.budgetMax);
-
-  const toggleCat = (c: PrefCategory) =>
-    setCats(p => p.includes(c) ? p.filter(x => x !== c) : [...p, c]);
 
   const toggleLoc = (l: PrefLocation) =>
     setLocs(p => p.includes(l) ? p.filter(x => x !== l) : [...p, l]);
@@ -71,7 +68,7 @@ export default function PreferencesModal({ prefs, onSave, onClose }: Props) {
   };
 
   const handleSave = () => {
-    onSave({ categories: cats, locations: locs, goal, timing, audienceSize: audSize, budgetMin, budgetMax, hasCompletedOnboarding: true });
+    onSave({ tags, locations: locs, goal, timing, audienceSize: audSize, budgetMin, budgetMax, hasCompletedOnboarding: true });
     onClose();
   };
 
@@ -79,12 +76,9 @@ export default function PreferencesModal({ prefs, onSave, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
       <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Modal */}
       <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl shadow-slate-900/25 overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Header */}
         <div className="flex items-center gap-3 px-6 pt-6 pb-5 border-b border-slate-100 flex-shrink-0">
           <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center flex-shrink-0">
             <Sparkles className="w-4.5 h-4.5 text-emerald-600" />
@@ -98,17 +92,19 @@ export default function PreferencesModal({ prefs, onSave, onClose }: Props) {
           </button>
         </div>
 
-        {/* Scrollable body */}
         <div className="overflow-y-auto flex-1 px-6 py-5 space-y-7">
 
-          {/* Categories */}
+          {/* Niche / Audience / Location Tags */}
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-3">Preferred Categories</p>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map(c => (
-                <Chip key={c} active={cats.includes(c)} onClick={() => toggleCat(c)}>{c}</Chip>
-              ))}
-            </div>
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-1">Niche / Audience / Location Tags</p>
+            <p className="text-[12px] text-slate-400 mb-3">Search or create tags to fine-tune your matches — niches, audience types, geographies, and more.</p>
+            <TagInput
+              selectedTags={tags}
+              onChange={setTags}
+              maxTags={20}
+              placeholder="e.g. saas, uk, b2b, finance, creator..."
+              showHint
+            />
           </div>
 
           {/* Locations */}
@@ -190,7 +186,6 @@ export default function PreferencesModal({ prefs, onSave, onClose }: Props) {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="flex items-center gap-3 px-6 py-4 border-t border-slate-100 flex-shrink-0 bg-white">
           <button
             onClick={onClose}

@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 
-export type PrefCategory = 'SaaS' | 'Marketing' | 'Business' | 'Finance' | 'E-commerce' | 'Creator' | 'Tech' | 'DTC';
 export type PrefLocation = 'UK' | 'Ireland' | 'US' | 'Europe' | 'Global';
 export type PrefGoal = 'awareness' | 'conversions' | 'lead_generation';
 export type PrefTiming = 'this_week' | 'next_3_days' | 'last_minute';
 export type PrefAudienceSize = 'small' | 'mid' | 'large';
 
 export interface BuyerPreferences {
-  categories: PrefCategory[];
+  tags: string[];
   locations: PrefLocation[];
   budgetMin: number;
   budgetMax: number;
@@ -18,7 +17,7 @@ export interface BuyerPreferences {
 }
 
 const DEFAULT_PREFS: BuyerPreferences = {
-  categories: [],
+  tags: [],
   locations: [],
   budgetMin: 0,
   budgetMax: 0,
@@ -28,7 +27,7 @@ const DEFAULT_PREFS: BuyerPreferences = {
   hasCompletedOnboarding: false,
 };
 
-const STORAGE_KEY = 'etw_buyer_prefs_v2';
+const STORAGE_KEY = 'etw_buyer_prefs_v3';
 
 function load(): BuyerPreferences {
   try {

@@ -15,9 +15,6 @@ interface Props {
 }
 
 const PREF_LABEL_MAP: Record<string, string> = {
-  SaaS: 'SaaS', Marketing: 'Marketing', Business: 'Business',
-  Finance: 'Finance', 'E-commerce': 'E-com', Creator: 'Creator',
-  Tech: 'Tech', DTC: 'DTC',
   UK: 'UK', Ireland: 'IE', US: 'US', Europe: 'Europe', Global: 'Global',
   awareness: 'Awareness', conversions: 'Conversions', lead_generation: 'Lead Gen',
   this_week: 'This week', next_3_days: 'Next 3 days', last_minute: 'Last minute',
@@ -26,7 +23,7 @@ const PREF_LABEL_MAP: Record<string, string> = {
 
 function prefSummary(prefs: BuyerPreferences): string {
   const parts: string[] = [];
-  if (prefs.categories.length) parts.push(prefs.categories.slice(0, 2).map(c => PREF_LABEL_MAP[c] ?? c).join(', '));
+  if (prefs.tags?.length) parts.push(prefs.tags.slice(0, 3).join(', '));
   if (prefs.locations.length) parts.push(prefs.locations.slice(0, 2).map(l => PREF_LABEL_MAP[l] ?? l).join(', '));
   if (prefs.budgetMax) parts.push(`$${prefs.budgetMin}–$${prefs.budgetMax}`);
   if (prefs.timing) parts.push(PREF_LABEL_MAP[prefs.timing] ?? prefs.timing);
@@ -134,7 +131,7 @@ export default function RecommendedSection({ listings, prefs, onView, onEditPref
 
         {/* Footer note */}
         <p className="text-center text-[11px] text-slate-400 font-medium mt-8">
-          Scores are calculated from category, location, budget, timing, and discount relevance.
+          Scores are calculated from tag, location, budget, timing, and discount relevance.
         </p>
       </div>
     </section>
