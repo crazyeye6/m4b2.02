@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       company,
     });
 
-    sendWelcomeEmail(email, role, displayName);
+    sendWelcomeEmail(email, role, displayName, data.session?.access_token);
 
     return { error: profileError };
   };
