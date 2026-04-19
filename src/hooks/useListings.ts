@@ -1,7 +1,21 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { calcDynamicPrice } from '../lib/dynamicPricing';
+import { scoreListings } from '../lib/matchScore';
+import type { BuyerPreferences } from './useBuyerPreferences';
 import type { Listing, FilterState, DeadlineWindow } from '../types';
+
+const PREFS_KEY = 'etw_buyer_prefs_v2';
+
+function loadPrefs(): BuyerPreferences {
+  try {
+    const raw = localStorage.getItem(PREFS_KEY);
+    if (!raw) return { categories: [], locations: [], budgetMin: 0, budgetMax: 0, goal: null, timing: null, audienceSize: null, hasCompletedOnboarding: false };
+    return JSON.parse(raw) as BuyerPreferences;
+  } catch {
+    return { categories: [], locations: [], budgetMin: 0, budgetMax: 0, goal: null, timing: null, audienceSize: null, hasCompletedOnboarding: false };
+  }
+}
 
 function getDeadlineCutoff(window: DeadlineWindow): string | null {
   if (!window) return null;
@@ -174,6 +188,10 @@ export function useListings(filters: FilterState) {
       });
 
       result = scored.sort((a, b) => b.score - a.score).map(s => s.listing);
+    } else if (sort === 'recommended') {
+      const prefs = loadPrefs();
+      const scored = scoreListings(result, prefs);
+      result = scored.map(s => s.listing);
     }
 
     setListings(result);

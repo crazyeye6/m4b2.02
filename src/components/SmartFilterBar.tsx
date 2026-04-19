@@ -23,6 +23,7 @@ interface SmartFilterBarProps {
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string; desc: string }> = [
   { value: 'deadline_asc', label: 'Ending soonest', desc: 'Act before slots close' },
+  { value: 'recommended', label: 'Recommended for You', desc: 'Personalised to your saved buyer preferences' },
   { value: 'best_stats', label: 'Best stats', desc: 'Top reach, discount & value combined' },
   { value: 'discount_desc', label: 'Biggest saving', desc: 'Best % off original rate' },
   { value: 'audience_desc', label: 'Largest reach', desc: 'Max impressions first' },
@@ -470,10 +471,10 @@ export default function SmartFilterBar({
 
           {/* Quick filter: Recommended for You */}
           {(() => {
-            const active = filters.sort === 'best_stats';
+            const active = filters.sort === 'recommended';
             return (
               <button
-                onClick={() => onChange({ sort: active ? 'deadline_asc' : 'best_stats' })}
+                onClick={() => onChange({ sort: active ? 'deadline_asc' : 'recommended' })}
                 className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all whitespace-nowrap
                   ${active
                     ? 'bg-teal-600 text-white border-teal-600'
