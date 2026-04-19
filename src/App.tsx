@@ -21,6 +21,7 @@ const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const MediaProfilePage = lazy(() => import('./pages/MediaProfilePage'));
 
 function PageFallback() {
   return (
@@ -36,7 +37,7 @@ import type { FilterState, Listing, ViewMode } from './types';
 import type { GridColumns } from './components/ListingsGrid';
 import { encodeFiltersToUrl, decodeFiltersFromUrl, DEFAULT_FILTERS } from './lib/urlState';
 
-type Page = 'home' | 'opportunities' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout';
+type Page = 'home' | 'opportunities' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout' | 'media-profile';
 
 function getListingIdFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
@@ -46,6 +47,23 @@ function getListingIdFromUrl(): string | null {
 function getCheckoutIdFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
   return params.get('checkout');
+}
+
+function getMediaProfileIdFromUrl(): string | null {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('media-profile');
+}
+
+function setMediaProfileInUrl(id: string | null) {
+  const url = new URL(window.location.href);
+  if (id) {
+    url.searchParams.set('media-profile', id);
+    url.searchParams.delete('listing');
+    url.searchParams.delete('checkout');
+  } else {
+    url.searchParams.delete('media-profile');
+  }
+  window.history.pushState({}, '', url.toString());
 }
 
 function setListingInUrl(id: string | null) {
@@ -74,10 +92,12 @@ export default function App() {
   const [page, setPage] = useState<Page>(() => {
     if (getCheckoutIdFromUrl()) return 'checkout';
     if (getListingIdFromUrl()) return 'listing';
+    if (getMediaProfileIdFromUrl()) return 'media-profile';
     return 'home';
   });
   const [listingId, setListingId] = useState<string | null>(() => getListingIdFromUrl());
   const [checkoutListingId, setCheckoutListingId] = useState<string | null>(() => getCheckoutIdFromUrl());
+  const [mediaProfileId, setMediaProfileId] = useState<string | null>(() => getMediaProfileIdFromUrl());
 
   const [{ filters, viewMode, columns }, setUiState] = useState<{
     filters: FilterState;
@@ -118,15 +138,20 @@ export default function App() {
     const handlePopState = () => {
       const checkoutId = getCheckoutIdFromUrl();
       const listId = getListingIdFromUrl();
+      const profileId = getMediaProfileIdFromUrl();
       if (checkoutId) {
         setCheckoutListingId(checkoutId);
         setPage('checkout');
       } else if (listId) {
         setListingId(listId);
         setPage('listing');
+      } else if (profileId) {
+        setMediaProfileId(profileId);
+        setPage('media-profile');
       } else {
         setListingId(null);
         setCheckoutListingId(null);
+        setMediaProfileId(null);
         const p = new URLSearchParams(window.location.search);
         if (p.get('page') === 'opportunities') {
           setPage('opportunities');
@@ -227,6 +252,13 @@ export default function App() {
     setListingId(listing.id);
     setListingInUrl(listing.id);
     setPage('listing');
+    window.scrollTo(0, 0);
+  };
+
+  const handleViewMediaProfile = (profileId: string) => {
+    setMediaProfileId(profileId);
+    setMediaProfileInUrl(profileId);
+    setPage('media-profile');
     window.scrollTo(0, 0);
   };
 
@@ -362,6 +394,30 @@ export default function App() {
     );
   }
 
+  if (page === 'media-profile' && mediaProfileId) {
+    return (
+      <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
+        <Header {...sharedHeaderProps} onHome={goHome} />
+        <Suspense fallback={<PageFallback />}>
+          <MediaProfilePage
+            profileId={mediaProfileId}
+            onBack={() => {
+              setMediaProfileInUrl(null);
+              setMediaProfileId(null);
+              setPage('opportunities');
+              window.scrollTo(0, 0);
+            }}
+            onViewListing={(listing) => {
+              setMediaProfileInUrl(null);
+              setMediaProfileId(null);
+              handleViewListing(listing);
+            }}
+          />
+        </Suspense>
+      </div>
+    );
+  }
+
   if (page === 'listing' && listingId) {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
@@ -402,6 +458,7 @@ export default function App() {
               loading={loading}
               onSecure={handleSecure}
               onDetails={handleViewListing}
+              onViewMediaProfile={handleViewMediaProfile}
               columns={columns}
               viewMode={viewMode}
               sort={filters.sort}

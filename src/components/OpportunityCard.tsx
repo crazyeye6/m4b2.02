@@ -10,6 +10,7 @@ interface OpportunityCardProps {
   listing: Listing;
   onSecure: (listing: Listing) => void;
   onDetails: (listing: Listing) => void;
+  onViewMediaProfile?: (profileId: string) => void;
 }
 
 const MEDIA_CONFIG = {
@@ -35,7 +36,7 @@ function fmtCompact(n: number, locale: string): string {
   }
 }
 
-export default function OpportunityCard({ listing, onSecure, onDetails }: OpportunityCardProps) {
+export default function OpportunityCard({ listing, onSecure, onDetails, onViewMediaProfile }: OpportunityCardProps) {
   const mc = getMediaConfig(listing.media_type);
   const { formatPrice, browserLocale } = useLocale();
   const tx = useTranslations();
@@ -148,7 +149,10 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         </div>
 
         <div className="grid grid-cols-2 gap-2 mb-4">
-          <div className="bg-white rounded-2xl p-3.5 relative overflow-hidden">
+          <div
+            className={`bg-white rounded-2xl p-3.5 relative overflow-hidden ${listing.media_profile_id && onViewMediaProfile ? 'cursor-pointer hover:bg-[#f9f9fb] transition-colors group/pub' : ''}`}
+            onClick={listing.media_profile_id && onViewMediaProfile ? (e) => { e.stopPropagation(); onViewMediaProfile(listing.media_profile_id!); } : undefined}
+          >
             <div className="absolute inset-x-0 top-0 h-[2px] bg-black/10" />
             <p className="text-[#86868b] text-[8px] font-bold uppercase tracking-widest leading-none mb-2">{tx.card.publisher}</p>
             {listing.media_profile?.logo_url ? (
@@ -159,10 +163,10 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
                   className="w-5 h-5 rounded-md object-cover flex-shrink-0 border border-black/[0.06]"
                   onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
-                <p className="text-[#1d1d1f] text-[13px] font-bold leading-tight truncate">{listing.property_name}</p>
+                <p className={`text-[13px] font-bold leading-tight truncate ${listing.media_profile_id && onViewMediaProfile ? 'text-sky-700 group-hover/pub:underline' : 'text-[#1d1d1f]'}`}>{listing.property_name}</p>
               </div>
             ) : (
-              <p className="text-[#1d1d1f] text-[13px] font-bold leading-tight truncate mb-0.5">{listing.property_name}</p>
+              <p className={`text-[13px] font-bold leading-tight truncate mb-0.5 ${listing.media_profile_id && onViewMediaProfile ? 'text-sky-700 group-hover/pub:underline' : 'text-[#1d1d1f]'}`}>{listing.property_name}</p>
             )}
             {listing.media_profile?.tagline ? (
               <p className="text-[#6e6e73] text-[10px] font-medium leading-none truncate">{listing.media_profile.tagline}</p>

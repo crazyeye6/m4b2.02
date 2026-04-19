@@ -12,6 +12,7 @@ interface ListingRowProps {
   listing: Listing;
   onSecure: (listing: Listing) => void;
   onDetails: (listing: Listing) => void;
+  onViewMediaProfile?: (profileId: string) => void;
 }
 
 const NEWSLETTER_CONFIG = {
@@ -36,7 +37,7 @@ function StatCell({ label, value, accent }: { label: string; value: string; acce
   );
 }
 
-export default function ListingRow({ listing, onSecure, onDetails }: ListingRowProps) {
+export default function ListingRow({ listing, onSecure, onDetails, onViewMediaProfile }: ListingRowProps) {
   const mc = NEWSLETTER_CONFIG;
   const { formatPrice } = useLocale();
 
@@ -100,7 +101,16 @@ export default function ListingRow({ listing, onSecure, onDetails }: ListingRowP
               <p className="text-[14px] font-bold text-[#1d1d1f] truncate">{listing.property_name}</p>
               {statusIcon}
             </div>
-            <p className="text-[12px] text-[#6e6e73] truncate">{listing.media_company_name || listing.media_owner_name}</p>
+            {listing.media_profile_id && onViewMediaProfile ? (
+              <button
+                onClick={e => { e.stopPropagation(); onViewMediaProfile(listing.media_profile_id!); }}
+                className="text-[12px] text-sky-600 hover:text-sky-700 hover:underline truncate text-left transition-colors"
+              >
+                {listing.media_company_name || listing.media_owner_name}
+              </button>
+            ) : (
+              <p className="text-[12px] text-[#6e6e73] truncate">{listing.media_company_name || listing.media_owner_name}</p>
+            )}
             <div className="flex items-center gap-3 mt-1">
               <span className="flex items-center gap-1 text-[11px] text-[#aeaeb2]">
                 <MapPin className="w-3 h-3" />

@@ -11,6 +11,7 @@ interface ListingsGridProps {
   loading: boolean;
   onSecure: (listing: Listing) => void;
   onDetails: (listing: Listing) => void;
+  onViewMediaProfile?: (profileId: string) => void;
   columns?: GridColumns;
   viewMode?: ViewMode;
   sort?: SortOption;
@@ -91,6 +92,7 @@ export default function ListingsGrid({
   loading,
   onSecure,
   onDetails,
+  onViewMediaProfile,
   columns = 2,
   viewMode = 'grid',
   sort = 'deadline_asc',
@@ -131,6 +133,7 @@ export default function ListingsGrid({
             listing={listing}
             onSecure={onSecure}
             onDetails={onDetails}
+            onViewMediaProfile={onViewMediaProfile}
           />
         ))}
       </div>
@@ -145,6 +148,7 @@ export default function ListingsGrid({
           listing={listing}
           onSecure={onSecure}
           onDetails={onDetails}
+          onViewMediaProfile={onViewMediaProfile}
         />
       ))}
     </div>
