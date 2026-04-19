@@ -98,7 +98,7 @@ interface AdminPageProps {
   onBack: () => void;
 }
 
-type AdminTab = 'bookings' | 'refunds' | 'email_submissions' | 'csv_uploads' | 'settings';
+type AdminTab = 'bookings' | 'refunds' | 'email_submissions' | 'csv_uploads' | 'emails' | 'settings';
 
 const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string }> = {
   pending_payment: { label: 'Pending Payment', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
@@ -341,6 +341,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             ['bookings', 'Bookings'],
             ['refunds', 'Refund Requests'],
             ['csv_uploads', 'CSV Uploads'],
+            ['emails', 'Resend Emails'],
             ['settings', 'Settings'],
           ] as [AdminTab, string][]).map(([key, label]) => (
             <button
@@ -387,6 +388,8 @@ export default function AdminPage({ onBack }: AdminPageProps) {
           }} />
         ) : tab === 'csv_uploads' ? (
           <CsvUploadsTable slots={csvSlots} onSelect={setSelectedCsvSlot} />
+        ) : tab === 'emails' ? (
+          <EmailsPanel />
         ) : (
           <SettingsPanel />
         )}
@@ -1525,6 +1528,246 @@ function RefundDetailPanel({ refund, decisionReason, onReasonChange, onDecision,
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function EmailsPanel() {
+  const DIGEST_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-opportunity-digest`;
+  const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+  const [digestLoading, setDigestLoading] = useState(false);
+  const [digestResult, setDigestResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const [buyerEmail, setBuyerEmail] = useState('');
+  const [buyerName, setBuyerName] = useState('');
+  const [welcomeRole, setWelcomeRole] = useState<'buyer' | 'seller'>('buyer');
+  const [welcomeLoading, setWelcomeLoading] = useState(false);
+  const [welcomeResult, setWelcomeResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const [bookingId, setBookingId] = useState('');
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookingResult, setBookingResult] = useState<{ ok: boolean; message: string } | null>(null);
+
+  const triggerDigest = async () => {
+    setDigestLoading(true);
+    setDigestResult(null);
+    try {
+      const res = await fetch(DIGEST_URL, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ force: true }),
+      });
+      const text = await res.text();
+      setDigestResult({ ok: res.ok, message: res.ok ? 'Digest sent successfully to all eligible buyers.' : `Error: ${text}` });
+    } catch (e) {
+      setDigestResult({ ok: false, message: `Network error: ${e}` });
+    }
+    setDigestLoading(false);
+  };
+
+  const sendWelcome = async () => {
+    if (!buyerEmail.trim()) return;
+    setWelcomeLoading(true);
+    setWelcomeResult(null);
+    try {
+      const type = welcomeRole === 'seller' ? 'welcome_seller' : 'welcome_buyer';
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${ANON_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ type, to: buyerEmail.trim(), data: { display_name: buyerName.trim() || buyerEmail.trim() } }),
+      });
+      setWelcomeResult({ ok: res.ok, message: res.ok ? `Welcome email sent to ${buyerEmail.trim()}.` : 'Failed to send email.' });
+    } catch {
+      setWelcomeResult({ ok: false, message: 'Network error sending email.' });
+    }
+    setWelcomeLoading(false);
+  };
+
+  const resendBookingEmails = async () => {
+    if (!bookingId.trim()) return;
+    setBookingLoading(true);
+    setBookingResult(null);
+    try {
+      const { data: booking, error } = await supabase
+        .from('deposit_bookings')
+        .select('*, listing:listings(property_name, media_type, original_price, discounted_price, slots_remaining, deadline_at, seller_email)')
+        .eq('id', bookingId.trim())
+        .maybeSingle();
+
+      if (error || !booking) {
+        setBookingResult({ ok: false, message: 'Booking not found. Check the ID.' });
+        setBookingLoading(false);
+        return;
+      }
+
+      const listing = booking.listing as Record<string, unknown> | null;
+      const emailData = {
+        booking_id: booking.id,
+        property_name: listing?.property_name ?? '',
+        media_type: listing?.media_type ?? '',
+        original_price: listing?.original_price ?? 0,
+        discounted_price: listing?.discounted_price ?? 0,
+        deposit_amount: booking.deposit_amount,
+        balance_due: booking.balance_due,
+        slots: booking.slots_count ?? 1,
+        deadline_at: listing?.deadline_at ?? '',
+        seller_email: listing?.seller_email ?? '',
+        buyer_name: booking.buyer_name,
+        buyer_company: booking.buyer_company ?? '',
+        buyer_email: booking.buyer_email,
+        contact_name: booking.contact_name ?? '',
+        phone: booking.phone ?? '',
+      };
+
+      const SEND = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
+      const headers = { Authorization: `Bearer ${ANON_KEY}`, 'Content-Type': 'application/json' };
+      await Promise.all([
+        fetch(SEND, { method: 'POST', headers, body: JSON.stringify({ type: 'booking_confirmation_buyer', to: booking.buyer_email, data: emailData }) }),
+        listing?.seller_email ? fetch(SEND, { method: 'POST', headers, body: JSON.stringify({ type: 'booking_confirmation_seller', to: listing.seller_email, data: emailData }) }) : Promise.resolve(),
+      ]);
+      setBookingResult({ ok: true, message: `Booking confirmation resent to ${booking.buyer_email}${listing?.seller_email ? ` and ${listing.seller_email}` : ''}.` });
+    } catch {
+      setBookingResult({ ok: false, message: 'Failed to resend booking emails.' });
+    }
+    setBookingLoading(false);
+  };
+
+  const ResultBadge = ({ result }: { result: { ok: boolean; message: string } }) => (
+    <div className={`flex items-start gap-2 mt-3 p-3 rounded-2xl border text-sm ${result.ok ? 'bg-green-50 border-green-200 text-green-700' : 'bg-red-50 border-red-200 text-red-700'}`}>
+      {result.ok ? <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" /> : <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />}
+      {result.message}
+    </div>
+  );
+
+  return (
+    <div className="max-w-2xl space-y-5">
+
+      <div className="bg-white border border-black/[0.06] rounded-3xl overflow-hidden shadow-sm">
+        <div className="px-6 py-5 border-b border-black/[0.06] flex items-center gap-3">
+          <div className="w-8 h-8 bg-blue-50 border border-blue-200 rounded-xl flex items-center justify-center">
+            <Send className="w-4 h-4 text-blue-600" />
+          </div>
+          <div>
+            <h2 className="text-[#1d1d1f] font-semibold text-sm">Opportunity Digest Blast</h2>
+            <p className="text-[#aeaeb2] text-xs">Trigger the digest email to all buyers with digest enabled</p>
+          </div>
+        </div>
+        <div className="p-6">
+          <p className="text-[#6e6e73] text-sm mb-4">
+            This sends the opportunity digest to every buyer who has digest emails enabled, regardless of their last sent time. Use this after adding new listings or when you want to push a manual campaign.
+          </p>
+          <button
+            onClick={triggerDigest}
+            disabled={digestLoading}
+            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold px-5 py-2.5 rounded-2xl transition-all text-sm"
+          >
+            {digestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            {digestLoading ? 'Sending...' : 'Send Digest to All Buyers'}
+          </button>
+          {digestResult && <ResultBadge result={digestResult} />}
+        </div>
+      </div>
+
+      <div className="bg-white border border-black/[0.06] rounded-3xl overflow-hidden shadow-sm">
+        <div className="px-6 py-5 border-b border-black/[0.06] flex items-center gap-3">
+          <div className="w-8 h-8 bg-green-50 border border-green-200 rounded-xl flex items-center justify-center">
+            <Mail className="w-4 h-4 text-green-600" />
+          </div>
+          <div>
+            <h2 className="text-[#1d1d1f] font-semibold text-sm">Resend Welcome Email</h2>
+            <p className="text-[#aeaeb2] text-xs">Re-send the onboarding welcome email to a specific user</p>
+          </div>
+        </div>
+        <div className="p-6 space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[11px] text-[#86868b] font-semibold uppercase tracking-wider block mb-1">Email Address</label>
+              <input
+                type="email"
+                value={buyerEmail}
+                onChange={e => setBuyerEmail(e.target.value)}
+                placeholder="user@example.com"
+                className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-4 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-[#86868b] font-semibold uppercase tracking-wider block mb-1">Display Name</label>
+              <input
+                type="text"
+                value={buyerName}
+                onChange={e => setBuyerName(e.target.value)}
+                placeholder="Optional"
+                className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-4 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-[11px] text-[#86868b] font-semibold uppercase tracking-wider block mb-1">Role</label>
+            <div className="flex gap-2">
+              {(['buyer', 'seller'] as const).map(r => (
+                <button
+                  key={r}
+                  onClick={() => setWelcomeRole(r)}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all capitalize ${welcomeRole === r ? 'bg-[#1d1d1f] text-white border-[#1d1d1f]' : 'bg-[#f5f5f7] text-[#6e6e73] border-black/[0.08] hover:text-[#1d1d1f]'}`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={sendWelcome}
+            disabled={welcomeLoading || !buyerEmail.trim()}
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-semibold px-5 py-2.5 rounded-2xl transition-all text-sm"
+          >
+            {welcomeLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+            {welcomeLoading ? 'Sending...' : 'Send Welcome Email'}
+          </button>
+          {welcomeResult && <ResultBadge result={welcomeResult} />}
+        </div>
+      </div>
+
+      <div className="bg-white border border-black/[0.06] rounded-3xl overflow-hidden shadow-sm">
+        <div className="px-6 py-5 border-b border-black/[0.06] flex items-center gap-3">
+          <div className="w-8 h-8 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center">
+            <RefreshCw className="w-4 h-4 text-orange-600" />
+          </div>
+          <div>
+            <h2 className="text-[#1d1d1f] font-semibold text-sm">Resend Booking Confirmation</h2>
+            <p className="text-[#aeaeb2] text-xs">Re-send booking confirmation to buyer and seller for a specific booking</p>
+          </div>
+        </div>
+        <div className="p-6 space-y-3">
+          <div>
+            <label className="text-[11px] text-[#86868b] font-semibold uppercase tracking-wider block mb-1">Booking ID</label>
+            <input
+              type="text"
+              value={bookingId}
+              onChange={e => setBookingId(e.target.value)}
+              placeholder="Paste the booking UUID here"
+              className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-4 py-2.5 text-[#1d1d1f] text-sm font-mono placeholder-[#aeaeb2] outline-none transition-all"
+            />
+            <p className="text-[#aeaeb2] text-xs mt-1">You can find the booking ID in the Bookings tab by clicking a booking.</p>
+          </div>
+          <button
+            onClick={resendBookingEmails}
+            disabled={bookingLoading || !bookingId.trim()}
+            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-semibold px-5 py-2.5 rounded-2xl transition-all text-sm"
+          >
+            {bookingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            {bookingLoading ? 'Resending...' : 'Resend Booking Emails'}
+          </button>
+          {bookingResult && <ResultBadge result={bookingResult} />}
+        </div>
+      </div>
+
     </div>
   );
 }
