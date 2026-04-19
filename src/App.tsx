@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import Header from './components/Header';
 import Hero from './components/Hero';
 import StatsBar from './components/StatsBar';
@@ -36,7 +36,7 @@ import type { FilterState, Listing, ViewMode } from './types';
 import type { GridColumns } from './components/ListingsGrid';
 import { encodeFiltersToUrl, decodeFiltersFromUrl, DEFAULT_FILTERS } from './lib/urlState';
 
-type Page = 'home' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout';
+type Page = 'home' | 'opportunities' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout';
 
 function getListingIdFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
@@ -99,7 +99,6 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPrefsModal, setShowPrefsModal] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const opportunitiesRef = useRef<HTMLDivElement>(null);
   const { prefs, setPrefs } = useBuyerPreferences();
 
   const { profile } = useAuth();
@@ -128,7 +127,12 @@ export default function App() {
       } else {
         setListingId(null);
         setCheckoutListingId(null);
-        setPage('home');
+        const p = new URLSearchParams(window.location.search);
+        if (p.get('page') === 'opportunities') {
+          setPage('opportunities');
+        } else {
+          setPage('home');
+        }
       }
     };
     window.addEventListener('popstate', handlePopState);
@@ -164,21 +168,19 @@ export default function App() {
   };
 
   const handleBrowse = () => {
-    opportunitiesRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setListingInUrl(null);
+    setListingId(null);
+    setCheckoutListingId(null);
+    setPage('opportunities');
+    window.scrollTo(0, 0);
   };
 
   const handleOpportunities = () => {
-    if (page !== 'home') {
-      setListingInUrl(null);
-      setListingId(null);
-      setCheckoutListingId(null);
-      setPage('home');
-      setTimeout(() => {
-        document.getElementById('opportunities')?.scrollIntoView({ behavior: 'smooth' });
-      }, 100);
-    } else {
-      opportunitiesRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
+    setListingInUrl(null);
+    setListingId(null);
+    setCheckoutListingId(null);
+    setPage('opportunities');
+    window.scrollTo(0, 0);
   };
 
   const handleHowItWorks = () => {
@@ -231,7 +233,7 @@ export default function App() {
   const handleBackFromListing = () => {
     setListingId(null);
     setListingInUrl(null);
-    setPage('home');
+    setPage('opportunities');
     window.scrollTo(0, 0);
   };
 
@@ -376,19 +378,12 @@ export default function App() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
-      <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
+  if (page === 'opportunities') {
+    return (
+      <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
+        <Header {...sharedHeaderProps} onHome={goHome} />
 
-      <main>
-        <Hero onBrowse={handleBrowse} onListSlot={handleListSlot} />
-        <StatsBar
-          liveCount={stats.liveCount}
-          avgDiscount={stats.avgDiscount}
-          totalSavings={stats.totalSavings}
-        />
-
-        <div ref={opportunitiesRef} id="opportunities">
+        <main>
           <SmartFilterBar
             filters={filters}
             onChange={updateFilters}
@@ -411,12 +406,44 @@ export default function App() {
               sort={filters.sort}
             />
           </section>
-        </div>
 
-        <SmartMatchCallout
-          isLoggedIn={!!profile}
-          onSignIn={() => setShowAuthModal(true)}
-          onDashboard={handleDashboard}
+          <SmartMatchCallout
+            isLoggedIn={!!profile}
+            onSignIn={() => setShowAuthModal(true)}
+            onDashboard={handleDashboard}
+          />
+        </main>
+
+        <Footer
+          onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }}
+          onPrivacy={() => { setPage('privacy'); window.scrollTo(0, 0); }}
+        />
+
+        {showAuthModal && (
+          <AuthModal onClose={() => setShowAuthModal(false)} />
+        )}
+
+        {showPrefsModal && (
+          <PreferencesModal
+            prefs={prefs}
+            onSave={(partial) => setPrefs(partial)}
+            onClose={() => setShowPrefsModal(false)}
+          />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
+      <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
+
+      <main>
+        <Hero onBrowse={handleBrowse} onListSlot={handleListSlot} />
+        <StatsBar
+          liveCount={stats.liveCount}
+          avgDiscount={stats.avgDiscount}
+          totalSavings={stats.totalSavings}
         />
 
         <HowItWorks onListSlot={handleListSlot} />
