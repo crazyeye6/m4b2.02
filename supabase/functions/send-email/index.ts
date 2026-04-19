@@ -13,7 +13,8 @@ interface EmailPayload {
     | "booking_confirmation_buyer"
     | "booking_confirmation_seller"
     | "slot_listed"
-    | "opportunity_digest";
+    | "opportunity_digest"
+    | "contact_form";
   to: string;
   data: Record<string, unknown>;
 }
@@ -402,6 +403,31 @@ function buildOpportunityDigest(data: Record<string, unknown>) {
   };
 }
 
+function buildContactForm(data: Record<string, unknown>) {
+  const name = String(data.name || "—");
+  const email = String(data.email || "—");
+  const subject = String(data.subject || "General enquiry");
+  const message = String(data.message || "—");
+
+  const content = `
+    ${h1("New contact form submission")}
+    ${dataTable(
+      dataRow("Name", name) +
+      dataRow("Email", `<a href="mailto:${email}" style="color:#16a34a;text-decoration:none;">${email}</a>`) +
+      dataRow("Subject", subject)
+    )}
+    <p style="color:#1d1d1f;font-size:14px;font-weight:600;margin:0 0 10px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Message</p>
+    <div style="background:#f5f5f7;border:1px solid rgba(0,0,0,0.06);border-radius:12px;padding:18px 20px;margin:0 0 24px 0;">
+      <p style="color:#3a3a3c;font-size:14px;line-height:1.7;margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;white-space:pre-wrap;">${message}</p>
+    </div>
+    ${infoBox(`<p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 4px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Reply directly</p><p style="color:#6e6e73;font-size:13px;margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Reply to this email or contact <a href="mailto:${email}" style="color:#16a34a;text-decoration:none;">${email}</a> directly.</p>`, "green")}
+  `;
+  return {
+    subject: `Contact: ${subject} — from ${name}`,
+    html: wrapEmail(content, `New message from ${name} via EndingThisWeek.media`),
+  };
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 200, headers: corsHeaders });
@@ -447,6 +473,9 @@ Deno.serve(async (req: Request) => {
       case "opportunity_digest":
         emailContent = buildOpportunityDigest(data);
         break;
+      case "contact_form":
+        emailContent = buildContactForm(data);
+        break;
       default:
         return new Response(
           JSON.stringify({ error: `Unknown email type: ${type}` }),
@@ -461,7 +490,7 @@ Deno.serve(async (req: Request) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "EndingThisWeek.media <onboarding@resend.dev>",
+        from: "EndingThisWeek.media <hello@updates.endingthisweek.media>",
         to: [to],
         subject: emailContent.subject,
         html: emailContent.html,

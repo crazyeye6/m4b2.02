@@ -3,9 +3,10 @@ import { useTranslations } from '../hooks/useTranslations';
 interface FooterProps {
   onTerms?: () => void;
   onPrivacy?: () => void;
+  onContact?: () => void;
 }
 
-export default function Footer({ onTerms, onPrivacy }: FooterProps) {
+export default function Footer({ onTerms, onPrivacy, onContact }: FooterProps) {
   const tx = useTranslations();
   return (
     <footer className="bg-[#1d1d1f] mt-0">
@@ -38,7 +39,7 @@ export default function Footer({ onTerms, onPrivacy }: FooterProps) {
             >
               {tx.footer.terms}
             </button>
-            <a href="mailto:legal@endingthisweek.media" className="text-white/50 hover:text-white text-[13px] transition-colors">{tx.footer.contact}</a>
+            <button onClick={onContact} className="text-white/50 hover:text-white text-[13px] transition-colors">{tx.footer.contact}</button>
           </div>
         </div>
 

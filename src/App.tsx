@@ -6,6 +6,7 @@ import SmartFilterBar from './components/SmartFilterBar';
 import ListingsGrid from './components/ListingsGrid';
 import HowItWorks from './components/HowItWorks';
 import Footer from './components/Footer';
+import ContactModal from './components/ContactModal';
 import AuthModal from './components/AuthModal';
 import PreferencesOnboarding from './components/PreferencesOnboarding';
 import PreferencesModal from './components/PreferencesModal';
@@ -119,6 +120,7 @@ export default function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPrefsModal, setShowPrefsModal] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showContactModal, setShowContactModal] = useState(false);
   const { prefs, setPrefs } = useBuyerPreferences();
 
   const { profile } = useAuth();
@@ -476,6 +478,7 @@ export default function App() {
         <Footer
           onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }}
           onPrivacy={() => { setPage('privacy'); window.scrollTo(0, 0); }}
+          onContact={() => setShowContactModal(true)}
         />
 
         {showAuthModal && (
@@ -488,6 +491,10 @@ export default function App() {
             onSave={(partial) => setPrefs(partial)}
             onClose={() => setShowPrefsModal(false)}
           />
+        )}
+
+        {showContactModal && (
+          <ContactModal onClose={() => setShowContactModal(false)} />
         )}
       </div>
     );
@@ -536,6 +543,10 @@ export default function App() {
           onSave={(partial) => setPrefs(partial)}
           onClose={() => setShowPrefsModal(false)}
         />
+      )}
+
+      {showContactModal && (
+        <ContactModal onClose={() => setShowContactModal(false)} />
       )}
     </div>
   );
