@@ -32,7 +32,7 @@ export function encodeFiltersToUrl(filters: FilterState, viewMode: ViewMode, col
   if (filters.searchQuery) p.set('q', filters.searchQuery); else p.delete('q');
   if (filters.selectedTags.length > 0) p.set('tags', filters.selectedTags.join(',')); else p.delete('tags');
   if (filters.sort !== d.sort) p.set('sort', filters.sort); else p.delete('sort');
-  if (viewMode !== 'grid') p.set('view', viewMode); else p.delete('view');
+  if (viewMode !== 'list') p.set('view', viewMode); else p.delete('view');
   if (columns !== 2) p.set('cols', String(columns)); else p.delete('cols');
 
   window.history.replaceState({}, '', url.toString());
@@ -59,7 +59,7 @@ export function decodeFiltersFromUrl(): { filters: FilterState; viewMode: ViewMo
     sort: (p.get('sort') as SortOption) || DEFAULT_FILTERS.sort,
   };
 
-  const viewMode: ViewMode = p.get('view') === 'list' ? 'list' : 'grid';
+  const viewMode: ViewMode = p.get('view') === 'grid' ? 'grid' : 'list';
   const colsRaw = Number(p.get('cols'));
   const columns = colsRaw === 1 || colsRaw === 2 || colsRaw === 3 ? colsRaw : 2;
 
