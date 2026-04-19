@@ -110,9 +110,12 @@ export default function App() {
     const colsFromStorage = (savedCols === '1' || savedCols === '2' || savedCols === '3')
       ? (Number(savedCols) as GridColumns)
       : decoded.columns;
+    const hasExplicitView = new URLSearchParams(window.location.search).has('view');
+    const isDesktop = window.innerWidth >= 768;
+    const defaultViewMode: ViewMode = hasExplicitView ? decoded.viewMode : (isDesktop ? 'list' : 'grid');
     return {
       filters: decoded.filters,
-      viewMode: decoded.viewMode,
+      viewMode: defaultViewMode,
       columns: colsFromStorage,
     };
   });
