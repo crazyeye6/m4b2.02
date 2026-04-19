@@ -60,7 +60,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
     const [listingsRes, bookingsRes, insightsRes] = await Promise.all([
       supabase
         .from('listings')
-        .select('*')
+        .select('*, media_profile:media_profiles(*)')
         .or(`seller_user_id.eq.${user.id},seller_email.eq.${user.email}`)
         .order('created_at', { ascending: false }),
       supabase
@@ -496,6 +496,7 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
   onClose: () => void;
   onRefetch: () => void;
 }) {
+  const { user } = useAuth();
   const sc = LISTING_STATUS_CONFIG[listing.status] || LISTING_STATUS_CONFIG.live;
   const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
   const { currentPrice, discountPct, tier, urgencyLabel } = pricing;
@@ -507,6 +508,32 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
   const [republishSlots, setRepublishSlots] = useState(String(listing.slots_remaining));
   const [republishing, setRepublishing] = useState(false);
   const isExpired = listing.status === 'expired' || listing.status === 'cancelled';
+  const [sellerProfiles, setSellerProfiles] = useState<MediaProfile[]>([]);
+  const [linkedProfileId, setLinkedProfileId] = useState<string | null>(listing.media_profile_id ?? null);
+  const [linkingSaving, setLinkingSaving] = useState(false);
+  const [linkingSaved, setLinkingSaved] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('media_profiles')
+      .select('*')
+      .eq('seller_user_id', user.id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
+      .then(({ data }) => setSellerProfiles((data as MediaProfile[]) ?? []));
+  }, [user]);
+
+  const saveProfileLink = async () => {
+    setLinkingSaving(true);
+    await supabase.from('listings').update({ media_profile_id: linkedProfileId }).eq('id', listing.id);
+    setLinkingSaving(false);
+    setLinkingSaved(true);
+    setTimeout(() => setLinkingSaved(false), 2000);
+    onRefetch();
+  };
+
+  const profileLinkChanged = linkedProfileId !== (listing.media_profile_id ?? null);
 
   const updateStatus = async () => {
     setUpdatingStatus(true);
@@ -634,6 +661,45 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
               </button>
             </div>
           )}
+
+          <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <BookOpen className="w-4 h-4 text-[#86868b]" />
+              <label className="text-[11px] text-[#86868b] font-semibold uppercase tracking-wider">Linked media profile</label>
+            </div>
+            {sellerProfiles.length === 0 ? (
+              <p className="text-[#aeaeb2] text-xs italic">No media profiles yet. Go to the Media Profiles tab to create one — it lets buyers click your newsletter name to learn more.</p>
+            ) : (
+              <div className="space-y-2">
+                <select
+                  value={linkedProfileId ?? ''}
+                  onChange={e => setLinkedProfileId(e.target.value || null)}
+                  className="w-full bg-white border border-black/[0.08] focus:border-black/[0.2] rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all [color-scheme:light]"
+                >
+                  <option value="">No profile linked</option>
+                  {sellerProfiles.map(p => (
+                    <option key={p.id} value={p.id}>{p.newsletter_name}</option>
+                  ))}
+                </select>
+                {profileLinkChanged && (
+                  <button
+                    onClick={saveProfileLink}
+                    disabled={linkingSaving}
+                    className="w-full flex items-center justify-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold py-2 rounded-xl text-sm transition-all"
+                  >
+                    {linkingSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                    Save profile link
+                  </button>
+                )}
+                {linkingSaved && (
+                  <p className="text-green-600 text-xs text-center font-medium">Profile linked — buyers can now click your newsletter name to view your profile.</p>
+                )}
+                {!profileLinkChanged && linkedProfileId && (
+                  <p className="text-[#aeaeb2] text-[11px]">Buyers can click your newsletter name to view this profile on your listing.</p>
+                )}
+              </div>
+            )}
+          </div>
 
           <div>
             <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Update listing status</label>
