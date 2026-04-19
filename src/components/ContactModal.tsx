@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Send, CheckCircle, AlertCircle, Loader2, Mail } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 interface ContactModalProps {
   onClose: () => void;
@@ -16,8 +17,12 @@ const SUBJECTS = [
 ];
 
 const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
-const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const INBOX = 'hello@updates.endingthisweek.media';
+
+async function getToken(): Promise<string> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? import.meta.env.VITE_SUPABASE_ANON_KEY;
+}
 
 export default function ContactModal({ onClose }: ContactModalProps) {
   const [form, setForm] = useState({ name: '', email: '', subject: SUBJECTS[0], message: '' });
@@ -36,10 +41,11 @@ export default function ContactModal({ onClose }: ContactModalProps) {
     setErrorMsg('');
 
     try {
+      const token = await getToken();
       const res = await fetch(EDGE_URL, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${ANON_KEY}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({

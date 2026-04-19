@@ -1,5 +1,6 @@
+import { supabase } from './supabase';
+
 const EDGE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
-const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 type EmailType =
   | "welcome_buyer"
@@ -10,12 +11,18 @@ type EmailType =
   | "admin_slot_published"
   | "opportunity_digest";
 
+async function getToken(): Promise<string> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? import.meta.env.VITE_SUPABASE_ANON_KEY;
+}
+
 async function sendEmail(type: EmailType, to: string, data: Record<string, unknown>) {
   try {
+    const token = await getToken();
     await fetch(EDGE_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${ANON_KEY}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ type, to, data }),
