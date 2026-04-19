@@ -41,8 +41,8 @@ export default function MatchScoreBadge({ score, label, compact = false }: Props
         </span>
       </div>
       <div>
-        <p className={`text-[10px] font-bold leading-none ${colors.text}`}>{label}</p>
-        <p className="text-[9px] text-slate-400 leading-none mt-0.5">{score}/100</p>
+        <p className={`text-[10px] font-bold leading-none ${colors.text}`}>{score} – {label}</p>
+        <p className="text-[9px] text-slate-400 leading-none mt-0.5">Match Score</p>
       </div>
     </div>
   );

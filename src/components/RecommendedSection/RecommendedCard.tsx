@@ -1,9 +1,8 @@
-import { useState, useRef } from 'react';
-import { Users, MapPin, TrendingDown, Clock, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
+import { Users, MapPin, TrendingDown, Clock, ArrowRight, ChevronDown, Sparkles } from 'lucide-react';
 import type { ScoredListing } from '../../lib/matchScore';
 import type { Listing } from '../../types';
 import MatchScoreBadge from './MatchScoreBadge';
-import WhyMatchPopover from './WhyMatchPopover';
 import { useLocale } from '../../context/LocaleContext';
 import { formatCountdown } from '../../lib/dateUtils';
 
@@ -19,29 +18,31 @@ function compactNum(n: number): string {
 }
 
 export default function RecommendedCard({ scored, onView }: Props) {
-  const { listing, score, label, reasons } = scored;
+  const { listing, score, label, reasons, explanationLine, dealScore } = scored;
   const { formatPrice } = useLocale();
   const [showWhy, setShowWhy] = useState(false);
-  const [anchorRect, setAnchorRect] = useState<DOMRect | null>(null);
-  const whyBtnRef = useRef<HTMLButtonElement>(null);
 
   const discount = Math.round(((listing.original_price - listing.discounted_price) / listing.original_price) * 100);
 
   const borderColor =
-    score >= 90 ? 'border-emerald-200' :
-    score >= 75 ? 'border-teal-200' :
+    score >= 85 ? 'border-emerald-200' :
+    score >= 65 ? 'border-teal-200' :
     'border-slate-200';
 
-  const toggleWhy = () => {
-    if (showWhy) { setShowWhy(false); return; }
-    setAnchorRect(whyBtnRef.current?.getBoundingClientRect() ?? null);
-    setShowWhy(true);
-  };
+  const dealLabel =
+    dealScore >= 80 ? 'Exceptional Deal' :
+    dealScore >= 60 ? 'Strong Deal' :
+    dealScore >= 40 ? 'Good Deal' :
+    'Fair Deal';
+
+  const dealColors =
+    dealScore >= 80 ? 'bg-orange-50 border-orange-200 text-orange-700' :
+    dealScore >= 60 ? 'bg-amber-50 border-amber-200 text-amber-700' :
+    'bg-slate-50 border-slate-200 text-slate-600';
 
   return (
     <div className={`relative bg-white rounded-2xl border ${borderColor} shadow-[0_2px_16px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all duration-200 hover:-translate-y-0.5 overflow-hidden flex flex-col`}>
-      {/* Top strip accent */}
-      {score >= 90 && (
+      {score >= 85 && (
         <div className="h-0.5 bg-gradient-to-r from-emerald-400 to-teal-400" />
       )}
 
@@ -58,6 +59,12 @@ export default function RecommendedCard({ scored, onView }: Props) {
             </div>
           </div>
           <MatchScoreBadge score={score} label={label} />
+        </div>
+
+        {/* Explanation line */}
+        <div className="mb-3 flex items-start gap-1.5">
+          <Sparkles className="w-3 h-3 text-emerald-500 flex-shrink-0 mt-0.5" />
+          <p className="text-[11px] text-emerald-700 font-medium leading-snug">{explanationLine}</p>
         </div>
 
         {/* Tags row */}
@@ -89,15 +96,18 @@ export default function RecommendedCard({ scored, onView }: Props) {
           )}
         </div>
 
-        {/* Price row */}
+        {/* Price + Deal Score row */}
         <div className="flex items-end justify-between mb-4">
           <div>
             <p className="text-[11px] text-slate-400 line-through">{formatPrice(listing.original_price)}</p>
             <p className="text-[22px] font-bold text-slate-900 leading-none">{formatPrice(listing.discounted_price)}</p>
           </div>
-          <div className="flex flex-col items-end gap-1">
+          <div className="flex flex-col items-end gap-1.5">
             <span className="inline-flex items-center gap-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
               <TrendingDown className="w-3 h-3" />-{discount}%
+            </span>
+            <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${dealColors}`}>
+              {dealScore} · {dealLabel}
             </span>
             <div className="flex items-center gap-1 text-[10px] text-slate-500">
               <Clock className="w-3 h-3" />
@@ -106,35 +116,41 @@ export default function RecommendedCard({ scored, onView }: Props) {
           </div>
         </div>
 
-        {/* Match reason pill */}
-        {reasons[0] && (
-          <div className="mb-4 px-3 py-2 bg-emerald-50/60 border border-emerald-100 rounded-xl">
-            <p className="text-[11px] text-emerald-700 font-medium">{reasons[0]}</p>
-          </div>
-        )}
+        {/* Why this match — expandable inline */}
+        <div className="mb-4 rounded-xl border border-slate-100 overflow-hidden">
+          <button
+            onClick={() => setShowWhy(p => !p)}
+            className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 hover:bg-slate-100 transition-colors"
+          >
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-emerald-500" />
+              <span className="text-[11px] font-semibold text-slate-700">Why this match?</span>
+            </div>
+            <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${showWhy ? 'rotate-180' : ''}`} />
+          </button>
+          {showWhy && (
+            <ul className="px-3 py-2.5 space-y-1.5 bg-white border-t border-slate-100">
+              {reasons.map((r, i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full flex-shrink-0 mt-1.5" />
+                  <p className="text-[11px] text-slate-600 leading-snug">{r}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
-        {/* Actions */}
-        <div className="mt-auto flex items-center gap-2">
+        {/* Action */}
+        <div className="mt-auto">
           <button
             onClick={() => onView(listing)}
-            className="flex-1 group inline-flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2.5 rounded-xl text-[13px] transition-all duration-150 shadow-[0_4px_14px_rgba(15,23,42,0.15)] hover:shadow-[0_6px_20px_rgba(15,23,42,0.22)]"
+            className="w-full group inline-flex items-center justify-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-4 py-2.5 rounded-xl text-[13px] transition-all duration-150 shadow-[0_4px_14px_rgba(15,23,42,0.15)] hover:shadow-[0_6px_20px_rgba(15,23,42,0.22)]"
           >
             View Opportunity
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform duration-100" />
           </button>
-          <button
-            ref={whyBtnRef}
-            onClick={toggleWhy}
-            className="text-[12px] text-slate-500 hover:text-slate-800 font-medium px-3 py-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all duration-150 whitespace-nowrap"
-          >
-            Why this?
-          </button>
         </div>
       </div>
-
-      {showWhy && (
-        <WhyMatchPopover reasons={reasons} onClose={() => setShowWhy(false)} anchorRect={anchorRect} />
-      )}
     </div>
   );
 }
