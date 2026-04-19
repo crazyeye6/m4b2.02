@@ -105,12 +105,7 @@ export default function App() {
   const { profile } = useAuth();
   const { listings, loading, stats, updateListingStatus, refetch } = useListings(filters);
 
-  useEffect(() => {
-    if (!loading && listings.length > 0 && !prefs.hasCompletedOnboarding && page === 'home') {
-      const t = setTimeout(() => setShowOnboarding(true), 1200);
-      return () => clearTimeout(t);
-    }
-  }, [loading, listings.length, prefs.hasCompletedOnboarding, page]);
+  // Onboarding popup disabled for now
 
   const syncUrl = useCallback((f: FilterState, v: ViewMode, c: GridColumns) => {
     encodeFiltersToUrl(f, v, c);
