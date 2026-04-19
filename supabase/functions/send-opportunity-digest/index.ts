@@ -118,14 +118,27 @@ Deno.serve(async (req: Request) => {
     const isServiceRole = bearerToken === SUPABASE_SERVICE_ROLE_KEY;
     const isDigestSecret = DIGEST_SECRET && bearerToken === DIGEST_SECRET;
 
-    if (!isServiceRole && !isDigestSecret) {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    let isAdminUser = false;
+    if (!isServiceRole && !isDigestSecret && bearerToken) {
+      const { data: userData } = await supabase.auth.getUser(bearerToken);
+      if (userData?.user) {
+        const { data: profile } = await supabase
+          .from("user_profiles")
+          .select("role")
+          .eq("id", userData.user.id)
+          .maybeSingle();
+        isAdminUser = profile?.role === "admin";
+      }
+    }
+
+    if (!isServiceRole && !isDigestSecret && !isAdminUser) {
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
     const targetEmail: string | undefined = body.email;

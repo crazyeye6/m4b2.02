@@ -1532,9 +1532,13 @@ function RefundDetailPanel({ refund, decisionReason, onReasonChange, onDecision,
   );
 }
 
+async function getSessionToken(): Promise<string> {
+  const { data } = await supabase.auth.getSession();
+  return data.session?.access_token ?? import.meta.env.VITE_SUPABASE_ANON_KEY;
+}
+
 function EmailsPanel() {
   const DIGEST_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-opportunity-digest`;
-  const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
   const [digestLoading, setDigestLoading] = useState(false);
   const [digestResult, setDigestResult] = useState<{ ok: boolean; message: string } | null>(null);
@@ -1553,13 +1557,14 @@ function EmailsPanel() {
     setDigestLoading(true);
     setDigestResult(null);
     try {
+      const token = await getSessionToken();
       const res = await fetch(DIGEST_URL, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${ANON_KEY}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ force: true }),
+        body: JSON.stringify({ force_all: true }),
       });
       const text = await res.text();
       setDigestResult({ ok: res.ok, message: res.ok ? 'Digest sent successfully to all eligible buyers.' : `Error: ${text}` });
@@ -1574,11 +1579,12 @@ function EmailsPanel() {
     setWelcomeLoading(true);
     setWelcomeResult(null);
     try {
+      const token = await getSessionToken();
       const type = welcomeRole === 'seller' ? 'welcome_seller' : 'welcome_buyer';
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${ANON_KEY}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ type, to: buyerEmail.trim(), data: { display_name: buyerName.trim() || buyerEmail.trim() } }),
@@ -1632,8 +1638,9 @@ function EmailsPanel() {
         phone: booking.phone ?? '',
       };
 
+      const token = await getSessionToken();
       const SEND = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`;
-      const headers = { Authorization: `Bearer ${ANON_KEY}`, 'Content-Type': 'application/json' };
+      const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
       const [buyerRes, sellerRes] = await Promise.all([
         fetch(SEND, { method: 'POST', headers, body: JSON.stringify({ type: 'booking_confirmation_buyer', to: booking.buyer_email, data: emailData }) }),
         listing?.seller_email ? fetch(SEND, { method: 'POST', headers, body: JSON.stringify({ type: 'booking_confirmation_seller', to: listing.seller_email, data: emailData }) }) : Promise.resolve(new Response(null, { status: 200 })),
