@@ -14,7 +14,7 @@ const STEPS = [
     iconBg: 'bg-orange-50',
     number: '02',
     title: 'Find a newsletter worth sponsoring',
-    description: 'Publishers discount unsold sponsorship slots to fill them fast. You get premium newsletter placements at 20–50% below the standard rate.',
+    description: 'Publishers discount unsold sponsorship slots to fill them fast. Prices drop automatically — up to 30% off the standard rate as the send date gets closer.',
     note: null,
   },
   {

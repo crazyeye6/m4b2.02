@@ -207,10 +207,10 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
             <TrendingDown className="w-3 h-3 flex-shrink-0 mt-0.5 text-current opacity-70" />
             <p className={`text-[10px] font-medium leading-snug ${tier === 'last_chance' ? 'text-red-700' : tier === 'mid' ? 'text-orange-700' : 'text-amber-700'}`}>
               {tier === 'last_chance'
-                ? 'Final discount applied — this slot closes in under 24 hours'
+                ? `${discountPct}% off — final price, this slot closes in under 24 hours`
                 : tier === 'mid'
-                ? '20% off applied — price was reduced because the deadline is approaching'
-                : '10% off applied — early discount as the book-by date nears'}
+                ? `${discountPct}% off applied — deadline is approaching, price will drop further if unsold`
+                : `${discountPct}% off applied — early discount, price drops more as the deadline nears`}
             </p>
           </div>
         )}

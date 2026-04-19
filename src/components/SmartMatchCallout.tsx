@@ -92,9 +92,9 @@ export default function SmartMatchCallout({ onSignIn, onDashboard, isLoggedIn }:
 
               <div className="space-y-3">
                 {[
-                  { name: 'SaaS Insider', pub: 'B2B Growth Co.', score: 94, subs: '62k', price: '$1,100', discount: '50% off' },
-                  { name: 'FinanceWeekly', pub: 'Capital Media', score: 87, subs: '84k', price: '$890', discount: '51% off' },
-                  { name: 'Dev Digest', pub: 'Developer Weekly', score: 78, subs: '120k', price: '$1,350', discount: '55% off' },
+                  { name: 'SaaS Insider', pub: 'B2B Growth Co.', score: 94, subs: '62k', price: '$1,050', discount: '30% off' },
+                  { name: 'FinanceWeekly', pub: 'Capital Media', score: 87, subs: '84k', price: '$1,120', discount: '20% off' },
+                  { name: 'Dev Digest', pub: 'Developer Weekly', score: 78, subs: '120k', price: '$1,575', discount: '10% off' },
                 ].map((card) => (
                   <div key={card.name} className="bg-white border border-slate-200 rounded-2xl p-3.5 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
