@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package, Link, Twitter, Instagram, Youtube, Mic } from 'lucide-react';
+import { BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package, Link, Twitter, Instagram, Youtube, Mic, TrendingUp, ShieldCheck, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import SubmitByEmail from '../components/SubmitByEmail';
@@ -12,6 +12,13 @@ interface SellerDashboardProps {
 }
 
 type DashTab = 'listings' | 'bookings' | 'profile';
+
+interface MarketInsights {
+  avgPrice: number;
+  avgDiscount: number;
+  topCategories: { label: string; count: number }[];
+  totalActiveListings: number;
+}
 
 const LISTING_STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   live: { label: 'Live', color: 'text-green-700', bg: 'bg-green-50 border-green-200' },
@@ -40,13 +47,14 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
   const [listings, setListings] = useState<Listing[]>([]);
   const [bookings, setBookings] = useState<DepositBooking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [insights, setInsights] = useState<MarketInsights | null>(null);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!user?.email) return;
     setLoading(true);
 
-    const [listingsRes, bookingsRes] = await Promise.all([
+    const [listingsRes, bookingsRes, insightsRes] = await Promise.all([
       supabase
         .from('listings')
         .select('*')
@@ -57,10 +65,34 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
         .select('*, listing:listings(property_name, media_owner_name, media_type, date_label)')
         .eq('seller_email', user.email)
         .order('created_at', { ascending: false }),
+      supabase
+        .from('listings')
+        .select('discounted_price, original_price, media_type, status')
+        .eq('status', 'live'),
     ]);
 
     if (listingsRes.data) setListings(listingsRes.data as Listing[]);
     if (bookingsRes.data) setBookings(bookingsRes.data as DepositBooking[]);
+
+    if (insightsRes.data && insightsRes.data.length > 0) {
+      const live = insightsRes.data;
+      const avgPrice = Math.round(live.reduce((s: number, l: any) => s + l.discounted_price, 0) / live.length);
+      const avgDiscount = Math.round(
+        live.reduce((s: number, l: any) => s + ((l.original_price - l.discounted_price) / l.original_price) * 100, 0) / live.length
+      );
+      const catCounts: Record<string, number> = {};
+      live.forEach((l: any) => {
+        const cat = l.media_type || 'Other';
+        catCounts[cat] = (catCounts[cat] || 0) + 1;
+      });
+      const topCategories = Object.entries(catCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([label, count]) => ({ label, count }));
+
+      setInsights({ avgPrice, avgDiscount, topCategories, totalActiveListings: live.length });
+    }
+
     setLoading(false);
   }, [user?.email, user?.id]);
 
@@ -115,6 +147,9 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <CuratedPlatformBanner onListSlot={onListSlot} />
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <StatCard icon={<Package className="w-4 h-4 text-[#86868b]" />} label="Total Listings" value={stats.totalListings} />
           <StatCard icon={<BarChart2 className="w-4 h-4 text-green-600" />} label="Live Now" value={stats.liveListings} green />
@@ -155,28 +190,32 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
             <Loader2 className="w-5 h-5 text-[#1d1d1f] animate-spin" />
           </div>
         ) : tab === 'listings' ? (
-          listings.length === 0 ? (
-            <div className="space-y-6">
-              <EmptyState
-                icon={<Package className="w-8 h-8 text-[#aeaeb2]" />}
-                title="No listings yet"
-                description="List your first slot to start receiving bookings."
-                action={{ label: 'List a Slot', onClick: onListSlot }}
-              />
-              <SubmitByEmail variant="compact" />
-              <CsvUpload variant="compact" />
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {listings.map(l => (
-                <ListingCard key={l.id} listing={l} onClick={() => setSelectedListing(l)} />
-              ))}
-              <div className="pt-2 space-y-3">
+          <div className="space-y-6">
+            {listings.length === 0 ? (
+              <div className="space-y-4">
+                <EmptyState
+                  icon={<Package className="w-8 h-8 text-[#aeaeb2]" />}
+                  title="No listings yet"
+                  description="List your first slot to start receiving bookings."
+                  action={{ label: 'List a Slot', onClick: onListSlot }}
+                />
                 <SubmitByEmail variant="compact" />
                 <CsvUpload variant="compact" />
               </div>
-            </div>
-          )
+            ) : (
+              <div className="space-y-3">
+                {listings.map(l => (
+                  <ListingCard key={l.id} listing={l} onClick={() => setSelectedListing(l)} />
+                ))}
+                <div className="pt-2 space-y-3">
+                  <SubmitByEmail variant="compact" />
+                  <CsvUpload variant="compact" />
+                </div>
+              </div>
+            )}
+
+            {insights && <MarketInsightsPanel insights={insights} />}
+          </div>
         ) : tab === 'bookings' ? (
           bookings.length === 0 ? (
             <EmptyState
@@ -199,6 +238,126 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
       {selectedListing && (
         <ListingDetailModal listing={selectedListing} onClose={() => setSelectedListing(null)} onRefetch={fetchData} />
       )}
+    </div>
+  );
+}
+
+function CuratedPlatformBanner({ onListSlot }: { onListSlot: () => void }) {
+  return (
+    <div className="mb-8 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-64 h-64 bg-white/[0.03] rounded-full -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/[0.02] rounded-full translate-y-1/2 -translate-x-1/4" />
+
+      <div className="relative">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center">
+            <ShieldCheck className="w-4 h-4 text-white" />
+          </div>
+          <span className="text-white/60 text-xs font-semibold uppercase tracking-wider">Curated Marketplace</span>
+        </div>
+
+        <h2 className="text-white text-xl sm:text-2xl font-semibold tracking-[-0.02em] mb-3 max-w-lg">
+          We match your opportunities with the right buyers.
+        </h2>
+        <p className="text-white/60 text-sm leading-relaxed max-w-xl mb-6">
+          You do not need to compete or browse other listings. Simply list your slots and we handle discovery, matching, and introductions on your behalf.
+        </p>
+
+        <div className="flex flex-wrap gap-3">
+          <button
+            onClick={onListSlot}
+            className="flex items-center gap-2 bg-white text-slate-900 hover:bg-white/90 font-semibold text-sm px-5 py-2.5 rounded-xl transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            List a Slot
+          </button>
+          <div className="flex items-center gap-4">
+            <Feature icon={<Sparkles className="w-3.5 h-3.5" />} label="AI-powered matching" />
+            <Feature icon={<TrendingUp className="w-3.5 h-3.5" />} label="Demand-driven discovery" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Feature({ icon, label }: { icon: React.ReactNode; label: string }) {
+  return (
+    <div className="flex items-center gap-1.5 text-white/50 text-xs">
+      {icon}
+      {label}
+    </div>
+  );
+}
+
+function MarketInsightsPanel({ insights }: { insights: MarketInsights }) {
+  return (
+    <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
+      <div className="flex items-center gap-2.5 mb-5">
+        <div className="w-8 h-8 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center">
+          <TrendingUp className="w-4 h-4 text-blue-600" />
+        </div>
+        <div>
+          <h3 className="text-[#1d1d1f] font-semibold text-sm">Market Insights</h3>
+          <p className="text-[#6e6e73] text-xs">Aggregated, anonymous signals across the platform</p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+        <InsightCard
+          label="Avg. listing price"
+          value={`$${insights.avgPrice.toLocaleString()}`}
+          sub="across live opportunities"
+        />
+        <InsightCard
+          label="Typical discount"
+          value={`${insights.avgDiscount}%`}
+          sub="off original rate card"
+        />
+        <InsightCard
+          label="Active opportunities"
+          value={`${insights.totalActiveListings}`}
+          sub="live on the platform now"
+        />
+      </div>
+
+      {insights.topCategories.length > 0 && (
+        <div>
+          <p className="text-[#86868b] text-[11px] font-semibold uppercase tracking-wider mb-3">Top demand categories</p>
+          <div className="space-y-2">
+            {insights.topCategories.map(({ label, count }, i) => {
+              const maxCount = insights.topCategories[0].count;
+              const pct = Math.round((count / maxCount) * 100);
+              return (
+                <div key={label} className="flex items-center gap-3">
+                  <span className="text-[#6e6e73] text-xs w-28 capitalize truncate">{label}</span>
+                  <div className="flex-1 bg-[#f5f5f7] rounded-full h-1.5 overflow-hidden">
+                    <div
+                      className="h-full bg-blue-500 rounded-full transition-all"
+                      style={{ width: `${pct}%`, opacity: 1 - i * 0.2 }}
+                    />
+                  </div>
+                  <span className="text-[#aeaeb2] text-xs w-8 text-right">{count}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <p className="text-[#aeaeb2] text-[10px] mt-4 pt-4 border-t border-black/[0.04]">
+        All figures are aggregated across the platform. No individual seller data is revealed.
+      </p>
+    </div>
+  );
+}
+
+function InsightCard({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
+      <p className="text-[#86868b] text-xs mb-1">{label}</p>
+      <p className="text-[#1d1d1f] text-xl font-bold tracking-[-0.02em]">{value}</p>
+      <p className="text-[#aeaeb2] text-[10px] mt-0.5">{sub}</p>
     </div>
   );
 }
