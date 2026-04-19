@@ -20,8 +20,8 @@ export default function StatsBar({ liveCount, avgDiscount, totalSavings }: Stats
     {
       icon: <TrendingDown className="w-4 h-4 text-sky-600" />,
       iconBg: 'bg-sky-50',
-      value: `${avgDiscount}%`,
-      label: 'Avg discount',
+      value: avgDiscount > 0 ? `${avgDiscount}%` : '—',
+      label: 'Avg seller discount',
       pulse: false,
     },
     {

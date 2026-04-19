@@ -198,19 +198,20 @@ export function useListings(filters: FilterState) {
   const fetchStats = useCallback(async () => {
     const { data } = await supabase
       .from('listings')
-      .select('original_price, deadline_at, status');
+      .select('original_price, discounted_price, deadline_at, status');
 
     if (!data) return;
     const live = data.filter(l => l.status === 'live');
-    const priced = data.map(l => {
+    const liveWithPricing = live.map(l => {
       const pricing = calcDynamicPrice(l.original_price, l.deadline_at);
-      return { ...l, discounted_price: pricing.currentPrice };
+      return { ...l, currentPrice: pricing.currentPrice };
     });
-    const totalSavings = priced.reduce((s, l) => s + (l.original_price - l.discounted_price), 0);
-    const avgDiscount = priced.length
+    const totalSavings = liveWithPricing.reduce((s, l) => s + Math.max(0, l.original_price - l.currentPrice), 0);
+    const discountedLive = live.filter(l => l.original_price > l.discounted_price);
+    const avgDiscount = discountedLive.length
       ? Math.round(
-          priced.reduce((s, l) => s + ((l.original_price - l.discounted_price) / l.original_price) * 100, 0) /
-            priced.length
+          discountedLive.reduce((s, l) => s + ((l.original_price - l.discounted_price) / l.original_price) * 100, 0) /
+            discountedLive.length
         )
       : 0;
 
