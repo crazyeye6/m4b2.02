@@ -207,10 +207,10 @@ export function useListings(filters: FilterState) {
       return { ...l, currentPrice: pricing.currentPrice };
     });
     const totalSavings = liveWithPricing.reduce((s, l) => s + Math.max(0, l.original_price - l.currentPrice), 0);
-    const discountedLive = live.filter(l => l.original_price > l.discounted_price);
+    const discountedLive = liveWithPricing.filter(l => l.currentPrice < l.original_price);
     const avgDiscount = discountedLive.length
       ? Math.round(
-          discountedLive.reduce((s, l) => s + ((l.original_price - l.discounted_price) / l.original_price) * 100, 0) /
+          discountedLive.reduce((s, l) => s + ((l.original_price - l.currentPrice) / l.original_price) * 100, 0) /
             discountedLive.length
         )
       : 0;
