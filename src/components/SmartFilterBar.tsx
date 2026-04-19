@@ -1,7 +1,7 @@
 import {
-  Search, X, Hash, Mail, Mic, Instagram, LayoutGrid,
+  Search, X, Hash, Mail, LayoutGrid,
   ChevronDown, ChevronUp, Check, MapPin, Users, DollarSign,
-  Zap, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp, Calendar, Star,
+  Zap, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp, Calendar, Clock, Sparkles,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
@@ -36,8 +36,6 @@ const DISCOUNT_OPTIONS = [
   { label: '10%+ off', value: 10 },
   { label: '20%+ off', value: 20 },
   { label: '30%+ off', value: 30 },
-  { label: '40%+ off', value: 40 },
-  { label: '50%+ off', value: 50 },
 ];
 
 const DEADLINE_OPTIONS: Array<{ label: string; value: DeadlineWindow }> = [
@@ -326,7 +324,7 @@ export default function SmartFilterBar({
     <div ref={containerRef} className={`bg-white border-b border-black/[0.07] sticky top-[52px] z-50 shadow-sm shadow-black/[0.04] transition-all duration-200`}>
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 space-y-2">
 
-        {/* Row 0: Media type toggles — hidden when compact */}
+        {/* Row 0: Media type toggles + quick filters — hidden when compact */}
         <div className={`flex items-center gap-1.5 overflow-hidden transition-all duration-200 ${isCompact ? 'max-h-0 opacity-0 pointer-events-none mb-0' : 'max-h-12 opacity-100'}`}>
           {([
             { value: 'newsletter' as const, label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
@@ -346,6 +344,42 @@ export default function SmartFilterBar({
               </button>
             );
           })}
+
+          <div className="w-px h-4 bg-black/[0.08] mx-0.5 flex-shrink-0" />
+
+          {/* Quick filter: Ending This Week */}
+          {(() => {
+            const active = filters.deadlineWindow === '1week';
+            return (
+              <button
+                onClick={() => onChange({ deadlineWindow: active ? null : '1week' })}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all whitespace-nowrap
+                  ${active
+                    ? 'bg-orange-500 text-white border-orange-500'
+                    : 'text-orange-600 border-orange-200 bg-orange-50 hover:bg-orange-100 hover:border-orange-300'}`}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                Ending This Week
+              </button>
+            );
+          })()}
+
+          {/* Quick filter: Recommended for You */}
+          {(() => {
+            const active = filters.sort === 'best_stats';
+            return (
+              <button
+                onClick={() => onChange({ sort: active ? 'deadline_asc' : 'best_stats' })}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all whitespace-nowrap
+                  ${active
+                    ? 'bg-teal-600 text-white border-teal-600'
+                    : 'text-teal-700 border-teal-200 bg-teal-50 hover:bg-teal-100 hover:border-teal-300'}`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                Recommended for You
+              </button>
+            );
+          })()}
         </div>
 
         {/* Row 1: Search + tag input — hidden when compact */}
