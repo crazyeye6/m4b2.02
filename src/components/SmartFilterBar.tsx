@@ -62,7 +62,7 @@ const AUDIENCE_RANGES = [
   { label: '500k+', min: 500_000 },
 ];
 
-type PanelId = 'price' | 'reach' | 'discount' | 'deadline' | 'sort' | 'best_stats' | null;
+type PanelId = 'price' | 'reach' | 'discount' | 'deadline' | 'sort' | 'best_stats' | 'calendar' | null;
 
 interface PortalPanelProps {
   anchorRef: React.RefObject<HTMLButtonElement | null>;
@@ -114,6 +114,107 @@ function PortalPanel({ anchorRef, align = 'left', children, onClose, minWidth = 
   );
 }
 
+interface CalendarPanelProps {
+  selected: string | null;
+  viewDate: Date;
+  onViewDateChange: (d: Date) => void;
+  onSelect: (dateStr: string) => void;
+  onClear: () => void;
+}
+
+function CalendarPanel({ selected, viewDate, onViewDateChange, onSelect, onClear }: CalendarPanelProps) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const maxDate = new Date(today);
+  maxDate.setDate(today.getDate() + 364);
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const prevMonth = () => {
+    const d = new Date(year, month - 1, 1);
+    if (d >= new Date(today.getFullYear(), today.getMonth(), 1)) onViewDateChange(d);
+  };
+  const nextMonth = () => {
+    const d = new Date(year, month + 1, 1);
+    if (d <= new Date(maxDate.getFullYear(), maxDate.getMonth(), 1)) onViewDateChange(d);
+  };
+
+  const cells: Array<{ date: Date | null; str: string }> = [];
+  for (let i = 0; i < firstDay; i++) cells.push({ date: null, str: '' });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const str = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    cells.push({ date, str });
+  }
+
+  const monthLabel = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const canPrev = new Date(year, month - 1, 1) >= new Date(today.getFullYear(), today.getMonth(), 1);
+  const canNext = new Date(year, month + 1, 1) <= new Date(maxDate.getFullYear(), maxDate.getMonth(), 1);
+
+  return (
+    <div data-filter-panel="" className="p-3 select-none">
+      <div className="flex items-center justify-between mb-2 px-1">
+        <button
+          onClick={prevMonth}
+          disabled={!canPrev}
+          className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${canPrev ? 'hover:bg-[#f5f5f7] text-[#1d1d1f]' : 'text-[#d1d1d6] cursor-default'}`}
+        >
+          <ChevronDown className="w-3.5 h-3.5 rotate-90" />
+        </button>
+        <span className="text-[13px] font-semibold text-[#1d1d1f]">{monthLabel}</span>
+        <button
+          onClick={nextMonth}
+          disabled={!canNext}
+          className={`w-7 h-7 flex items-center justify-center rounded-full transition-colors ${canNext ? 'hover:bg-[#f5f5f7] text-[#1d1d1f]' : 'text-[#d1d1d6] cursor-default'}`}
+        >
+          <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
+        </button>
+      </div>
+      <div className="grid grid-cols-7 mb-1">
+        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
+          <div key={d} className="text-center text-[10px] font-bold text-[#aeaeb2] py-1">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 gap-y-0.5">
+        {cells.map((cell, i) => {
+          if (!cell.date) return <div key={i} />;
+          const isToday = cell.str === `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+          const isPast = cell.date < today;
+          const isFuture = cell.date > maxDate;
+          const isDisabled = isPast || isFuture;
+          const isSelected = selected === cell.str;
+          return (
+            <button
+              key={cell.str}
+              disabled={isDisabled}
+              onClick={() => !isDisabled && onSelect(cell.str)}
+              className={`w-full aspect-square flex items-center justify-center rounded-full text-[12px] font-medium transition-all
+                ${isSelected ? 'bg-blue-600 text-white font-semibold' :
+                  isToday ? 'border border-blue-400 text-blue-600' :
+                  isDisabled ? 'text-[#d1d1d6] cursor-default' :
+                  'text-[#1d1d1f] hover:bg-blue-50 hover:text-blue-700'}`}
+            >
+              {cell.date.getDate()}
+            </button>
+          );
+        })}
+      </div>
+      {selected && (
+        <button
+          onClick={onClear}
+          className="mt-3 w-full py-1.5 rounded-xl bg-[#f5f5f7] text-[12px] font-semibold text-[#6e6e73] hover:bg-[#ebebed] transition-colors"
+        >
+          Clear date
+        </button>
+      )}
+    </div>
+  );
+}
+
 function PanelItem({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button
@@ -159,8 +260,10 @@ export default function SmartFilterBar({
   const reachBtnRef = useRef<HTMLButtonElement>(null);
   const discountBtnRef = useRef<HTMLButtonElement>(null);
   const deadlineBtnRef = useRef<HTMLButtonElement>(null);
+  const calBtnRef = useRef<HTMLButtonElement>(null);
   const bestStatsBtnRef = useRef<HTMLButtonElement>(null);
   const sortBtnRef = useRef<HTMLButtonElement>(null);
+  const [calViewDate, setCalViewDate] = useState<Date>(() => new Date());
 
   useEffect(() => {
     async function load() {
@@ -287,11 +390,12 @@ export default function SmartFilterBar({
   const hasPrice = filters.priceMin > 0 || filters.priceMax > 0;
   const hasDiscount = filters.discountMin > 0;
   const hasDeadline = !!filters.deadlineWindow;
+  const hasSlotDate = !!filters.slotDate;
   const geoCount = (filters.selectedGeographies ?? []).length;
   const nicheCount = (filters.selectedNiches ?? []).length;
   const hasAnyFilter =
     filters.category !== 'all' || geoCount > 0 || nicheCount > 0 || tagCount > 0 ||
-    hasPrice || (filters.audienceMin > 0) || hasDiscount || hasDeadline || !!filters.searchQuery;
+    hasPrice || (filters.audienceMin > 0) || hasDiscount || hasDeadline || hasSlotDate || !!filters.searchQuery;
   const isBestStats = filters.sort === 'best_stats';
   const matchedDeadline = DEADLINE_OPTIONS.find(d => d.value === filters.deadlineWindow);
   const matchedDiscount = DISCOUNT_OPTIONS.find(d => d.value === filters.discountMin);
@@ -575,6 +679,23 @@ export default function SmartFilterBar({
             {openPanel === 'deadline' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
 
+          {/* Slot Date */}
+          <button
+            ref={calBtnRef}
+            onClick={() => togglePanel('calendar')}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all whitespace-nowrap ${
+              openPanel === 'calendar' || hasSlotDate
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'text-[#6e6e73] border-black/[0.08] bg-white hover:border-blue-200 hover:text-blue-600'
+            }`}
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            {hasSlotDate && filters.slotDate
+              ? new Date(filters.slotDate + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+              : 'Slot date'}
+            {openPanel === 'calendar' ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+
           {/* Spacer */}
           <div className="flex-1" />
 
@@ -706,6 +827,20 @@ export default function SmartFilterBar({
               </PanelItem>
             ))}
           </div>
+        </PortalPanel>
+      )}
+
+      {openPanel === 'calendar' && (
+        <PortalPanel anchorRef={calBtnRef} onClose={() => setOpenPanel(null)} minWidth={280}>
+          <CalendarPanel
+            selected={filters.slotDate}
+            viewDate={calViewDate}
+            onViewDateChange={setCalViewDate}
+            onSelect={(date) => {
+              onChange({ slotDate: filters.slotDate === date ? null : date });
+            }}
+            onClear={() => { onChange({ slotDate: null }); setOpenPanel(null); }}
+          />
         </PortalPanel>
       )}
 

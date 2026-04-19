@@ -165,6 +165,7 @@ export interface FilterState {
   searchQuery: string;
   selectedTags: string[];
   sort: SortOption;
+  slotDate: string | null;
 }
 
 export type PurchaseType = 'business' | 'individual';

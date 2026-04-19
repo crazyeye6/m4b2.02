@@ -51,6 +51,12 @@ export function useListings(filters: FilterState) {
       if (cutoff) query = query.lte('deadline_at', cutoff);
     }
 
+    if (filters.slotDate) {
+      const d = new Date(filters.slotDate + 'T00:00:00');
+      d.setHours(23, 59, 59, 999);
+      query = query.gte('deadline_at', d.toISOString());
+    }
+
     if (filters.searchQuery && filters.searchQuery.trim()) {
       query = query.textSearch('search_vector', filters.searchQuery.trim(), {
         type: 'websearch',
