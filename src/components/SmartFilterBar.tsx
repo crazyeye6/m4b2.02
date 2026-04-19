@@ -1,7 +1,7 @@
 import {
   Search, X, Hash, Mail, LayoutGrid,
   ChevronDown, ChevronUp, Check, MapPin, Users, DollarSign,
-  Zap, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp, Calendar, Clock, Sparkles,
+  Zap, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp, Calendar, Clock, Sparkles, Settings,
 } from 'lucide-react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
@@ -19,6 +19,7 @@ interface SmartFilterBarProps {
   columns: GridColumns;
   onColumnsChange: (c: GridColumns) => void;
   onReset: () => void;
+  onEditPrefs?: () => void;
 }
 
 const SORT_OPTIONS: Array<{ value: SortOption; label: string; desc: string }> = [
@@ -233,7 +234,7 @@ export default function SmartFilterBar({
   filters, onChange, total,
   viewMode, onViewModeChange,
   columns, onColumnsChange,
-  onReset,
+  onReset, onEditPrefs,
 }: SmartFilterBarProps) {
   const [inputValue, setInputValue] = useState('');
   const [allTags, setAllTags] = useState<TagType[]>([]);
@@ -473,16 +474,27 @@ export default function SmartFilterBar({
           {(() => {
             const active = filters.sort === 'recommended';
             return (
-              <button
-                onClick={() => onChange({ sort: active ? 'deadline_asc' : 'recommended' })}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all whitespace-nowrap
-                  ${active
-                    ? 'bg-teal-600 text-white border-teal-600'
-                    : 'text-teal-700 border-teal-200 bg-teal-50 hover:bg-teal-100 hover:border-teal-300'}`}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                Recommended for You
-              </button>
+              <>
+                <button
+                  onClick={() => onChange({ sort: active ? 'deadline_asc' : 'recommended' })}
+                  className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-all whitespace-nowrap
+                    ${active
+                      ? 'bg-teal-600 text-white border-teal-600'
+                      : 'text-teal-700 border-teal-200 bg-teal-50 hover:bg-teal-100 hover:border-teal-300'}`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Recommended for You
+                </button>
+                {active && onEditPrefs && (
+                  <button
+                    onClick={onEditPrefs}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-all whitespace-nowrap"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    Edit Preferences
+                  </button>
+                )}
+              </>
             );
           })()}
         </div>

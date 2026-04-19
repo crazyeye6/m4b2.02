@@ -393,6 +393,7 @@ export default function App() {
             columns={columns}
             onColumnsChange={handleColumnsChange}
             onReset={handleReset}
+            onEditPrefs={() => setShowPrefsModal(true)}
           />
 
           <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8">
