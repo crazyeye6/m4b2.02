@@ -446,6 +446,12 @@ export default function App() {
           totalSavings={stats.totalSavings}
         />
 
+        <SmartMatchCallout
+          isLoggedIn={!!profile}
+          onSignIn={() => setShowAuthModal(true)}
+          onDashboard={handleDashboard}
+        />
+
         <HowItWorks onListSlot={handleListSlot} />
       </main>
 
