@@ -325,7 +325,7 @@ export default function SmartFilterBar({
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 space-y-2">
 
         {/* Row 0: Media type toggles + quick filters — hidden when compact */}
-        <div className={`flex items-center gap-1.5 overflow-hidden transition-all duration-200 ${isCompact ? 'max-h-0 opacity-0 pointer-events-none mb-0' : 'max-h-12 opacity-100'}`}>
+        <div className={`flex items-center gap-1.5 transition-all duration-200 ${isCompact ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-12 opacity-100 overflow-x-auto'}`} style={{ scrollbarWidth: 'none' }}>
           {([
             { value: 'newsletter' as const, label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
           ]).map(c => {

@@ -383,7 +383,7 @@ export default function App() {
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
         <Header {...sharedHeaderProps} onHome={goHome} />
 
-        <main>
+        <main className="pt-[52px]">
           <SmartFilterBar
             filters={filters}
             onChange={updateFilters}
