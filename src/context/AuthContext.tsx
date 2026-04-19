@@ -119,9 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       company,
     });
 
-    if (!profileError) {
-      sendWelcomeEmail(email, role, displayName);
-    }
+    sendWelcomeEmail(email, role, displayName);
 
     return { error: profileError };
   };
