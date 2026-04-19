@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { ArrowRight, Mail, Inbox, TrendingDown, Clock, Zap, Users, MapPin, Star, CheckCircle } from 'lucide-react';
+import { ArrowRight, Mail, Inbox, Clock, Zap, Users, MapPin, CheckCircle, Lock, Eye, CalendarClock, Shield } from 'lucide-react';
 
 interface HeroProps {
   onBrowse: () => void;
@@ -16,50 +16,25 @@ const MESSY_EMAILS = [
   { from: 'hello@founderweekly.com', subject: 'Newsletter ad — pricing info?', time: '2w', read: false },
 ];
 
-const STRUCTURED_CARDS = [
-  {
-    id: 1,
-    name: 'FinanceWeekly',
-    publisher: 'Capital Media',
-    niche: 'Personal Finance',
-    geo: 'UK / IE',
-    subs: 84_000,
-    openRate: '42%',
-    ctr: '3.1%',
-    price: 890,
-    original: 1800,
-    discount: 51,
-    hours: 5,
-    mins: 18,
-    urgent: true,
-    matchScore: 94,
-    reasons: ['UK SaaS audience fit', 'Within your budget'],
-  },
-  {
-    id: 2,
-    name: 'SaaS Insider',
-    publisher: 'B2B Growth Co.',
-    niche: 'B2B / SaaS',
-    geo: 'US / Global',
-    subs: 62_000,
-    openRate: '38%',
-    ctr: '2.7%',
-    price: 1100,
-    original: 2200,
-    discount: 50,
-    hours: 11,
-    mins: 47,
-    urgent: false,
-    matchScore: 87,
-    reasons: ['Top SaaS newsletter', 'Strong engagement'],
-  },
-];
-
-function compactNum(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${Math.round(n / 1_000)}K`;
-  return String(n);
-}
+const DEMO_CARD = {
+  name: 'FinanceWeekly',
+  publisher: 'Capital Media',
+  niche: 'Personal Finance',
+  geo: 'UK / IE',
+  subs: 84_000,
+  openRate: '42%',
+  ctr: '3.1%',
+  price: 890,
+  original: 1800,
+  discount: 51,
+  hours: 5,
+  mins: 18,
+  publishDay: 'Tuesday',
+  publishDate: '10 Jun 2025',
+  slots: 3,
+  slotsTotal: 5,
+  pastAdvertisers: ['HubSpot', 'Revolut'],
+};
 
 function useLiveCountdown(hours: number, mins: number) {
   const totalMs = useRef((hours * 3600 + mins * 60) * 1000);
@@ -75,115 +50,133 @@ function useLiveCountdown(hours: number, mins: number) {
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-function ScoreRing({ score, color }: { score: number; color: string }) {
-  const r = 9;
-  const circ = 2 * Math.PI * r;
-  return (
-    <svg className="w-6 h-6 -rotate-90" viewBox="0 0 24 24">
-      <circle cx="12" cy="12" r={r} fill="none" stroke="#e2e8f0" strokeWidth="2.5" />
-      <circle
-        cx="12" cy="12" r={r} fill="none"
-        stroke={color} strokeWidth="2.5"
-        strokeDasharray={circ}
-        strokeDashoffset={circ * (1 - score / 100)}
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function LiveCard({ card, index }: { card: typeof STRUCTURED_CARDS[0]; index: number }) {
-  const countdown = useLiveCountdown(card.hours, card.mins);
-  const savings = card.original - card.price;
-  const scoreColor = card.matchScore >= 90 ? '#10b981' : '#14b8a6';
-  const scoreBg = card.matchScore >= 90
-    ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-    : 'bg-teal-50 border-teal-200 text-teal-700';
+function DemoCard() {
+  const c = DEMO_CARD;
+  const countdown = useLiveCountdown(c.hours, c.mins);
+  const savings = c.original - c.price;
+  const deposit = Math.round(c.price * 0.1);
 
   return (
-    <div
-      className="structured-card bg-white rounded-2xl border border-slate-100 shadow-[0_4px_20px_rgba(0,0,0,0.07)] overflow-hidden flex flex-col"
-      style={{ animationDelay: `${550 + index * 130}ms` }}
-    >
-      {card.urgent && <div className="h-0.5 bg-gradient-to-r from-red-400 to-orange-400" />}
+    <div className="structured-card bg-white rounded-3xl border border-black/[0.06] shadow-[0_4px_32px_rgba(0,0,0,0.09)] overflow-hidden flex flex-col w-full max-w-[320px]" style={{ animationDelay: '550ms' }}>
+      <div className="p-5 flex flex-col h-full">
 
-      <div className="p-3.5 flex-1 flex flex-col">
-        {/* Header */}
-        <div className="flex items-start justify-between mb-2.5">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-[12px] font-bold text-slate-600 flex-shrink-0">
-              {card.name[0]}
+        <div className="flex items-center justify-between mb-3 gap-3">
+          <span className="inline-flex items-center gap-1.5 border text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide bg-green-50 text-green-600 border-green-100">
+            <Mail className="w-3.5 h-3.5" />
+            Newsletter
+          </span>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <span className="text-[10px] font-semibold text-[#6e6e73]">{c.slots} slots</span>
+            <div className="flex gap-0.5">
+              {Array.from({ length: c.slotsTotal }).map((_, i) => (
+                <span key={i} className={`block w-2 h-2 rounded-full ${i < c.slots ? 'bg-green-500' : 'bg-[#e5e5ea]'}`} />
+              ))}
             </div>
-            <div>
-              <p className="text-[12px] font-bold text-slate-900 leading-tight">{card.name}</p>
-              <p className="text-[9px] text-slate-400 leading-tight truncate">{card.publisher}</p>
-            </div>
-          </div>
-          <div className={`flex items-center gap-1 text-[9px] font-bold px-1.5 py-1 rounded-full border ${scoreBg}`}>
-            <ScoreRing score={card.matchScore} color={scoreColor} />
-            <span>{card.matchScore}</span>
           </div>
         </div>
 
-        {/* Category + geo tags */}
-        <div className="flex items-center gap-1.5 mb-2.5 flex-wrap">
-          <span className="text-[9px] font-semibold text-slate-500 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-full">{card.niche}</span>
-          <span className="flex items-center gap-0.5 text-[9px] text-slate-400">
-            <MapPin className="w-2 h-2" />{card.geo}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="bg-white rounded-2xl p-3.5 relative overflow-hidden border border-black/[0.05]">
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-black/10" />
+            <p className="text-[#86868b] text-[8px] font-bold uppercase tracking-widest leading-none mb-2">Publisher</p>
+            <p className="text-[#1d1d1f] text-[13px] font-bold leading-tight truncate mb-0.5">{c.name}</p>
+            <p className="text-[#6e6e73] text-[10px] font-medium leading-none truncate">{c.publisher}</p>
+          </div>
+          <div className="bg-green-50 rounded-2xl p-3.5 relative overflow-hidden">
+            <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-green-400 to-teal-400" />
+            <p className="text-green-700/60 text-[8px] font-bold uppercase tracking-widest leading-none mb-2">Publish Date</p>
+            <p className="text-green-800 text-[13px] font-bold leading-tight truncate mb-0.5">{c.publishDay}</p>
+            <p className="text-green-700/60 text-[10px] font-medium leading-none truncate">{c.publishDate}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 mb-4 rounded-xl px-3 py-2 bg-orange-50">
+          <CalendarClock className="w-3.5 h-3.5 flex-shrink-0 text-orange-500" />
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#86868b] flex-shrink-0">Book by</p>
+          <p className="text-[12px] font-bold ml-auto text-orange-600">2 Jun 2025</p>
+        </div>
+
+        <div className="flex items-center justify-between mb-3 bg-[#f5f5f7] rounded-2xl p-3.5">
+          <div>
+            <p className="text-[#86868b] text-[10px] font-medium uppercase tracking-wide mb-1">Price per slot</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-[#1d1d1f] text-2xl font-semibold tracking-[-0.02em]">${c.price.toLocaleString()}</span>
+              <span className="text-[#aeaeb2] text-sm line-through">${c.original.toLocaleString()}</span>
+            </div>
+            <p className="text-green-600 text-[11px] font-semibold mt-0.5">Save ${savings.toLocaleString()}</p>
+          </div>
+          <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white text-[15px] font-bold px-3 py-1.5 rounded-2xl tabular-nums shadow-sm shadow-orange-500/25">
+            -{c.discount}%
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mb-4 bg-green-50 rounded-2xl px-3.5 py-3">
+          <div>
+            <p className="text-green-700 text-[12px] font-semibold">Reserve with deposit</p>
+            <p className="text-green-600/70 text-[10px] mt-0.5">Balance paid direct to creator</p>
+          </div>
+          <div className="text-right">
+            <p className="text-green-700 text-[18px] font-bold tracking-[-0.02em]">${deposit}</p>
+            <p className="text-green-600/70 text-[10px]">now</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="bg-[#f5f5f7] rounded-2xl p-2.5 text-center">
+            <p className="text-[12px] font-semibold text-[#1d1d1f]">84K</p>
+            <p className="text-[#aeaeb2] text-[9px] mt-0.5 uppercase tracking-wide font-medium leading-tight">Subscribers</p>
+          </div>
+          <div className="bg-[#f5f5f7] rounded-2xl p-2.5 text-center">
+            <p className="text-[12px] font-semibold text-teal-600">{c.openRate}</p>
+            <p className="text-[#aeaeb2] text-[9px] mt-0.5 uppercase tracking-wide font-medium leading-tight">Open rate</p>
+          </div>
+          <div className="bg-[#f5f5f7] rounded-2xl p-2.5 text-center">
+            <p className="text-[12px] font-semibold text-[#1d1d1f]">{c.ctr}</p>
+            <p className="text-[#aeaeb2] text-[9px] mt-0.5 uppercase tracking-wide font-medium leading-tight">CTR</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[11px] text-[#6e6e73]">
+          <span className="flex items-center gap-1">
+            <MapPin className="w-3 h-3 text-[#aeaeb2]" />
+            {c.geo}
+          </span>
+          <span className="flex items-center gap-1">
+            <Users className="w-3 h-3 text-[#aeaeb2]" />
+            Personal Finance enthusiasts
           </span>
         </div>
 
-        {/* Stats grid */}
-        <div className="grid grid-cols-3 gap-0 mb-2.5 rounded-xl overflow-hidden border border-slate-100 bg-slate-50">
-          <div className="p-2 text-center">
-            <p className="text-[8px] text-slate-400 uppercase tracking-wide leading-tight mb-0.5">Subs</p>
-            <div className="flex items-center justify-center gap-0.5">
-              <Users className="w-2 h-2 text-slate-500" />
-              <p className="text-[11px] font-bold text-slate-800">{compactNum(card.subs)}</p>
+        <div className="flex items-center gap-1.5 mb-4">
+          <Shield className="w-3 h-3 text-[#aeaeb2] flex-shrink-0" />
+          <p className="text-[#86868b] text-[11px]">Used by</p>
+          <div className="flex items-center gap-1">
+            {c.pastAdvertisers.map(a => (
+              <span key={a} className="text-[11px] text-[#6e6e73] font-medium bg-[#f5f5f7] px-2 py-0.5 rounded-full">{a}</span>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-auto pt-2 flex flex-col gap-2">
+          <div className="flex items-center justify-between bg-orange-50 rounded-xl px-3 py-2">
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-orange-600">
+              <Clock className="w-3.5 h-3.5" />
+              Ends in
             </div>
+            <span className="text-[13px] font-bold text-orange-600 tabular-nums">{countdown}</span>
           </div>
-          <div className="p-2 text-center border-x border-slate-100">
-            <p className="text-[8px] text-slate-400 uppercase tracking-wide leading-tight mb-0.5">Open</p>
-            <p className="text-[11px] font-bold text-slate-800">{card.openRate}</p>
-          </div>
-          <div className="p-2 text-center">
-            <p className="text-[8px] text-slate-400 uppercase tracking-wide leading-tight mb-0.5">CTR</p>
-            <p className="text-[11px] font-bold text-slate-800">{card.ctr}</p>
-          </div>
-        </div>
-
-        {/* Price block */}
-        <div className="flex items-end justify-between mb-2">
-          <div>
-            <p className="text-[9px] text-slate-400 line-through">${card.original.toLocaleString()}</p>
-            <p className="text-[18px] font-bold text-slate-900 leading-none">${card.price.toLocaleString()}</p>
-            <p className="text-[9px] text-emerald-600 font-semibold mt-0.5">Save ${savings.toLocaleString()}</p>
-          </div>
-          <div className="flex flex-col items-end gap-1">
-            <span className="inline-flex items-center gap-0.5 bg-emerald-50 border border-emerald-100 text-emerald-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-              <TrendingDown className="w-2 h-2" />-{card.discount}%
-            </span>
-            <div className={`flex items-center gap-0.5 text-[9px] font-semibold px-1.5 py-1 rounded-full border ${card.urgent ? 'bg-red-50 border-red-100 text-red-500' : 'bg-slate-50 border-slate-100 text-slate-500'}`}>
-              <Clock className="w-2 h-2" />
-              {countdown}
-            </div>
-          </div>
-        </div>
-
-        {/* Match reason pill */}
-        <div className="px-2 py-1 bg-emerald-50/70 border border-emerald-100 rounded-lg flex items-center gap-1 mb-2.5">
-          <Star className="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" />
-          <p className="text-[9px] text-emerald-700 font-medium truncate">{card.reasons[0]}</p>
-        </div>
-
-        {/* CTA */}
-        <div className="flex items-center gap-1.5 mt-auto">
-          <button className="flex-1 flex items-center justify-center gap-1 bg-slate-900 text-white text-[10px] font-bold py-2 rounded-xl">
-            View Deal <ArrowRight className="w-2.5 h-2.5" />
+          <button className="w-full font-semibold text-[14px] py-3 rounded-2xl bg-green-600 text-white flex items-center justify-center gap-2 pointer-events-none">
+            <Lock className="w-3.5 h-3.5" />
+            Secure Slot
+            <Zap className="w-3.5 h-3.5 fill-white" />
           </button>
-          <button className="text-[9px] text-slate-400 font-medium px-2 py-2 rounded-xl border border-slate-100 whitespace-nowrap">
-            Why?
-          </button>
+          <div className="flex items-center justify-between">
+            <p className="text-[#aeaeb2] text-[10px]">Takes less than 10 seconds</p>
+            <button className="flex items-center gap-1.5 text-[#6e6e73] text-[12px] font-medium pointer-events-none">
+              <Eye className="w-3.5 h-3.5" />
+              View details
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -352,19 +345,17 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                 </span>
               </div>
 
-              {/* OPPORTUNITIES — Live deals 3-column */}
+              {/* OPPORTUNITY — Live deal card */}
               <div className="flex-1 min-w-0 rounded-2xl border border-emerald-100 bg-white overflow-hidden shadow-[0_4px_32px_rgba(0,0,0,0.08)] flex flex-col">
                 <div className="px-4 pt-3 pb-2.5 border-b border-slate-100 flex items-center gap-2 flex-shrink-0">
                   <Zap className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-[10px] font-bold text-slate-700 tracking-widest uppercase">Live Deals — Matched for You</span>
+                  <span className="text-[10px] font-bold text-slate-700 tracking-widest uppercase">Live Deal</span>
                   <span className="ml-auto text-[9px] bg-emerald-50 text-emerald-600 font-bold px-1.5 py-0.5 rounded-full border border-emerald-100">
-                    {STRUCTURED_CARDS.length} active
+                    1 active
                   </span>
                 </div>
-                <div className="p-3 grid grid-cols-2 gap-3">
-                  {STRUCTURED_CARDS.map((card, i) => (
-                    <LiveCard key={card.id} card={card} index={i} />
-                  ))}
+                <div className="p-3 flex justify-center">
+                  <DemoCard />
                 </div>
                 <div className="px-4 py-2 border-t border-slate-50 flex items-center justify-between flex-shrink-0 bg-slate-50/50">
                   <span className="text-[8px] text-emerald-600 font-bold uppercase tracking-widest">Organized. Matched. Ready.</span>
