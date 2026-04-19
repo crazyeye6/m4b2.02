@@ -1,7 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const SITE_URL = "https://endingthisweek.media";
-const TEST_OVERRIDE_EMAIL = "regna007@protonmail.com";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -597,7 +596,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         from: "EndingThisWeek.media <hello@updates.endingthisweek.media>",
-        to: [TEST_OVERRIDE_EMAIL || to],
+        to: [to],
         subject: emailContent.subject,
         html: emailContent.html,
       }),
