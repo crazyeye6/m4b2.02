@@ -143,6 +143,15 @@ export default function SmartFilterBar({
   const [showTagDrop, setShowTagDrop] = useState(false);
   const [highlightedIdx, setHighlightedIdx] = useState(-1);
   const [openPanel, setOpenPanel] = useState<PanelId>(null);
+  const [isCompact, setIsCompact] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsCompact(window.scrollY > 80);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -314,11 +323,11 @@ export default function SmartFilterBar({
     }`;
 
   return (
-    <div ref={containerRef} className="bg-white border-b border-black/[0.07] sticky top-[52px] z-50 shadow-sm shadow-black/[0.04]">
-      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-2.5">
+    <div ref={containerRef} className={`bg-white border-b border-black/[0.07] sticky top-[52px] z-50 shadow-sm shadow-black/[0.04] transition-all duration-200`}>
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-2.5 space-y-2">
 
-        {/* Row 0: Media type toggles */}
-        <div className="flex items-center gap-1.5">
+        {/* Row 0: Media type toggles — hidden when compact */}
+        <div className={`flex items-center gap-1.5 overflow-hidden transition-all duration-200 ${isCompact ? 'max-h-0 opacity-0 pointer-events-none mb-0' : 'max-h-12 opacity-100'}`}>
           {([
             { value: 'newsletter' as const, label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
           ]).map(c => {
@@ -339,8 +348,8 @@ export default function SmartFilterBar({
           })}
         </div>
 
-        {/* Row 1: Search + tag input */}
-        <div ref={searchBoxRef} className="relative">
+        {/* Row 1: Search + tag input — hidden when compact */}
+        <div ref={searchBoxRef} className={`relative overflow-hidden transition-all duration-200 ${isCompact ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-20 opacity-100'}`}>
           <div
             className={`flex items-center flex-wrap gap-1.5 min-h-[46px] px-4 py-2 bg-white border-2 rounded-2xl transition-all cursor-text
               ${showTagDrop ? 'border-[#1d1d1f] shadow-lg shadow-black/[0.08]' : 'border-black/[0.1] hover:border-black/[0.2]'}`}
@@ -468,6 +477,17 @@ export default function SmartFilterBar({
 
         {/* Row 2: Filters + sort + view */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
+
+          {/* Search icon in compact mode */}
+          {isCompact && (
+            <button
+              onClick={() => { setIsCompact(false); window.scrollTo({ top: 0, behavior: 'smooth' }); setTimeout(() => inputRef.current?.focus(), 250); }}
+              className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-black/[0.08] bg-white text-[#6e6e73] hover:text-[#1d1d1f] hover:border-black/[0.2] transition-all"
+              title="Search"
+            >
+              <Search className="w-3.5 h-3.5" />
+            </button>
+          )}
 
           {/* Budget */}
           <button
