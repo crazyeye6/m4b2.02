@@ -724,7 +724,7 @@ export default function SmartFilterBar({
           </button>
 
           {/* View mode */}
-          <div className="flex-shrink-0 flex items-center gap-0.5 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-0.5">
+          <div className="flex-shrink-0 hidden sm:flex items-center gap-0.5 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-0.5">
             <button
               onClick={() => onViewModeChange('grid')}
               title="Grid"

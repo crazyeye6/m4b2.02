@@ -226,8 +226,41 @@ export function useListings(filters: FilterState) {
     fetchStats();
   }, [fetchStats]);
 
+  useEffect(() => {
+    const channel = supabase
+      .channel('listings-status')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'listings' },
+        (payload) => {
+          const updated = payload.new as Listing;
+          if (updated.status !== 'live') {
+            setListings(prev => prev.filter(l => l.id !== updated.id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setListings(prev => prev.filter(l => new Date(l.deadline_at).getTime() > now));
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const updateListingStatus = (id: string, status: Listing['status']) => {
-    setListings(prev => prev.map(l => (l.id === id ? { ...l, status } : l)));
+    if (status !== 'live') {
+      setListings(prev => prev.filter(l => l.id !== id));
+    } else {
+      setListings(prev => prev.map(l => (l.id === id ? { ...l, status } : l)));
+    }
   };
 
   return { listings, loading, stats, updateListingStatus, refetch: fetchListings };
