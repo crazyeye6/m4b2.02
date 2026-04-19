@@ -1,6 +1,6 @@
-import { X, MapPin, Users, BarChart2, Shield, Mail, Mic, Instagram, ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe, Linkedin, Twitter, Youtube } from 'lucide-react';
+import { X, MapPin, Users, BarChart2, Shield, Mail, Mic, Instagram, ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe, Linkedin, Twitter, Youtube, Radio, FileText, Tag } from 'lucide-react';
 import { useState } from 'react';
-import type { Listing } from '../types';
+import type { Listing, MediaProfile } from '../types';
 import CountdownTimer from './CountdownTimer';
 
 interface DetailModalProps {
@@ -136,6 +136,10 @@ export default function DetailModal({ listing, onClose, onSecure }: DetailModalP
               <p className="text-[#6e6e73] text-sm">Claim your interest before the deadline closes. Ad copy must be submitted to the creator once your slot is confirmed — allow lead time before the ad slot date. Hold period: {listing.status === 'securing' ? '6h' : '24h'}.</p>
             </div>
           </Section>
+
+          {listing.media_profile && (
+            <MediaProfileSection profile={listing.media_profile} />
+          )}
 
           <Section title="About the seller" icon={<Shield className="w-4 h-4 text-[#6e6e73]" />}>
             <div className="space-y-4">
@@ -352,6 +356,135 @@ const FAQ_ITEMS = [
 ];
 
 function SellerLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-1.5 text-xs font-medium text-[#1d1d1f] bg-[#f5f5f7] border border-black/[0.08] hover:border-black/[0.15] hover:bg-white px-3 py-1.5 rounded-xl transition-all"
+    >
+      {icon}
+      {label}
+      <ExternalLink className="w-2.5 h-2.5 text-[#aeaeb2]" />
+    </a>
+  );
+}
+
+function MediaProfileSection({ profile }: { profile: MediaProfile }) {
+  function fmtSubs(n: number | null): string {
+    if (!n) return '—';
+    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+    if (n >= 1000) return `${Math.round(n / 1000)}k`;
+    return String(n);
+  }
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        <FileText className="w-4 h-4 text-[#6e6e73]" />
+        <h3 className="text-[#1d1d1f] text-sm font-semibold uppercase tracking-wide">Newsletter Profile</h3>
+      </div>
+
+      <div className="rounded-2xl border border-black/[0.06] overflow-hidden">
+        <div className="bg-[#f5f5f7] px-5 py-4 flex items-start gap-4">
+          {profile.logo_url ? (
+            <img
+              src={profile.logo_url}
+              alt={profile.newsletter_name}
+              className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-black/[0.06]"
+              onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          ) : (
+            <div className="w-14 h-14 rounded-xl bg-white border border-black/[0.08] flex items-center justify-center flex-shrink-0">
+              <span className="text-[#6e6e73] font-bold text-xl">{profile.newsletter_name.charAt(0)}</span>
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h4 className="text-[#1d1d1f] font-bold text-base leading-tight">{profile.newsletter_name}</h4>
+            {profile.tagline && <p className="text-[#6e6e73] text-sm mt-0.5">{profile.tagline}</p>}
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              {profile.category && (
+                <span className="text-[10px] font-semibold text-[#6e6e73] bg-white border border-black/[0.08] px-2 py-0.5 rounded-lg">{profile.category}</span>
+              )}
+              {profile.primary_geography && (
+                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-[#6e6e73]">
+                  <MapPin className="w-2.5 h-2.5" />{profile.primary_geography}
+                </span>
+              )}
+              {profile.publishing_frequency && (
+                <span className="flex items-center gap-0.5 text-[10px] font-semibold text-[#6e6e73]">
+                  <Radio className="w-2.5 h-2.5" />{profile.publishing_frequency}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="p-5 space-y-4">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-[#f5f5f7] rounded-xl px-3 py-2.5 text-center">
+              <p className="text-[#1d1d1f] font-bold text-lg">{fmtSubs(profile.subscriber_count)}</p>
+              <p className="text-[9px] font-semibold text-[#aeaeb2] uppercase tracking-wider mt-0.5">Subscribers</p>
+            </div>
+            <div className="bg-[#f5f5f7] rounded-xl px-3 py-2.5 text-center">
+              <p className="text-green-600 font-bold text-lg">{profile.open_rate || '—'}</p>
+              <p className="text-[9px] font-semibold text-[#aeaeb2] uppercase tracking-wider mt-0.5">Open rate</p>
+            </div>
+            <div className="bg-[#f5f5f7] rounded-xl px-3 py-2.5 text-center">
+              <p className="text-[#1d1d1f] font-bold text-sm leading-tight">{profile.audience_type || '—'}</p>
+              <p className="text-[9px] font-semibold text-[#aeaeb2] uppercase tracking-wider mt-0.5">Audience type</p>
+            </div>
+          </div>
+
+          {profile.audience_summary && (
+            <div>
+              <p className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1.5">Audience</p>
+              <p className="text-[#6e6e73] text-sm leading-relaxed">{profile.audience_summary}</p>
+            </div>
+          )}
+
+          {profile.ad_formats && profile.ad_formats.length > 0 && (
+            <div>
+              <p className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-2">Available ad formats</p>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.ad_formats.map(f => (
+                  <span key={f} className="flex items-center gap-1 text-[11px] text-[#6e6e73] bg-[#f5f5f7] border border-black/[0.06] px-2.5 py-1 rounded-lg">
+                    <Tag className="w-2.5 h-2.5" />{f}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {profile.past_advertisers && profile.past_advertisers.length > 0 && (
+            <div>
+              <p className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-2">Past advertisers</p>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.past_advertisers.map(a => (
+                  <span key={a} className="text-sm text-[#1d1d1f] font-medium bg-[#f5f5f7] border border-black/[0.08] px-3 py-1 rounded-xl">{a}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-black/[0.04]">
+            {profile.website_url && (
+              <ProfileLink href={profile.website_url} icon={<Globe className="w-3 h-3" />} label="Newsletter website" />
+            )}
+            {profile.media_kit_url && (
+              <ProfileLink href={profile.media_kit_url} icon={<FileText className="w-3 h-3" />} label="Media kit" />
+            )}
+            {profile.sample_issue_url && (
+              <ProfileLink href={profile.sample_issue_url} icon={<ExternalLink className="w-3 h-3" />} label="Sample issue" />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProfileLink({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
   return (
     <a
       href={href}

@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react';
-import { Mail, ChevronLeft, CheckCircle, AlertTriangle, Loader2, DollarSign, Users, BarChart2, Tag, Shield, Zap, Plus, X, CircleUser as UserCircle, ArrowRight, ChevronRight, Info } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Mail, ChevronLeft, CheckCircle, AlertTriangle, Loader2, DollarSign, Users, BarChart2, Tag, Shield, Zap, Plus, X, CircleUser as UserCircle, ArrowRight, ChevronRight, Info, BookOpen } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { sendSlotListedEmail } from '../lib/email';
 import { useAuth } from '../context/AuthContext';
 import TagInput from '../components/TagInput';
-import type { MediaType } from '../types';
+import type { MediaType, MediaProfile } from '../types';
 
 interface ListSlotPageProps {
   onBack: () => void;
@@ -95,6 +95,23 @@ const STEPS = [
 export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProps) {
   const { user, profile } = useAuth();
   const [step, setStep] = useState(1);
+  const [mediaProfiles, setMediaProfiles] = useState<MediaProfile[]>([]);
+  const [selectedMediaProfileId, setSelectedMediaProfileId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('media_profiles')
+      .select('*')
+      .eq('seller_user_id', user.id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
+      .then(({ data }) => {
+        const list = (data as MediaProfile[]) ?? [];
+        setMediaProfiles(list);
+        if (list.length === 1) setSelectedMediaProfileId(list[0].id);
+      });
+  }, [user]);
 
   const profileDefaults: Partial<FormData> = profile ? {
     media_owner_name: profile.display_name || '',
@@ -234,6 +251,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
       seller_tiktok_url: null,
       seller_podcast_url: null,
       portfolio_links: form.portfolio_links.length > 0 ? form.portfolio_links : null,
+      media_profile_id: selectedMediaProfileId || null,
     };
 
     const { data: insertedListing, error } = await supabase
@@ -371,6 +389,55 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
         {/* Step 1: The Slot */}
         {step === 1 && (
           <div className="space-y-5">
+            {/* Media profile selector */}
+            {mediaProfiles.length > 0 ? (
+              <div className="bg-white border border-black/[0.06] rounded-3xl p-6 shadow-sm">
+                <SectionHeader number="0" title="Link a media profile" />
+                <p className="text-[#6e6e73] text-[13px] mb-4">Choose which newsletter this slot belongs to. Buyers will see the full media profile automatically.</p>
+                <div className="space-y-2">
+                  {mediaProfiles.map(mp => {
+                    const active = selectedMediaProfileId === mp.id;
+                    return (
+                      <button
+                        key={mp.id}
+                        type="button"
+                        onClick={() => setSelectedMediaProfileId(active ? null : mp.id)}
+                        className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 text-left transition-all ${
+                          active
+                            ? 'border-[#1d1d1f] bg-[#1d1d1f]/[0.02]'
+                            : 'border-black/[0.08] hover:border-black/[0.2]'
+                        }`}
+                      >
+                        {mp.logo_url ? (
+                          <img src={mp.logo_url} alt={mp.newsletter_name} className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-black/[0.06]" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-[#f5f5f7] border border-black/[0.06] flex items-center justify-center flex-shrink-0">
+                            <span className="text-[#6e6e73] font-bold">{mp.newsletter_name.charAt(0)}</span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[#1d1d1f] font-semibold text-sm truncate">{mp.newsletter_name}</p>
+                          <p className="text-[#6e6e73] text-xs truncate">{mp.tagline || mp.category || '—'}</p>
+                        </div>
+                        {active && <CheckCircle className="w-4 h-4 text-[#1d1d1f] flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+                {!selectedMediaProfileId && (
+                  <p className="text-[#aeaeb2] text-[11px] mt-2.5">No profile selected — you can still publish a slot, but buyers won't see your newsletter profile.</p>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-4">
+                <BookOpen className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-amber-900 font-semibold text-sm">No media profiles yet</p>
+                  <p className="text-amber-700 text-xs mt-0.5 leading-snug">Create a media profile in your dashboard to let buyers see full newsletter stats, past advertisers, and a sample issue. It only takes a minute and applies to all your listings.</p>
+                </div>
+              </div>
+            )}
+
             <div className="bg-white border border-black/[0.06] rounded-3xl p-6 shadow-sm">
               <SectionHeader number="1" title="About your newsletter" />
 

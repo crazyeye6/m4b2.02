@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package, Link, Twitter, Instagram, Youtube, Mic, TrendingUp, ShieldCheck, Sparkles, TrendingDown, Info } from 'lucide-react';
+import { BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package, Link, Twitter, Instagram, Youtube, Mic, TrendingUp, ShieldCheck, Sparkles, TrendingDown, Info, BookOpen } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import SubmitByEmail from '../components/SubmitByEmail';
 import CsvUpload from '../components/CsvUpload';
-import type { Listing, ListingStatus, DepositBooking, BookingStatus } from '../types';
+import MediaProfileEditor from '../components/MediaProfileEditor';
+import type { Listing, ListingStatus, DepositBooking, BookingStatus, MediaProfile } from '../types';
 import { calcDynamicPrice, TIER_STYLES } from '../lib/dynamicPricing';
 
 interface SellerDashboardProps {
@@ -12,7 +13,7 @@ interface SellerDashboardProps {
   onListSlot: () => void;
 }
 
-type DashTab = 'listings' | 'bookings' | 'profile';
+type DashTab = 'listings' | 'bookings' | 'media' | 'profile';
 
 interface MarketInsights {
   avgPrice: number;
@@ -50,6 +51,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
   const [loading, setLoading] = useState(true);
   const [insights, setInsights] = useState<MarketInsights | null>(null);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
+  const [mediaProfiles, setMediaProfiles] = useState<MediaProfile[]>([]);
 
   const fetchData = useCallback(async () => {
     if (!user?.email) return;
@@ -150,6 +152,20 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <CuratedPlatformBanner onListSlot={onListSlot} />
+        {mediaProfiles.length === 0 && tab === 'listings' && (
+          <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
+            <div className="w-8 h-8 bg-amber-100 border border-amber-200 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
+              <BookOpen className="w-4 h-4 text-amber-700" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-amber-900 font-semibold text-sm">Add your media profile to build buyer trust</p>
+              <p className="text-amber-700 text-xs mt-0.5 leading-snug">Buyers convert faster when they can see your full newsletter stats, audience, and past advertisers. Set it up once — it auto-applies to all your listings.</p>
+            </div>
+            <button onClick={() => setTab('media')} className="flex-shrink-0 text-xs font-semibold text-amber-700 hover:text-amber-900 bg-white border border-amber-200 hover:border-amber-400 px-3 py-1.5 rounded-xl transition-all">
+              Set up now
+            </button>
+          </div>
+        )}
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <StatCard icon={<Package className="w-4 h-4 text-[#86868b]" />} label="Total Listings" value={stats.totalListings} />
@@ -160,7 +176,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
 
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-1 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit">
-            {([['listings', 'My Listings'], ['bookings', 'Bookings'], ['profile', 'Profile']] as [DashTab, string][]).map(([key, label]) => (
+            {([['listings', 'My Listings'], ['bookings', 'Bookings'], ['media', 'Media Profiles'], ['profile', 'Profile']] as [DashTab, string][]).map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setTab(key)}
@@ -264,6 +280,11 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
               ))}
             </div>
           )
+        ) : tab === 'media' ? (
+          <div className="max-w-3xl">
+            <MediaProfileBanner onListSlot={onListSlot} hasProfiles={mediaProfiles.length > 0} />
+            <MediaProfileEditor onProfilesChanged={setMediaProfiles} />
+          </div>
         ) : (
           <SellerProfilePanel profile={profile} userEmail={user?.email} onSaved={refreshProfile} />
         )}
@@ -272,6 +293,25 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
       {selectedListing && (
         <ListingDetailModal listing={selectedListing} onClose={() => setSelectedListing(null)} onRefetch={fetchData} />
       )}
+    </div>
+  );
+}
+
+function MediaProfileBanner({ onListSlot, hasProfiles }: { onListSlot: () => void; hasProfiles: boolean }) {
+  if (hasProfiles) return null;
+  return (
+    <div className="mb-6 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl p-5">
+      <div className="flex items-start gap-3">
+        <div className="w-9 h-9 bg-emerald-100 border border-emerald-200 rounded-xl flex items-center justify-center flex-shrink-0">
+          <BookOpen className="w-4.5 h-4.5 text-emerald-700" />
+        </div>
+        <div className="flex-1">
+          <p className="text-emerald-900 font-semibold text-sm mb-1">Set up your media profile once — use it on every listing</p>
+          <p className="text-emerald-700 text-xs leading-relaxed">
+            Buyers make faster decisions when they can see your full newsletter profile: subscriber count, open rate, audience, past advertisers, and a sample issue. Create your profile here and link it to any slot you list.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

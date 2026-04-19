@@ -151,8 +151,27 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
           <div className="bg-white rounded-2xl p-3.5 relative overflow-hidden">
             <div className="absolute inset-x-0 top-0 h-[2px] bg-black/10" />
             <p className="text-[#86868b] text-[8px] font-bold uppercase tracking-widest leading-none mb-2">{tx.card.publisher}</p>
-            <p className="text-[#1d1d1f] text-[13px] font-bold leading-tight truncate mb-0.5">{listing.property_name}</p>
-            <p className="text-[#6e6e73] text-[10px] font-medium leading-none truncate">{listing.media_company_name || listing.media_owner_name}</p>
+            {listing.media_profile?.logo_url ? (
+              <div className="flex items-center gap-2 mb-0.5">
+                <img
+                  src={listing.media_profile.logo_url}
+                  alt={listing.media_profile.newsletter_name}
+                  className="w-5 h-5 rounded-md object-cover flex-shrink-0 border border-black/[0.06]"
+                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+                <p className="text-[#1d1d1f] text-[13px] font-bold leading-tight truncate">{listing.property_name}</p>
+              </div>
+            ) : (
+              <p className="text-[#1d1d1f] text-[13px] font-bold leading-tight truncate mb-0.5">{listing.property_name}</p>
+            )}
+            {listing.media_profile?.tagline ? (
+              <p className="text-[#6e6e73] text-[10px] font-medium leading-none truncate">{listing.media_profile.tagline}</p>
+            ) : (
+              <p className="text-[#6e6e73] text-[10px] font-medium leading-none truncate">{listing.media_company_name || listing.media_owner_name}</p>
+            )}
+            {listing.media_profile?.category && (
+              <span className="mt-1.5 inline-block text-[9px] font-semibold text-[#6e6e73] bg-[#f5f5f7] border border-black/[0.06] px-1.5 py-0.5 rounded-md">{listing.media_profile.category}</span>
+            )}
           </div>
 
           <div className="bg-green-50 rounded-2xl p-3.5 relative overflow-hidden border-0">
@@ -227,28 +246,35 @@ export default function OpportunityCard({ listing, onSecure, onDetails }: Opport
         </div>
 
         <div className="grid grid-cols-3 gap-2 mb-4">
-          <StatPill label={tx.card.subscribers} value={fmtCompact(listing.subscribers || 0, browserLocale)} />
-          <StatPill label={tx.card.openRate} value={listing.open_rate || '—'} accent />
+          <StatPill
+            label={tx.card.subscribers}
+            value={fmtCompact(listing.media_profile?.subscriber_count ?? listing.subscribers ?? 0, browserLocale)}
+          />
+          <StatPill
+            label={tx.card.openRate}
+            value={listing.media_profile?.open_rate || listing.open_rate || '—'}
+            accent
+          />
           <StatPill label={tx.card.ctr} value={listing.ctr || '—'} />
         </div>
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[11px] text-[#6e6e73]">
           <span className="flex items-center gap-1">
             <MapPin className="w-3 h-3 text-[#aeaeb2]" />
-            {listing.location}
+            {listing.media_profile?.primary_geography || listing.location}
           </span>
           <span className="flex items-center gap-1">
             <Users className="w-3 h-3 text-[#aeaeb2]" />
-            <span className="truncate">{listing.audience}</span>
+            <span className="truncate">{listing.media_profile?.audience_type ? `${listing.media_profile.audience_type} · ${listing.audience}` : listing.audience}</span>
           </span>
         </div>
 
-        {listing.past_advertisers.length > 0 && (
+        {(listing.media_profile?.past_advertisers?.length ?? listing.past_advertisers.length) > 0 && (
           <div className="flex items-center gap-1.5 mb-4">
             <Shield className="w-3 h-3 text-[#aeaeb2] flex-shrink-0" />
             <p className="text-[#86868b] text-[11px]">{tx.card.usedBy}</p>
             <div className="flex items-center gap-1 flex-wrap">
-              {listing.past_advertisers.map(a => (
+              {(listing.media_profile?.past_advertisers ?? listing.past_advertisers).map(a => (
                 <span
                   key={a}
                   className="text-[11px] text-[#6e6e73] font-medium bg-[#f5f5f7] px-2 py-0.5 rounded-full"

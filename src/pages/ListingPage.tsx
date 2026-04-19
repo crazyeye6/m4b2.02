@@ -36,7 +36,7 @@ export default function ListingPage({ listingId, onBack, onSecure }: ListingPage
       setLoading(true);
       const { data, error } = await supabase
         .from('listings')
-        .select('*')
+        .select('*, media_profile:media_profiles(*)')
         .eq('id', listingId)
         .maybeSingle();
       if (error || !data) {

@@ -5,15 +5,15 @@ import { scoreListings } from '../lib/matchScore';
 import type { BuyerPreferences } from './useBuyerPreferences';
 import type { Listing, FilterState, DeadlineWindow } from '../types';
 
-const PREFS_KEY = 'etw_buyer_prefs_v2';
+const PREFS_KEY = 'etw_buyer_prefs_v3';
 
 function loadPrefs(): BuyerPreferences {
   try {
     const raw = localStorage.getItem(PREFS_KEY);
-    if (!raw) return { categories: [], locations: [], budgetMin: 0, budgetMax: 0, goal: null, timing: null, audienceSize: null, hasCompletedOnboarding: false };
+    if (!raw) return { tags: [], locations: [], budgetMin: 0, budgetMax: 0, goal: null, timing: null, audienceSize: null, hasCompletedOnboarding: false };
     return JSON.parse(raw) as BuyerPreferences;
   } catch {
-    return { categories: [], locations: [], budgetMin: 0, budgetMax: 0, goal: null, timing: null, audienceSize: null, hasCompletedOnboarding: false };
+    return { tags: [], locations: [], budgetMin: 0, budgetMax: 0, goal: null, timing: null, audienceSize: null, hasCompletedOnboarding: false };
   }
 }
 
@@ -46,7 +46,7 @@ export function useListings(filters: FilterState) {
     ];
     const hasTagFilter = allTagSlugs.length > 0;
 
-    let query = supabase.from('listings').select('*').eq('status', 'live');
+    let query = supabase.from('listings').select('*, media_profile:media_profiles(*)').eq('status', 'live');
 
     if (filters.category !== 'all') {
       query = query.eq('media_type', filters.category);

@@ -76,6 +76,8 @@ export interface Listing {
   seller_tiktok_url?: string | null;
   seller_podcast_url?: string | null;
   portfolio_links?: string[] | null;
+  media_profile_id?: string | null;
+  media_profile?: MediaProfile | null;
   created_at: string;
   tags?: Tag[];
 }
@@ -135,6 +137,31 @@ export interface SlotBooking {
   budget_confirmed: boolean;
   creative_ready: boolean;
   booking_type: 'review' | 'proceed';
+}
+
+export interface MediaProfile {
+  id: string;
+  seller_user_id: string;
+  seller_email: string;
+  newsletter_name: string;
+  tagline: string;
+  category: string;
+  audience_summary: string;
+  primary_geography: string;
+  audience_type: string;
+  subscriber_count: number | null;
+  open_rate: string;
+  publishing_frequency: string;
+  ad_formats: string[];
+  past_advertisers: string[];
+  media_kit_url: string;
+  sample_issue_url: string;
+  website_url: string;
+  logo_url: string;
+  cover_image_url: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Tag {
