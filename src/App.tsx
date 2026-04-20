@@ -559,7 +559,7 @@ export default function App() {
             </button>
           </div>
           <ListingsGrid
-            listings={listings.slice(0, 6)}
+            listings={listings.slice(0, 2)}
             loading={loading}
             onSecure={handleSecure}
             onDetails={handleViewListing}
