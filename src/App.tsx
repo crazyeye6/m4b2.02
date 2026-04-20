@@ -23,6 +23,7 @@ const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const MediaProfilePage = lazy(() => import('./pages/MediaProfilePage'));
+const ClaimAccountPage = lazy(() => import('./pages/ClaimAccountPage'));
 
 function PageFallback() {
   return (
@@ -38,7 +39,7 @@ import type { FilterState, Listing, ViewMode } from './types';
 import type { GridColumns } from './components/ListingsGrid';
 import { encodeFiltersToUrl, decodeFiltersFromUrl, DEFAULT_FILTERS } from './lib/urlState';
 
-type Page = 'home' | 'opportunities' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout' | 'media-profile';
+type Page = 'home' | 'opportunities' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout' | 'media-profile' | 'claim-account';
 
 function getListingIdFromUrl(): string | null {
   const params = new URLSearchParams(window.location.search);
@@ -90,7 +91,14 @@ function setCheckoutInUrl(listingId: string | null) {
 }
 
 export default function App() {
+  const [claimToken, setClaimToken] = useState<string | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('claim');
+  });
+
   const [page, setPage] = useState<Page>(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('claim')) return 'claim-account';
     if (getCheckoutIdFromUrl()) return 'checkout';
     if (getListingIdFromUrl()) return 'listing';
     if (getMediaProfileIdFromUrl()) return 'media-profile';
@@ -287,6 +295,24 @@ export default function App() {
   };
 
   const goHome = () => { setListingInUrl(null); setListingId(null); setCheckoutListingId(null); setPage('home'); };
+
+  if (page === 'claim-account' && claimToken) {
+    return (
+      <Suspense fallback={<PageFallback />}>
+        <ClaimAccountPage
+          token={claimToken}
+          onClaimed={() => {
+            setClaimToken(null);
+            const url = new URL(window.location.href);
+            url.searchParams.delete('claim');
+            window.history.replaceState({}, '', url.toString());
+            setPage('dashboard');
+            window.scrollTo(0, 0);
+          }}
+        />
+      </Suspense>
+    );
+  }
 
   if (page === 'terms') {
     return (

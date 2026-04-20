@@ -17,7 +17,8 @@ interface EmailPayload {
     | "slot_listed"
     | "admin_slot_published"
     | "opportunity_digest"
-    | "contact_form";
+    | "contact_form"
+    | "account_invite";
   to: string;
   data: Record<string, unknown>;
 }
@@ -505,6 +506,26 @@ function buildOpportunityDigest(data: Record<string, unknown>) {
   };
 }
 
+function buildAccountInvite(data: Record<string, unknown>) {
+  const name = String(data.display_name || "there");
+  const company = String(data.company || "");
+  const claimUrl = String(data.claim_url || SITE_URL);
+  const content = `
+    ${h1(`Your seller account is ready, ${name}!`)}
+    ${p("An account has been created for you on EndingThisWeek.media. Your newsletter listings are live and ready for buyers to discover.")}
+    ${company ? dataTable(dataRow("Publisher", company)) : ""}
+    ${infoBox(`<p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 6px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Claim your account</p><p style="color:#6e6e73;font-size:13px;margin:0;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Click the button below to set your password and gain full access to your seller dashboard — where you can edit, manage, and add new listings anytime.</p>`, "green")}
+    ${ctaButton("Claim Your Account &rarr;", claimUrl)}
+    ${divider()}
+    ${p("Once claimed, you can edit listings, add new newsletters, manage bookings, and update your publisher profile.", "color:#aeaeb2;font-size:12px;")}
+    ${p("This link expires in 24 hours. If you did not expect this email, you can safely ignore it.", "color:#aeaeb2;font-size:12px;")}
+  `;
+  return {
+    subject: "Your EndingThisWeek.media seller account is ready — claim it now",
+    html: wrapEmail(content, `Your seller account is ready — set your password to get started`),
+  };
+}
+
 function buildContactForm(data: Record<string, unknown>) {
   const name = String(data.name || "—");
   const email = String(data.email || "—");
@@ -580,6 +601,9 @@ Deno.serve(async (req: Request) => {
         break;
       case "contact_form":
         emailContent = buildContactForm(data);
+        break;
+      case "account_invite":
+        emailContent = buildAccountInvite(data);
         break;
       default:
         return new Response(
