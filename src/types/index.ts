@@ -151,7 +151,6 @@ export interface MediaProfile {
   audience_type: string;
   subscriber_count: number | null;
   open_rate: string;
-  ctr: string | null;
   publishing_frequency: string;
   ad_formats: string[];
   past_advertisers: string[];

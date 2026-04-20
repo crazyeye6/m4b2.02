@@ -92,7 +92,7 @@ export default function CheckoutPage({
     <div className="min-h-screen bg-[#f5f5f7]">
       <Header onHome={onHome} onListSlot={onListSlot} onAdmin={onAdmin} onDashboard={onDashboard} onSignIn={onSignIn} />
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-[68px] pb-8">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-[#6e6e73] hover:text-[#1d1d1f] text-sm mb-6 transition-colors group"

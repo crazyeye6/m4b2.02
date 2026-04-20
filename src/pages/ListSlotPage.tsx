@@ -342,7 +342,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-[68px] pb-24">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-24 pb-24">
 
         <button
           onClick={handleBack}
