@@ -53,6 +53,9 @@ Deno.serve(async (req: Request) => {
       return json({ error: "Server not configured" }, 500);
     }
 
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const jwtToken = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
+
     const payload = (await req.json()) as BookingPayload;
 
     const required = ["listing_id", "buyer_email", "buyer_country", "buyer_country_code"] as const;
@@ -70,6 +73,12 @@ Deno.serve(async (req: Request) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: { persistSession: false },
     });
+
+    let buyerUserId: string | null = null;
+    if (jwtToken) {
+      const { data: { user } } = await supabase.auth.getUser(jwtToken);
+      if (user) buyerUserId = user.id;
+    }
 
     const { data: listing, error: listingError } = await supabase
       .from("listings")
@@ -145,6 +154,7 @@ Deno.serve(async (req: Request) => {
       buyer_website: payload.buyer_website ?? "",
       buyer_phone: payload.buyer_phone ?? "",
       buyer_country: payload.buyer_country,
+      buyer_user_id: buyerUserId,
       message_to_creator: payload.campaign_note ?? "",
       booking_notes: `Brand: ${payload.brand_name || effectiveBuyerName}. VAT: ${payload.buyer_vat_number || "N/A"}`,
       slots_count: slotsCount,

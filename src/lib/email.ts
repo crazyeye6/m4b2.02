@@ -17,10 +17,10 @@ async function getToken(providedToken?: string): Promise<string> {
   return data.session?.access_token ?? import.meta.env.VITE_SUPABASE_ANON_KEY;
 }
 
-async function sendEmail(type: EmailType, to: string, data: Record<string, unknown>, token?: string) {
+async function sendEmail(type: EmailType, to: string, data: Record<string, unknown>, token?: string): Promise<boolean> {
   try {
     const authToken = await getToken(token);
-    await fetch(EDGE_URL, {
+    const res = await fetch(EDGE_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${authToken}`,
@@ -28,7 +28,9 @@ async function sendEmail(type: EmailType, to: string, data: Record<string, unkno
       },
       body: JSON.stringify({ type, to, data }),
     });
+    return res.ok;
   } catch {
+    return false;
   }
 }
 

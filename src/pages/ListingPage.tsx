@@ -489,7 +489,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                     />
                   ) : (
                     <div className="w-12 h-12 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl flex items-center justify-center text-[#1d1d1f] font-semibold text-lg flex-shrink-0">
-                      {listing.media_owner_name[0]}
+                      {listing.media_owner_name?.[0] ?? '?'}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
@@ -739,7 +739,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                     {listing.media_profile.logo_url ? (
                       <img src={listing.media_profile.logo_url} alt={listing.property_name} className="w-9 h-9 rounded-xl object-cover border border-black/[0.06]" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                     ) : (
-                      <div className="w-9 h-9 bg-[#f5f5f7] rounded-xl flex items-center justify-center text-[#1d1d1f] font-semibold text-sm">{listing.media_owner_name[0]}</div>
+                      <div className="w-9 h-9 bg-[#f5f5f7] rounded-xl flex items-center justify-center text-[#1d1d1f] font-semibold text-sm">{listing.media_owner_name?.[0] ?? '?'}</div>
                     )}
                     <div>
                       <p className="text-[#1d1d1f] text-[13px] font-semibold leading-tight">{listing.media_owner_name}</p>

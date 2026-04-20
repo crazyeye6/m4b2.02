@@ -48,16 +48,19 @@ export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboard
   const { listings } = useListings(DEFAULT_FILTERS);
 
   const fetchBookings = useCallback(async () => {
-    if (!user?.email) return;
+    if (!user) return;
     setLoading(true);
+    const orFilter = user.email
+      ? `buyer_user_id.eq.${user.id},buyer_email.eq.${user.email}`
+      : `buyer_user_id.eq.${user.id}`;
     const { data } = await supabase
       .from('deposit_bookings')
       .select('*, listing:listings(property_name, media_owner_name, media_company_name, media_type, slot_type, date_label, deadline_at)')
-      .eq('buyer_email', user.email)
+      .or(orFilter)
       .order('created_at', { ascending: false });
     if (data) setBookings(data as DepositBooking[]);
     setLoading(false);
-  }, [user?.email]);
+  }, [user]);
 
   useEffect(() => {
     fetchBookings();

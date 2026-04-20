@@ -66,9 +66,11 @@ export function useListings(filters: FilterState) {
     }
 
     if (filters.slotDate) {
-      const d = new Date(filters.slotDate + 'T00:00:00');
-      d.setHours(23, 59, 59, 999);
-      query = query.gte('deadline_at', d.toISOString());
+      const start = new Date(filters.slotDate + 'T00:00:00');
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(filters.slotDate + 'T00:00:00');
+      end.setHours(23, 59, 59, 999);
+      query = query.gte('posting_date_start', start.toISOString()).lte('posting_date_start', end.toISOString());
     }
 
     if (filters.searchQuery && filters.searchQuery.trim()) {
@@ -94,7 +96,7 @@ export function useListings(filters: FilterState) {
     const { data, error } = await query;
 
     if (error) {
-      console.error(error);
+      setListings([]);
       setLoading(false);
       return;
     }
