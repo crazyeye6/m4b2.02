@@ -74,7 +74,7 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
     );
   }
 
-  const hasStats = profile.subscriber_count || profile.open_rate;
+  const hasStats = profile.subscriber_count != null || !!profile.open_rate || !!profile.ctr;
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] pt-[52px]">
@@ -89,21 +89,23 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
         </button>
 
         <div className="bg-white rounded-3xl border border-black/[0.06] shadow-sm overflow-hidden mb-6">
-          <div className="h-44 bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden">
-            {profile.cover_image_url && (
+          {profile.cover_image_url && (
+            <div className="h-44 bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
               <img
                 src={profile.cover_image_url}
                 alt=""
                 className="w-full h-full object-cover object-center"
                 onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-          </div>
+            </div>
+          )}
+          {!profile.cover_image_url && (
+            <div className="h-2 bg-gradient-to-r from-slate-100 to-slate-200" />
+          )}
 
-          <div className="px-6 pb-6">
-            <div className="flex items-end gap-4 -mt-10 mb-4">
-              <div className="w-20 h-20 rounded-2xl bg-white border-2 border-white shadow-md flex items-center justify-center flex-shrink-0 overflow-hidden">
+          <div className="px-6 pt-5 pb-6">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 rounded-2xl bg-[#f5f5f7] border border-black/[0.06] flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {profile.logo_url ? (
                   <img
                     src={profile.logo_url}
@@ -115,7 +117,7 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
                   <BookOpen className="w-7 h-7 text-[#aeaeb2]" />
                 )}
               </div>
-              <div className="pb-1 min-w-0">
+              <div className="min-w-0">
                 <h1 className="text-[#1d1d1f] text-2xl font-bold tracking-tight truncate">{profile.newsletter_name}</h1>
                 {profile.tagline && (
                   <p className="text-[#6e6e73] text-sm mt-0.5">{profile.tagline}</p>
@@ -199,7 +201,7 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
                 <BarChart2 className="w-4 h-4 text-teal-500" />
                 Audience Stats
               </h2>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 {profile.subscriber_count != null && (
                   <div>
                     <p className="text-[#1d1d1f] text-2xl font-bold tracking-tight">{fmtCompact(profile.subscriber_count)}</p>
@@ -210,6 +212,12 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
                   <div>
                     <p className="text-teal-600 text-2xl font-bold tracking-tight">{profile.open_rate}</p>
                     <p className="text-[#6e6e73] text-xs font-medium mt-0.5">Open rate</p>
+                  </div>
+                )}
+                {profile.ctr && (
+                  <div>
+                    <p className="text-sky-600 text-2xl font-bold tracking-tight">{profile.ctr}</p>
+                    <p className="text-[#6e6e73] text-xs font-medium mt-0.5">CTR</p>
                   </div>
                 )}
               </div>
