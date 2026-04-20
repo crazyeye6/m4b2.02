@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowLeft, Check, ChevronRight, Loader2, BookOpen, Users, BarChart2, Globe } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { sendSlotListedEmail } from '../lib/email';
 import type { MediaProfile, Newsletter } from '../types';
 
 interface ListSlotPageProps {
@@ -206,6 +207,16 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
       setSubmitting(false);
       return;
     }
+
+    sendSlotListedEmail(user.email!, {
+      property_name: payload.property_name,
+      slot_type: payload.slot_type,
+      date_label: payload.date_label,
+      original_price: payload.original_price,
+      deadline_at: payload.deadline_at,
+      seller_name: payload.media_owner_name,
+    });
+
     setSubmitting(false);
     setSubmitted(true);
   };

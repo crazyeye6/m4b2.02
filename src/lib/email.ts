@@ -39,15 +39,16 @@ export function sendWelcomeEmail(to: string, role: "buyer" | "seller", displayNa
   return sendEmail(type, to, { display_name: displayName }, token);
 }
 
-export function sendBookingConfirmationEmails(
+export async function sendBookingConfirmationEmails(
   buyerEmail: string,
   sellerEmail: string,
   bookingData: Record<string, unknown>
-) {
-  sendEmail("booking_confirmation_buyer", buyerEmail, bookingData);
+): Promise<void> {
+  const sends: Promise<boolean>[] = [sendEmail("booking_confirmation_buyer", buyerEmail, bookingData)];
   if (sellerEmail) {
-    sendEmail("booking_confirmation_seller", sellerEmail, bookingData);
+    sends.push(sendEmail("booking_confirmation_seller", sellerEmail, bookingData));
   }
+  await Promise.all(sends);
 }
 
 export function sendSlotListedEmail(

@@ -46,52 +46,21 @@ import { encodeFiltersToUrl, decodeFiltersFromUrl, DEFAULT_FILTERS } from './lib
 
 type Page = 'home' | 'opportunities' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout' | 'media-profile' | 'claim-account';
 
-function getListingIdFromUrl(): string | null {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('listing');
+function getParam(key: string): string | null {
+  return new URLSearchParams(window.location.search).get(key);
 }
 
-function getCheckoutIdFromUrl(): string | null {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('checkout');
-}
+function getListingIdFromUrl(): string | null { return getParam('listing'); }
+function getCheckoutIdFromUrl(): string | null { return getParam('checkout'); }
+function getMediaProfileIdFromUrl(): string | null { return getParam('media-profile'); }
 
-function getMediaProfileIdFromUrl(): string | null {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('media-profile');
-}
-
-function setMediaProfileInUrl(id: string | null) {
+// Single URL navigation function — clears all deep-link params then sets the relevant one
+function navigateUrl(key: 'listing' | 'checkout' | 'media-profile' | null, id?: string) {
   const url = new URL(window.location.href);
-  if (id) {
-    url.searchParams.set('media-profile', id);
-    url.searchParams.delete('listing');
-    url.searchParams.delete('checkout');
-  } else {
-    url.searchParams.delete('media-profile');
-  }
-  window.history.pushState({}, '', url.toString());
-}
-
-function setListingInUrl(id: string | null) {
-  const url = new URL(window.location.href);
-  if (id) {
-    url.searchParams.set('listing', id);
-  } else {
-    url.searchParams.delete('listing');
-  }
-  url.searchParams.delete('checkout');
-  window.history.pushState({}, '', url.toString());
-}
-
-function setCheckoutInUrl(listingId: string | null) {
-  const url = new URL(window.location.href);
-  if (listingId) {
-    url.searchParams.set('checkout', listingId);
-  } else {
-    url.searchParams.delete('checkout');
-  }
   url.searchParams.delete('listing');
+  url.searchParams.delete('checkout');
+  url.searchParams.delete('media-profile');
+  if (key && id) url.searchParams.set(key, id);
   window.history.pushState({}, '', url.toString());
 }
 
@@ -205,13 +174,13 @@ export default function App() {
 
   const handleSecure = (listing: Listing) => {
     setCheckoutListingId(listing.id);
-    setCheckoutInUrl(listing.id);
+    navigateUrl('checkout', listing.id);
     setPage('checkout');
     window.scrollTo(0, 0);
   };
 
   const handleBrowse = () => {
-    setListingInUrl(null);
+    navigateUrl(null);
     setListingId(null);
     setCheckoutListingId(null);
     setPage('opportunities');
@@ -219,7 +188,7 @@ export default function App() {
   };
 
   const handleOpportunities = () => {
-    setListingInUrl(null);
+    navigateUrl(null);
     setListingId(null);
     setCheckoutListingId(null);
     setPage('opportunities');
@@ -228,7 +197,7 @@ export default function App() {
 
   const handleHowItWorks = () => {
     if (page !== 'home') {
-      setListingInUrl(null);
+      navigateUrl(null);
       setListingId(null);
       setCheckoutListingId(null);
       setPage('home');
@@ -248,13 +217,13 @@ export default function App() {
       return;
     }
     setPreselectedNewsletterId(newsletterId ?? null);
-    setListingInUrl(null);
+    navigateUrl(null);
     setPage('list-slot');
     window.scrollTo(0, 0);
   };
 
   const handleAdmin = () => {
-    setListingInUrl(null);
+    navigateUrl(null);
     setPage('admin');
     window.scrollTo(0, 0);
   };
@@ -264,28 +233,28 @@ export default function App() {
       setShowAuthModal(true);
       return;
     }
-    setListingInUrl(null);
+    navigateUrl(null);
     setPage('dashboard');
     window.scrollTo(0, 0);
   };
 
   const handleViewListing = (listing: Listing) => {
     setListingId(listing.id);
-    setListingInUrl(listing.id);
+    navigateUrl('listing', listing.id);
     setPage('listing');
     window.scrollTo(0, 0);
   };
 
   const handleViewMediaProfile = (profileId: string) => {
     setMediaProfileId(profileId);
-    setMediaProfileInUrl(profileId);
+    navigateUrl('media-profile', profileId);
     setPage('media-profile');
     window.scrollTo(0, 0);
   };
 
   const handleBackFromListing = () => {
     setListingId(null);
-    setListingInUrl(null);
+    navigateUrl(null);
     setPage('opportunities');
     window.scrollTo(0, 0);
   };
@@ -299,7 +268,7 @@ export default function App() {
     onHowItWorks: handleHowItWorks,
   };
 
-  const goHome = () => { setListingInUrl(null); setListingId(null); setCheckoutListingId(null); setPage('home'); };
+  const goHome = () => { navigateUrl(null); setListingId(null); setCheckoutListingId(null); setPage('home'); };
 
   if (page === 'claim-account' && claimToken) {
     return (
@@ -391,7 +360,7 @@ export default function App() {
           onBack={() => { goHome(); window.scrollTo(0, 0); }}
           onViewListing={(listing) => {
             setListingId(listing.id);
-            setListingInUrl(listing.id);
+            navigateUrl('listing', listing.id);
             setPage('listing');
             window.scrollTo(0, 0);
           }}
@@ -403,9 +372,9 @@ export default function App() {
   if (page === 'not-found') {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
-        <Header {...sharedHeaderProps} onHome={() => { setListingInUrl(null); setPage('home'); }} />
+        <Header {...sharedHeaderProps} onHome={() => { navigateUrl(null); setPage('home'); }} />
         <Suspense fallback={<PageFallback />}>
-          <NotFoundPage onHome={() => { setListingInUrl(null); setPage('home'); }} onBrowse={() => { setListingInUrl(null); setPage('home'); }} />
+          <NotFoundPage onHome={() => { navigateUrl(null); setPage('home'); }} onBrowse={() => { navigateUrl(null); setPage('home'); }} />
         </Suspense>
       </div>
     );
@@ -420,11 +389,11 @@ export default function App() {
           onBack={() => {
             if (fromListingId) {
               setCheckoutListingId(null);
-              setListingInUrl(fromListingId);
+              navigateUrl('listing', fromListingId);
               setPage('listing');
             } else {
               setCheckoutListingId(null);
-              setListingInUrl(null);
+              navigateUrl(null);
               setPage('home');
             }
             window.scrollTo(0, 0);
@@ -451,13 +420,12 @@ export default function App() {
           <MediaProfilePage
             profileId={mediaProfileId}
             onBack={() => {
-              setMediaProfileInUrl(null);
+              navigateUrl(null);
               setMediaProfileId(null);
               setPage('opportunities');
               window.scrollTo(0, 0);
             }}
             onViewListing={(listing) => {
-              setMediaProfileInUrl(null);
               setMediaProfileId(null);
               handleViewListing(listing);
             }}
@@ -470,7 +438,7 @@ export default function App() {
   if (page === 'listing' && listingId) {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
-        <Header {...sharedHeaderProps} onHome={() => { setListingInUrl(null); setPage('home'); }} />
+        <Header {...sharedHeaderProps} onHome={() => { navigateUrl(null); setPage('home'); }} />
         <Suspense fallback={<PageFallback />}>
           <ListingPage
             listingId={listingId}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { calcDynamicPrice } from '../lib/dynamicPricing';
 import { scoreListings } from '../lib/matchScore';
@@ -36,7 +36,11 @@ export function useListings(filters: FilterState) {
     totalSavings: 0,
   });
 
+  // Track in-flight fetches so stale results never overwrite fresh ones
+  const fetchIdRef = useRef(0);
+
   const fetchListings = useCallback(async () => {
+    const fetchId = ++fetchIdRef.current;
     setLoading(true);
 
     const allTagSlugs = [
@@ -98,10 +102,13 @@ export function useListings(filters: FilterState) {
       const res = await query;
       data = res.data;
       error = res.error;
-    } catch (e) {
-      setLoading(false);
+    } catch {
+      if (fetchId === fetchIdRef.current) setLoading(false);
       return;
     }
+
+    // A newer fetch started — discard this result
+    if (fetchId !== fetchIdRef.current) return;
 
     if (error) {
       setLoading(false);
@@ -140,25 +147,33 @@ export function useListings(filters: FilterState) {
     }
 
     if (hasTagFilter) {
-      const { data: tagRows } = await supabase
-        .from('tags')
-        .select('id, name')
-        .in('name', allTagSlugs);
+      try {
+        const { data: tagRows } = await supabase
+          .from('tags')
+          .select('id, name')
+          .in('name', allTagSlugs);
 
-      if (tagRows && tagRows.length > 0) {
-        const tagIds = tagRows.map((t: { id: string }) => t.id);
-        const { data: listingTagRows } = await supabase
-          .from('listing_tags')
-          .select('listing_id')
-          .in('tag_id', tagIds);
+        if (fetchId !== fetchIdRef.current) return;
 
-        if (listingTagRows) {
-          const matchedListingIds = new Set(listingTagRows.map((r: { listing_id: string }) => r.listing_id));
-          result = result.filter(l => matchedListingIds.has(l.id));
+        if (tagRows && tagRows.length > 0) {
+          const tagIds = tagRows.map((t: { id: string }) => t.id);
+          const { data: listingTagRows } = await supabase
+            .from('listing_tags')
+            .select('listing_id')
+            .in('tag_id', tagIds);
+
+          if (fetchId !== fetchIdRef.current) return;
+
+          if (listingTagRows) {
+            const matchedListingIds = new Set(listingTagRows.map((r: { listing_id: string }) => r.listing_id));
+            result = result.filter(l => matchedListingIds.has(l.id));
+          } else {
+            result = [];
+          }
         } else {
           result = [];
         }
-      } else {
+      } catch {
         result = [];
       }
     }

@@ -186,7 +186,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <CuratedPlatformBanner onListSlot={() => onListSlot()} />
 
-        {mediaProfiles.length === 0 && tab === 'listings' && (
+        {!loading && mediaProfiles.length === 0 && tab === 'listings' && (
           <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
             <div className="w-8 h-8 bg-amber-100 border border-amber-200 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
               <BookOpen className="w-4 h-4 text-amber-700" />

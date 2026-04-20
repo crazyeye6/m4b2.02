@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Loader2, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTranslations } from '../hooks/useTranslations';
@@ -32,9 +32,9 @@ export default function CheckoutPage({
   const [error, setError] = useState<string | null>(null);
   const tx = useTranslations();
 
-  useEffect(() => {
-    async function fetchListing() {
-      setLoading(true);
+  const fetchListing = useCallback(async () => {
+    setLoading(true);
+    try {
       const { data, error } = await supabase
         .from('listings')
         .select('*')
@@ -44,12 +44,22 @@ export default function CheckoutPage({
       if (error || !data) {
         setError(tx.checkout.notFound);
       } else {
-        setListing(data as Listing);
+        const unavailable = !['live', 'securing'].includes(data.status);
+        if (unavailable) {
+          setError(tx.checkout.listingExpired);
+        } else {
+          setListing(data as Listing);
+        }
       }
-      setLoading(false);
+    } catch {
+      setError(tx.checkout.notFound);
     }
-    fetchListing();
+    setLoading(false);
   }, [listingId]);
+
+  useEffect(() => {
+    fetchListing();
+  }, [fetchListing]);
 
   if (loading) {
     return (
