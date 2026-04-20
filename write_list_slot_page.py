@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import os
+
+content = r"""import { useState, useEffect } from 'react';
 import { ArrowLeft, Check, ChevronRight, Loader2, BookOpen, Users, BarChart2, Globe } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
-import { sendSlotListedEmail } from '../lib/email';
 import type { MediaProfile, Newsletter } from '../types';
 
 interface ListSlotPageProps {
@@ -207,16 +208,6 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
       setSubmitting(false);
       return;
     }
-
-    sendSlotListedEmail(user.email!, {
-      property_name: payload.property_name,
-      slot_type: payload.slot_type,
-      date_label: payload.date_label,
-      original_price: payload.original_price,
-      deadline_at: payload.deadline_at,
-      seller_name: payload.media_owner_name,
-    });
-
     setSubmitting(false);
     setSubmitted(true);
   };
@@ -563,3 +554,13 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
     </div>
   );
 }
+"""
+
+file_path = '/tmp/cc-agent/65802475/project/src/pages/ListSlotPage.tsx'
+os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+with open(file_path, 'w') as f:
+    f.write(content)
+
+print('SUCCESS: File written to', file_path)
+print('File size:', os.path.getsize(file_path), 'bytes')

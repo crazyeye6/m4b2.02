@@ -1,19 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
-import { BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package, Link, Twitter, Instagram, Youtube, Mic, TrendingUp, ShieldCheck, Sparkles, TrendingDown, Info, BookOpen } from 'lucide-react';
+import {
+  BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2,
+  Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package, Link,
+  Twitter, Instagram, Youtube, Mic, TrendingUp, ShieldCheck, Sparkles, TrendingDown,
+  Info, BookOpen, Copy,
+} from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import SubmitByEmail from '../components/SubmitByEmail';
 import CsvUpload from '../components/CsvUpload';
 import MediaProfileEditor from '../components/MediaProfileEditor';
-import type { Listing, ListingStatus, DepositBooking, BookingStatus, MediaProfile } from '../types';
+import NewsletterManager from '../components/NewsletterManager';
+import type { Listing, ListingStatus, DepositBooking, BookingStatus, MediaProfile, Newsletter } from '../types';
 import { calcDynamicPrice, TIER_STYLES } from '../lib/dynamicPricing';
 
 interface SellerDashboardProps {
   onBack: () => void;
-  onListSlot: () => void;
+  onListSlot: (newsletterId?: string) => void;
 }
 
-type DashTab = 'listings' | 'bookings' | 'media' | 'profile';
+type DashTab = 'listings' | 'newsletters' | 'bookings' | 'media' | 'profile';
 
 interface MarketInsights {
   avgPrice: number;
@@ -52,15 +58,16 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
   const [insights, setInsights] = useState<MarketInsights | null>(null);
   const [selectedListing, setSelectedListing] = useState<Listing | null>(null);
   const [mediaProfiles, setMediaProfiles] = useState<MediaProfile[]>([]);
+  const [duplicating, setDuplicating] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!user?.email) return;
     setLoading(true);
 
-    const [listingsRes, bookingsRes, insightsRes] = await Promise.all([
+    const [listingsRes, bookingsRes, insightsRes, mediaProfilesRes] = await Promise.all([
       supabase
         .from('listings')
-        .select('*, media_profile:media_profiles(*)')
+        .select('*, media_profile:media_profiles(*), newsletter:newsletters(*)')
         .or(`seller_user_id.eq.${user.id},seller_email.eq.${user.email}`)
         .order('created_at', { ascending: false }),
       supabase
@@ -72,10 +79,17 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
         .from('listings')
         .select('discounted_price, original_price, media_type, status')
         .eq('status', 'live'),
+      supabase
+        .from('media_profiles')
+        .select('*')
+        .or(`seller_user_id.eq.${user.id},seller_email.eq.${user.email}`)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true }),
     ]);
 
     if (listingsRes.data) setListings(listingsRes.data as Listing[]);
     if (bookingsRes.data) setBookings(bookingsRes.data as DepositBooking[]);
+    if (mediaProfilesRes.data) setMediaProfiles(mediaProfilesRes.data as MediaProfile[]);
 
     if (insightsRes.data && insightsRes.data.length > 0) {
       const live = insightsRes.data;
@@ -114,6 +128,29 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
     pendingPayouts: totalEarned,
   };
 
+  const handleDuplicate = async (listing: Listing) => {
+    if (!user) return;
+    setDuplicating(listing.id);
+    const { id, created_at, media_profile, newsletter, ...rest } = listing as any;
+    await supabase.from('listings').insert({
+      ...rest,
+      status: 'live',
+      seller_user_id: user.id,
+      seller_email: user.email,
+      property_name: `${listing.property_name} (copy)`,
+    });
+    await fetchData();
+    setDuplicating(null);
+  };
+
+  const tabs: [DashTab, string][] = [
+    ['listings', 'My Listings'],
+    ['newsletters', 'Newsletters'],
+    ['bookings', 'Bookings'],
+    ['media', 'Media Profiles'],
+    ['profile', 'Profile'],
+  ];
+
   return (
     <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
       <div className="border-b border-black/[0.06] bg-white/80 backdrop-blur-xl sticky top-0 z-10">
@@ -132,10 +169,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
               <RefreshCw className="w-3.5 h-3.5" />
               Refresh
             </button>
-            <button
-              onClick={onBack}
-              className="text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-colors"
-            >
+            <button onClick={onBack} className="text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-colors">
               Back to site
             </button>
             <button
@@ -150,16 +184,16 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <CuratedPlatformBanner onListSlot={() => onListSlot()} />
 
-        <CuratedPlatformBanner onListSlot={onListSlot} />
-        {mediaProfiles.length === 0 && tab === 'listings' && (
+        {!loading && mediaProfiles.length === 0 && tab === 'listings' && (
           <div className="mb-6 bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-start gap-3">
             <div className="w-8 h-8 bg-amber-100 border border-amber-200 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
               <BookOpen className="w-4 h-4 text-amber-700" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-amber-900 font-semibold text-sm">Add your media profile to build buyer trust</p>
-              <p className="text-amber-700 text-xs mt-0.5 leading-snug">Buyers convert faster when they can see your full newsletter stats, audience, and past advertisers. Set it up once — it auto-applies to all your listings.</p>
+              <p className="text-amber-700 text-xs mt-0.5 leading-snug">Buyers convert faster when they can see your full newsletter stats, audience, and past advertisers.</p>
             </div>
             <button onClick={() => setTab('media')} className="flex-shrink-0 text-xs font-semibold text-amber-700 hover:text-amber-900 bg-white border border-amber-200 hover:border-amber-400 px-3 py-1.5 rounded-xl transition-all">
               Set up now
@@ -174,9 +208,9 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
           <StatCard icon={<DollarSign className="w-4 h-4 text-[#86868b]" />} label="Pending Payouts" value={`$${stats.pendingPayouts.toLocaleString()}`} />
         </div>
 
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-1 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit">
-            {([['listings', 'My Listings'], ['bookings', 'Bookings'], ['media', 'Media Profiles'], ['profile', 'Profile']] as [DashTab, string][]).map(([key, label]) => (
+        <div className="flex items-center justify-between mb-6 gap-4 flex-wrap">
+          <div className="flex items-center gap-1 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit flex-wrap">
+            {tabs.map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setTab(key)}
@@ -193,11 +227,20 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
 
           {tab === 'listings' && (
             <button
-              onClick={onListSlot}
+              onClick={() => onListSlot()}
               className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold text-sm px-4 py-2 rounded-xl transition-all"
             >
               <Plus className="w-4 h-4" />
-              List a Slot
+              New Listing
+            </button>
+          )}
+          {tab === 'newsletters' && (
+            <button
+              onClick={() => onListSlot()}
+              className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold text-sm px-4 py-2 rounded-xl transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              New Listing
             </button>
           )}
         </div>
@@ -207,64 +250,19 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
             <Loader2 className="w-5 h-5 text-[#1d1d1f] animate-spin" />
           </div>
         ) : tab === 'listings' ? (
-          <div className="space-y-6">
-            {listings.length === 0 ? (
-              <div className="space-y-4">
-                <EmptyState
-                  icon={<Package className="w-8 h-8 text-[#aeaeb2]" />}
-                  title="No listings yet"
-                  description="List your first slot to start receiving bookings."
-                  action={{ label: 'List a Slot', onClick: onListSlot }}
-                />
-                <SubmitByEmail variant="compact" />
-                <CsvUpload variant="compact" />
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {(() => {
-                  const activeListings = listings.filter(l => l.status !== 'expired' && l.status !== 'cancelled');
-                  const expiredListings = listings.filter(l => l.status === 'expired' || l.status === 'cancelled');
-                  return (
-                    <>
-                      {activeListings.length > 0 && (
-                        <div className="space-y-3">
-                          <AutoPricingBanner />
-                          {activeListings.map(l => (
-                            <ListingCard key={l.id} listing={l} onClick={() => setSelectedListing(l)} />
-                          ))}
-                        </div>
-                      )}
-                      {expiredListings.length > 0 && (
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-[#1d1d1f] font-semibold text-sm">Expired & Cancelled</h3>
-                            <span className="text-[#6e6e73] text-xs bg-[#f5f5f7] border border-black/[0.06] px-2 py-0.5 rounded-lg">{expiredListings.length}</span>
-                          </div>
-                          <p className="text-[#86868b] text-xs">These slots have passed their deadline. You can edit and re-publish them with a new date.</p>
-                          {expiredListings.map(l => (
-                            <ListingCard key={l.id} listing={l} onClick={() => setSelectedListing(l)} />
-                          ))}
-                        </div>
-                      )}
-                      {activeListings.length === 0 && expiredListings.length === 0 && (
-                        <EmptyState
-                          icon={<Package className="w-8 h-8 text-[#aeaeb2]" />}
-                          title="No listings yet"
-                          description="List your first slot to start receiving bookings."
-                          action={{ label: 'List a Slot', onClick: onListSlot }}
-                        />
-                      )}
-                    </>
-                  );
-                })()}
-                <div className="pt-2 space-y-3">
-                  <SubmitByEmail variant="compact" />
-                  <CsvUpload variant="compact" />
-                </div>
-              </div>
-            )}
-
-            {insights && <MarketInsightsPanel insights={insights} />}
+          <ListingsTab
+            listings={listings}
+            duplicating={duplicating}
+            onSelect={setSelectedListing}
+            onListSlot={() => onListSlot()}
+            onDuplicate={handleDuplicate}
+            insights={insights}
+          />
+        ) : tab === 'newsletters' ? (
+          <div className="max-w-3xl">
+            <NewsletterManager
+              onCreateListingForNewsletter={nl => onListSlot(nl.id)}
+            />
           </div>
         ) : tab === 'bookings' ? (
           bookings.length === 0 ? (
@@ -282,7 +280,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
           )
         ) : tab === 'media' ? (
           <div className="max-w-3xl">
-            <MediaProfileBanner onListSlot={onListSlot} hasProfiles={mediaProfiles.length > 0} />
+            <MediaProfileBanner onListSlot={() => onListSlot()} hasProfiles={mediaProfiles.length > 0} />
             <MediaProfileEditor onProfilesChanged={setMediaProfiles} />
           </div>
         ) : (
@@ -291,8 +289,182 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
       </div>
 
       {selectedListing && (
-        <ListingDetailModal listing={selectedListing} onClose={() => setSelectedListing(null)} onRefetch={fetchData} />
+        <ListingDetailModal
+          listing={selectedListing}
+          onClose={() => setSelectedListing(null)}
+          onRefetch={fetchData}
+          onDuplicate={handleDuplicate}
+          duplicating={duplicating === selectedListing.id}
+        />
       )}
+    </div>
+  );
+}
+
+function ListingsTab({ listings, duplicating, onSelect, onListSlot, onDuplicate, insights }: {
+  listings: Listing[];
+  duplicating: string | null;
+  onSelect: (l: Listing) => void;
+  onListSlot: () => void;
+  onDuplicate: (l: Listing) => void;
+  insights: MarketInsights | null;
+}) {
+  const activeListings = listings.filter(l => l.status !== 'expired' && l.status !== 'cancelled');
+  const expiredListings = listings.filter(l => l.status === 'expired' || l.status === 'cancelled');
+
+  if (listings.length === 0) {
+    return (
+      <div className="space-y-4">
+        <EmptyState
+          icon={<Package className="w-8 h-8 text-[#aeaeb2]" />}
+          title="No listings yet"
+          description="List your first slot to start receiving bookings."
+          action={{ label: 'New Listing', onClick: onListSlot }}
+        />
+        <SubmitByEmail variant="compact" />
+        <CsvUpload variant="compact" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {activeListings.length > 0 && (
+        <div className="space-y-3">
+          <AutoPricingBanner />
+          <ListingsTable listings={activeListings} duplicating={duplicating} onSelect={onSelect} onDuplicate={onDuplicate} />
+        </div>
+      )}
+      {expiredListings.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h3 className="text-[#1d1d1f] font-semibold text-sm">Expired & Cancelled</h3>
+            <span className="text-[#6e6e73] text-xs bg-[#f5f5f7] border border-black/[0.06] px-2 py-0.5 rounded-lg">{expiredListings.length}</span>
+          </div>
+          <p className="text-[#86868b] text-xs">These slots have passed their deadline. Click a listing to edit and re-publish with a new date.</p>
+          <ListingsTable listings={expiredListings} duplicating={duplicating} onSelect={onSelect} onDuplicate={onDuplicate} />
+        </div>
+      )}
+      <div className="pt-2 space-y-3">
+        <SubmitByEmail variant="compact" />
+        <CsvUpload variant="compact" />
+      </div>
+      {insights && <MarketInsightsPanel insights={insights} />}
+    </div>
+  );
+}
+
+function ListingsTable({ listings, duplicating, onSelect, onDuplicate }: {
+  listings: Listing[];
+  duplicating: string | null;
+  onSelect: (l: Listing) => void;
+  onDuplicate: (l: Listing) => void;
+}) {
+  return (
+    <div className="bg-white border border-black/[0.06] rounded-2xl overflow-hidden">
+      <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-3 px-4 py-2.5 border-b border-black/[0.06] bg-[#f5f5f7]">
+        <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Newsletter / Slot</span>
+        <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Issue date</span>
+        <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Price</span>
+        <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Status</span>
+        <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Pricing</span>
+        <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Actions</span>
+      </div>
+      {listings.map((l, i) => (
+        <ListingTableRow
+          key={l.id}
+          listing={l}
+          isLast={i === listings.length - 1}
+          duplicating={duplicating === l.id}
+          onSelect={() => onSelect(l)}
+          onDuplicate={() => onDuplicate(l)}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ListingTableRow({ listing, isLast, duplicating, onSelect, onDuplicate }: {
+  listing: Listing;
+  isLast: boolean;
+  duplicating: boolean;
+  onSelect: () => void;
+  onDuplicate: () => void;
+}) {
+  const sc = LISTING_STATUS_CONFIG[listing.status] || LISTING_STATUS_CONFIG.live;
+  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at, listing.auto_discount_enabled);
+  const { currentPrice, discountPct, urgencyLabel, tier } = pricing;
+  const tierStyle = TIER_STYLES[tier];
+  const newsletter = (listing as any).newsletter as Newsletter | null;
+  const newsletterName = newsletter?.name || listing.property_name;
+  const publisher = newsletter?.publisher_name || listing.media_company_name;
+
+  const deadline = new Date(listing.deadline_at);
+  const hoursLeft = Math.max(0, Math.floor((deadline.getTime() - Date.now()) / 3600000));
+
+  return (
+    <div className={`px-4 py-3 ${!isLast ? 'border-b border-black/[0.04]' : ''} hover:bg-[#f5f5f7]/50 transition-colors`}>
+      <div className="flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <p className="text-[#1d1d1f] font-semibold text-sm truncate">{newsletterName}</p>
+            {urgencyLabel && (
+              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${tierStyle.badge}`}>{urgencyLabel}</span>
+            )}
+          </div>
+          <p className="text-[#86868b] text-xs truncate">{publisher} · {listing.slot_type}</p>
+        </div>
+
+        <div className="hidden sm:block flex-shrink-0 text-right w-28">
+          <p className="text-[#6e6e73] text-xs">{listing.date_label}</p>
+          <p className="text-[#aeaeb2] text-[10px]">
+            {hoursLeft < 24 ? `${hoursLeft}h deadline` : `${Math.floor(hoursLeft / 24)}d deadline`}
+          </p>
+        </div>
+
+        <div className="hidden sm:block flex-shrink-0 text-right w-20">
+          <p className="text-[#1d1d1f] font-bold text-sm">${currentPrice.toLocaleString()}</p>
+          {discountPct > 0 && (
+            <p className="text-[#aeaeb2] text-[10px] line-through">${listing.original_price.toLocaleString()}</p>
+          )}
+        </div>
+
+        <div className="hidden sm:block flex-shrink-0 w-24">
+          <span className={`inline-flex items-center border text-[10px] font-semibold px-2 py-0.5 rounded-lg ${sc.bg} ${sc.color}`}>
+            {sc.label}
+          </span>
+        </div>
+
+        <div className="hidden sm:block flex-shrink-0 w-28">
+          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-lg ${
+            listing.auto_discount_enabled
+              ? 'bg-blue-50 text-blue-700 border border-blue-100'
+              : 'bg-[#f5f5f7] text-[#6e6e73] border border-black/[0.06]'
+          }`}>
+            {listing.auto_discount_enabled ? 'Auto-Discount' : 'Fixed Price'}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1 flex-shrink-0">
+          <button
+            onClick={onSelect}
+            className="flex items-center gap-1 text-[11px] font-medium text-[#6e6e73] hover:text-[#1d1d1f] bg-[#f5f5f7] hover:bg-[#e5e5ea] border border-black/[0.08] px-2.5 py-1.5 rounded-xl transition-all"
+            title="Edit listing"
+          >
+            <Edit3 className="w-3 h-3" />
+            <span className="hidden sm:inline">Edit</span>
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
+            disabled={duplicating}
+            className="flex items-center gap-1 text-[11px] font-medium text-[#6e6e73] hover:text-[#1d1d1f] bg-[#f5f5f7] hover:bg-[#e5e5ea] border border-black/[0.08] px-2.5 py-1.5 rounded-xl transition-all disabled:opacity-40"
+            title="Duplicate listing"
+          >
+            {duplicating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Copy className="w-3 h-3" />}
+            <span className="hidden sm:inline">Duplicate</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -308,7 +480,7 @@ function MediaProfileBanner({ onListSlot, hasProfiles }: { onListSlot: () => voi
         <div className="flex-1">
           <p className="text-emerald-900 font-semibold text-sm mb-1">Set up your media profile once — use it on every listing</p>
           <p className="text-emerald-700 text-xs leading-relaxed">
-            Buyers make faster decisions when they can see your full newsletter profile: subscriber count, open rate, audience, past advertisers, and a sample issue. Create your profile here and link it to any slot you list.
+            Buyers make faster decisions when they can see your full newsletter profile: subscriber count, open rate, audience, past advertisers, and a sample issue.
           </p>
         </div>
       </div>
@@ -321,7 +493,6 @@ function CuratedPlatformBanner({ onListSlot }: { onListSlot: () => void }) {
     <div className="mb-8 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden">
       <div className="absolute top-0 right-0 w-64 h-64 bg-white/[0.03] rounded-full -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/[0.02] rounded-full translate-y-1/2 -translate-x-1/4" />
-
       <div className="relative">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center">
@@ -329,21 +500,19 @@ function CuratedPlatformBanner({ onListSlot }: { onListSlot: () => void }) {
           </div>
           <span className="text-white/60 text-xs font-semibold uppercase tracking-wider">Curated Marketplace</span>
         </div>
-
         <h2 className="text-white text-xl sm:text-2xl font-semibold tracking-[-0.02em] mb-3 max-w-lg">
           We match your opportunities with the right buyers.
         </h2>
         <p className="text-white/60 text-sm leading-relaxed max-w-xl mb-6">
-          You do not need to compete or browse other listings. Simply list your slots and we handle discovery, matching, and introductions on your behalf.
+          Simply list your slots and we handle discovery, matching, and introductions on your behalf.
         </p>
-
         <div className="flex flex-wrap gap-3">
           <button
             onClick={onListSlot}
             className="flex items-center gap-2 bg-white text-slate-900 hover:bg-white/90 font-semibold text-sm px-5 py-2.5 rounded-xl transition-all"
           >
             <Plus className="w-4 h-4" />
-            List a Slot
+            New Listing
           </button>
           <div className="flex items-center gap-4">
             <Feature icon={<Sparkles className="w-3.5 h-3.5" />} label="AI-powered matching" />
@@ -376,25 +545,11 @@ function MarketInsightsPanel({ insights }: { insights: MarketInsights }) {
           <p className="text-[#6e6e73] text-xs">Aggregated, anonymous signals across the platform</p>
         </div>
       </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-        <InsightCard
-          label="Avg. listing price"
-          value={`$${insights.avgPrice.toLocaleString()}`}
-          sub="across live opportunities"
-        />
-        <InsightCard
-          label="Typical discount"
-          value={`${insights.avgDiscount}%`}
-          sub="off original rate card"
-        />
-        <InsightCard
-          label="Active opportunities"
-          value={`${insights.totalActiveListings}`}
-          sub="live on the platform now"
-        />
+        <InsightCard label="Avg. listing price" value={`$${insights.avgPrice.toLocaleString()}`} sub="across live opportunities" />
+        <InsightCard label="Typical discount" value={`${insights.avgDiscount}%`} sub="off original rate card" />
+        <InsightCard label="Active opportunities" value={`${insights.totalActiveListings}`} sub="live on the platform now" />
       </div>
-
       {insights.topCategories.length > 0 && (
         <div>
           <p className="text-[#86868b] text-[11px] font-semibold uppercase tracking-wider mb-3">Top demand categories</p>
@@ -406,10 +561,7 @@ function MarketInsightsPanel({ insights }: { insights: MarketInsights }) {
                 <div key={label} className="flex items-center gap-3">
                   <span className="text-[#6e6e73] text-xs w-28 capitalize truncate">{label}</span>
                   <div className="flex-1 bg-[#f5f5f7] rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className="h-full bg-blue-500 rounded-full transition-all"
-                      style={{ width: `${pct}%`, opacity: 1 - i * 0.2 }}
-                    />
+                    <div className="h-full bg-blue-500 rounded-full transition-all" style={{ width: `${pct}%`, opacity: 1 - i * 0.2 }} />
                   </div>
                   <span className="text-[#aeaeb2] text-xs w-8 text-right">{count}</span>
                 </div>
@@ -418,7 +570,6 @@ function MarketInsightsPanel({ insights }: { insights: MarketInsights }) {
           </div>
         </div>
       )}
-
       <p className="text-[#aeaeb2] text-[10px] mt-4 pt-4 border-t border-black/[0.04]">
         All figures are aggregated across the platform. No individual seller data is revealed.
       </p>
@@ -436,69 +587,16 @@ function InsightCard({ label, value, sub }: { label: string; value: string; sub:
   );
 }
 
-function ListingCard({ listing, onClick }: { listing: Listing; onClick: () => void }) {
-  const sc = LISTING_STATUS_CONFIG[listing.status] || LISTING_STATUS_CONFIG.live;
-  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
-  const { currentPrice, discountPct, tier, urgencyLabel } = pricing;
-  const tierStyle = TIER_STYLES[tier];
-  const hasDiscount = discountPct > 0;
-  const deadline = new Date(listing.deadline_at);
-  const hoursLeft = Math.max(0, Math.floor((deadline.getTime() - Date.now()) / 3600000));
-
-  return (
-    <button
-      onClick={onClick}
-      className="w-full text-left bg-white border border-black/[0.06] hover:border-black/[0.12] hover:shadow-md hover:shadow-black/[0.06] rounded-2xl p-4 transition-all group"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className={`inline-flex items-center gap-1 border text-[10px] font-semibold px-2 py-0.5 rounded-lg ${sc.bg} ${sc.color}`}>
-              {sc.label}
-            </span>
-            {hasDiscount && (
-              <span className={`text-white text-[10px] font-bold px-2 py-0.5 rounded-lg ${tierStyle.badge}`}>
-                -{discountPct}% auto-discount
-              </span>
-            )}
-            {urgencyLabel && (
-              <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-lg ${tierStyle.bg} ${tier === 'last_chance' ? 'text-red-700' : tier === 'mid' ? 'text-orange-700' : 'text-amber-700'} border ${tierStyle.border}`}>
-                {urgencyLabel}
-              </span>
-            )}
-          </div>
-          <h3 className="text-[#1d1d1f] font-semibold text-sm truncate">{listing.property_name}</h3>
-          <p className="text-[#6e6e73] text-xs mt-0.5">{listing.media_company_name} · {listing.slot_type}</p>
-        </div>
-        <div className="text-right flex-shrink-0">
-          <p className="text-[#1d1d1f] font-bold">${currentPrice.toLocaleString()}</p>
-          {hasDiscount ? (
-            <p className="text-[#aeaeb2] text-xs line-through">${listing.original_price.toLocaleString()}</p>
-          ) : (
-            <p className="text-[#aeaeb2] text-xs">base price</p>
-          )}
-          <ChevronRight className="w-4 h-4 text-[#aeaeb2] group-hover:text-[#6e6e73] ml-auto mt-1 transition-colors" />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4 mt-3 pt-3 border-t border-black/[0.04]">
-        <Pill label="Slots remaining" value={`${listing.slots_remaining}/${listing.slots_total || '?'}`} />
-        <Pill label="Ad slot date" value={listing.date_label} />
-        <Pill label="Claim deadline" value={hoursLeft < 24 ? `${hoursLeft}h left` : `${Math.floor(hoursLeft / 24)}d left`} urgent={hoursLeft < 24} />
-        <Pill label="Location" value={listing.location} />
-      </div>
-    </button>
-  );
-}
-
-function ListingDetailModal({ listing, onClose, onRefetch }: {
+function ListingDetailModal({ listing, onClose, onRefetch, onDuplicate, duplicating }: {
   listing: Listing;
   onClose: () => void;
   onRefetch: () => void;
+  onDuplicate: (l: Listing) => void;
+  duplicating: boolean;
 }) {
   const { user } = useAuth();
   const sc = LISTING_STATUS_CONFIG[listing.status] || LISTING_STATUS_CONFIG.live;
-  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
+  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at, listing.auto_discount_enabled);
   const { currentPrice, discountPct, tier, urgencyLabel } = pricing;
   const tierStyle = TIER_STYLES[tier];
   const hasDiscount = discountPct > 0;
@@ -512,6 +610,8 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
   const [linkedProfileId, setLinkedProfileId] = useState<string | null>(listing.media_profile_id ?? null);
   const [linkingSaving, setLinkingSaving] = useState(false);
   const [linkingSaved, setLinkingSaved] = useState(false);
+
+  const newsletter = (listing as any).newsletter as Newsletter | null;
 
   useEffect(() => {
     if (!user) return;
@@ -537,9 +637,7 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
 
   const updateStatus = async () => {
     setUpdatingStatus(true);
-    await supabase.from('listings').update({
-      status: newStatus,
-    }).eq('id', listing.id);
+    await supabase.from('listings').update({ status: newStatus }).eq('id', listing.id);
     await onRefetch();
     onClose();
     setUpdatingStatus(false);
@@ -579,21 +677,38 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
                 {sc.label}
               </span>
             </div>
-            <h3 className="text-[#1d1d1f] font-semibold text-lg">{listing.property_name}</h3>
-            <p className="text-[#6e6e73] text-sm">{listing.media_company_name}</p>
+            <h3 className="text-[#1d1d1f] font-semibold text-lg">
+              {newsletter?.name || listing.property_name}
+            </h3>
+            <p className="text-[#6e6e73] text-sm">
+              {newsletter?.publisher_name || listing.media_company_name}
+              {listing.slot_type && ` · ${listing.slot_type}`}
+            </p>
           </div>
+
+          {newsletter && (
+            <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 flex items-center gap-2">
+              <BookOpen className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
+              <p className="text-blue-700 text-xs">
+                Linked to newsletter: <span className="font-semibold">{newsletter.name}</span>
+                {newsletter.subscriber_count && ` · ${newsletter.subscriber_count.toLocaleString()} subscribers`}
+                {newsletter.avg_open_rate && ` · ${newsletter.avg_open_rate} open rate`}
+              </p>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <InfoBlock label="Current price (live)" value={`$${currentPrice.toLocaleString()}`} green />
             <InfoBlock label="Base price" value={`$${listing.original_price.toLocaleString()}`} />
-            <InfoBlock label="Auto-discount" value={hasDiscount ? `-${discountPct}%` : 'None yet'} />
+            <InfoBlock label="Auto-discount" value={listing.auto_discount_enabled ? (hasDiscount ? `-${discountPct}%` : 'Active — no tier yet') : 'Disabled'} />
             <InfoBlock label="Slots remaining" value={`${listing.slots_remaining} / ${listing.slots_total || '?'}`} />
           </div>
+
           {urgencyLabel && (
             <div className={`flex items-center gap-2 rounded-xl px-3 py-2 ${tierStyle.bg} border ${tierStyle.border}`}>
               <TrendingDown className="w-3.5 h-3.5 flex-shrink-0 opacity-70" />
               <p className={`text-[12px] font-medium ${tier === 'last_chance' ? 'text-red-700' : tier === 'mid' ? 'text-orange-700' : 'text-amber-700'}`}>
-                {urgencyLabel} — {discountPct}% auto-discount currently applied
+                {urgencyLabel}{hasDiscount ? ` — ${discountPct}% auto-discount applied` : ''}
               </p>
             </div>
           )}
@@ -607,8 +722,6 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
               <div><p className="text-[#86868b] text-xs">Date</p><p className="text-[#1d1d1f] text-sm">{listing.date_label}</p></div>
               {listing.subscribers && <div><p className="text-[#86868b] text-xs">Subscribers</p><p className="text-[#1d1d1f] text-sm">{listing.subscribers.toLocaleString()}</p></div>}
               {listing.open_rate && <div><p className="text-[#86868b] text-xs">Open rate</p><p className="text-[#1d1d1f] text-sm">{listing.open_rate}</p></div>}
-              {listing.downloads && <div><p className="text-[#86868b] text-xs">Downloads/ep</p><p className="text-[#1d1d1f] text-sm">{listing.downloads.toLocaleString()}</p></div>}
-              {listing.followers && <div><p className="text-[#86868b] text-xs">Followers</p><p className="text-[#1d1d1f] text-sm">{listing.followers.toLocaleString()}</p></div>}
             </div>
           </div>
 
@@ -668,7 +781,7 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
               <label className="text-[11px] text-[#86868b] font-semibold uppercase tracking-wider">Linked media profile</label>
             </div>
             {sellerProfiles.length === 0 ? (
-              <p className="text-[#aeaeb2] text-xs italic">No media profiles yet. Go to the Media Profiles tab to create one — it lets buyers click your newsletter name to learn more.</p>
+              <p className="text-[#aeaeb2] text-xs italic">No media profiles yet. Go to Media Profiles tab to create one.</p>
             ) : (
               <div className="space-y-2">
                 <select
@@ -691,12 +804,7 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
                     Save profile link
                   </button>
                 )}
-                {linkingSaved && (
-                  <p className="text-green-600 text-xs text-center font-medium">Profile linked — buyers can now click your newsletter name to view your profile.</p>
-                )}
-                {!profileLinkChanged && linkedProfileId && (
-                  <p className="text-[#aeaeb2] text-[11px]">Buyers can click your newsletter name to view this profile on your listing.</p>
-                )}
+                {linkingSaved && <p className="text-green-600 text-xs text-center font-medium">Profile linked successfully.</p>}
               </div>
             )}
           </div>
@@ -723,7 +831,16 @@ function ListingDetailModal({ listing, onClose, onRefetch }: {
               {updatingStatus ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               Update Status
             </button>
-            <button onClick={onClose} className="px-5 py-3 rounded-2xl border border-black/[0.08] text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-all">
+            <button
+              onClick={() => onDuplicate(listing)}
+              disabled={duplicating}
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border border-black/[0.08] text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-all disabled:opacity-40"
+              title="Duplicate listing"
+            >
+              {duplicating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copy className="w-4 h-4" />}
+              Duplicate
+            </button>
+            <button onClick={onClose} className="px-4 py-3 rounded-2xl border border-black/[0.08] text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-all">
               Close
             </button>
           </div>
@@ -755,18 +872,15 @@ function SellerBookingCard({ booking }: { booking: DepositBooking }) {
           <p className="text-[#aeaeb2] text-xs">your payout</p>
         </div>
       </div>
-
       <div className="flex items-center gap-4 mt-3 pt-3 border-t border-black/[0.04]">
-        <Pill label="Deposit (platform)" value={`$${booking.deposit_amount.toLocaleString()}`} />
+        <Pill label="Deposit" value={`$${booking.deposit_amount.toLocaleString()}`} />
         <Pill label="Total value" value={`$${booking.total_price.toLocaleString()}`} />
         <Pill label="Slots" value={`${booking.slots_count}`} />
-        <Pill label="Buyer email" value={booking.buyer_email} />
       </div>
-
       <div className="mt-3 pt-3 border-t border-black/[0.04] flex items-center gap-2">
         <Mail className="w-3 h-3 text-[#aeaeb2]" />
         <a href={`mailto:${booking.buyer_email}`} className="text-xs text-[#6e6e73] hover:text-[#1d1d1f] transition-colors">
-          Contact buyer: {booking.buyer_email}
+          {booking.buyer_email}
         </a>
         {booking.buyer_phone && (
           <>
@@ -776,7 +890,6 @@ function SellerBookingCard({ booking }: { booking: DepositBooking }) {
           </>
         )}
       </div>
-
       {booking.message_to_creator && (
         <div className="mt-3 bg-[#f5f5f7] rounded-xl border border-black/[0.06] p-3">
           <p className="text-[#86868b] text-[10px] font-semibold mb-1">Message from buyer</p>
@@ -836,10 +949,9 @@ function SellerProfilePanel({ profile, userEmail, onSaved }: {
       {saved && (
         <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-2xl px-4 py-3 text-green-700 text-sm">
           <CheckCircle className="w-4 h-4 flex-shrink-0" />
-          Profile saved. Your info will be used on all future listings.
+          Profile saved.
         </div>
       )}
-
       <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
@@ -848,32 +960,21 @@ function SellerProfilePanel({ profile, userEmail, onSaved }: {
             </div>
             <div>
               <h3 className="text-[#1d1d1f] font-semibold">{profile.display_name || 'Your Profile'}</h3>
-              <span className="inline-block bg-green-50 border border-green-200 text-green-700 text-[10px] font-semibold px-2 py-0.5 rounded-lg capitalize">
-                Seller
-              </span>
+              <span className="inline-block bg-green-50 border border-green-200 text-green-700 text-[10px] font-semibold px-2 py-0.5 rounded-lg capitalize">Seller</span>
             </div>
           </div>
           {!editing ? (
-            <button
-              onClick={() => setEditing(true)}
-              className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-sm border border-black/[0.08] hover:border-black/[0.15] px-3 py-1.5 rounded-xl transition-all"
-            >
+            <button onClick={() => setEditing(true)} className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-sm border border-black/[0.08] hover:border-black/[0.15] px-3 py-1.5 rounded-xl transition-all">
               <Edit3 className="w-3.5 h-3.5" />
               Edit profile
             </button>
           ) : (
             <div className="flex gap-2">
-              <button
-                onClick={save}
-                disabled={saving}
-                className="flex items-center gap-1.5 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold px-4 py-1.5 rounded-xl text-sm transition-all"
-              >
+              <button onClick={save} disabled={saving} className="flex items-center gap-1.5 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold px-4 py-1.5 rounded-xl text-sm transition-all">
                 {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                 Save
               </button>
-              <button onClick={() => setEditing(false)} className="px-3 py-1.5 rounded-xl border border-black/[0.08] text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-all">
-                Cancel
-              </button>
+              <button onClick={() => setEditing(false)} className="px-3 py-1.5 rounded-xl border border-black/[0.08] text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-all">Cancel</button>
             </div>
           )}
         </div>
@@ -894,35 +995,27 @@ function SellerProfilePanel({ profile, userEmail, onSaved }: {
               Seller bio &amp; profile
               <span className="ml-2 text-[#aeaeb2] font-normal normal-case">Shown on all your listings</span>
             </p>
-            <div className="space-y-3">
-              {editing ? (
-                <div>
-                  <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Short bio</label>
-                  <textarea
-                    value={form.seller_bio}
-                    onChange={e => setForm(p => ({ ...p, seller_bio: e.target.value }))}
-                    rows={3}
-                    placeholder="Describe your newsletter, podcast, or audience in 1–2 sentences..."
-                    className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all resize-none"
-                  />
-                </div>
-              ) : (
-                (form.seller_bio || form.bio) ? (
-                  <div>
-                    <p className="text-xs text-[#86868b] font-semibold mb-1">Bio</p>
-                    <p className="text-[#6e6e73] text-sm leading-relaxed">{form.seller_bio || form.bio}</p>
-                  </div>
-                ) : (
-                  <p className="text-[#aeaeb2] text-xs italic">No bio added yet. Click Edit profile to add one.</p>
-                )
-              )}
-            </div>
+            {editing ? (
+              <div>
+                <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Short bio</label>
+                <textarea
+                  value={form.seller_bio}
+                  onChange={e => setForm(p => ({ ...p, seller_bio: e.target.value }))}
+                  rows={3}
+                  placeholder="Describe your newsletter, podcast, or audience in 1–2 sentences..."
+                  className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all resize-none"
+                />
+              </div>
+            ) : (form.seller_bio || form.bio) ? (
+              <p className="text-[#6e6e73] text-sm leading-relaxed">{form.seller_bio || form.bio}</p>
+            ) : (
+              <p className="text-[#aeaeb2] text-xs italic">No bio added yet.</p>
+            )}
           </div>
 
           <div className="border-t border-black/[0.04] pt-5">
             <p className="text-[#86868b] text-xs font-semibold uppercase tracking-wider mb-3">
               Links &amp; social
-              <span className="ml-2 text-[#aeaeb2] font-normal normal-case">Help buyers verify your credibility</span>
             </p>
             {editing ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -947,19 +1040,10 @@ function SellerProfilePanel({ profile, userEmail, onSaved }: {
                 {form.seller_podcast_url && <LinkBadge icon={<Mic className="w-3 h-3" />} label="Podcast" url={form.seller_podcast_url} />}
               </div>
             ) : (
-              <p className="text-[#aeaeb2] text-xs italic">No links added yet. Click Edit profile to add social and website links.</p>
+              <p className="text-[#aeaeb2] text-xs italic">No links added yet.</p>
             )}
           </div>
         </div>
-      </div>
-
-      <div className="bg-white border border-black/[0.06] rounded-2xl p-4">
-        <p className="text-[#86868b] text-xs font-semibold mb-2 uppercase tracking-wider">Seller tips</p>
-        <ul className="space-y-1.5 text-xs text-[#6e6e73]">
-          <li>· Your name, company, bio, and links are automatically applied to all new listings you create.</li>
-          <li>· Respond to buyer enquiries promptly to maintain a high completion rate.</li>
-          <li>· Keep your listing's deadline accurate — expired listings are automatically hidden.</li>
-        </ul>
       </div>
 
       <AutoPricingExplainer />
@@ -973,7 +1057,7 @@ function AutoPricingBanner() {
       <TrendingDown className="w-4 h-4 text-slate-500 flex-shrink-0" />
       <p className="text-[12px] text-slate-600 leading-snug flex-1">
         <span className="font-semibold text-slate-800">Automatic pricing active.</span>{' '}
-        Prices automatically reduce as your deadline approaches to help fill unsold slots. You set the base price — we handle the rest.
+        Prices automatically reduce as deadlines approach to help fill unsold slots.
       </p>
     </div>
   );
@@ -988,12 +1072,9 @@ function AutoPricingExplainer() {
         </div>
         <div>
           <p className="text-[#1d1d1f] font-semibold text-sm">Automatic time-based pricing</p>
-          <p className="text-[#6e6e73] text-xs">Applied to all your listings</p>
+          <p className="text-[#6e6e73] text-xs">Applied to listings with Auto-Discount enabled</p>
         </div>
       </div>
-      <p className="text-[#6e6e73] text-xs leading-relaxed mb-4">
-        You set a base price only. The platform automatically applies discounts as your Book By deadline approaches — helping fill unsold slots without you having to compete on price.
-      </p>
       <div className="grid grid-cols-2 gap-2">
         {[
           { label: 'Full price', sub: '5+ days left', style: 'bg-white text-[#1d1d1f] border border-black/[0.08]' },
@@ -1010,7 +1091,7 @@ function AutoPricingExplainer() {
       <div className="flex items-start gap-2 mt-3 bg-white border border-black/[0.06] rounded-xl px-3 py-2">
         <Info className="w-3.5 h-3.5 text-[#86868b] flex-shrink-0 mt-0.5" />
         <p className="text-[11px] text-[#6e6e73] leading-snug">
-          Discounts are calculated live by the platform. Your base price is always shown as the original rate, and buyers see the current discounted price with a clear explanation.
+          Discounts are calculated live. Urgency labels (Ending Soon, Last Chance) always show based on time, regardless of pricing mode.
         </p>
       </div>
     </div>
@@ -1019,12 +1100,7 @@ function AutoPricingExplainer() {
 
 function LinkBadge({ icon, label, url }: { icon: React.ReactNode; label: string; url: string }) {
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-1.5 text-xs text-[#6e6e73] hover:text-[#1d1d1f] bg-[#f5f5f7] hover:bg-white border border-black/[0.08] hover:border-black/[0.15] px-2.5 py-1.5 rounded-xl transition-all"
-    >
+    <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-[#6e6e73] hover:text-[#1d1d1f] bg-[#f5f5f7] hover:bg-white border border-black/[0.08] hover:border-black/[0.15] px-2.5 py-1.5 rounded-xl transition-all">
       {icon}
       {label}
     </a>
@@ -1032,13 +1108,7 @@ function LinkBadge({ icon, label, url }: { icon: React.ReactNode; label: string;
 }
 
 function ProfileField({ label, icon, value, editing, onChange, type = 'text', placeholder }: {
-  label: string;
-  icon: React.ReactNode;
-  value: string;
-  editing: boolean;
-  onChange?: (v: string) => void;
-  type?: string;
-  placeholder?: string;
+  label: string; icon: React.ReactNode; value: string; editing: boolean; onChange?: (v: string) => void; type?: string; placeholder?: string;
 }) {
   if (editing && onChange) {
     return (
@@ -1057,7 +1127,6 @@ function ProfileField({ label, icon, value, editing, onChange, type = 'text', pl
       </div>
     );
   }
-
   return (
     <div className="flex items-center gap-2.5">
       <div className="text-[#aeaeb2]">{icon}</div>
@@ -1069,18 +1138,11 @@ function ProfileField({ label, icon, value, editing, onChange, type = 'text', pl
   );
 }
 
-function StatCard({ icon, label, value, green }: {
-  icon: React.ReactNode;
-  label: string;
-  value: string | number;
-  green?: boolean;
-}) {
+function StatCard({ icon, label, value, green }: { icon: React.ReactNode; label: string; value: string | number; green?: boolean }) {
   return (
     <div className="bg-white border border-black/[0.06] rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-2">{icon}<p className="text-[#6e6e73] text-xs">{label}</p></div>
-      <p className={`text-2xl font-bold tracking-[-0.02em] ${green ? 'text-green-600' : 'text-[#1d1d1f]'}`}>
-        {value}
-      </p>
+      <p className={`text-2xl font-bold tracking-[-0.02em] ${green ? 'text-green-600' : 'text-[#1d1d1f]'}`}>{value}</p>
     </div>
   );
 }
@@ -1104,24 +1166,16 @@ function Pill({ label, value, urgent }: { label: string; value: string; urgent?:
 }
 
 function EmptyState({ icon, title, description, action }: {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  action?: { label: string; onClick: () => void };
+  icon: React.ReactNode; title: string; description: string; action?: { label: string; onClick: () => void };
 }) {
   return (
     <div className="flex flex-col items-center justify-center py-8 gap-3">
-      <div className="w-14 h-14 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl flex items-center justify-center">
-        {icon}
-      </div>
+      <div className="w-14 h-14 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl flex items-center justify-center">{icon}</div>
       <div className="text-center">
         <p className="text-[#1d1d1f] font-semibold text-sm mb-1">{title}</p>
         <p className="text-[#6e6e73] text-sm mb-4">{description}</p>
         {action && (
-          <button
-            onClick={action.onClick}
-            className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold text-sm px-5 py-2.5 rounded-2xl transition-all"
-          >
+          <button onClick={action.onClick} className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold text-sm px-5 py-2.5 rounded-2xl transition-all">
             {action.label}
           </button>
         )}

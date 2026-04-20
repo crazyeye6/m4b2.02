@@ -23,6 +23,7 @@ const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const MediaProfilePage = lazy(() => import('./pages/MediaProfilePage'));
+const ClaimAccountPage = lazy(() => import('./pages/ClaimAccountPage'));
 
 function PageFallback() {
   return (
@@ -32,65 +33,46 @@ function PageFallback() {
   );
 }
 
+function RedirectToAuth({ onRedirect }: { onRedirect: () => void }) {
+  useEffect(() => { onRedirect(); }, []);
+  return <PageFallback />;
+}
+
 import { useListings } from './hooks/useListings';
 import { useAuth } from './context/AuthContext';
 import type { FilterState, Listing, ViewMode } from './types';
 import type { GridColumns } from './components/ListingsGrid';
 import { encodeFiltersToUrl, decodeFiltersFromUrl, DEFAULT_FILTERS } from './lib/urlState';
 
-type Page = 'home' | 'opportunities' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout' | 'media-profile';
+type Page = 'home' | 'opportunities' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout' | 'media-profile' | 'claim-account';
 
-function getListingIdFromUrl(): string | null {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('listing');
+function getParam(key: string): string | null {
+  return new URLSearchParams(window.location.search).get(key);
 }
 
-function getCheckoutIdFromUrl(): string | null {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('checkout');
-}
+function getListingIdFromUrl(): string | null { return getParam('listing'); }
+function getCheckoutIdFromUrl(): string | null { return getParam('checkout'); }
+function getMediaProfileIdFromUrl(): string | null { return getParam('media-profile'); }
 
-function getMediaProfileIdFromUrl(): string | null {
-  const params = new URLSearchParams(window.location.search);
-  return params.get('media-profile');
-}
-
-function setMediaProfileInUrl(id: string | null) {
+// Single URL navigation function — clears all deep-link params then sets the relevant one
+function navigateUrl(key: 'listing' | 'checkout' | 'media-profile' | null, id?: string) {
   const url = new URL(window.location.href);
-  if (id) {
-    url.searchParams.set('media-profile', id);
-    url.searchParams.delete('listing');
-    url.searchParams.delete('checkout');
-  } else {
-    url.searchParams.delete('media-profile');
-  }
-  window.history.pushState({}, '', url.toString());
-}
-
-function setListingInUrl(id: string | null) {
-  const url = new URL(window.location.href);
-  if (id) {
-    url.searchParams.set('listing', id);
-  } else {
-    url.searchParams.delete('listing');
-  }
-  url.searchParams.delete('checkout');
-  window.history.pushState({}, '', url.toString());
-}
-
-function setCheckoutInUrl(listingId: string | null) {
-  const url = new URL(window.location.href);
-  if (listingId) {
-    url.searchParams.set('checkout', listingId);
-  } else {
-    url.searchParams.delete('checkout');
-  }
   url.searchParams.delete('listing');
+  url.searchParams.delete('checkout');
+  url.searchParams.delete('media-profile');
+  if (key && id) url.searchParams.set(key, id);
   window.history.pushState({}, '', url.toString());
 }
 
 export default function App() {
+  const [claimToken, setClaimToken] = useState<string | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('claim');
+  });
+
   const [page, setPage] = useState<Page>(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('claim')) return 'claim-account';
     if (getCheckoutIdFromUrl()) return 'checkout';
     if (getListingIdFromUrl()) return 'listing';
     if (getMediaProfileIdFromUrl()) return 'media-profile';
@@ -126,7 +108,7 @@ export default function App() {
   const [showContactModal, setShowContactModal] = useState(false);
   const { prefs, setPrefs } = useBuyerPreferences();
 
-  const { profile } = useAuth();
+  const { profile, loading: authLoading } = useAuth();
   const { listings, loading, stats, updateListingStatus, refetch } = useListings(filters);
 
   // Onboarding popup disabled for now
@@ -192,13 +174,13 @@ export default function App() {
 
   const handleSecure = (listing: Listing) => {
     setCheckoutListingId(listing.id);
-    setCheckoutInUrl(listing.id);
+    navigateUrl('checkout', listing.id);
     setPage('checkout');
     window.scrollTo(0, 0);
   };
 
   const handleBrowse = () => {
-    setListingInUrl(null);
+    navigateUrl(null);
     setListingId(null);
     setCheckoutListingId(null);
     setPage('opportunities');
@@ -206,7 +188,7 @@ export default function App() {
   };
 
   const handleOpportunities = () => {
-    setListingInUrl(null);
+    navigateUrl(null);
     setListingId(null);
     setCheckoutListingId(null);
     setPage('opportunities');
@@ -215,7 +197,7 @@ export default function App() {
 
   const handleHowItWorks = () => {
     if (page !== 'home') {
-      setListingInUrl(null);
+      navigateUrl(null);
       setListingId(null);
       setCheckoutListingId(null);
       setPage('home');
@@ -227,49 +209,52 @@ export default function App() {
     }
   };
 
-  const handleListSlot = () => {
-    if (!profile) {
+  const [preselectedNewsletterId, setPreselectedNewsletterId] = useState<string | null>(null);
+
+  const handleListSlot = (newsletterId?: string) => {
+    if (!profile && !authLoading) {
       setShowAuthModal(true);
       return;
     }
-    setListingInUrl(null);
+    setPreselectedNewsletterId(newsletterId ?? null);
+    navigateUrl(null);
     setPage('list-slot');
     window.scrollTo(0, 0);
   };
 
   const handleAdmin = () => {
-    setListingInUrl(null);
+    navigateUrl(null);
     setPage('admin');
     window.scrollTo(0, 0);
   };
 
   const handleDashboard = () => {
-    if (!profile) {
+    if (!profile && !authLoading) {
       setShowAuthModal(true);
       return;
     }
-    setListingInUrl(null);
+    navigateUrl(null);
     setPage('dashboard');
     window.scrollTo(0, 0);
   };
 
   const handleViewListing = (listing: Listing) => {
     setListingId(listing.id);
-    setListingInUrl(listing.id);
+    navigateUrl('listing', listing.id);
     setPage('listing');
     window.scrollTo(0, 0);
   };
 
   const handleViewMediaProfile = (profileId: string) => {
     setMediaProfileId(profileId);
-    setMediaProfileInUrl(profileId);
+    navigateUrl('media-profile', profileId);
     setPage('media-profile');
     window.scrollTo(0, 0);
   };
 
   const handleBackFromListing = () => {
     setListingId(null);
-    setListingInUrl(null);
+    navigateUrl(null);
     setPage('opportunities');
     window.scrollTo(0, 0);
   };
@@ -283,7 +268,25 @@ export default function App() {
     onHowItWorks: handleHowItWorks,
   };
 
-  const goHome = () => { setListingInUrl(null); setListingId(null); setCheckoutListingId(null); setPage('home'); };
+  const goHome = () => { navigateUrl(null); setListingId(null); setCheckoutListingId(null); setPage('home'); };
+
+  if (page === 'claim-account' && claimToken) {
+    return (
+      <Suspense fallback={<PageFallback />}>
+        <ClaimAccountPage
+          token={claimToken}
+          onClaimed={() => {
+            setClaimToken(null);
+            const url = new URL(window.location.href);
+            url.searchParams.delete('claim');
+            window.history.replaceState({}, '', url.toString());
+            setPage('dashboard');
+            window.scrollTo(0, 0);
+          }}
+        />
+      </Suspense>
+    );
+  }
 
   if (page === 'terms') {
     return (
@@ -315,6 +318,7 @@ export default function App() {
           <ListSlotPage
             onBack={() => { goHome(); refetch(); }}
             onEditProfile={() => { setPage('dashboard'); window.scrollTo(0, 0); }}
+            preselectedNewsletterId={preselectedNewsletterId}
           />
         </Suspense>
       </div>
@@ -330,12 +334,21 @@ export default function App() {
   }
 
   if (page === 'dashboard') {
-    if (profile?.role === 'seller') {
+    if (authLoading) {
+      return <PageFallback />;
+    }
+
+    if (!profile) {
+      // Use effect to avoid setState during render
+      return <RedirectToAuth onRedirect={() => { setShowAuthModal(true); setPage('home'); }} />;
+    }
+
+    if (profile.role === 'seller' || profile.role === 'admin') {
       return (
         <Suspense fallback={<PageFallback />}>
           <SellerDashboard
             onBack={() => { goHome(); window.scrollTo(0, 0); }}
-            onListSlot={() => { setPage('list-slot'); window.scrollTo(0, 0); }}
+            onListSlot={(newsletterId) => { handleListSlot(newsletterId); }}
           />
         </Suspense>
       );
@@ -347,7 +360,7 @@ export default function App() {
           onBack={() => { goHome(); window.scrollTo(0, 0); }}
           onViewListing={(listing) => {
             setListingId(listing.id);
-            setListingInUrl(listing.id);
+            navigateUrl('listing', listing.id);
             setPage('listing');
             window.scrollTo(0, 0);
           }}
@@ -359,9 +372,9 @@ export default function App() {
   if (page === 'not-found') {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
-        <Header {...sharedHeaderProps} onHome={() => { setListingInUrl(null); setPage('home'); }} />
+        <Header {...sharedHeaderProps} onHome={() => { navigateUrl(null); setPage('home'); }} />
         <Suspense fallback={<PageFallback />}>
-          <NotFoundPage onHome={() => { setListingInUrl(null); setPage('home'); }} onBrowse={() => { setListingInUrl(null); setPage('home'); }} />
+          <NotFoundPage onHome={() => { navigateUrl(null); setPage('home'); }} onBrowse={() => { navigateUrl(null); setPage('home'); }} />
         </Suspense>
       </div>
     );
@@ -376,11 +389,11 @@ export default function App() {
           onBack={() => {
             if (fromListingId) {
               setCheckoutListingId(null);
-              setListingInUrl(fromListingId);
+              navigateUrl('listing', fromListingId);
               setPage('listing');
             } else {
               setCheckoutListingId(null);
-              setListingInUrl(null);
+              navigateUrl(null);
               setPage('home');
             }
             window.scrollTo(0, 0);
@@ -407,13 +420,12 @@ export default function App() {
           <MediaProfilePage
             profileId={mediaProfileId}
             onBack={() => {
-              setMediaProfileInUrl(null);
+              navigateUrl(null);
               setMediaProfileId(null);
               setPage('opportunities');
               window.scrollTo(0, 0);
             }}
             onViewListing={(listing) => {
-              setMediaProfileInUrl(null);
               setMediaProfileId(null);
               handleViewListing(listing);
             }}
@@ -426,7 +438,7 @@ export default function App() {
   if (page === 'listing' && listingId) {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
-        <Header {...sharedHeaderProps} onHome={() => { setListingInUrl(null); setPage('home'); }} />
+        <Header {...sharedHeaderProps} onHome={() => { navigateUrl(null); setPage('home'); }} />
         <Suspense fallback={<PageFallback />}>
           <ListingPage
             listingId={listingId}
@@ -514,6 +526,31 @@ export default function App() {
           avgDiscount={stats.avgDiscount}
           totalSavings={stats.totalSavings}
         />
+
+        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-[22px] font-semibold text-[#1d1d1f] tracking-[-0.02em]">Live slots</h2>
+              <p className="text-[#6e6e73] text-[13px] mt-0.5">Prices auto-drop as deadlines approach</p>
+            </div>
+            <button
+              onClick={handleBrowse}
+              className="text-[13px] font-medium text-[#1d1d1f] hover:text-[#0f766e] transition-colors underline underline-offset-2"
+            >
+              View all {stats.liveCount}
+            </button>
+          </div>
+          <ListingsGrid
+            listings={listings.slice(0, 2)}
+            loading={loading}
+            onSecure={handleSecure}
+            onDetails={handleViewListing}
+            onViewMediaProfile={handleViewMediaProfile}
+            columns={2}
+            viewMode="grid"
+            sort={filters.sort}
+          />
+        </section>
 
         <SmartMatchCallout
           isLoggedIn={!!profile}

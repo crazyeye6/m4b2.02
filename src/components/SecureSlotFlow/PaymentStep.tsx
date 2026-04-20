@@ -75,6 +75,10 @@ async function createPaymentIntent(
       brand_name: form.brand_name,
     }),
   });
+  const contentType = res.headers.get('content-type') ?? '';
+  if (!contentType.includes('application/json')) {
+    throw new Error(`Payment service error (${res.status}). Please try again.`);
+  }
   const data = await res.json();
   if (!res.ok || !data.client_secret) throw new Error(data.error ?? 'Failed to initialise payment');
   return data as {

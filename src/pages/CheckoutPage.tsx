@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Loader2, AlertTriangle, ArrowLeft } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useTranslations } from '../hooks/useTranslations';
@@ -32,9 +32,9 @@ export default function CheckoutPage({
   const [error, setError] = useState<string | null>(null);
   const tx = useTranslations();
 
-  useEffect(() => {
-    async function fetchListing() {
-      setLoading(true);
+  const fetchListing = useCallback(async () => {
+    setLoading(true);
+    try {
       const { data, error } = await supabase
         .from('listings')
         .select('*')
@@ -44,12 +44,22 @@ export default function CheckoutPage({
       if (error || !data) {
         setError(tx.checkout.notFound);
       } else {
-        setListing(data as Listing);
+        const unavailable = !['live', 'securing'].includes(data.status);
+        if (unavailable) {
+          setError(tx.checkout.listingExpired);
+        } else {
+          setListing(data as Listing);
+        }
       }
-      setLoading(false);
+    } catch {
+      setError(tx.checkout.notFound);
     }
-    fetchListing();
+    setLoading(false);
   }, [listingId]);
+
+  useEffect(() => {
+    fetchListing();
+  }, [fetchListing]);
 
   if (loading) {
     return (
@@ -92,7 +102,7 @@ export default function CheckoutPage({
     <div className="min-h-screen bg-[#f5f5f7]">
       <Header onHome={onHome} onListSlot={onListSlot} onAdmin={onAdmin} onDashboard={onDashboard} onSignIn={onSignIn} />
 
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-[68px] pb-8">
         <button
           onClick={onBack}
           className="flex items-center gap-2 text-[#6e6e73] hover:text-[#1d1d1f] text-sm mb-6 transition-colors group"
