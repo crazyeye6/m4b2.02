@@ -33,6 +33,11 @@ function PageFallback() {
   );
 }
 
+function RedirectToAuth({ onRedirect }: { onRedirect: () => void }) {
+  useEffect(() => { onRedirect(); }, []);
+  return <PageFallback />;
+}
+
 import { useListings } from './hooks/useListings';
 import { useAuth } from './context/AuthContext';
 import type { FilterState, Listing, ViewMode } from './types';
@@ -365,9 +370,8 @@ export default function App() {
     }
 
     if (!profile) {
-      setShowAuthModal(true);
-      setPage('home');
-      return null;
+      // Use effect to avoid setState during render
+      return <RedirectToAuth onRedirect={() => { setShowAuthModal(true); setPage('home'); }} />;
     }
 
     if (profile.role === 'seller' || profile.role === 'admin') {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save, Bell, BellOff, Sparkles } from 'lucide-react';
+import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save, Bell, BellOff, Sparkles, Tag } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useBuyerPreferences } from '../hooks/useBuyerPreferences';
