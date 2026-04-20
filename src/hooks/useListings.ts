@@ -93,10 +93,17 @@ export function useListings(filters: FilterState) {
       query = query.order('deadline_at', { ascending: true });
     }
 
-    const { data, error } = await query;
+    let data, error;
+    try {
+      const res = await query;
+      data = res.data;
+      error = res.error;
+    } catch (e) {
+      setLoading(false);
+      return;
+    }
 
     if (error) {
-      setListings([]);
       setLoading(false);
       return;
     }
@@ -205,9 +212,13 @@ export function useListings(filters: FilterState) {
   }, [filters]);
 
   const fetchStats = useCallback(async () => {
-    const { data } = await supabase
-      .from('listings')
-      .select('original_price, discounted_price, deadline_at, status');
+    let data;
+    try {
+      const res = await supabase.from('listings').select('original_price, discounted_price, deadline_at, status');
+      data = res.data;
+    } catch {
+      return;
+    }
 
     if (!data) return;
     const live = data.filter(l => l.status === 'live');
