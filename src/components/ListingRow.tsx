@@ -2,7 +2,7 @@ import {
   Mail, MapPin, Users, Lock, Zap, Eye,
   CheckCircle, Clock, AlertTriangle, CalendarClock, Flame, TrendingDown,
 } from 'lucide-react';
-import type { Listing, Newsletter } from '../types';
+import type { Listing } from '../types';
 import { resolvePublishDate } from '../lib/dateUtils';
 import { useLocale } from '../context/LocaleContext';
 import CountdownTimer from './CountdownTimer';
@@ -32,10 +32,6 @@ function StatCell({ label, value, accent }: { label: string; value: string; acce
 
 export default function ListingRow({ listing, onSecure, onDetails, onViewMediaProfile }: ListingRowProps) {
   const { formatPrice } = useLocale();
-
-  const newsletter = (listing as any).newsletter as Newsletter | null;
-  const displayName = newsletter?.name || listing.property_name;
-  const publisherName = newsletter?.publisher_name || listing.media_company_name || listing.media_owner_name;
 
   const autoDiscount = listing.auto_discount_enabled !== false;
   const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at, autoDiscount);
@@ -99,7 +95,7 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-0.5">
-              <p className="text-[14px] font-bold text-[#1d1d1f] truncate leading-tight">{displayName}</p>
+              <p className="text-[14px] font-bold text-[#1d1d1f] truncate leading-tight">{listing.property_name}</p>
               {statusIcon}
             </div>
             {listing.media_profile_id && onViewMediaProfile ? (
@@ -107,10 +103,10 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
                 onClick={e => { e.stopPropagation(); onViewMediaProfile(listing.media_profile_id!); }}
                 className="text-[12px] text-sky-600 hover:text-sky-700 hover:underline truncate text-left transition-colors"
               >
-                {publisherName}
+                {listing.media_company_name || listing.media_owner_name}
               </button>
             ) : (
-              <p className="text-[12px] text-[#6e6e73] truncate">{publisherName}</p>
+              <p className="text-[12px] text-[#6e6e73] truncate">{listing.media_company_name || listing.media_owner_name}</p>
             )}
             <div className="flex items-center gap-3 mt-1">
               <span className="flex items-center gap-1 text-[11px] text-[#aeaeb2]">

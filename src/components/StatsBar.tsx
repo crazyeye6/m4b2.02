@@ -1,4 +1,4 @@
-import { Activity, Tag, DollarSign } from 'lucide-react';
+import { Activity, TrendingDown, DollarSign } from 'lucide-react';
 import { useLocale } from '../context/LocaleContext';
 
 interface StatsBarProps {
@@ -14,21 +14,21 @@ export default function StatsBar({ liveCount, avgDiscount, totalSavings }: Stats
       icon: <Activity className="w-4 h-4 text-green-600" />,
       iconBg: 'bg-green-50',
       value: liveCount.toString(),
-      label: 'Sponsorship slots live now',
+      label: 'Newsletter slots live',
       pulse: true,
     },
     {
-      icon: <Tag className="w-4 h-4 text-sky-600" />,
+      icon: <TrendingDown className="w-4 h-4 text-sky-600" />,
       iconBg: 'bg-sky-50',
       value: avgDiscount > 0 ? `${avgDiscount}%` : '—',
-      label: 'Avg discount on discounted slots',
+      label: 'Avg seller discount',
       pulse: false,
     },
     {
-      icon: <DollarSign className="w-4 h-4 text-teal-600" />,
-      iconBg: 'bg-teal-50',
+      icon: <DollarSign className="w-4 h-4 text-orange-500" />,
+      iconBg: 'bg-orange-50',
       value: formatPrice(totalSavings),
-      label: 'Total saved by buyers',
+      label: 'Total buyer savings',
       pulse: false,
     },
   ];

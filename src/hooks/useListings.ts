@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { calcDynamicPrice } from '../lib/dynamicPricing';
 import { scoreListings } from '../lib/matchScore';
@@ -36,11 +36,7 @@ export function useListings(filters: FilterState) {
     totalSavings: 0,
   });
 
-  // Track in-flight fetches so stale results never overwrite fresh ones
-  const fetchIdRef = useRef(0);
-
   const fetchListings = useCallback(async () => {
-    const fetchId = ++fetchIdRef.current;
     setLoading(true);
 
     const allTagSlugs = [
@@ -50,7 +46,7 @@ export function useListings(filters: FilterState) {
     ];
     const hasTagFilter = allTagSlugs.length > 0;
 
-    let query = supabase.from('listings').select('*, media_profile:media_profiles(*), newsletter:newsletters(*)').eq('status', 'live');
+    let query = supabase.from('listings').select('*, media_profile:media_profiles(*)').eq('status', 'live');
 
     if (filters.category !== 'all') {
       query = query.eq('media_type', filters.category);
@@ -70,11 +66,9 @@ export function useListings(filters: FilterState) {
     }
 
     if (filters.slotDate) {
-      const start = new Date(filters.slotDate + 'T00:00:00');
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(filters.slotDate + 'T00:00:00');
-      end.setHours(23, 59, 59, 999);
-      query = query.gte('posting_date_start', start.toISOString()).lte('posting_date_start', end.toISOString());
+      const d = new Date(filters.slotDate + 'T00:00:00');
+      d.setHours(23, 59, 59, 999);
+      query = query.gte('deadline_at', d.toISOString());
     }
 
     if (filters.searchQuery && filters.searchQuery.trim()) {
@@ -97,20 +91,10 @@ export function useListings(filters: FilterState) {
       query = query.order('deadline_at', { ascending: true });
     }
 
-    let data, error;
-    try {
-      const res = await query;
-      data = res.data;
-      error = res.error;
-    } catch {
-      if (fetchId === fetchIdRef.current) setLoading(false);
-      return;
-    }
-
-    // A newer fetch started — discard this result
-    if (fetchId !== fetchIdRef.current) return;
+    const { data, error } = await query;
 
     if (error) {
+      console.error(error);
       setLoading(false);
       return;
     }
@@ -147,33 +131,25 @@ export function useListings(filters: FilterState) {
     }
 
     if (hasTagFilter) {
-      try {
-        const { data: tagRows } = await supabase
-          .from('tags')
-          .select('id, name')
-          .in('name', allTagSlugs);
+      const { data: tagRows } = await supabase
+        .from('tags')
+        .select('id, name')
+        .in('name', allTagSlugs);
 
-        if (fetchId !== fetchIdRef.current) return;
+      if (tagRows && tagRows.length > 0) {
+        const tagIds = tagRows.map((t: { id: string }) => t.id);
+        const { data: listingTagRows } = await supabase
+          .from('listing_tags')
+          .select('listing_id')
+          .in('tag_id', tagIds);
 
-        if (tagRows && tagRows.length > 0) {
-          const tagIds = tagRows.map((t: { id: string }) => t.id);
-          const { data: listingTagRows } = await supabase
-            .from('listing_tags')
-            .select('listing_id')
-            .in('tag_id', tagIds);
-
-          if (fetchId !== fetchIdRef.current) return;
-
-          if (listingTagRows) {
-            const matchedListingIds = new Set(listingTagRows.map((r: { listing_id: string }) => r.listing_id));
-            result = result.filter(l => matchedListingIds.has(l.id));
-          } else {
-            result = [];
-          }
+        if (listingTagRows) {
+          const matchedListingIds = new Set(listingTagRows.map((r: { listing_id: string }) => r.listing_id));
+          result = result.filter(l => matchedListingIds.has(l.id));
         } else {
           result = [];
         }
-      } catch {
+      } else {
         result = [];
       }
     }
@@ -227,13 +203,9 @@ export function useListings(filters: FilterState) {
   }, [filters]);
 
   const fetchStats = useCallback(async () => {
-    let data;
-    try {
-      const res = await supabase.from('listings').select('original_price, discounted_price, deadline_at, status');
-      data = res.data;
-    } catch {
-      return;
-    }
+    const { data } = await supabase
+      .from('listings')
+      .select('original_price, discounted_price, deadline_at, status');
 
     if (!data) return;
     const live = data.filter(l => l.status === 'live');
@@ -283,11 +255,12 @@ export function useListings(filters: FilterState) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      fetchListings();
-    }, 60000);
+      const now = Date.now();
+      setListings(prev => prev.filter(l => new Date(l.deadline_at).getTime() > now));
+    }, 30000);
 
     return () => clearInterval(interval);
-  }, [fetchListings]);
+  }, []);
 
   const updateListingStatus = (id: string, status: Listing['status']) => {
     if (status !== 'live') {

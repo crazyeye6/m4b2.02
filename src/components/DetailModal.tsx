@@ -160,7 +160,7 @@ export default function DetailModal({ listing, onClose, onSecure, onViewMediaPro
             <div className="space-y-4">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-[#f5f5f7] border border-black/[0.08] rounded-2xl flex items-center justify-center text-[#1d1d1f] font-bold text-lg flex-shrink-0">
-                  {listing.media_owner_name?.[0] ?? '?'}
+                  {listing.media_owner_name[0]}
                 </div>
                 <div className="flex-1 min-w-0">
                   {listing.media_profile_id && onViewMediaProfile ? (

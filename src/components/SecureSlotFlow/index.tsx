@@ -139,7 +139,7 @@ export default function SecureSlotFlow({ listing, onClose, onSuccess, inline = f
     const effectiveBuyerCompany = data.buyer_company;
     const effectiveCountry = data.buyer_country;
 
-    await sendBookingConfirmationEmails(form.buyer_email, listing.seller_email || '', {
+    sendBookingConfirmationEmails(form.buyer_email, listing.seller_email || '', {
       reference_number,
       property_name: listing.property_name,
       media_owner_name: listing.media_owner_name,

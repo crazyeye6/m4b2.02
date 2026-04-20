@@ -1,5 +1,5 @@
 import { Users, MapPin, Mail, Shield, Clock, Eye, Lock, Zap, CalendarClock, Flame, TrendingDown } from 'lucide-react';
-import type { Listing, Newsletter } from '../types';
+import type { Listing } from '../types';
 import CountdownTimer from './CountdownTimer';
 import { resolvePublishDate, formatDeadlineDate } from '../lib/dateUtils';
 import { useLocale } from '../context/LocaleContext';
@@ -26,10 +26,6 @@ function fmtCompact(n: number, locale: string): string {
 export default function OpportunityCard({ listing, onSecure, onDetails, onViewMediaProfile }: OpportunityCardProps) {
   const { formatPrice, browserLocale } = useLocale();
   const tx = useTranslations();
-
-  const newsletter = (listing as any).newsletter as Newsletter | null;
-  const displayName = newsletter?.name || listing.property_name;
-  const publisherName = newsletter?.publisher_name || listing.media_company_name || listing.media_owner_name;
 
   const autoDiscount = listing.auto_discount_enabled !== false;
   const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at, autoDiscount);
@@ -140,18 +136,18 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
                   onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
                 />
                 <p className={`text-[13px] font-bold leading-tight truncate ${listing.media_profile_id && onViewMediaProfile ? 'text-sky-700 group-hover/pub:underline' : 'text-[#1d1d1f]'}`}>
-                  {displayName}
+                  {listing.property_name}
                 </p>
               </div>
             ) : (
               <p className={`text-[13px] font-bold leading-tight truncate mb-0.5 ${listing.media_profile_id && onViewMediaProfile ? 'text-sky-700 group-hover/pub:underline' : 'text-[#1d1d1f]'}`}>
-                {displayName}
+                {listing.property_name}
               </p>
             )}
             {listing.media_profile?.tagline ? (
               <p className="text-[#6e6e73] text-[10px] font-medium leading-snug line-clamp-2">{listing.media_profile.tagline}</p>
             ) : (
-              <p className="text-[#6e6e73] text-[10px] font-medium leading-none truncate">{publisherName}</p>
+              <p className="text-[#6e6e73] text-[10px] font-medium leading-none truncate">{listing.media_company_name || listing.media_owner_name}</p>
             )}
             {listing.media_profile?.category && (
               <span className="mt-1.5 inline-block text-[9px] font-semibold text-[#6e6e73] bg-white border border-black/[0.06] px-1.5 py-0.5 rounded-md">{listing.media_profile.category}</span>

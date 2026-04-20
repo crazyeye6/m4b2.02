@@ -5,7 +5,7 @@ import {
   Shield, AlertTriangle, CheckCircle, RefreshCw, X, ChevronDown, Users,
   DollarSign, FileText, RotateCcw, Ban, Play, Loader2, Eye, Settings, Key, Save, EyeOff,
   Mail, Clock, XCircle, ThumbsUp, ThumbsDown, ExternalLink, Upload,
-  Zap, AlertCircle, Send, BarChart2, Globe, Percent, UserPlus, BookOpen, List, Copy,
+  Zap, AlertCircle, Send, BarChart2, Globe, Percent,
 } from 'lucide-react';
 import { parseEmailBody, confidenceLabel, fieldConfidenceColor } from '../lib/emailParser';
 import { sendAdminSlotPublishedEmail } from '../lib/email';
@@ -98,21 +98,7 @@ interface AdminPageProps {
   onBack: () => void;
 }
 
-type AdminTab = 'bookings' | 'refunds' | 'email_submissions' | 'csv_uploads' | 'emails' | 'sellers' | 'settings';
-
-interface ManagedSeller {
-  id: string;
-  email: string;
-  display_name: string;
-  company: string;
-  created_by_admin: string | null;
-  account_claimed: boolean;
-  claimed_at: string | null;
-  invite_sent_at: string | null;
-  notes: string;
-  created_at: string;
-  updated_at: string;
-}
+type AdminTab = 'bookings' | 'refunds' | 'email_submissions' | 'csv_uploads' | 'emails' | 'settings';
 
 const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: string; bg: string }> = {
   pending_payment: { label: 'Pending Payment', color: 'text-orange-700', bg: 'bg-orange-50 border-orange-200' },
@@ -135,14 +121,13 @@ export default function AdminPage({ onBack }: AdminPageProps) {
   const [selectedSlot, setSelectedSlot] = useState<EmailSubmissionSlot | null>(null);
   const [csvSlots, setCsvSlots] = useState<CsvUploadSlot[]>([]);
   const [selectedCsvSlot, setSelectedCsvSlot] = useState<CsvUploadSlot | null>(null);
-  const [managedSellers, setManagedSellers] = useState<ManagedSeller[]>([]);
   const [updating, setUpdating] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [refundDecisionReason, setRefundDecisionReason] = useState('');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const [bookingsRes, refundsRes, emailSlotsRes, csvSlotsRes, sellersRes] = await Promise.all([
+    const [bookingsRes, refundsRes, emailSlotsRes, csvSlotsRes] = await Promise.all([
       supabase
         .from('deposit_bookings')
         .select('*, listing:listings(property_name, media_owner_name, media_company_name, slot_type, date_label)')
@@ -159,17 +144,12 @@ export default function AdminPage({ onBack }: AdminPageProps) {
         .from('csv_upload_slots')
         .select('*, batch:csv_upload_batches(id, seller_email, filename, row_count, status, created_at)')
         .order('created_at', { ascending: false }),
-      supabase
-        .from('managed_sellers')
-        .select('*')
-        .order('created_at', { ascending: false }),
     ]);
 
     if (bookingsRes.data) setBookings(bookingsRes.data as DepositBooking[]);
     if (refundsRes.data) setRefunds(refundsRes.data as RefundRequest[]);
     if (emailSlotsRes.data) setEmailSlots(emailSlotsRes.data as EmailSubmissionSlot[]);
     if (csvSlotsRes.data) setCsvSlots(csvSlotsRes.data as CsvUploadSlot[]);
-    if (sellersRes.data) setManagedSellers(sellersRes.data as ManagedSeller[]);
     setLoading(false);
   }, []);
 
@@ -362,7 +342,6 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             ['refunds', 'Refund Requests'],
             ['csv_uploads', 'CSV Uploads'],
             ['emails', 'Resend Emails'],
-            ['sellers', 'Managed Sellers'],
             ['settings', 'Settings'],
           ] as [AdminTab, string][]).map(([key, label]) => (
             <button
@@ -411,8 +390,6 @@ export default function AdminPage({ onBack }: AdminPageProps) {
           <CsvUploadsTable slots={csvSlots} onSelect={setSelectedCsvSlot} />
         ) : tab === 'emails' ? (
           <EmailsPanel />
-        ) : tab === 'sellers' ? (
-          <SellersPanel sellers={managedSellers} onRefresh={fetchData} />
         ) : (
           <SettingsPanel />
         )}
@@ -1962,505 +1939,6 @@ function InfoBlock({ label, value, sub, highlight }: { label: string; value: str
       <p className="text-[#86868b] text-xs mb-0.5">{label}</p>
       <p className={`text-sm font-semibold ${highlight ? 'text-green-600' : 'text-[#1d1d1f]'}`}>{value}</p>
       {sub && <p className="text-[#aeaeb2] text-xs mt-0.5">{sub}</p>}
-    </div>
-  );
-}
-
-const NEWSLETTER_NICHES = [
-  'B2B SaaS', 'Marketing', 'Finance', 'Fintech', 'Startup', 'Tech', 'AI',
-  'eCommerce', 'Health & Wellness', 'Education', 'Crypto', 'General',
-];
-
-const GEOGRAPHIES = [
-  'US', 'UK', 'US / UK', 'Europe', 'Global', 'APAC', 'Canada', 'Australia',
-];
-
-const SEND_FREQUENCIES = ['Daily', 'Weekdays', 'Weekly', 'Bi-weekly', 'Monthly'];
-
-const SLOT_TYPES = [
-  'Sponsored post', 'Dedicated send', 'Banner ad', 'Classified ad',
-  'Podcast ad', 'Social post', 'Product feature', 'Newsletter mention', 'Other',
-];
-
-interface SellersPanelProps {
-  sellers: ManagedSeller[];
-  onRefresh: () => void;
-}
-
-type SellerView = 'list' | 'create_seller' | 'seller_detail';
-
-function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
-  const [view, setView] = useState<SellerView>('list');
-  const [selectedSeller, setSelectedSeller] = useState<ManagedSeller | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [inviteSending, setInviteSending] = useState<string | null>(null);
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
-  const [sellerForm, setSellerForm] = useState({ email: '', display_name: '', company: '', notes: '' });
-  const [newsletterForm, setNewsletterForm] = useState({
-    name: '', publisher_name: '', subscriber_count: '', avg_open_rate: '',
-    niche: '', primary_geography: '', send_frequency: '', description: '', website_url: '',
-  });
-  const [listingForm, setListingForm] = useState({
-    property_name: '', slot_type: 'Sponsored post', date_label: '', deadline_at: '',
-    original_price: '', audience: '', location: '', subscribers: '', open_rate: '',
-    auto_discount_enabled: true, deliverables_detail: '',
-  });
-  const [subView, setSubView] = useState<'overview' | 'add_newsletter' | 'add_listing'>('overview');
-  const [sellerNewsletters, setSellerNewsletters] = useState<any[]>([]);
-  const [sellerListings, setSellerListings] = useState<any[]>([]);
-
-  const fetchSellerData = async (email: string) => {
-    const [nlRes, lstRes] = await Promise.all([
-      supabase.from('newsletters').select('*').eq('seller_email', email).order('created_at', { ascending: false }),
-      supabase.from('listings').select('*, newsletter:newsletters(name)').eq('seller_email', email).order('created_at', { ascending: false }),
-    ]);
-    setSellerNewsletters(nlRes.data ?? []);
-    setSellerListings(lstRes.data ?? []);
-  };
-
-  const openSellerDetail = (seller: ManagedSeller) => {
-    setSelectedSeller(seller);
-    setSubView('overview');
-    fetchSellerData(seller.email);
-    setView('seller_detail');
-  };
-
-  const createSeller = async () => {
-    if (!sellerForm.email.trim() || !sellerForm.display_name.trim()) return;
-    setSaving(true);
-    const { error } = await supabase.from('managed_sellers').insert({
-      email: sellerForm.email.trim().toLowerCase(),
-      display_name: sellerForm.display_name.trim(),
-      company: sellerForm.company.trim(),
-      notes: sellerForm.notes.trim(),
-    });
-    if (!error) {
-      setSellerForm({ email: '', display_name: '', company: '', notes: '' });
-      onRefresh();
-      setView('list');
-    }
-    setSaving(false);
-  };
-
-  const sendInvite = async (seller: ManagedSeller) => {
-    setInviteSending(seller.id);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token ?? '';
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-seller-invite`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ seller_id: seller.id, email: seller.email, display_name: seller.display_name, company: seller.company }),
-      });
-      const json = await res.json();
-      if (json.claim_url) {
-        await navigator.clipboard.writeText(json.claim_url).catch(() => {});
-        setCopiedUrl(json.claim_url);
-        setTimeout(() => setCopiedUrl(null), 4000);
-      }
-      onRefresh();
-    } catch { /* silent */ }
-    setInviteSending(null);
-  };
-
-  const createNewsletter = async () => {
-    if (!selectedSeller || !newsletterForm.name.trim()) return;
-    setSaving(true);
-    const { error } = await supabase.from('newsletters').insert({
-      seller_email: selectedSeller.email,
-      seller_user_id: null,
-      name: newsletterForm.name.trim(),
-      publisher_name: newsletterForm.publisher_name.trim() || selectedSeller.company,
-      subscriber_count: newsletterForm.subscriber_count ? parseInt(newsletterForm.subscriber_count, 10) : null,
-      avg_open_rate: newsletterForm.avg_open_rate.trim() || null,
-      niche: newsletterForm.niche || null,
-      primary_geography: newsletterForm.primary_geography || null,
-      send_frequency: newsletterForm.send_frequency || null,
-      description: newsletterForm.description.trim() || null,
-      website_url: newsletterForm.website_url.trim() || null,
-      is_active: true,
-    });
-    if (!error) {
-      setNewsletterForm({ name: '', publisher_name: '', subscriber_count: '', avg_open_rate: '', niche: '', primary_geography: '', send_frequency: '', description: '', website_url: '' });
-      await fetchSellerData(selectedSeller.email);
-      setSubView('overview');
-    }
-    setSaving(false);
-  };
-
-  const createListing = async () => {
-    if (!selectedSeller || !listingForm.property_name.trim() || !listingForm.deadline_at || !listingForm.original_price) return;
-    setSaving(true);
-    const price = Math.round(Number(listingForm.original_price));
-    const { error } = await supabase.from('listings').insert({
-      media_type: 'newsletter',
-      seller_user_id: null,
-      seller_email: selectedSeller.email,
-      media_owner_name: selectedSeller.display_name,
-      media_company_name: selectedSeller.company,
-      property_name: listingForm.property_name.trim(),
-      slot_type: listingForm.slot_type,
-      date_label: listingForm.date_label.trim(),
-      deadline_at: new Date(listingForm.deadline_at).toISOString(),
-      original_price: price,
-      discounted_price: price,
-      audience: listingForm.audience || 'General',
-      location: listingForm.location || 'Global',
-      subscribers: listingForm.subscribers ? parseInt(listingForm.subscribers, 10) : null,
-      open_rate: listingForm.open_rate.trim() || null,
-      auto_discount_enabled: listingForm.auto_discount_enabled,
-      deliverables_detail: listingForm.deliverables_detail.trim() || null,
-      slots_remaining: 1,
-      slots_total: 1,
-      status: 'live',
-    });
-    if (!error) {
-      setListingForm({ property_name: '', slot_type: 'Sponsored post', date_label: '', deadline_at: '', original_price: '', audience: '', location: '', subscribers: '', open_rate: '', auto_discount_enabled: true, deliverables_detail: '' });
-      await fetchSellerData(selectedSeller.email);
-      setSubView('overview');
-    }
-    setSaving(false);
-  };
-
-  const inputCls = "w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all";
-  const selectCls = inputCls + " [color-scheme:light]";
-  const labelCls = "block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5";
-
-  if (view === 'create_seller') {
-    return (
-      <div className="max-w-lg">
-        <button onClick={() => setView('list')} className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-sm mb-6 transition-colors">
-          ← Back to sellers
-        </button>
-        <h2 className="text-[#1d1d1f] font-semibold text-lg mb-1">Create seller account</h2>
-        <p className="text-[#6e6e73] text-sm mb-6">Add a newsletter owner. You can then create newsletters and listings on their behalf, and invite them to claim the account.</p>
-        <div className="bg-white border border-black/[0.06] rounded-3xl p-6 space-y-4">
-          <div>
-            <label className={labelCls}>Email address <span className="text-red-400">*</span></label>
-            <input type="email" value={sellerForm.email} onChange={e => setSellerForm(p => ({ ...p, email: e.target.value }))} placeholder="publisher@example.com" className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Display name <span className="text-red-400">*</span></label>
-            <input type="text" value={sellerForm.display_name} onChange={e => setSellerForm(p => ({ ...p, display_name: e.target.value }))} placeholder="Jane Smith" className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Company / Publisher</label>
-            <input type="text" value={sellerForm.company} onChange={e => setSellerForm(p => ({ ...p, company: e.target.value }))} placeholder="e.g. B2B Growth Co." className={inputCls} />
-          </div>
-          <div>
-            <label className={labelCls}>Admin notes</label>
-            <textarea value={sellerForm.notes} onChange={e => setSellerForm(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Internal notes about this seller…" className={inputCls + " resize-none"} />
-          </div>
-          <button onClick={createSeller} disabled={saving || !sellerForm.email.trim() || !sellerForm.display_name.trim()} className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all">
-            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-            Create seller account
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (view === 'seller_detail' && selectedSeller) {
-    return (
-      <div>
-        <button onClick={() => { setView('list'); setSelectedSeller(null); }} className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-sm mb-6 transition-colors">
-          ← Back to sellers
-        </button>
-
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div>
-            <h2 className="text-[#1d1d1f] font-semibold text-lg">{selectedSeller.display_name}</h2>
-            <p className="text-[#6e6e73] text-sm">{selectedSeller.email}{selectedSeller.company ? ` · ${selectedSeller.company}` : ''}</p>
-          </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${selectedSeller.account_claimed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-              {selectedSeller.account_claimed ? 'Claimed' : 'Unclaimed'}
-            </span>
-            <button
-              onClick={() => sendInvite(selectedSeller)}
-              disabled={!!inviteSending}
-              className="flex items-center gap-1.5 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold text-xs px-3 py-2 rounded-xl transition-all"
-            >
-              {inviteSending === selectedSeller.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-              Send invite
-            </button>
-          </div>
-        </div>
-
-        {copiedUrl && (
-          <div className="mb-4 bg-green-50 border border-green-200 rounded-2xl px-4 py-3 flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-green-800 text-sm font-semibold">Invite sent! Claim URL copied to clipboard.</p>
-              <p className="text-green-700 text-xs mt-0.5 truncate">{copiedUrl}</p>
-            </div>
-            <button onClick={() => { navigator.clipboard.writeText(copiedUrl); }} className="flex-shrink-0">
-              <Copy className="w-3.5 h-3.5 text-green-600" />
-            </button>
-          </div>
-        )}
-
-        <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit">
-          {([['overview', 'Overview'], ['add_newsletter', 'Add Newsletter'], ['add_listing', 'Add Listing']] as const).map(([key, label]) => (
-            <button key={key} onClick={() => setSubView(key)} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${subView === key ? 'bg-white text-[#1d1d1f] shadow-sm' : 'text-[#6e6e73] hover:text-[#1d1d1f]'}`}>{label}</button>
-          ))}
-        </div>
-
-        {subView === 'overview' && (
-          <div className="space-y-6">
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[#1d1d1f] font-semibold text-sm flex items-center gap-2"><BookOpen className="w-4 h-4" /> Newsletters ({sellerNewsletters.length})</h3>
-                <button onClick={() => setSubView('add_newsletter')} className="text-xs text-[#6e6e73] hover:text-[#1d1d1f] border border-black/[0.08] px-2.5 py-1 rounded-lg transition-all">+ Add</button>
-              </div>
-              {sellerNewsletters.length === 0 ? (
-                <p className="text-[#aeaeb2] text-sm">No newsletters yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {sellerNewsletters.map(nl => (
-                    <div key={nl.id} className="bg-white border border-black/[0.06] rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[#1d1d1f] font-semibold text-sm">{nl.name}</p>
-                        <p className="text-[#6e6e73] text-xs">{[nl.niche, nl.primary_geography, nl.subscriber_count ? `${Number(nl.subscriber_count).toLocaleString()} subs` : null].filter(Boolean).join(' · ')}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[#1d1d1f] font-semibold text-sm flex items-center gap-2"><List className="w-4 h-4" /> Listings ({sellerListings.length})</h3>
-                <button onClick={() => setSubView('add_listing')} className="text-xs text-[#6e6e73] hover:text-[#1d1d1f] border border-black/[0.08] px-2.5 py-1 rounded-lg transition-all">+ Add</button>
-              </div>
-              {sellerListings.length === 0 ? (
-                <p className="text-[#aeaeb2] text-sm">No listings yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {sellerListings.map(l => (
-                    <div key={l.id} className="bg-white border border-black/[0.06] rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-[#1d1d1f] font-semibold text-sm">{l.property_name}</p>
-                        <p className="text-[#6e6e73] text-xs">{l.slot_type} · {l.date_label} · ${Number(l.original_price).toLocaleString()}</p>
-                      </div>
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${l.status === 'live' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-[#f5f5f7] text-[#6e6e73] border-black/[0.08]'}`}>{l.status}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {subView === 'add_newsletter' && (
-          <div className="max-w-lg bg-white border border-black/[0.06] rounded-3xl p-6 space-y-4">
-            <h3 className="text-[#1d1d1f] font-semibold text-sm">Add newsletter for {selectedSeller.display_name}</h3>
-            <div>
-              <label className={labelCls}>Newsletter name <span className="text-red-400">*</span></label>
-              <input type="text" value={newsletterForm.name} onChange={e => setNewsletterForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. SaaS Insider" className={inputCls} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelCls}>Publisher</label>
-                <input type="text" value={newsletterForm.publisher_name} onChange={e => setNewsletterForm(p => ({ ...p, publisher_name: e.target.value }))} placeholder={selectedSeller.company} className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Subscribers</label>
-                <input type="number" value={newsletterForm.subscriber_count} onChange={e => setNewsletterForm(p => ({ ...p, subscriber_count: e.target.value }))} placeholder="e.g. 45000" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Avg open rate</label>
-                <input type="text" value={newsletterForm.avg_open_rate} onChange={e => setNewsletterForm(p => ({ ...p, avg_open_rate: e.target.value }))} placeholder="e.g. 42%" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Niche</label>
-                <select value={newsletterForm.niche} onChange={e => setNewsletterForm(p => ({ ...p, niche: e.target.value }))} className={selectCls}>
-                  <option value="">Select…</option>
-                  {NEWSLETTER_NICHES.map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Geography</label>
-                <select value={newsletterForm.primary_geography} onChange={e => setNewsletterForm(p => ({ ...p, primary_geography: e.target.value }))} className={selectCls}>
-                  <option value="">Select…</option>
-                  {GEOGRAPHIES.map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Send frequency</label>
-                <select value={newsletterForm.send_frequency} onChange={e => setNewsletterForm(p => ({ ...p, send_frequency: e.target.value }))} className={selectCls}>
-                  <option value="">Select…</option>
-                  {SEND_FREQUENCIES.map(f => <option key={f} value={f}>{f}</option>)}
-                </select>
-              </div>
-            </div>
-            <div>
-              <label className={labelCls}>Website URL</label>
-              <input type="url" value={newsletterForm.website_url} onChange={e => setNewsletterForm(p => ({ ...p, website_url: e.target.value }))} placeholder="https://yournewsletter.com" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Description</label>
-              <textarea value={newsletterForm.description} onChange={e => setNewsletterForm(p => ({ ...p, description: e.target.value }))} rows={2} className={inputCls + " resize-none"} placeholder="Brief audience description…" />
-            </div>
-            <div className="flex gap-2">
-              <button onClick={createNewsletter} disabled={saving || !newsletterForm.name.trim()} className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <BookOpen className="w-4 h-4" />}
-                Save newsletter
-              </button>
-              <button onClick={() => setSubView('overview')} className="text-[#6e6e73] hover:text-[#1d1d1f] text-sm px-4 py-2.5 rounded-xl border border-black/[0.08] transition-all">Cancel</button>
-            </div>
-          </div>
-        )}
-
-        {subView === 'add_listing' && (
-          <div className="max-w-lg bg-white border border-black/[0.06] rounded-3xl p-6 space-y-4">
-            <h3 className="text-[#1d1d1f] font-semibold text-sm">Add listing for {selectedSeller.display_name}</h3>
-            <div>
-              <label className={labelCls}>Newsletter / Property name <span className="text-red-400">*</span></label>
-              {sellerNewsletters.length > 0 ? (
-                <select value={listingForm.property_name} onChange={e => {
-                  const nl = sellerNewsletters.find(n => n.name === e.target.value);
-                  setListingForm(p => ({
-                    ...p,
-                    property_name: e.target.value,
-                    audience: nl?.niche ?? p.audience,
-                    location: nl?.primary_geography ?? p.location,
-                    subscribers: nl?.subscriber_count?.toString() ?? p.subscribers,
-                    open_rate: nl?.avg_open_rate ?? p.open_rate,
-                  }));
-                }} className={selectCls}>
-                  <option value="">Select newsletter…</option>
-                  {sellerNewsletters.map(nl => <option key={nl.id} value={nl.name}>{nl.name}</option>)}
-                </select>
-              ) : (
-                <input type="text" value={listingForm.property_name} onChange={e => setListingForm(p => ({ ...p, property_name: e.target.value }))} placeholder="e.g. SaaS Insider" className={inputCls} />
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelCls}>Slot type <span className="text-red-400">*</span></label>
-                <select value={listingForm.slot_type} onChange={e => setListingForm(p => ({ ...p, slot_type: e.target.value }))} className={selectCls}>
-                  {SLOT_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Price (USD) <span className="text-red-400">*</span></label>
-                <input type="number" value={listingForm.original_price} onChange={e => setListingForm(p => ({ ...p, original_price: e.target.value }))} placeholder="e.g. 1500" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Issue date label <span className="text-red-400">*</span></label>
-                <input type="text" value={listingForm.date_label} onChange={e => setListingForm(p => ({ ...p, date_label: e.target.value }))} placeholder="e.g. May 12 issue" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Booking deadline <span className="text-red-400">*</span></label>
-                <input type="datetime-local" value={listingForm.deadline_at} onChange={e => setListingForm(p => ({ ...p, deadline_at: e.target.value }))} className={selectCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Niche / Audience</label>
-                <select value={listingForm.audience} onChange={e => setListingForm(p => ({ ...p, audience: e.target.value }))} className={selectCls}>
-                  <option value="">Select…</option>
-                  {NEWSLETTER_NICHES.map(n => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Geography</label>
-                <select value={listingForm.location} onChange={e => setListingForm(p => ({ ...p, location: e.target.value }))} className={selectCls}>
-                  <option value="">Select…</option>
-                  {GEOGRAPHIES.map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Subscriber count</label>
-                <input type="number" value={listingForm.subscribers} onChange={e => setListingForm(p => ({ ...p, subscribers: e.target.value }))} placeholder="e.g. 45000" className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Avg open rate</label>
-                <input type="text" value={listingForm.open_rate} onChange={e => setListingForm(p => ({ ...p, open_rate: e.target.value }))} placeholder="e.g. 42%" className={inputCls} />
-              </div>
-            </div>
-            <div>
-              <label className={labelCls}>Deliverables detail</label>
-              <textarea value={listingForm.deliverables_detail} onChange={e => setListingForm(p => ({ ...p, deliverables_detail: e.target.value }))} rows={2} className={inputCls + " resize-none"} placeholder="Word count, placement, format…" />
-            </div>
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox" checked={listingForm.auto_discount_enabled} onChange={e => setListingForm(p => ({ ...p, auto_discount_enabled: e.target.checked }))} className="w-4 h-4 rounded accent-[#1d1d1f]" />
-                <span className="text-sm text-[#1d1d1f] font-medium">Enable auto-discount</span>
-              </label>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={createListing} disabled={saving || !listingForm.property_name.trim() || !listingForm.deadline_at || !listingForm.original_price} className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all">
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                Publish listing
-              </button>
-              <button onClick={() => setSubView('overview')} className="text-[#6e6e73] hover:text-[#1d1d1f] text-sm px-4 py-2.5 rounded-xl border border-black/[0.08] transition-all">Cancel</button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-[#1d1d1f] font-semibold text-base">Managed Sellers</h2>
-          <p className="text-[#6e6e73] text-sm mt-0.5">Create and manage seller accounts on behalf of newsletter owners.</p>
-        </div>
-        <button onClick={() => setView('create_seller')} className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-all">
-          <UserPlus className="w-4 h-4" />
-          Add seller
-        </button>
-      </div>
-
-      {sellers.length === 0 ? (
-        <div className="text-center py-16 text-[#aeaeb2]">
-          <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p className="font-medium mb-1">No managed sellers yet</p>
-          <p className="text-xs">Create a seller account to manage newsletters and listings on their behalf.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {sellers.map(seller => (
-            <div key={seller.id} className="bg-white border border-black/[0.06] rounded-2xl p-4 flex items-center gap-4">
-              <div className="w-10 h-10 bg-[#f5f5f7] border border-black/[0.06] rounded-xl flex items-center justify-center flex-shrink-0">
-                <span className="font-bold text-sm text-[#1d1d1f]">{seller.display_name.charAt(0).toUpperCase()}</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-[#1d1d1f] font-semibold text-sm">{seller.display_name}</p>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${seller.account_claimed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                    {seller.account_claimed ? 'Claimed' : 'Unclaimed'}
-                  </span>
-                </div>
-                <p className="text-[#6e6e73] text-xs truncate">{seller.email}{seller.company ? ` · ${seller.company}` : ''}</p>
-                {seller.invite_sent_at && (
-                  <p className="text-[#aeaeb2] text-[10px] mt-0.5">Invite sent {new Date(seller.invite_sent_at).toLocaleDateString()}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <button onClick={() => sendInvite(seller)} disabled={!!inviteSending} className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-xs border border-black/[0.08] hover:border-black/[0.15] px-2.5 py-1.5 rounded-lg transition-all">
-                  {inviteSending === seller.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                  Send invite
-                </button>
-                <button onClick={() => openSellerDetail(seller)} className="flex items-center gap-1.5 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all">
-                  <Eye className="w-3 h-3" />
-                  Manage
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {copiedUrl && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#1d1d1f] text-white text-sm font-medium px-5 py-3 rounded-2xl shadow-xl flex items-center gap-2 z-50">
-          <CheckCircle className="w-4 h-4 text-green-400" />
-          Invite sent · Claim URL copied to clipboard
-        </div>
-      )}
     </div>
   );
 }

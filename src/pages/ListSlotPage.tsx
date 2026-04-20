@@ -1,565 +1,1036 @@
-import { useState, useEffect } from 'react';
-import { ArrowLeft, Check, ChevronRight, Loader2, BookOpen, Users, BarChart2, Globe } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { Mail, ChevronLeft, CheckCircle, AlertTriangle, Loader2, DollarSign, Users, BarChart2, Tag, Shield, Zap, Plus, X, CircleUser as UserCircle, ArrowRight, ChevronRight, Info, BookOpen } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../context/AuthContext';
 import { sendSlotListedEmail } from '../lib/email';
-import type { MediaProfile, Newsletter } from '../types';
+import { useAuth } from '../context/AuthContext';
+import TagInput from '../components/TagInput';
+import type { MediaType, MediaProfile } from '../types';
 
 interface ListSlotPageProps {
   onBack: () => void;
-  onEditProfile: () => void;
-  preselectedNewsletterId?: string | null;
+  onEditProfile?: () => void;
 }
 
-interface FormState {
-  newsletter_id: string | null;
-  property_name: string;
-  media_company_name: string;
+interface FormData {
+  media_type: MediaType;
   media_owner_name: string;
+  media_company_name: string;
+  property_name: string;
   audience: string;
   location: string;
   subscribers: string;
   open_rate: string;
+  ctr: string;
   slot_type: string;
   date_label: string;
   posting_date_start: string;
-  posting_date_end: string;
   posting_time: string;
   deadline_at: string;
   original_price: string;
-  slots_total: string;
-  deliverables_detail: string;
-  past_advertisers: string;
+  discounted_price: string;
   auto_discount_enabled: boolean;
-  media_profile_id: string | null;
+  slots_remaining: string;
+  past_advertisers: string[];
+  advertiser_input: string;
+  seller_bio: string;
+  seller_website_url: string;
+  seller_company_url: string;
+  seller_linkedin_url: string;
+  seller_twitter_url: string;
+  portfolio_links: string[];
+  portfolio_input: string;
+  tags: string[];
 }
 
-const BLANK: FormState = {
-  newsletter_id: null,
-  property_name: '',
-  media_company_name: '',
+const INITIAL: FormData = {
+  media_type: 'newsletter',
   media_owner_name: '',
+  media_company_name: '',
+  property_name: '',
   audience: '',
   location: '',
   subscribers: '',
   open_rate: '',
-  slot_type: 'Sponsored post',
+  ctr: '',
+  slot_type: '',
   date_label: '',
   posting_date_start: '',
-  posting_date_end: '',
   posting_time: '',
   deadline_at: '',
   original_price: '',
-  slots_total: '1',
-  deliverables_detail: '',
-  past_advertisers: '',
+  discounted_price: '',
   auto_discount_enabled: true,
-  media_profile_id: null,
+  slots_remaining: '1',
+  past_advertisers: [],
+  advertiser_input: '',
+  seller_bio: '',
+  seller_website_url: '',
+  seller_company_url: '',
+  seller_linkedin_url: '',
+  seller_twitter_url: '',
+  portfolio_links: [],
+  portfolio_input: '',
+  tags: [],
 };
 
-const SLOT_TYPES = [
-  'Sponsored post', 'Dedicated send', 'Banner ad', 'Classified ad',
-  'Podcast ad', 'Social post', 'Product feature', 'Newsletter mention', 'Other',
-];
+const NEWSLETTER_SLOT_TYPES = ['Featured sponsor', 'Banner + mention', 'Dedicated send', 'Native ad', 'Footer sponsor', 'Solo blast'];
+const LOCATIONS = ['US', 'UK', 'US / UK', 'Ireland / UK / US', 'UK / Europe', 'Europe', 'Global', 'APAC', 'LATAM'];
 
-const AUDIENCE_OPTIONS = [
-  'B2B SaaS', 'Marketing', 'Finance', 'Fintech', 'Startup', 'Tech', 'AI',
-  'eCommerce', 'Health & Wellness', 'Fitness', 'Food', 'Travel', 'Fashion & Beauty',
-  'Education', 'Crypto', 'Investing', 'Real Estate', 'Climate', 'Sports', 'Entertainment',
-  'Creator Economy', 'HR & People', 'Product', 'Design', 'Dev & Engineering', 'General',
-];
-
-const GEOGRAPHIES = [
-  'US', 'UK', 'US / UK', 'Ireland / UK / US', 'UK / Europe', 'Europe',
-  'Global', 'APAC', 'LATAM', 'Canada', 'Australia', 'Middle East',
-];
-
-function SectionHeader({ number, title, subtitle }: { number: string; title: string; subtitle?: string }) {
-  return (
-    <div className="mb-5">
-      <div className="flex items-center gap-2 mb-1">
-        <span className="w-6 h-6 rounded-full bg-[#1d1d1f] text-white text-[11px] font-bold flex items-center justify-center flex-shrink-0">{number}</span>
-        <h2 className="text-[#1d1d1f] font-semibold text-base">{title}</h2>
-      </div>
-      {subtitle && <p className="text-[#6e6e73] text-sm ml-8">{subtitle}</p>}
-    </div>
-  );
+function getMinDeadline(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toISOString().slice(0, 16);
 }
 
-function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
-  return (
-    <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">
-      {children}{required && <span className="text-red-400 ml-0.5">*</span>}
-    </label>
-  );
+function getMaxDeadline(): string {
+  const d = new Date();
+  d.setDate(d.getDate() + 35);
+  return d.toISOString().slice(0, 16);
 }
 
-function TextInput({ value, onChange, placeholder, type = 'text' }: { value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) {
-  return (
-    <input
-      type={type}
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all [color-scheme:light]"
-    />
-  );
-}
+const STEPS = [
+  { number: 1, title: 'The slot', desc: 'Name, type, dates & price' },
+  { number: 2, title: 'Your audience', desc: 'Who reads your newsletter' },
+  { number: 3, title: 'Review & publish', desc: 'Confirm and go live' },
+];
 
-export default function ListSlotPage({ onBack, onEditProfile, preselectedNewsletterId }: ListSlotPageProps) {
+export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProps) {
   const { user, profile } = useAuth();
-  const [form, setForm] = useState<FormState>({ ...BLANK, newsletter_id: preselectedNewsletterId ?? null });
-  const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
+  const [step, setStep] = useState(1);
   const [mediaProfiles, setMediaProfiles] = useState<MediaProfile[]>([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof FormState | 'general', string>>>({});
-
-  const set = (field: keyof FormState, value: any) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: undefined }));
-  };
+  const [selectedMediaProfileId, setSelectedMediaProfileId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
-    Promise.all([
-      supabase.from('newsletters').select('*').eq('seller_user_id', user.id).eq('is_active', true).order('created_at', { ascending: false }),
-      supabase.from('media_profiles').select('*').eq('seller_user_id', user.id).eq('is_active', true).order('created_at', { ascending: true }),
-    ]).then(([nlRes, mpRes]) => {
-      setNewsletters((nlRes.data as Newsletter[]) ?? []);
-      setMediaProfiles((mpRes.data as MediaProfile[]) ?? []);
-    });
+    supabase
+      .from('media_profiles')
+      .select('*')
+      .eq('seller_user_id', user.id)
+      .eq('is_active', true)
+      .order('created_at', { ascending: true })
+      .then(({ data }) => {
+        const list = (data as MediaProfile[]) ?? [];
+        setMediaProfiles(list);
+        if (list.length === 1) setSelectedMediaProfileId(list[0].id);
+      });
   }, [user]);
 
-  const selectedNewsletter = newsletters.find(n => n.id === form.newsletter_id) ?? null;
-  void selectedNewsletter;
+  const profileDefaults: Partial<FormData> = profile ? {
+    media_owner_name: profile.display_name || '',
+    media_company_name: profile.company || '',
+    seller_bio: profile.seller_bio || profile.bio || '',
+    seller_website_url: profile.seller_website_url || profile.website || '',
+    seller_company_url: profile.seller_company_url || '',
+    seller_linkedin_url: profile.seller_linkedin_url || '',
+    seller_twitter_url: profile.seller_twitter_url || '',
+  } : {};
 
-  useEffect(() => {
-    const nl = newsletters.find(n => n.id === form.newsletter_id);
-    if (!nl) return;
-    setForm(prev => ({
-      ...prev,
-      property_name: nl.name || prev.property_name,
-      media_company_name: nl.publisher_name || prev.media_company_name,
-      subscribers: nl.subscriber_count?.toString() ?? prev.subscribers,
-      open_rate: nl.avg_open_rate ?? prev.open_rate,
-      location: nl.primary_geography ?? prev.location,
-      audience: nl.niche ?? prev.audience,
-    }));
-  }, [form.newsletter_id]);
+  const [form, setForm] = useState<FormData>({ ...INITIAL, ...profileDefaults });
+  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  const validate = () => {
-    const e: typeof errors = {};
-    if (!form.property_name.trim()) e.property_name = 'Newsletter name is required';
-    if (!form.slot_type) e.slot_type = 'Slot type is required';
-    if (!form.date_label.trim()) e.date_label = 'Issue date / label is required';
-    if (!form.deadline_at) e.deadline_at = 'Booking deadline is required';
-    if (!form.original_price || isNaN(Number(form.original_price)) || Number(form.original_price) <= 0) {
-      e.original_price = 'Valid price is required';
+  const set = <K extends keyof FormData>(key: K, value: FormData[K]) =>
+    setForm(prev => ({ ...prev, [key]: value }));
+
+  const discount = useMemo(() => {
+    const orig = parseFloat(form.original_price);
+    const disc = parseFloat(form.discounted_price);
+    if (!orig || !disc || orig <= 0 || disc >= orig) return null;
+    return Math.round(((orig - disc) / orig) * 100);
+  }, [form.original_price, form.discounted_price]);
+
+  const savings = useMemo(() => {
+    const orig = parseFloat(form.original_price);
+    const disc = parseFloat(form.discounted_price);
+    if (!orig || !disc) return null;
+    return orig - disc;
+  }, [form.original_price, form.discounted_price]);
+
+  const addAdvertiser = () => {
+    const val = form.advertiser_input.trim();
+    if (!val || form.past_advertisers.includes(val)) return;
+    set('past_advertisers', [...form.past_advertisers, val]);
+    set('advertiser_input', '');
+  };
+
+  const removeAdvertiser = (a: string) =>
+    set('past_advertisers', form.past_advertisers.filter(x => x !== a));
+
+  const validateStep1 = (): Partial<Record<keyof FormData, string>> => {
+    const e: Partial<Record<keyof FormData, string>> = {};
+    if (!form.property_name.trim()) e.property_name = 'Required';
+    if (!form.slot_type) e.slot_type = 'Required';
+    if (!form.date_label) e.date_label = 'Required';
+    if (!form.deadline_at) e.deadline_at = 'Required';
+    if (!form.original_price || isNaN(parseFloat(form.original_price))) e.original_price = 'Required';
+    if (!form.discounted_price || isNaN(parseFloat(form.discounted_price))) e.discounted_price = 'Required';
+    if (parseFloat(form.discounted_price) >= parseFloat(form.original_price)) {
+      e.discounted_price = 'Must be less than original price';
     }
+    if (!form.slots_remaining || parseInt(form.slots_remaining) < 1) e.slots_remaining = 'Required';
     return e;
   };
 
+  const validateStep2 = (): Partial<Record<keyof FormData, string>> => {
+    const e: Partial<Record<keyof FormData, string>> = {};
+    if (!form.subscribers) e.subscribers = 'Required';
+    if (!form.audience.trim()) e.audience = 'Required';
+    if (!form.location) e.location = 'Required';
+    if (!form.media_owner_name.trim()) e.media_owner_name = 'Required';
+    if (!form.media_company_name.trim()) e.media_company_name = 'Required';
+    return e;
+  };
+
+  const handleNext = () => {
+    if (step === 1) {
+      const e = validateStep1();
+      setErrors(e);
+      if (Object.keys(e).length === 0) setStep(2);
+    } else if (step === 2) {
+      const e = validateStep2();
+      setErrors(e);
+      if (Object.keys(e).length === 0) setStep(3);
+    }
+  };
+
+  const handleBack = () => {
+    setErrors({});
+    if (step > 1) setStep(step - 1);
+    else onBack();
+  };
+
   const handleSubmit = async () => {
-    const e = validate();
-    if (Object.keys(e).length > 0) { setErrors(e); return; }
-    if (!user) return;
-    setSubmitting(true);
-
-    const price = Math.round(Number(form.original_price));
-    const pastAdvertisers = form.past_advertisers
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean);
-
-    const payload: Record<string, any> = {
-      media_type: 'newsletter',
-      seller_user_id: user.id,
-      seller_email: user.email,
-      media_owner_name: form.media_owner_name.trim() || profile?.display_name || user.email || '',
-      media_company_name: form.media_company_name.trim(),
-      property_name: form.property_name.trim(),
-      audience: form.audience || 'General',
-      location: form.location || 'Global',
-      subscribers: form.subscribers ? parseInt(form.subscribers, 10) : null,
-      open_rate: form.open_rate.trim() || null,
-      slot_type: form.slot_type,
-      date_label: form.date_label.trim(),
-      posting_date_start: form.posting_date_start || null,
-      posting_date_end: form.posting_date_end || null,
-      posting_time: form.posting_time || null,
-      deadline_at: new Date(form.deadline_at).toISOString(),
-      original_price: price,
-      discounted_price: price,
-      slots_remaining: parseInt(form.slots_total, 10) || 1,
-      slots_total: parseInt(form.slots_total, 10) || 1,
-      past_advertisers: pastAdvertisers,
-      deliverables_detail: form.deliverables_detail.trim() || null,
-      status: 'live',
-      auto_discount_enabled: form.auto_discount_enabled,
-      newsletter_id: form.newsletter_id || null,
-      media_profile_id: form.media_profile_id || null,
-    };
-
-    const { error } = await supabase.from('listings').insert(payload);
-    if (error) {
-      setErrors({ general: 'Something went wrong. Please try again.' });
-      setSubmitting(false);
+    if (!user) {
+      setErrors({ media_owner_name: 'You must be signed in to list a slot.' });
+      return;
+    }
+    const e1 = validateStep1();
+    const e2 = validateStep2();
+    const allErrors = { ...e1, ...e2 };
+    if (Object.keys(allErrors).length > 0) {
+      setErrors(allErrors);
+      setStep(Object.keys(e1).length > 0 ? 1 : 2);
       return;
     }
 
-    sendSlotListedEmail(user.email!, {
-      property_name: payload.property_name,
-      slot_type: payload.slot_type,
-      date_label: payload.date_label,
-      original_price: payload.original_price,
-      deadline_at: payload.deadline_at,
-      seller_name: payload.media_owner_name,
-    });
+    setSubmitting(true);
+
+    const payload = {
+      seller_user_id: user!.id,
+      seller_email: user!.email,
+      media_type: 'newsletter' as MediaType,
+      media_owner_name: form.media_owner_name.trim(),
+      media_company_name: form.media_company_name.trim(),
+      property_name: form.property_name.trim(),
+      audience: form.audience.trim(),
+      location: form.location,
+      subscribers: form.subscribers ? parseInt(form.subscribers) : null,
+      open_rate: form.open_rate ? form.open_rate.trim() : null,
+      ctr: form.ctr ? form.ctr.trim() : null,
+      downloads: null,
+      ad_type: null,
+      followers: null,
+      engagement_rate: null,
+      deliverable: null,
+      slot_type: form.slot_type,
+      date_label: form.date_label,
+      posting_date_start: form.posting_date_start || null,
+      posting_time: form.posting_time || null,
+      deadline_at: new Date(form.deadline_at).toISOString(),
+      original_price: parseInt(form.original_price),
+      discounted_price: parseInt(form.discounted_price),
+      auto_discount_enabled: form.auto_discount_enabled,
+      slots_remaining: parseInt(form.slots_remaining),
+      past_advertisers: form.past_advertisers,
+      status: 'live',
+      seller_bio: (profile?.seller_bio || profile?.bio || form.seller_bio).trim() || null,
+      seller_website_url: (profile?.seller_website_url || profile?.website || form.seller_website_url).trim() || null,
+      seller_company_url: (profile?.seller_company_url || form.seller_company_url).trim() || null,
+      seller_linkedin_url: (profile?.seller_linkedin_url || form.seller_linkedin_url).trim() || null,
+      seller_twitter_url: (profile?.seller_twitter_url || form.seller_twitter_url).trim() || null,
+      seller_instagram_url: null,
+      seller_youtube_url: null,
+      seller_tiktok_url: null,
+      seller_podcast_url: null,
+      portfolio_links: form.portfolio_links.length > 0 ? form.portfolio_links : null,
+      media_profile_id: selectedMediaProfileId || null,
+    };
+
+    const { data: insertedListing, error } = await supabase
+      .from('listings')
+      .insert(payload)
+      .select('id')
+      .maybeSingle();
+
+    if (error) {
+      setSubmitting(false);
+      setErrors({ media_owner_name: error.message });
+      return;
+    }
+
+    if (insertedListing) {
+      const geoSlugs: Array<{ name: string; displayName: string }> = [];
+      const locationLower = (payload.location || '').toLowerCase();
+      const GEO_MAP: Record<string, string> = {
+        us: 'US', uk: 'UK', europe: 'Europe', ireland: 'Ireland',
+        global: 'Global', australia: 'Australia', canada: 'Canada',
+        asia: 'Asia', latam: 'LatAm', 'middle-east': 'Middle East',
+      };
+      for (const [slug, displayName] of Object.entries(GEO_MAP)) {
+        const keyword = slug === 'latam' ? 'latam' : slug.replace('-', ' ');
+        if (locationLower.includes(keyword) || locationLower.includes(slug)) {
+          geoSlugs.push({ name: slug, displayName });
+        }
+      }
+
+      const nicheSlugs: Array<{ name: string; displayName: string }> = [];
+      const audienceLower = (payload.audience || '').toLowerCase();
+      const NICHE_MAP: Record<string, string> = {
+        saas: 'SaaS', ecommerce: 'eCommerce', fintech: 'Fintech', startup: 'Startup',
+        marketing: 'Marketing', fitness: 'Fitness', beauty: 'Beauty', travel: 'Travel',
+        crypto: 'Crypto', ai: 'AI', b2b: 'B2B', b2c: 'B2C', health: 'Health',
+        tech: 'Tech', food: 'Food', fashion: 'Fashion', education: 'Education', finance: 'Finance',
+      };
+      for (const [slug, displayName] of Object.entries(NICHE_MAP)) {
+        if (audienceLower.includes(slug)) {
+          nicheSlugs.push({ name: slug, displayName });
+        }
+      }
+
+      const allTagsToLink = [
+        ...form.tags.map(name => ({ name, displayName: name.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), tagType: 'general' as const })),
+        ...geoSlugs.map(t => ({ ...t, tagType: 'geography' as const })),
+        ...nicheSlugs.map(t => ({ ...t, tagType: 'niche' as const })),
+      ];
+
+      for (const { name, displayName, tagType } of allTagsToLink) {
+        const { data: tagRow } = await supabase
+          .from('tags')
+          .upsert({ name, display_name: displayName, tag_type: tagType }, { onConflict: 'name' })
+          .select('id')
+          .maybeSingle();
+        if (tagRow) {
+          await supabase
+            .from('listing_tags')
+            .insert({ listing_id: insertedListing.id, tag_id: tagRow.id })
+            .then(() => {});
+        }
+      }
+    }
 
     setSubmitting(false);
+
+    if (user?.email) {
+      const originalPrice = parseInt(form.original_price);
+      const discountedPrice = parseInt(form.discounted_price);
+      const discountPct = Math.round(((originalPrice - discountedPrice) / originalPrice) * 100);
+      sendSlotListedEmail(user.email, {
+        property_name: payload.property_name,
+        media_type: payload.media_type,
+        discounted_price: discountedPrice,
+        discount: discountPct,
+        deadline_at: payload.deadline_at,
+        slots_remaining: payload.slots_remaining,
+        seller_name: profile?.display_name || form.media_owner_name,
+      });
+    }
+
     setSubmitted(true);
   };
 
   if (submitted) {
-    return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-20">
-        <div className="w-16 h-16 bg-green-50 border border-green-200 rounded-3xl flex items-center justify-center mb-6">
-          <Check className="w-8 h-8 text-green-600" />
+    return <SuccessScreen onBack={onBack} propertyName={form.property_name} />;
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-[68px] pb-24">
+
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-2 text-[#6e6e73] hover:text-[#1d1d1f] text-[13px] font-medium mb-8 transition-colors group"
+        >
+          <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
+          {step === 1 ? 'Back to marketplace' : 'Back'}
+        </button>
+
+        {/* Header */}
+        <div className="mb-8">
+          <div className="inline-flex items-center gap-2 bg-green-50 border border-green-100 text-green-700 text-[11px] font-semibold px-3 py-1.5 rounded-full mb-4 uppercase tracking-widest">
+            <Mail className="w-3 h-3" />
+            Newsletter Publisher
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-semibold text-[#1d1d1f] mb-2 tracking-[-0.02em]">List your newsletter slot</h1>
+          <p className="text-[#6e6e73] text-[16px] font-light">
+            Got an unsold sponsorship this week? Fill your slot before it goes out.
+          </p>
         </div>
-        <h2 className="text-[#1d1d1f] text-2xl font-semibold mb-2 tracking-[-0.02em]">Listing published!</h2>
-        <p className="text-[#6e6e73] text-[15px] mb-8 text-center max-w-sm leading-relaxed">
-          Your slot is now live on EndingThisWeek.media and will be matched with relevant buyers.
+
+        {/* Step indicator */}
+        <div className="flex items-center gap-0 mb-8">
+          {STEPS.map((s, i) => (
+            <div key={s.number} className="flex items-center flex-1 min-w-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-bold transition-all
+                  ${step > s.number ? 'bg-green-500 text-white' : step === s.number ? 'bg-[#1d1d1f] text-white' : 'bg-[#e5e5ea] text-[#aeaeb2]'}`}
+                >
+                  {step > s.number ? <CheckCircle className="w-4 h-4" /> : s.number}
+                </div>
+                <div className="hidden sm:block min-w-0">
+                  <p className={`text-[12px] font-semibold truncate ${step === s.number ? 'text-[#1d1d1f]' : step > s.number ? 'text-green-600' : 'text-[#aeaeb2]'}`}>{s.title}</p>
+                  <p className="text-[10px] text-[#aeaeb2] truncate">{s.desc}</p>
+                </div>
+              </div>
+              {i < STEPS.length - 1 && (
+                <div className={`flex-1 h-px mx-3 transition-all ${step > s.number ? 'bg-green-300' : 'bg-[#e5e5ea]'}`} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Step 1: The Slot */}
+        {step === 1 && (
+          <div className="space-y-5">
+            {/* Media profile selector */}
+            {mediaProfiles.length > 0 ? (
+              <div className="bg-white border border-black/[0.06] rounded-3xl p-6 shadow-sm">
+                <SectionHeader number="0" title="Link a media profile" />
+                <p className="text-[#6e6e73] text-[13px] mb-4">Choose which newsletter this slot belongs to. Buyers will see the full media profile automatically.</p>
+                <div className="space-y-2">
+                  {mediaProfiles.map(mp => {
+                    const active = selectedMediaProfileId === mp.id;
+                    return (
+                      <button
+                        key={mp.id}
+                        type="button"
+                        onClick={() => setSelectedMediaProfileId(active ? null : mp.id)}
+                        className={`w-full flex items-center gap-3 p-3.5 rounded-2xl border-2 text-left transition-all ${
+                          active
+                            ? 'border-[#1d1d1f] bg-[#1d1d1f]/[0.02]'
+                            : 'border-black/[0.08] hover:border-black/[0.2]'
+                        }`}
+                      >
+                        {mp.logo_url ? (
+                          <img src={mp.logo_url} alt={mp.newsletter_name} className="w-10 h-10 rounded-xl object-cover flex-shrink-0 border border-black/[0.06]" onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-[#f5f5f7] border border-black/[0.06] flex items-center justify-center flex-shrink-0">
+                            <span className="text-[#6e6e73] font-bold">{mp.newsletter_name.charAt(0)}</span>
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[#1d1d1f] font-semibold text-sm truncate">{mp.newsletter_name}</p>
+                          <p className="text-[#6e6e73] text-xs truncate">{mp.tagline || mp.category || '—'}</p>
+                        </div>
+                        {active && <CheckCircle className="w-4 h-4 text-[#1d1d1f] flex-shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+                {!selectedMediaProfileId && (
+                  <p className="text-[#aeaeb2] text-[11px] mt-2.5">No profile selected — you can still publish a slot, but buyers won't see your newsletter profile.</p>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-4">
+                <BookOpen className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-amber-900 font-semibold text-sm">No media profiles yet</p>
+                  <p className="text-amber-700 text-xs mt-0.5 leading-snug">Create a media profile in your dashboard to let buyers see full newsletter stats, past advertisers, and a sample issue. It only takes a minute and applies to all your listings.</p>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-white border border-black/[0.06] rounded-3xl p-6 shadow-sm">
+              <SectionHeader number="1" title="About your newsletter" />
+
+              <div className="space-y-4">
+                <Field label="Newsletter name" required error={errors.property_name} hint="e.g. SaaS Growth Weekly">
+                  <input
+                    type="text"
+                    value={form.property_name}
+                    onChange={e => set('property_name', e.target.value)}
+                    placeholder="SaaS Growth Weekly"
+                    className={inputCls(!!errors.property_name)}
+                    autoFocus
+                  />
+                </Field>
+
+                <Field label="Sponsorship type" required error={errors.slot_type} hint="What the buyer gets">
+                  <SelectField
+                    value={form.slot_type}
+                    onChange={v => set('slot_type', v)}
+                    options={NEWSLETTER_SLOT_TYPES}
+                    placeholder="Select a type..."
+                    hasError={!!errors.slot_type}
+                  />
+                </Field>
+              </div>
+            </div>
+
+            <div className="bg-white border border-black/[0.06] rounded-3xl p-6 shadow-sm">
+              <SectionHeader number="2" title="Dates" />
+
+              <div className="space-y-4">
+                <Field label="Newsletter send date" required error={errors.date_label} hint="The date your ad will go out">
+                  <input
+                    type="date"
+                    value={form.posting_date_start}
+                    onChange={e => {
+                      const v = e.target.value;
+                      set('posting_date_start', v);
+                      if (v) {
+                        const d = new Date(v + 'T00:00:00');
+                        const label = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' });
+                        set('date_label', label);
+                      } else {
+                        set('date_label', '');
+                      }
+                    }}
+                    min={new Date().toISOString().slice(0, 10)}
+                    className={inputCls(!!errors.date_label) + ' [color-scheme:light]'}
+                  />
+                </Field>
+
+                <Field label="Booking deadline" required error={errors.deadline_at}>
+                  <input
+                    type="datetime-local"
+                    value={form.deadline_at}
+                    onChange={e => set('deadline_at', e.target.value)}
+                    min={getMinDeadline()}
+                    max={getMaxDeadline()}
+                    className={inputCls(!!errors.deadline_at) + ' [color-scheme:light]'}
+                  />
+                  <div className="mt-2 flex items-start gap-1.5">
+                    <Info className="w-3 h-3 text-[#aeaeb2] flex-shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-[#aeaeb2] leading-relaxed">The last point buyers can book. Set this a few days before your send date to allow time for ad copy handover.</p>
+                  </div>
+                </Field>
+
+                <Field label="Number of slots available" required error={errors.slots_remaining}>
+                  <input
+                    type="number"
+                    value={form.slots_remaining}
+                    onChange={e => set('slots_remaining', e.target.value)}
+                    min="1"
+                    max="10"
+                    className={inputCls(!!errors.slots_remaining) + ' max-w-[120px]'}
+                  />
+                </Field>
+              </div>
+            </div>
+
+            <div className="bg-white border border-black/[0.06] rounded-3xl p-6 shadow-sm">
+              <SectionHeader number="3" title="Pricing" />
+
+              <div className="mb-5">
+                <p className="text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-3">Pricing mode</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => set('auto_discount_enabled', false)}
+                    className={`flex flex-col gap-1 p-3.5 rounded-2xl border-2 text-left transition-all ${
+                      !form.auto_discount_enabled
+                        ? 'border-[#1d1d1f] bg-[#1d1d1f]/[0.02]'
+                        : 'border-black/[0.08] hover:border-black/[0.2]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[13px] font-semibold text-[#1d1d1f]">No Active Discount</span>
+                      {!form.auto_discount_enabled && <CheckCircle className="w-4 h-4 text-[#1d1d1f]" />}
+                    </div>
+                    <span className="text-[11px] text-[#6e6e73] leading-snug">Price stays fixed until the deadline</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => set('auto_discount_enabled', true)}
+                    className={`flex flex-col gap-1 p-3.5 rounded-2xl border-2 text-left transition-all ${
+                      form.auto_discount_enabled
+                        ? 'border-[#1d1d1f] bg-[#1d1d1f]/[0.02]'
+                        : 'border-black/[0.08] hover:border-black/[0.2]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[13px] font-semibold text-[#1d1d1f]">Auto-Discount Enabled</span>
+                      {form.auto_discount_enabled && <CheckCircle className="w-4 h-4 text-[#1d1d1f]" />}
+                    </div>
+                    <span className="text-[11px] text-[#6e6e73] leading-snug">Price reduces automatically as the deadline approaches (up to 30%)</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="Standard rate" required error={errors.original_price} hint="Your usual rate">
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aeaeb2] text-sm">$</span>
+                    <input
+                      type="number"
+                      value={form.original_price}
+                      onChange={e => set('original_price', e.target.value)}
+                      placeholder="1000"
+                      min="1"
+                      className={inputCls(!!errors.original_price) + ' pl-7'}
+                    />
+                  </div>
+                </Field>
+                <Field label="Your asking price" required error={errors.discounted_price} hint={form.auto_discount_enabled ? 'Starting price — reduces over time' : 'Fixed price for buyers'}>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aeaeb2] text-sm">$</span>
+                    <input
+                      type="number"
+                      value={form.discounted_price}
+                      onChange={e => set('discounted_price', e.target.value)}
+                      placeholder="700"
+                      min="1"
+                      className={inputCls(!!errors.discounted_price) + ' pl-7'}
+                    />
+                  </div>
+                </Field>
+              </div>
+
+              {discount !== null && savings !== null && (
+                <div className="mt-3 flex items-center gap-4 bg-green-50 border border-green-100 rounded-2xl px-4 py-3">
+                  <span className="bg-[#1d1d1f] text-white text-[11px] font-bold px-2 py-0.5 rounded-lg flex-shrink-0">-{discount}%</span>
+                  <span className="text-green-700 text-[13px] font-semibold">Buyers save ${savings.toLocaleString()}</span>
+                  <span className="text-[#aeaeb2] text-[11px] ml-auto">Aim for 20–40% for best results</span>
+                </div>
+              )}
+            </div>
+
+            {Object.keys(errors).length > 0 && (
+              <div className="flex items-center gap-2 bg-orange-50 border border-orange-100 text-orange-600 text-[13px] px-4 py-3 rounded-2xl">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                Please fix the highlighted fields above.
+              </div>
+            )}
+
+            <button
+              onClick={handleNext}
+              className="w-full flex items-center justify-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-8 py-4 rounded-2xl transition-all text-[15px]"
+            >
+              Continue — Your Audience
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Step 2: Audience */}
+        {step === 2 && (
+          <div className="space-y-5">
+            <div className="bg-white border border-black/[0.06] rounded-3xl p-6 shadow-sm">
+              <SectionHeader number="1" title="Audience" />
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Subscribers" required error={errors.subscribers}>
+                    <input
+                      type="number"
+                      value={form.subscribers}
+                      onChange={e => set('subscribers', e.target.value)}
+                      placeholder="42000"
+                      min="0"
+                      className={inputCls(!!errors.subscribers)}
+                    />
+                  </Field>
+                  <Field label="Primary geography" required error={errors.location}>
+                    <SelectOrCustom
+                      value={form.location}
+                      onChange={v => set('location', v)}
+                      options={LOCATIONS}
+                      placeholder="Select..."
+                      hasError={!!errors.location}
+                    />
+                  </Field>
+                </div>
+
+                <Field label="Audience description" required error={errors.audience} hint="Who reads your newsletter">
+                  <input
+                    type="text"
+                    value={form.audience}
+                    onChange={e => set('audience', e.target.value)}
+                    placeholder="B2B SaaS founders and growth marketers"
+                    className={inputCls(!!errors.audience)}
+                  />
+                </Field>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Field label="Open rate" hint="e.g. 44%">
+                    <input
+                      type="text"
+                      value={form.open_rate}
+                      onChange={e => set('open_rate', e.target.value)}
+                      placeholder="44%"
+                      className={inputCls(false)}
+                    />
+                  </Field>
+                  <Field label="CTR" hint="e.g. 3.6%">
+                    <input
+                      type="text"
+                      value={form.ctr}
+                      onChange={e => set('ctr', e.target.value)}
+                      placeholder="3.6%"
+                      className={inputCls(false)}
+                    />
+                  </Field>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white border border-black/[0.06] rounded-3xl p-6 shadow-sm">
+              <SectionHeader number="2" title="About you" />
+
+              {profile && (
+                <div className="flex items-center gap-2 text-[12px] text-[#6e6e73] bg-[#f5f5f7] border border-black/[0.08] rounded-xl px-3 py-2.5 mb-4">
+                  <UserCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>Pre-filled from your account. <button type="button" onClick={onEditProfile} className="text-[#1d1d1f] underline transition-colors">Edit profile</button> to update.</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="Your name" required error={errors.media_owner_name}>
+                  <input
+                    type="text"
+                    value={form.media_owner_name}
+                    onChange={e => set('media_owner_name', e.target.value)}
+                    placeholder="Rachel Byrne"
+                    className={inputCls(!!errors.media_owner_name)}
+                  />
+                </Field>
+                <Field label="Publication / company name" required error={errors.media_company_name}>
+                  <input
+                    type="text"
+                    value={form.media_company_name}
+                    onChange={e => set('media_company_name', e.target.value)}
+                    placeholder="Northstar Media"
+                    className={inputCls(!!errors.media_company_name)}
+                  />
+                </Field>
+              </div>
+            </div>
+
+            {/* Optional extras — collapsible feel but always visible */}
+            <details className="group">
+              <summary className="flex items-center justify-between gap-3 bg-white border border-black/[0.06] rounded-2xl px-5 py-4 cursor-pointer list-none shadow-sm hover:border-black/[0.10] transition-all">
+                <div className="flex items-center gap-2.5">
+                  <Shield className="w-4 h-4 text-[#aeaeb2]" />
+                  <div>
+                    <p className="text-[#1d1d1f] font-semibold text-[13px]">Build trust with buyers</p>
+                    <p className="text-[#aeaeb2] text-[11px]">Past advertisers, tags, bio & links — optional but recommended</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-[#aeaeb2] group-open:rotate-90 transition-transform flex-shrink-0" />
+              </summary>
+
+              <div className="mt-3 space-y-4">
+                <div className="bg-white border border-black/[0.06] rounded-2xl p-5 shadow-sm">
+                  <p className="text-[12px] font-semibold text-[#86868b] uppercase tracking-wider mb-3">Past advertisers</p>
+                  <p className="text-[#6e6e73] text-[13px] mb-3">Recognizable brand names help buyers trust your listing.</p>
+                  <div className="flex gap-2 mb-3">
+                    <input
+                      type="text"
+                      value={form.advertiser_input}
+                      onChange={e => set('advertiser_input', e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addAdvertiser())}
+                      placeholder="e.g. HubSpot, Notion, Shopify"
+                      className={inputCls(false) + ' flex-1'}
+                    />
+                    <button
+                      type="button"
+                      onClick={addAdvertiser}
+                      className="flex items-center gap-1.5 bg-[#f5f5f7] hover:bg-[#e5e5ea] border border-black/[0.08] text-[#1d1d1f] text-[13px] font-medium px-4 py-2.5 rounded-2xl transition-all"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      Add
+                    </button>
+                  </div>
+                  {form.past_advertisers.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {form.past_advertisers.map(a => (
+                        <span key={a} className="flex items-center gap-1.5 text-[13px] text-[#3a3a3c] bg-white border border-black/[0.06] px-3 py-1.5 rounded-full">
+                          {a}
+                          <button onClick={() => removeAdvertiser(a)} className="text-[#aeaeb2] hover:text-[#1d1d1f] transition-colors">
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-white border border-black/[0.06] rounded-2xl p-5 shadow-sm">
+                  <p className="text-[12px] font-semibold text-[#86868b] uppercase tracking-wider mb-3">Tags</p>
+                  <p className="text-[#6e6e73] text-[13px] mb-3">Help buyers find your listing by topic or niche.</p>
+                  <TagInput
+                    selectedTags={form.tags}
+                    onChange={tags => set('tags', tags)}
+                    maxTags={10}
+                  />
+                </div>
+
+                {!profile && (
+                  <div className="bg-white border border-black/[0.06] rounded-2xl p-5 shadow-sm">
+                    <p className="text-[12px] font-semibold text-[#86868b] uppercase tracking-wider mb-3">Bio & links</p>
+                    <div className="space-y-3">
+                      <Field label="Short bio" hint="1–2 sentences about your newsletter">
+                        <textarea
+                          value={form.seller_bio}
+                          onChange={e => set('seller_bio', e.target.value)}
+                          placeholder="SaaS Growth Weekly is a twice-weekly newsletter for B2B founders, curated since 2020."
+                          rows={2}
+                          className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-3 text-[#1d1d1f] text-[14px] placeholder-[#aeaeb2] outline-none transition-all resize-none"
+                        />
+                      </Field>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <Field label="Website">
+                          <input type="url" value={form.seller_website_url} onChange={e => set('seller_website_url', e.target.value)} placeholder="https://yoursite.com" className={inputCls(false)} />
+                        </Field>
+                        <Field label="LinkedIn">
+                          <input type="url" value={form.seller_linkedin_url} onChange={e => set('seller_linkedin_url', e.target.value)} placeholder="https://linkedin.com/in/..." className={inputCls(false)} />
+                        </Field>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </details>
+
+            {Object.keys(errors).length > 0 && (
+              <div className="flex items-center gap-2 bg-orange-50 border border-orange-100 text-orange-600 text-[13px] px-4 py-3 rounded-2xl">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                Please fix the highlighted fields above.
+              </div>
+            )}
+
+            <button
+              onClick={handleNext}
+              className="w-full flex items-center justify-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-8 py-4 rounded-2xl transition-all text-[15px]"
+            >
+              Continue — Review & Publish
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {/* Step 3: Review */}
+        {step === 3 && (
+          <div className="space-y-5">
+            <div className="bg-white border border-black/[0.06] rounded-3xl p-6 shadow-sm">
+              <p className="text-[12px] font-semibold text-[#86868b] uppercase tracking-wider mb-4">Your listing preview</p>
+
+              <div className="space-y-3">
+                <ReviewRow icon={<Mail className="w-3.5 h-3.5" />} label="Newsletter" value={form.property_name} />
+                <ReviewRow icon={<Tag className="w-3.5 h-3.5" />} label="Sponsorship type" value={form.slot_type} />
+                <ReviewRow icon={<BarChart2 className="w-3.5 h-3.5" />} label="Send date" value={form.date_label || '—'} />
+                <ReviewRow icon={<Users className="w-3.5 h-3.5" />} label="Subscribers" value={form.subscribers ? `${parseInt(form.subscribers).toLocaleString()}` : '—'} />
+                <ReviewRow icon={<DollarSign className="w-3.5 h-3.5" />} label="Asking price" value={form.discounted_price ? `$${parseInt(form.discounted_price).toLocaleString()}` : '—'} accent={discount !== null ? `-${discount}% off` : undefined} />
+                <ReviewRow icon={<Shield className="w-3.5 h-3.5" />} label="Slots available" value={form.slots_remaining} />
+              </div>
+
+              <div className="mt-5 pt-5 border-t border-black/[0.06] flex items-center justify-between">
+                <div>
+                  <button onClick={() => { setErrors({}); setStep(1); }} className="text-[12px] text-[#6e6e73] hover:text-[#1d1d1f] font-medium transition-colors">Edit slot details</button>
+                  <span className="text-[#e5e5ea] mx-2">·</span>
+                  <button onClick={() => { setErrors({}); setStep(2); }} className="text-[12px] text-[#6e6e73] hover:text-[#1d1d1f] font-medium transition-colors">Edit audience</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-[#1d1d1f] rounded-3xl p-5">
+              <p className="text-white font-semibold text-[14px] mb-1">What happens after you publish</p>
+              <div className="space-y-2 mt-3">
+                {[
+                  'Your slot goes live immediately on the marketplace',
+                  'Buyers browse and can reserve your slot with a 5% deposit',
+                  "You'll be notified when a buyer secures — then you exchange contact details",
+                  'Buyer sends ad copy, you send the newsletter, balance is paid direct to you',
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-white/10 text-white/60 text-[10px] font-bold flex items-center justify-center mt-0.5">{i + 1}</span>
+                    <p className="text-white/70 text-[13px] leading-relaxed">{item}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {!user && (
+              <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-4">
+                <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                <p className="text-amber-700 text-[13px]">You must be signed in to publish a listing.</p>
+              </div>
+            )}
+
+            {Object.keys(errors).length > 0 && (
+              <div className="flex items-center gap-2 bg-orange-50 border border-orange-100 text-orange-600 text-[13px] px-4 py-3 rounded-2xl">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                Some required fields are missing. Please go back and check.
+              </div>
+            )}
+
+            <button
+              onClick={handleSubmit}
+              disabled={submitting || !user}
+              className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold px-8 py-4 rounded-2xl transition-all text-[15px] shadow-sm shadow-green-600/20"
+            >
+              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-white" />}
+              {submitting ? 'Publishing...' : 'Publish Listing'}
+            </button>
+            <p className="text-center text-[11px] text-[#aeaeb2]">Your listing goes live immediately and is visible to all buyers on the marketplace.</p>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function SectionHeader({ number, title }: { number: string; title: string }) {
+  return (
+    <div className="flex items-center gap-2.5 mb-5">
+      <span className="w-6 h-6 rounded-full bg-[#1d1d1f] text-white text-[11px] font-bold flex items-center justify-center flex-shrink-0">{number}</span>
+      <h2 className="text-[#1d1d1f] font-semibold text-[15px]">{title}</h2>
+    </div>
+  );
+}
+
+function ReviewRow({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string; accent?: string }) {
+  return (
+    <div className="flex items-center gap-3 py-2 border-b border-black/[0.04] last:border-0">
+      <span className="text-[#aeaeb2] flex-shrink-0">{icon}</span>
+      <span className="text-[#6e6e73] text-[13px] flex-shrink-0 min-w-[120px]">{label}</span>
+      <span className="text-[#1d1d1f] text-[13px] font-semibold flex-1 truncate">{value}</span>
+      {accent && <span className="flex-shrink-0 bg-orange-100 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded-lg">{accent}</span>}
+    </div>
+  );
+}
+
+function SuccessScreen({ onBack, propertyName }: { onBack: () => void; propertyName: string }) {
+  return (
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f] flex items-center justify-center p-6">
+      <div className="max-w-md w-full text-center">
+        <div className="w-20 h-20 bg-green-50 border border-green-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
+          <CheckCircle className="w-10 h-10 text-green-600" />
+        </div>
+        <h2 className="text-3xl font-semibold text-[#1d1d1f] mb-3 tracking-[-0.02em]">Listing live!</h2>
+        <p className="text-[#6e6e73] text-[15px] mb-2">
+          <span className="text-[#1d1d1f] font-semibold">{propertyName}</span> is now visible to all buyers on the marketplace.
         </p>
-        <div className="flex gap-3">
-          <button
-            onClick={() => { setSubmitted(false); setForm({ ...BLANK }); }}
-            className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-6 py-3 rounded-2xl text-sm transition-all"
-          >
-            List another slot
-          </button>
-          <button
-            onClick={onBack}
-            className="border border-black/[0.08] hover:border-black/[0.15] text-[#6e6e73] hover:text-[#1d1d1f] font-semibold px-6 py-3 rounded-2xl text-sm transition-all"
-          >
-            Back to site
-          </button>
+        <p className="text-[#aeaeb2] text-[13px] mb-8">
+          You'll be notified when a buyer reserves your slot. Make sure to respond promptly so the booking can proceed.
+        </p>
+        <div className="bg-white border border-black/[0.06] rounded-3xl p-5 text-left space-y-3 mb-6 shadow-sm">
+          {[
+            'Listing published and live',
+            'Visible to all active buyers',
+            'Countdown timer started',
+          ].map(item => (
+            <div key={item} className="flex items-center gap-2 text-[13px]">
+              <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+              <span className="text-[#3a3a3c]">{item}</span>
+            </div>
+          ))}
         </div>
+        <button
+          onClick={onBack}
+          className="w-full bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold py-3.5 rounded-2xl transition-all"
+        >
+          View marketplace
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label, required, hint, error, children, className,
+}: {
+  label: string; required?: boolean; hint?: string; error?: string; children: React.ReactNode; className?: string;
+}) {
+  return (
+    <div className={className}>
+      <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+        {hint && <span className="text-[#aeaeb2] font-normal normal-case ml-1.5">— {hint}</span>}
+      </label>
+      {children}
+      {error && (
+        <p className="text-orange-500 text-[11px] mt-1 flex items-center gap-1">
+          <AlertTriangle className="w-3 h-3" />{error}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function inputCls(hasError: boolean): string {
+  return `w-full bg-[#f5f5f7] border ${hasError ? 'border-red-300 focus:border-red-400' : 'border-black/[0.08] focus:border-black/[0.2] focus:bg-white'} rounded-2xl px-3 py-3 text-[#1d1d1f] text-[14px] placeholder-[#aeaeb2] outline-none transition-all`;
+}
+
+function SelectField({
+  value, onChange, options, placeholder, hasError,
+}: {
+  value: string; onChange: (v: string) => void; options: string[]; placeholder: string; hasError: boolean;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className={`w-full bg-[#f5f5f7] border ${hasError ? 'border-red-300' : 'border-black/[0.08] focus:border-black/[0.2]'} rounded-2xl px-3 py-3 text-[14px] outline-none transition-all [color-scheme:light] ${value ? 'text-[#1d1d1f]' : 'text-[#aeaeb2]'}`}
+    >
+      <option value="" disabled>{placeholder}</option>
+      {options.map(o => <option key={o} value={o}>{o}</option>)}
+    </select>
+  );
+}
+
+function SelectOrCustom({
+  value, onChange, options, placeholder, hasError,
+}: {
+  value: string; onChange: (v: string) => void; options: string[]; placeholder: string; hasError: boolean;
+}) {
+  const [custom, setCustom] = useState(false);
+  const isCustom = custom || (value && !options.includes(value));
+
+  if (isCustom) {
+    return (
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={inputCls(hasError) + ' flex-1'}
+          autoFocus
+        />
+        <button
+          type="button"
+          onClick={() => { setCustom(false); onChange(''); }}
+          className="text-[#aeaeb2] hover:text-[#1d1d1f] border border-black/[0.08] rounded-2xl px-3 py-3 text-[13px] transition-colors"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] pt-[52px]">
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-10">
-        <div className="flex items-center gap-3 mb-8">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-sm transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-          <ChevronRight className="w-3.5 h-3.5 text-[#aeaeb2]" />
-          <span className="text-[#1d1d1f] font-semibold text-sm">List a slot</span>
-        </div>
-
-        <h1 className="text-[#1d1d1f] text-2xl font-semibold tracking-[-0.02em] mb-1">List an ad slot</h1>
-        <p className="text-[#6e6e73] text-[15px] mb-8 leading-relaxed">
-          Add your slot details below. Buyers will see this listing and can reserve it with a 5% deposit.
-        </p>
-
-        <div className="space-y-6">
-
-          <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
-            <SectionHeader
-              number="1"
-              title="Select a newsletter"
-              subtitle={newsletters.length === 0 ? 'No newsletters yet — fill in details manually below.' : 'Pick one to auto-fill your newsletter data.'}
-            />
-
-            {newsletters.length > 0 ? (
-              <div className="space-y-2">
-                {newsletters.map(nl => (
-                  <button
-                    key={nl.id}
-                    onClick={() => set('newsletter_id', nl.id === form.newsletter_id ? null : nl.id)}
-                    className={`w-full text-left rounded-2xl border p-3.5 transition-all ${
-                      form.newsletter_id === nl.id
-                        ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white'
-                        : 'bg-[#f5f5f7] border-black/[0.06] hover:border-black/[0.12]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${form.newsletter_id === nl.id ? 'bg-white/10' : 'bg-white border border-black/[0.06]'}`}>
-                        <span className={`font-bold text-sm ${form.newsletter_id === nl.id ? 'text-white' : 'text-[#1d1d1f]'}`}>{nl.name.charAt(0).toUpperCase()}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`font-semibold text-sm truncate ${form.newsletter_id === nl.id ? 'text-white' : 'text-[#1d1d1f]'}`}>{nl.name}</p>
-                        <div className={`flex items-center gap-3 mt-0.5 flex-wrap ${form.newsletter_id === nl.id ? 'text-white/60' : 'text-[#6e6e73]'}`}>
-                          {nl.subscriber_count && (
-                            <span className="flex items-center gap-1 text-[10px]">
-                              <Users className="w-2.5 h-2.5" />
-                              {nl.subscriber_count.toLocaleString()}
-                            </span>
-                          )}
-                          {nl.avg_open_rate && (
-                            <span className="flex items-center gap-1 text-[10px]">
-                              <BarChart2 className="w-2.5 h-2.5" />
-                              {nl.avg_open_rate} open
-                            </span>
-                          )}
-                          {nl.niche && (
-                            <span className="text-[10px]">{nl.niche}</span>
-                          )}
-                          {nl.primary_geography && (
-                            <span className="flex items-center gap-1 text-[10px]">
-                              <Globe className="w-2.5 h-2.5" />
-                              {nl.primary_geography}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {form.newsletter_id === nl.id && (
-                        <Check className="w-4 h-4 text-white flex-shrink-0" />
-                      )}
-                    </div>
-                  </button>
-                ))}
-                <button
-                  onClick={() => set('newsletter_id', null)}
-                  className="w-full text-center text-xs text-[#6e6e73] hover:text-[#1d1d1f] py-1 transition-colors"
-                >
-                  or fill in details manually
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
-                <BookOpen className="w-5 h-5 text-[#aeaeb2] flex-shrink-0" />
-                <div>
-                  <p className="text-[#1d1d1f] text-sm font-medium">No newsletters saved yet</p>
-                  <p className="text-[#6e6e73] text-xs mt-0.5">
-                    Add newsletters in your{' '}
-                    <button onClick={onEditProfile} className="text-[#1d1d1f] font-semibold hover:underline">Seller Dashboard</button>
-                    {' '}to speed up future listings.
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
-            <SectionHeader number="2" title="About the slot" />
-
-            <div className="space-y-4">
-              <div>
-                <FieldLabel required>Newsletter name</FieldLabel>
-                <TextInput value={form.property_name} onChange={v => set('property_name', v)} placeholder="e.g. SaaS Insider" />
-                {errors.property_name && <p className="text-red-500 text-[10px] mt-1">{errors.property_name}</p>}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <FieldLabel>Publisher / Company</FieldLabel>
-                  <TextInput value={form.media_company_name} onChange={v => set('media_company_name', v)} placeholder="e.g. B2B Growth Co." />
-                </div>
-                <div>
-                  <FieldLabel required>Slot type</FieldLabel>
-                  <select
-                    value={form.slot_type}
-                    onChange={e => set('slot_type', e.target.value)}
-                    className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all [color-scheme:light]"
-                  >
-                    {SLOT_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <FieldLabel>Niche / Audience</FieldLabel>
-                  <select
-                    value={form.audience}
-                    onChange={e => set('audience', e.target.value)}
-                    className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all [color-scheme:light]"
-                  >
-                    <option value="">Select niche…</option>
-                    {AUDIENCE_OPTIONS.map(a => <option key={a} value={a}>{a}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <FieldLabel>Primary geography</FieldLabel>
-                  <select
-                    value={form.location}
-                    onChange={e => set('location', e.target.value)}
-                    className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all [color-scheme:light]"
-                  >
-                    <option value="">Select geography…</option>
-                    {GEOGRAPHIES.map(g => <option key={g} value={g}>{g}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <FieldLabel>Subscriber count</FieldLabel>
-                  <TextInput type="number" value={form.subscribers} onChange={v => set('subscribers', v)} placeholder="e.g. 45000" />
-                </div>
-                <div>
-                  <FieldLabel>Avg open rate</FieldLabel>
-                  <TextInput value={form.open_rate} onChange={v => set('open_rate', v)} placeholder="e.g. 42%" />
-                </div>
-              </div>
-
-              <div>
-                <FieldLabel required>Issue date / label</FieldLabel>
-                <TextInput value={form.date_label} onChange={v => set('date_label', v)} placeholder="e.g. May 12, 2026 issue" />
-                {errors.date_label && <p className="text-red-500 text-[10px] mt-1">{errors.date_label}</p>}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <FieldLabel>Issue start date</FieldLabel>
-                  <TextInput type="date" value={form.posting_date_start} onChange={v => set('posting_date_start', v)} />
-                </div>
-                <div>
-                  <FieldLabel>Issue end date</FieldLabel>
-                  <TextInput type="date" value={form.posting_date_end} onChange={v => set('posting_date_end', v)} />
-                </div>
-              </div>
-
-              <div>
-                <FieldLabel required>Booking deadline</FieldLabel>
-                <input
-                  type="datetime-local"
-                  value={form.deadline_at}
-                  onChange={e => set('deadline_at', e.target.value)}
-                  className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all [color-scheme:light]"
-                />
-                {errors.deadline_at && <p className="text-red-500 text-[10px] mt-1">{errors.deadline_at}</p>}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <FieldLabel required>Price (USD)</FieldLabel>
-                  <TextInput type="number" value={form.original_price} onChange={v => set('original_price', v)} placeholder="e.g. 1500" />
-                  {errors.original_price && <p className="text-red-500 text-[10px] mt-1">{errors.original_price}</p>}
-                </div>
-                <div>
-                  <FieldLabel>Slots available</FieldLabel>
-                  <TextInput type="number" value={form.slots_total} onChange={v => set('slots_total', v)} placeholder="1" />
-                </div>
-              </div>
-
-              <div>
-                <FieldLabel>Deliverables detail</FieldLabel>
-                <textarea
-                  value={form.deliverables_detail}
-                  onChange={e => set('deliverables_detail', e.target.value)}
-                  rows={3}
-                  placeholder="Describe what is included: word count, placement, format, any restrictions…"
-                  className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all resize-none"
-                />
-              </div>
-
-              <div>
-                <FieldLabel>Past advertisers (comma-separated)</FieldLabel>
-                <TextInput value={form.past_advertisers} onChange={v => set('past_advertisers', v)} placeholder="e.g. Notion, Linear, Figma" />
-              </div>
-
-              {mediaProfiles.length > 0 && (
-                <div>
-                  <FieldLabel>Link a media profile</FieldLabel>
-                  <select
-                    value={form.media_profile_id ?? ''}
-                    onChange={e => set('media_profile_id', e.target.value || null)}
-                    className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all [color-scheme:light]"
-                  >
-                    <option value="">No profile linked</option>
-                    {mediaProfiles.map(p => (
-                      <option key={p.id} value={p.id}>{p.newsletter_name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
-            <SectionHeader number="3" title="Pricing mode" subtitle="Control how your price changes as the deadline approaches." />
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <button
-                onClick={() => set('auto_discount_enabled', true)}
-                className={`rounded-2xl border p-4 text-left transition-all ${
-                  form.auto_discount_enabled
-                    ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white'
-                    : 'bg-[#f5f5f7] border-black/[0.06] hover:border-black/[0.12]'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <p className={`font-semibold text-sm ${form.auto_discount_enabled ? 'text-white' : 'text-[#1d1d1f]'}`}>Auto-Discount</p>
-                  {form.auto_discount_enabled && <Check className="w-4 h-4 text-white" />}
-                </div>
-                <p className={`text-xs leading-relaxed ${form.auto_discount_enabled ? 'text-white/60' : 'text-[#6e6e73]'}`}>
-                  Price drops automatically: minus 10% at 3-5 days, minus 20% at 1-3 days, minus 30% under 24h. Fills slots faster.
-                </p>
-              </button>
-
-              <button
-                onClick={() => set('auto_discount_enabled', false)}
-                className={`rounded-2xl border p-4 text-left transition-all ${
-                  !form.auto_discount_enabled
-                    ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white'
-                    : 'bg-[#f5f5f7] border-black/[0.06] hover:border-black/[0.12]'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <p className={`font-semibold text-sm ${!form.auto_discount_enabled ? 'text-white' : 'text-[#1d1d1f]'}`}>Fixed Price</p>
-                  {!form.auto_discount_enabled && <Check className="w-4 h-4 text-white" />}
-                </div>
-                <p className={`text-xs leading-relaxed ${!form.auto_discount_enabled ? 'text-white/60' : 'text-[#6e6e73]'}`}>
-                  Your listing price stays fixed at the amount you set until the deadline passes.
-                </p>
-              </button>
-            </div>
-          </div>
-
-          <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
-            <SectionHeader number="4" title="Publish" />
-
-            {errors.general && (
-              <div className="mb-4 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-red-700 text-sm">
-                {errors.general}
-              </div>
-            )}
-
-            <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4 mb-5 space-y-2">
-              <p className="text-[#1d1d1f] font-semibold text-sm">
-                {form.property_name || 'Your newsletter'} — {form.slot_type}
-              </p>
-              <div className="flex flex-wrap gap-3 text-xs text-[#6e6e73]">
-                {form.original_price && <span>${Number(form.original_price).toLocaleString()}</span>}
-                {form.date_label && <span>{form.date_label}</span>}
-                {form.location && <span>{form.location}</span>}
-                <span>{form.auto_discount_enabled ? 'Auto-Discount active' : 'Fixed price'}</span>
-              </div>
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={submitting}
-              className="w-full flex items-center justify-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all"
-            >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-              {submitting ? 'Publishing…' : 'Publish listing'}
-            </button>
-            <p className="text-[#aeaeb2] text-[11px] text-center mt-3">
-              Your listing will be visible immediately. Buyers pay a 5% deposit to reserve.
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="flex gap-2">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className={`flex-1 bg-[#f5f5f7] border ${hasError ? 'border-red-300' : 'border-black/[0.08] focus:border-black/[0.2]'} rounded-2xl px-3 py-3 text-[14px] outline-none transition-all [color-scheme:light] ${value ? 'text-[#1d1d1f]' : 'text-[#aeaeb2]'}`}
+      >
+        <option value="" disabled>{placeholder}</option>
+        {options.map(o => <option key={o} value={o}>{o}</option>)}
+      </select>
+      <button
+        type="button"
+        onClick={() => setCustom(true)}
+        className="text-[#6e6e73] hover:text-[#1d1d1f] border border-black/[0.08] hover:border-black/[0.15] bg-[#f5f5f7] rounded-2xl px-3 py-3 text-[12px] font-medium transition-colors whitespace-nowrap"
+        title="Enter custom value"
+      >
+        Custom
+      </button>
     </div>
   );
 }

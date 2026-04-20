@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Mail, Inbox, Zap, CheckCircle, Target, Clock, Users } from 'lucide-react';
+import { ArrowRight, Mail, Inbox, Zap, CheckCircle, TrendingDown, Clock } from 'lucide-react';
 
 interface HeroProps {
   onBrowse: () => void;
@@ -7,19 +7,19 @@ interface HeroProps {
 }
 
 const MESSY_EMAILS = [
-  { from: 'Sarah @ TechBrief', subject: 'Re: ad slot still available?', time: '2d', read: false },
+  { from: 'Sarah @ TechBrief', subject: 'Re: ad slot availability next Q?', time: '2d', read: false },
   { from: 'newsletter@dailyfinance.co', subject: 'FWD: Sponsorship rates — Q2', time: '3d', read: true },
   { from: 'partnerships@devweekly.io', subject: 'Quick question about your rates…', time: '5d', read: false },
   { from: 'Mike Patel', subject: 'RE: RE: RE: ad copy deadline', time: '1w', read: true },
   { from: 'noreply@mailchimp.com', subject: 'Your campaign stats for April…', time: '1w', read: true },
-  { from: 'alex@growthletters.com', subject: 'Is the March slot still open??', time: '2w', read: false },
-  { from: 'hello@founderweekly.com', subject: 'Newsletter sponsorship — rates?', time: '2w', read: false },
+  { from: 'alex@growthletters.com', subject: 'Is the slot still available??', time: '2w', read: false },
+  { from: 'hello@founderweekly.com', subject: 'Newsletter ad — pricing info?', time: '2w', read: false },
 ];
 
 const LIVE_SLOTS = [
-  { name: 'SaaS Insider', subs: '62k', tag: 'B2B SaaS', deadline: '18h', tier: 'urgent' },
-  { name: 'FinanceFeed Weekly', subs: '84k', tag: 'Personal Finance', deadline: '3d', tier: 'open' },
-  { name: 'Founder Weekly', subs: '31k', tag: 'Startups', deadline: '6h', tier: 'urgent' },
+  { name: 'The Daily Brief', subs: '42k', discount: '−22%', deadline: '18h', tier: 'hot' },
+  { name: 'FinanceFeed', subs: '91k', discount: '−10%', deadline: '3d', tier: 'early' },
+  { name: 'Founder Weekly', subs: '28k', discount: '−30%', deadline: '5h', tier: 'last' },
 ];
 
 export default function Hero({ onBrowse, onListSlot }: HeroProps) {
@@ -54,12 +54,12 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(160deg, rgba(236,253,245,0.35) 0%, rgba(255,255,255,0) 40%, rgba(240,249,255,0.12) 100%)',
+          background: 'linear-gradient(160deg, rgba(236,253,245,0.45) 0%, rgba(255,255,255,0) 40%, rgba(240,249,255,0.15) 100%)',
         }}
       />
 
       <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-14 lg:pt-32 lg:pb-20">
-        <div className="grid lg:grid-cols-[420px_1fr] xl:grid-cols-[460px_1fr] gap-12 xl:gap-16 items-start">
+        <div className="grid lg:grid-cols-[400px_1fr] xl:grid-cols-[440px_1fr] gap-12 xl:gap-16 items-start">
 
           <div
             className="lg:sticky lg:top-28"
@@ -71,18 +71,18 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
           >
             <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-semibold px-3.5 py-1.5 rounded-full mb-7 tracking-widest uppercase">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse flex-shrink-0" />
-              Media sponsorship marketplace
+              The Industry Inbox
             </div>
 
             <h1
               className="font-bold text-slate-900 tracking-[-0.045em] leading-[1.0] mb-5"
               style={{ fontSize: 'clamp(34px, 4.2vw, 58px)' }}
             >
-              Discover newsletter{' '}
+              Expiring newsletter{' '}
               <br className="hidden sm:block" />
-              sponsorship{' '}
+              sponsorships.{' '}
               <span className="relative inline-block" style={{ color: '#0f766e' }}>
-                opportunities.
+                In one feed.
                 <span
                   className="absolute left-0 right-0 h-[3px] rounded-full"
                   style={{ bottom: '-2px', background: 'linear-gradient(90deg, #0f766e, #14b8a6)' }}
@@ -90,11 +90,11 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
               </span>
             </h1>
 
-            <p className="text-[17px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[420px]">
-              Browse verified sponsorship slots from newsletter publishers. Filter by niche, audience, and budget — then book directly in minutes.
+            <p className="text-[17px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[400px]">
+              Discover and secure media placements you would have otherwise missed.
             </p>
-            <p className="text-[14px] text-slate-400 font-medium mb-10 max-w-[380px]">
-              Pay a 5% deposit to reserve your slot. The balance goes direct to the publisher.
+            <p className="text-[14px] text-slate-400 font-medium mb-10 max-w-[360px]">
+              Prices drop automatically as deadlines near. Act before the slot disappears.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -102,7 +102,7 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                 onClick={onBrowse}
                 className="group inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-7 py-3.5 rounded-xl text-[15px] transition-all duration-200 shadow-[0_8px_28px_rgba(15,23,42,0.18)] hover:shadow-[0_12px_36px_rgba(15,23,42,0.24)] hover:-translate-y-px"
               >
-                Browse Opportunities
+                Browse Live Slots
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-150" />
               </button>
               <button
@@ -110,15 +110,15 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                 className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-semibold px-7 py-3.5 rounded-xl text-[15px] border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all duration-200 shadow-[0_2px_8px_rgba(15,23,42,0.06)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.10)] hover:-translate-y-px"
               >
                 <Mail className="w-4 h-4" />
-                List a Slot Free
+                List Your Slot
               </button>
             </div>
 
             <div className="space-y-2.5">
               {[
-                { icon: <Target className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />, text: 'Filter by niche, audience size, geography, and budget' },
-                { icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />, text: 'Verified publisher inventory with real audience data' },
-                { icon: <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />, text: 'Live booking deadlines — slots fill up fast' },
+                { icon: <TrendingDown className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />, text: 'Prices auto-drop up to 30% as deadlines approach' },
+                { icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />, text: 'Personalised match scoring — surface deals that fit your brand' },
+                { icon: <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />, text: 'Reserve any slot with a 5% deposit — balance goes direct to publisher' },
               ].map(b => (
                 <span key={b.text} className="flex items-start gap-2.5 text-[13px] text-slate-500 font-medium leading-snug">
                   {b.icon}{b.text}
@@ -127,7 +127,7 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
             </div>
 
             <p className="mt-7 text-[11px] text-slate-400 font-medium tracking-wide uppercase">
-              Verified publisher inventory &middot; Real send dates &middot; Direct booking
+              Curated from real publisher inventory &middot; No spam &middot; No noise
             </p>
           </div>
 
@@ -185,7 +185,7 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
               <div className="flex-1 min-w-0 rounded-2xl border border-emerald-100 bg-white overflow-hidden shadow-[0_4px_32px_rgba(0,0,0,0.07)] flex flex-col">
                 <div className="px-4 pt-3 pb-2.5 border-b border-slate-100 flex items-center gap-2 flex-shrink-0">
                   <Zap className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-[10px] font-bold text-slate-700 tracking-widest uppercase">EndingThisWeek.media</span>
+                  <span className="text-[10px] font-bold text-slate-700 tracking-widest uppercase">EndingThisWeek</span>
                   <span className="ml-auto flex items-center gap-1 text-[9px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-full border border-emerald-100">
                     <span className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
                     Live feed
@@ -197,21 +197,19 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                     <div
                       key={i}
                       className={`rounded-xl border px-3 py-2.5 flex items-center gap-3
-                        ${slot.tier === 'urgent' ? 'bg-amber-50 border-amber-100' : 'bg-white border-slate-100'}`}
+                        ${slot.tier === 'last' ? 'bg-red-50 border-red-100' : slot.tier === 'hot' ? 'bg-orange-50 border-orange-100' : 'bg-white border-slate-100'}`}
                       style={{ animation: 'slotFade 0.5s ease both', animationDelay: `${400 + i * 120}ms` }}
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-[12px] font-bold text-slate-800 truncate">{slot.name}</p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <Users className="w-2.5 h-2.5 text-slate-400" />
-                          <p className="text-[10px] text-slate-400 font-medium">{slot.subs} subscribers</p>
-                        </div>
+                        <p className="text-[10px] text-slate-400 font-medium">{slot.subs} subscribers</p>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600">
-                          {slot.tag}
+                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg
+                          ${slot.tier === 'last' ? 'bg-red-500 text-white' : slot.tier === 'hot' ? 'bg-orange-500 text-white' : 'bg-amber-400 text-white'}`}>
+                          {slot.discount}
                         </span>
-                        <div className={`flex items-center gap-1 mt-1 justify-end ${slot.tier === 'urgent' ? 'text-amber-600' : 'text-slate-400'}`}>
+                        <div className={`flex items-center gap-1 mt-1 justify-end ${slot.tier === 'last' ? 'text-red-500' : 'text-slate-400'}`}>
                           <Clock className="w-2.5 h-2.5" />
                           <p className="text-[9px] font-semibold">{slot.deadline}</p>
                         </div>
@@ -221,9 +219,9 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
 
                   <div className="mt-1 grid grid-cols-3 gap-2 pt-2.5 border-t border-slate-100">
                     {[
-                      { val: '200+', label: 'live slots', color: 'text-teal-600' },
-                      { val: '5%', label: 'deposit to reserve', color: 'text-slate-700' },
-                      { val: '95%', label: 'direct to publisher', color: 'text-slate-800' },
+                      { val: '30%', label: 'max. discount', color: 'text-orange-500' },
+                      { val: '5%', label: 'deposit to lock', color: 'text-teal-600' },
+                      { val: '<10s', label: 'to secure a slot', color: 'text-slate-800' },
                     ].map(s => (
                       <div key={s.label} className="text-center">
                         <p className={`text-[17px] font-bold tracking-tight ${s.color}`}>{s.val}</p>
@@ -234,14 +232,14 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                 </div>
 
                 <div className="px-4 py-2.5 border-t border-slate-50 bg-slate-50/60 flex items-center justify-between">
-                  <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest">Curated. Matched. Ready to book.</span>
-                  <span className="text-[9px] text-slate-400">Slots update live</span>
+                  <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest">Organized. Matched. Ready.</span>
+                  <span className="text-[9px] text-slate-400">Prices update live</span>
                 </div>
               </div>
             </div>
 
             <p className="text-center text-[10px] text-slate-400 font-medium">
-              Publisher-verified inventory · Smart audience matching · Direct booking
+              EndingThisWeek turns inbox chaos into an intelligent, structured deal engine
             </p>
           </div>
         </div>

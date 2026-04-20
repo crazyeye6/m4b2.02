@@ -17,10 +17,10 @@ async function getToken(providedToken?: string): Promise<string> {
   return data.session?.access_token ?? import.meta.env.VITE_SUPABASE_ANON_KEY;
 }
 
-async function sendEmail(type: EmailType, to: string, data: Record<string, unknown>, token?: string): Promise<boolean> {
+async function sendEmail(type: EmailType, to: string, data: Record<string, unknown>, token?: string) {
   try {
     const authToken = await getToken(token);
-    const res = await fetch(EDGE_URL, {
+    await fetch(EDGE_URL, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${authToken}`,
@@ -28,9 +28,7 @@ async function sendEmail(type: EmailType, to: string, data: Record<string, unkno
       },
       body: JSON.stringify({ type, to, data }),
     });
-    return res.ok;
   } catch {
-    return false;
   }
 }
 
@@ -39,16 +37,15 @@ export function sendWelcomeEmail(to: string, role: "buyer" | "seller", displayNa
   return sendEmail(type, to, { display_name: displayName }, token);
 }
 
-export async function sendBookingConfirmationEmails(
+export function sendBookingConfirmationEmails(
   buyerEmail: string,
   sellerEmail: string,
   bookingData: Record<string, unknown>
-): Promise<void> {
-  const sends: Promise<boolean>[] = [sendEmail("booking_confirmation_buyer", buyerEmail, bookingData)];
+) {
+  sendEmail("booking_confirmation_buyer", buyerEmail, bookingData);
   if (sellerEmail) {
-    sends.push(sendEmail("booking_confirmation_seller", sellerEmail, bookingData));
+    sendEmail("booking_confirmation_seller", sellerEmail, bookingData);
   }
-  await Promise.all(sends);
 }
 
 export function sendSlotListedEmail(

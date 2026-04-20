@@ -82,7 +82,7 @@ export default function SmartMatchCallout({ onSignIn, onDashboard, isLoggedIn }:
                   <span className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">Your Preferences</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {['B2B / SaaS', 'US + UK', '$500–$2k budget', 'Sponsorship', 'Weekly'].map(tag => (
+                  {['B2B / SaaS', 'US + UK', '$500–$2k budget', 'Newsletter', 'Weekly'].map(tag => (
                     <span key={tag} className="bg-slate-100 border border-slate-200 text-slate-600 text-[11px] font-semibold px-2.5 py-1 rounded-lg">
                       {tag}
                     </span>
@@ -92,9 +92,9 @@ export default function SmartMatchCallout({ onSignIn, onDashboard, isLoggedIn }:
 
               <div className="space-y-3">
                 {[
-                  { name: 'SaaS Insider', pub: 'B2B Growth Co.', score: 94, subs: '62k', price: '$1,050', discount: '22% off' },
-                  { name: 'FinanceFeed Weekly', pub: 'Capital Media', score: 87, subs: '84k', price: '$1,120', discount: '10% off' },
-                  { name: 'Dev Digest', pub: 'Developer Weekly', score: 78, subs: '120k', price: '$1,575', discount: '30% off' },
+                  { name: 'SaaS Insider', pub: 'B2B Growth Co.', score: 94, subs: '62k', price: '$1,050', discount: '30% off' },
+                  { name: 'FinanceWeekly', pub: 'Capital Media', score: 87, subs: '84k', price: '$1,120', discount: '20% off' },
+                  { name: 'Dev Digest', pub: 'Developer Weekly', score: 78, subs: '120k', price: '$1,575', discount: '10% off' },
                 ].map((card) => (
                   <div key={card.name} className="bg-white border border-slate-200 rounded-2xl p-3.5 flex items-center gap-3">
                     <div className="flex-1 min-w-0">
@@ -121,7 +121,7 @@ export default function SmartMatchCallout({ onSignIn, onDashboard, isLoggedIn }:
                 </div>
                 <div>
                   <p className="text-[12px] font-bold text-emerald-800">Weekly digest sent</p>
-                  <p className="text-[11px] text-emerald-600 mt-0.5">3 new matches this week · 1 slot ending in 6 hours</p>
+                  <p className="text-[11px] text-emerald-600 mt-0.5">3 new matches this week · 1 ending in 6 hours</p>
                   <div className="flex items-center gap-1 mt-1.5">
                     <CheckCircle className="w-3 h-3 text-emerald-500" />
                     <span className="text-[10px] text-emerald-600 font-medium">Links directly to live listings</span>

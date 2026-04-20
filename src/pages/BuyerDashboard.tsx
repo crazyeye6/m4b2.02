@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save, Bell, BellOff, Sparkles, Tag } from 'lucide-react';
+import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save, Bell, Tag, BellOff, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useBuyerPreferences } from '../hooks/useBuyerPreferences';
+import { useListings } from '../hooks/useListings';
+import { DEFAULT_FILTERS } from '../lib/urlState';
 import RecommendedSection from '../components/RecommendedSection';
 import PreferencesModal from '../components/PreferencesModal';
 import type { DepositBooking, BookingStatus, RefundReasonCategory, Listing } from '../types';
@@ -43,33 +45,19 @@ export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboard
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [showPrefsModal, setShowPrefsModal] = useState(false);
   const { prefs, setPrefs } = useBuyerPreferences();
-  const [listings, setListings] = useState<Listing[]>([]);
-
-  useEffect(() => {
-    supabase
-      .from('listings')
-      .select('*, media_profile:media_profiles(*), newsletter:newsletters(*)')
-      .eq('status', 'live')
-      .order('deadline_at', { ascending: true })
-      .then(({ data }) => {
-        if (data) setListings(data as Listing[]);
-      });
-  }, []);
+  const { listings } = useListings(DEFAULT_FILTERS);
 
   const fetchBookings = useCallback(async () => {
-    if (!user) return;
+    if (!user?.email) return;
     setLoading(true);
-    const orFilter = user.email
-      ? `buyer_user_id.eq.${user.id},buyer_email.eq.${user.email}`
-      : `buyer_user_id.eq.${user.id}`;
     const { data } = await supabase
       .from('deposit_bookings')
       .select('*, listing:listings(property_name, media_owner_name, media_company_name, media_type, slot_type, date_label, deadline_at)')
-      .or(orFilter)
+      .eq('buyer_email', user.email)
       .order('created_at', { ascending: false });
     if (data) setBookings(data as DepositBooking[]);
     setLoading(false);
-  }, [user]);
+  }, [user?.email]);
 
   useEffect(() => {
     fetchBookings();
