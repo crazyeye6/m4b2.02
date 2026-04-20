@@ -1,10 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save, Bell, Tag, BellOff, Sparkles } from 'lucide-react';
+import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save, Bell, BellOff, Sparkles } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useBuyerPreferences } from '../hooks/useBuyerPreferences';
-import { useListings } from '../hooks/useListings';
-import { DEFAULT_FILTERS } from '../lib/urlState';
 import RecommendedSection from '../components/RecommendedSection';
 import PreferencesModal from '../components/PreferencesModal';
 import type { DepositBooking, BookingStatus, RefundReasonCategory, Listing } from '../types';
@@ -45,7 +43,18 @@ export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboard
   const [showRefundModal, setShowRefundModal] = useState(false);
   const [showPrefsModal, setShowPrefsModal] = useState(false);
   const { prefs, setPrefs } = useBuyerPreferences();
-  const { listings } = useListings(DEFAULT_FILTERS);
+  const [listings, setListings] = useState<Listing[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('listings')
+      .select('*, media_profile:media_profiles(*), newsletter:newsletters(*)')
+      .eq('status', 'live')
+      .order('deadline_at', { ascending: true })
+      .then(({ data }) => {
+        if (data) setListings(data as Listing[]);
+      });
+  }, []);
 
   const fetchBookings = useCallback(async () => {
     if (!user) return;

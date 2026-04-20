@@ -64,7 +64,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
     if (!user?.email) return;
     setLoading(true);
 
-    const [listingsRes, bookingsRes, insightsRes] = await Promise.all([
+    const [listingsRes, bookingsRes, insightsRes, mediaProfilesRes] = await Promise.all([
       supabase
         .from('listings')
         .select('*, media_profile:media_profiles(*), newsletter:newsletters(*)')
@@ -79,10 +79,17 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
         .from('listings')
         .select('discounted_price, original_price, media_type, status')
         .eq('status', 'live'),
+      supabase
+        .from('media_profiles')
+        .select('*')
+        .or(`seller_user_id.eq.${user.id},seller_email.eq.${user.email}`)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true }),
     ]);
 
     if (listingsRes.data) setListings(listingsRes.data as Listing[]);
     if (bookingsRes.data) setBookings(bookingsRes.data as DepositBooking[]);
+    if (mediaProfilesRes.data) setMediaProfiles(mediaProfilesRes.data as MediaProfile[]);
 
     if (insightsRes.data && insightsRes.data.length > 0) {
       const live = insightsRes.data;
