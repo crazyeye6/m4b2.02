@@ -7,19 +7,19 @@ interface HeroProps {
 }
 
 const MESSY_EMAILS = [
-  { from: 'Sarah @ TechBrief', subject: 'Re: ad slot availability next Q?', time: '2d', read: false },
+  { from: 'Sarah @ TechBrief', subject: 'Re: ad slot still available?', time: '2d', read: false },
   { from: 'newsletter@dailyfinance.co', subject: 'FWD: Sponsorship rates — Q2', time: '3d', read: true },
   { from: 'partnerships@devweekly.io', subject: 'Quick question about your rates…', time: '5d', read: false },
   { from: 'Mike Patel', subject: 'RE: RE: RE: ad copy deadline', time: '1w', read: true },
   { from: 'noreply@mailchimp.com', subject: 'Your campaign stats for April…', time: '1w', read: true },
-  { from: 'alex@growthletters.com', subject: 'Is the slot still available??', time: '2w', read: false },
-  { from: 'hello@founderweekly.com', subject: 'Newsletter ad — pricing info?', time: '2w', read: false },
+  { from: 'alex@growthletters.com', subject: 'Is the March slot still open??', time: '2w', read: false },
+  { from: 'hello@founderweekly.com', subject: 'Newsletter sponsorship — rates?', time: '2w', read: false },
 ];
 
 const LIVE_SLOTS = [
-  { name: 'The Daily Brief', subs: '42k', discount: '−22%', deadline: '18h', tier: 'hot' },
-  { name: 'FinanceFeed', subs: '91k', discount: '−10%', deadline: '3d', tier: 'early' },
-  { name: 'Founder Weekly', subs: '28k', discount: '−30%', deadline: '5h', tier: 'last' },
+  { name: 'SaaS Insider', subs: '62k', discount: '−22%', deadline: '18h', tier: 'hot' },
+  { name: 'FinanceFeed Weekly', subs: '84k', discount: '−10%', deadline: '3d', tier: 'early' },
+  { name: 'Founder Weekly', subs: '31k', discount: '−30%', deadline: '6h', tier: 'last' },
 ];
 
 export default function Hero({ onBrowse, onListSlot }: HeroProps) {
@@ -71,18 +71,18 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
           >
             <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-semibold px-3.5 py-1.5 rounded-full mb-7 tracking-widest uppercase">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse flex-shrink-0" />
-              The Industry Inbox
+              Live newsletter sponsorships
             </div>
 
             <h1
               className="font-bold text-slate-900 tracking-[-0.045em] leading-[1.0] mb-5"
               style={{ fontSize: 'clamp(34px, 4.2vw, 58px)' }}
             >
-              Expiring newsletter{' '}
+              Last-minute newsletter{' '}
               <br className="hidden sm:block" />
-              sponsorships.{' '}
+              ad slots.{' '}
               <span className="relative inline-block" style={{ color: '#0f766e' }}>
-                In one feed.
+                Priced to move.
                 <span
                   className="absolute left-0 right-0 h-[3px] rounded-full"
                   style={{ bottom: '-2px', background: 'linear-gradient(90deg, #0f766e, #14b8a6)' }}
@@ -91,10 +91,10 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
             </h1>
 
             <p className="text-[17px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[400px]">
-              Discover and secure media placements you would have otherwise missed.
+              Browse unsold sponsorship slots from verified newsletter publishers — discounted as their send date approaches.
             </p>
             <p className="text-[14px] text-slate-400 font-medium mb-10 max-w-[360px]">
-              Prices drop automatically as deadlines near. Act before the slot disappears.
+              Pay a 5% deposit to reserve. Balance goes straight to the publisher.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -110,15 +110,15 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                 className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-semibold px-7 py-3.5 rounded-xl text-[15px] border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all duration-200 shadow-[0_2px_8px_rgba(15,23,42,0.06)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.10)] hover:-translate-y-px"
               >
                 <Mail className="w-4 h-4" />
-                List Your Slot
+                List a Slot Free
               </button>
             </div>
 
             <div className="space-y-2.5">
               {[
-                { icon: <TrendingDown className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />, text: 'Prices auto-drop up to 30% as deadlines approach' },
-                { icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />, text: 'Personalised match scoring — surface deals that fit your brand' },
-                { icon: <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />, text: 'Reserve any slot with a 5% deposit — balance goes direct to publisher' },
+                { icon: <TrendingDown className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />, text: 'Prices auto-drop up to 30% as the send date gets closer' },
+                { icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />, text: 'Smart match scoring surfaces deals that fit your niche and budget' },
+                { icon: <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />, text: 'Slots expire — act fast or lose the deal to another buyer' },
               ].map(b => (
                 <span key={b.text} className="flex items-start gap-2.5 text-[13px] text-slate-500 font-medium leading-snug">
                   {b.icon}{b.text}
@@ -127,7 +127,7 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
             </div>
 
             <p className="mt-7 text-[11px] text-slate-400 font-medium tracking-wide uppercase">
-              Curated from real publisher inventory &middot; No spam &middot; No noise
+              Verified publisher inventory &middot; Real send dates &middot; No spam
             </p>
           </div>
 
@@ -185,7 +185,7 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
               <div className="flex-1 min-w-0 rounded-2xl border border-emerald-100 bg-white overflow-hidden shadow-[0_4px_32px_rgba(0,0,0,0.07)] flex flex-col">
                 <div className="px-4 pt-3 pb-2.5 border-b border-slate-100 flex items-center gap-2 flex-shrink-0">
                   <Zap className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-[10px] font-bold text-slate-700 tracking-widest uppercase">EndingThisWeek</span>
+                  <span className="text-[10px] font-bold text-slate-700 tracking-widest uppercase">EndingThisWeek.media</span>
                   <span className="ml-auto flex items-center gap-1 text-[9px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-full border border-emerald-100">
                     <span className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
                     Live feed
@@ -220,8 +220,8 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                   <div className="mt-1 grid grid-cols-3 gap-2 pt-2.5 border-t border-slate-100">
                     {[
                       { val: '30%', label: 'max. discount', color: 'text-orange-500' },
-                      { val: '5%', label: 'deposit to lock', color: 'text-teal-600' },
-                      { val: '<10s', label: 'to secure a slot', color: 'text-slate-800' },
+                      { val: '5%', label: 'deposit to reserve', color: 'text-teal-600' },
+                      { val: '95%', label: 'direct to publisher', color: 'text-slate-800' },
                     ].map(s => (
                       <div key={s.label} className="text-center">
                         <p className={`text-[17px] font-bold tracking-tight ${s.color}`}>{s.val}</p>
@@ -232,14 +232,14 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                 </div>
 
                 <div className="px-4 py-2.5 border-t border-slate-50 bg-slate-50/60 flex items-center justify-between">
-                  <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest">Organized. Matched. Ready.</span>
+                  <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest">Curated. Matched. Priced to move.</span>
                   <span className="text-[9px] text-slate-400">Prices update live</span>
                 </div>
               </div>
             </div>
 
             <p className="text-center text-[10px] text-slate-400 font-medium">
-              EndingThisWeek turns inbox chaos into an intelligent, structured deal engine
+              Publisher-verified inventory · Automatic discounts · Direct booking
             </p>
           </div>
         </div>

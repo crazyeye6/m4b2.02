@@ -97,8 +97,8 @@ export default function HowItWorks({ onListSlot }: HowItWorksProps) {
 
         <div className="mt-12 bg-[#1d1d1f] rounded-3xl p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
-            <h3 className="text-white font-semibold text-[17px] mb-1 tracking-[-0.01em]">Got an unsold newsletter sponsorship this week?</h3>
-            <p className="text-white/55 text-[14px]">List it on EndingThisWeek and fill your slot before it goes out. Set a deadline, discount your rate, and let buyers come to you.</p>
+            <h3 className="text-white font-semibold text-[17px] mb-1 tracking-[-0.01em]">Got unsold ad slots across your newsletters?</h3>
+            <p className="text-white/55 text-[14px]">Add your newsletters once, then create listings in seconds. Set a deadline, enable automatic discounting, and let buyers come to you before the slot goes out.</p>
           </div>
           <button onClick={onListSlot} className="flex-shrink-0 bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap shadow-lg shadow-green-500/25">
             List a Slot Free
