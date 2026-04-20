@@ -257,12 +257,11 @@ export function useListings(filters: FilterState) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const now = Date.now();
-      setListings(prev => prev.filter(l => new Date(l.deadline_at).getTime() > now));
-    }, 30000);
+      fetchListings();
+    }, 60000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchListings]);
 
   const updateListingStatus = (id: string, status: Listing['status']) => {
     if (status !== 'live') {

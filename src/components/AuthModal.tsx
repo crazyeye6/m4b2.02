@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X, Mail, Lock, User, Building2, Loader2, Eye, EyeOff, Zap, ArrowLeft, CheckCircle } from 'lucide-react';
+
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import BuyerPreferencesStep from './BuyerPreferencesStep';
@@ -10,7 +11,7 @@ interface AuthModalProps {
   defaultTab?: 'sign-in' | 'sign-up';
 }
 
-type ModalMode = 'auth' | 'reset' | 'reset-sent' | 'verify-sent' | 'buyer-preferences';
+type ModalMode = 'auth' | 'reset' | 'reset-sent' | 'buyer-preferences';
 
 export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModalProps) {
   const { signIn, signUp, saveDigestPreferences, user } = useAuth();
@@ -42,7 +43,7 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
     setError('');
     const { error } = await signIn(form.email, form.password);
     if (error) {
-      setError('Invalid email or password. Please try again.');
+      setError(error.message || 'Invalid email or password. Please try again.');
     } else {
       onClose();
     }
@@ -67,7 +68,7 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
       if (userData?.user) setNewUserId(userData.user.id);
       setMode('buyer-preferences');
     } else {
-      setMode('verify-sent');
+      onClose();
     }
     setLoading(false);
   };
@@ -95,11 +96,11 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
       await saveDigestPreferences(uid, prefs);
     }
     setPrefSaving(false);
-    setMode('verify-sent');
+    onClose();
   };
 
   const handleSkipPreferences = () => {
-    setMode('verify-sent');
+    onClose();
   };
 
   if (mode === 'buyer-preferences') {
@@ -130,28 +131,6 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
             className="w-full bg-[#f5f5f7] hover:bg-[#e5e5ea] border border-black/[0.08] text-[#1d1d1f] font-semibold py-3 rounded-2xl text-[14px] transition-all"
           >
             Back to sign in
-          </button>
-        </div>
-      </ModalShell>
-    );
-  }
-
-  if (mode === 'verify-sent') {
-    return (
-      <ModalShell onClose={onClose}>
-        <div className="p-8 text-center">
-          <div className="w-14 h-14 bg-green-50 rounded-3xl flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-7 h-7 text-green-600" />
-          </div>
-          <h3 className="text-[#1d1d1f] font-semibold text-[17px] mb-2">Account created</h3>
-          <p className="text-[#6e6e73] text-[13px] mb-1">We sent a verification email to:</p>
-          <p className="text-[#1d1d1f] font-semibold text-[14px] mb-4">{form.email}</p>
-          <p className="text-[#aeaeb2] text-[12px] mb-6">Please check your inbox and click the link to verify your email address before signing in.</p>
-          <button
-            onClick={() => { setMode('auth'); setTab('sign-in'); }}
-            className="w-full bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold py-3 rounded-2xl text-[14px] transition-all"
-          >
-            Go to sign in
           </button>
         </div>
       </ModalShell>
