@@ -126,7 +126,7 @@ export default function App() {
   const [showContactModal, setShowContactModal] = useState(false);
   const { prefs, setPrefs } = useBuyerPreferences();
 
-  const { profile } = useAuth();
+  const { profile, user, loading: authLoading } = useAuth();
   const { listings, loading, stats, updateListingStatus, refetch } = useListings(filters);
 
   // Onboarding popup disabled for now
@@ -228,7 +228,7 @@ export default function App() {
   };
 
   const handleListSlot = () => {
-    if (!profile) {
+    if (!authLoading && !user) {
       setShowAuthModal(true);
       return;
     }
@@ -244,7 +244,7 @@ export default function App() {
   };
 
   const handleDashboard = () => {
-    if (!profile) {
+    if (!authLoading && !user) {
       setShowAuthModal(true);
       return;
     }
