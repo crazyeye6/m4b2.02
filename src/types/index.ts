@@ -76,6 +76,7 @@ export interface Listing {
   seller_tiktok_url?: string | null;
   seller_podcast_url?: string | null;
   portfolio_links?: string[] | null;
+  auto_discount_enabled: boolean;
   media_profile_id?: string | null;
   media_profile?: MediaProfile | null;
   created_at: string;
@@ -180,6 +181,8 @@ export type ViewMode = 'grid' | 'list';
 
 export type DeadlineWindow = 'today' | '3days' | '1week' | '2weeks' | null;
 
+export type DiscountMode = 'all' | 'discounted_only' | 'no_discount_only';
+
 export interface FilterState {
   category: MediaType | 'all';
   selectedNiches: string[];
@@ -194,6 +197,7 @@ export interface FilterState {
   selectedTags: string[];
   sort: SortOption;
   slotDate: string | null;
+  discountMode: DiscountMode;
 }
 
 export type PurchaseType = 'business' | 'individual';

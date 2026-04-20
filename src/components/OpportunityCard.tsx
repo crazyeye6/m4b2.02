@@ -27,7 +27,8 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
   const { formatPrice, browserLocale } = useLocale();
   const tx = useTranslations();
 
-  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
+  const autoDiscount = listing.auto_discount_enabled !== false;
+  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at, autoDiscount);
   const { currentPrice, discountPct, savings, tier, urgencyLabel } = pricing;
   const tierStyle = TIER_STYLES[tier];
   const depositAmount = Math.round(currentPrice * 0.05);
@@ -194,11 +195,11 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
           </div>
           {hasDiscount ? (
             <div className={`text-white text-[15px] font-bold px-3 py-1.5 rounded-2xl tabular-nums shadow-sm ${tierStyle.badge}`}>
-              -{discountPct}%
+              -{discountPct}% Off
             </div>
           ) : (
-            <div className="bg-[#1d1d1f] text-white text-[11px] font-semibold px-2.5 py-1 rounded-xl">
-              Full price
+            <div className={`text-[11px] font-semibold px-2.5 py-1 rounded-xl ${autoDiscount ? 'bg-[#f5f5f7] text-[#6e6e73] border border-black/[0.08]' : 'bg-[#f5f5f7] text-[#6e6e73] border border-black/[0.08]'}`}>
+              {autoDiscount ? 'Auto-Discount Enabled' : 'No Active Discount'}
             </div>
           )}
         </div>
@@ -272,9 +273,9 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
 
         <div className="mt-auto pt-2 flex flex-col gap-2">
           {isLive && <CountdownTimer deadline={listing.deadline_at} compact />}
-          {isLive && !hasDiscount && (
+          {isLive && !hasDiscount && autoDiscount && (
             <p className="text-[10px] text-center text-[#aeaeb2]">
-              Price reduces automatically as the deadline approaches
+              Price may reduce as the deadline approaches
             </p>
           )}
           <button

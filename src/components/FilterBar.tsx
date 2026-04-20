@@ -1,7 +1,7 @@
 import {
   SlidersHorizontal, Mail, Mic, Instagram, MapPin, Tag, DollarSign,
   ChevronUp, X, LayoutGrid, Columns2, Columns3, Check, ChevronDown,
-  TrendingDown, Clock, Users,
+  TrendingDown, Clock, Users, Percent,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
@@ -146,6 +146,12 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
   if (filters.discountMin > 0) {
     activeChips.push({ label: `${filters.discountMin}%+ off`, clear: () => onChange({ discountMin: 0 }) });
   }
+  if (filters.discountMode === 'discounted_only') {
+    activeChips.push({ label: 'Discounted Only', clear: () => onChange({ discountMode: 'all' }) });
+  }
+  if (filters.discountMode === 'no_discount_only') {
+    activeChips.push({ label: 'No Discount Only', clear: () => onChange({ discountMode: 'all' }) });
+  }
   if (filters.priceMin > 0) {
     activeChips.push({ label: `From $${filters.priceMin.toLocaleString()}`, clear: () => onChange({ priceMin: 0 }) });
   }
@@ -156,6 +162,7 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
   const hasActive = activeChips.length > 0;
   const advancedActiveCount = [
     filters.discountMin > 0,
+    filters.discountMode && filters.discountMode !== 'all',
     filters.priceMin > 0,
     filters.priceMax > 0,
     (filters.selectedGeographies?.length ?? 0) > 0,
@@ -168,6 +175,7 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
       category: 'all',
       deadlineWindow: null,
       discountMin: 0,
+      discountMode: 'all',
       priceMin: 0,
       priceMax: 0,
       selectedNiches: [],
@@ -320,6 +328,27 @@ export default function FilterBar({ filters, onChange, total, columns, onColumns
                     {v === 0 ? 'Any discount' : `${v}%+ off`}
                   </OptionBtn>
                 ))}
+              </FilterSection>
+
+              <FilterSection label="Pricing Mode" icon={<Percent className="w-3 h-3" />}>
+                <OptionBtn
+                  active={!filters.discountMode || filters.discountMode === 'all'}
+                  onClick={() => onChange({ discountMode: 'all' })}
+                >
+                  All listings
+                </OptionBtn>
+                <OptionBtn
+                  active={filters.discountMode === 'discounted_only'}
+                  onClick={() => onChange({ discountMode: 'discounted_only' })}
+                >
+                  Discounted Only
+                </OptionBtn>
+                <OptionBtn
+                  active={filters.discountMode === 'no_discount_only'}
+                  onClick={() => onChange({ discountMode: 'no_discount_only' })}
+                >
+                  No Discount Only
+                </OptionBtn>
               </FilterSection>
 
               <FilterSection label="Min Price" icon={<DollarSign className="w-3 h-3" />}>

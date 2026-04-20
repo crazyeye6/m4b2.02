@@ -33,7 +33,8 @@ function StatCell({ label, value, accent }: { label: string; value: string; acce
 export default function ListingRow({ listing, onSecure, onDetails, onViewMediaProfile }: ListingRowProps) {
   const { formatPrice } = useLocale();
 
-  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
+  const autoDiscount = listing.auto_discount_enabled !== false;
+  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at, autoDiscount);
   const { currentPrice, discountPct, savings, tier, urgencyLabel } = pricing;
   const tierStyle = TIER_STYLES[tier];
   const depositAmount = Math.round(currentPrice * 0.05);
@@ -168,7 +169,7 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
             <>
               <div className="flex items-center gap-1.5 justify-end">
                 <span className="text-[#aeaeb2] text-[11px] line-through">{formatPrice(listing.original_price)}</span>
-                <span className={`text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg ${tierStyle.badge}`}>-{discountPct}%</span>
+                <span className={`text-white text-[10px] font-bold px-1.5 py-0.5 rounded-lg ${tierStyle.badge}`}>{discountPct}% Off</span>
               </div>
               <p className="text-[18px] font-bold text-[#1d1d1f] tabular-nums tracking-tight">{formatPrice(currentPrice)}</p>
               <div className="flex items-center justify-end gap-1">
@@ -179,7 +180,7 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
           ) : (
             <>
               <p className="text-[18px] font-bold text-[#1d1d1f] tabular-nums tracking-tight">{formatPrice(currentPrice)}</p>
-              <p className="text-[10px] text-[#aeaeb2]">Full price</p>
+              <p className="text-[10px] text-[#aeaeb2]">{autoDiscount ? 'Auto-Discount Enabled' : 'No Active Discount'}</p>
             </>
           )}
           <p className="text-[#aeaeb2] text-[10px] mt-0.5">Deposit: {formatPrice(depositAmount)}</p>

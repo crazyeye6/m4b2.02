@@ -28,6 +28,7 @@ interface FormData {
   deadline_at: string;
   original_price: string;
   discounted_price: string;
+  auto_discount_enabled: boolean;
   slots_remaining: string;
   past_advertisers: string[];
   advertiser_input: string;
@@ -58,6 +59,7 @@ const INITIAL: FormData = {
   deadline_at: '',
   original_price: '',
   discounted_price: '',
+  auto_discount_enabled: true,
   slots_remaining: '1',
   past_advertisers: [],
   advertiser_input: '',
@@ -238,6 +240,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
       deadline_at: new Date(form.deadline_at).toISOString(),
       original_price: parseInt(form.original_price),
       discounted_price: parseInt(form.discounted_price),
+      auto_discount_enabled: form.auto_discount_enabled,
       slots_remaining: parseInt(form.slots_remaining),
       past_advertisers: form.past_advertisers,
       status: 'live',
@@ -520,6 +523,42 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
             <div className="bg-white border border-black/[0.06] rounded-3xl p-6 shadow-sm">
               <SectionHeader number="3" title="Pricing" />
 
+              <div className="mb-5">
+                <p className="text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-3">Pricing mode</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => set('auto_discount_enabled', false)}
+                    className={`flex flex-col gap-1 p-3.5 rounded-2xl border-2 text-left transition-all ${
+                      !form.auto_discount_enabled
+                        ? 'border-[#1d1d1f] bg-[#1d1d1f]/[0.02]'
+                        : 'border-black/[0.08] hover:border-black/[0.2]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[13px] font-semibold text-[#1d1d1f]">No Active Discount</span>
+                      {!form.auto_discount_enabled && <CheckCircle className="w-4 h-4 text-[#1d1d1f]" />}
+                    </div>
+                    <span className="text-[11px] text-[#6e6e73] leading-snug">Price stays fixed until the deadline</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => set('auto_discount_enabled', true)}
+                    className={`flex flex-col gap-1 p-3.5 rounded-2xl border-2 text-left transition-all ${
+                      form.auto_discount_enabled
+                        ? 'border-[#1d1d1f] bg-[#1d1d1f]/[0.02]'
+                        : 'border-black/[0.08] hover:border-black/[0.2]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-[13px] font-semibold text-[#1d1d1f]">Auto-Discount Enabled</span>
+                      {form.auto_discount_enabled && <CheckCircle className="w-4 h-4 text-[#1d1d1f]" />}
+                    </div>
+                    <span className="text-[11px] text-[#6e6e73] leading-snug">Price reduces automatically as the deadline approaches (up to 30%)</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <Field label="Standard rate" required error={errors.original_price} hint="Your usual rate">
                   <div className="relative">
@@ -534,7 +573,7 @@ export default function ListSlotPage({ onBack, onEditProfile }: ListSlotPageProp
                     />
                   </div>
                 </Field>
-                <Field label="Your asking price" required error={errors.discounted_price} hint="The discounted rate">
+                <Field label="Your asking price" required error={errors.discounted_price} hint={form.auto_discount_enabled ? 'Starting price — reduces over time' : 'Fixed price for buyers'}>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#aeaeb2] text-sm">$</span>
                     <input

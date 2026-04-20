@@ -32,14 +32,14 @@ export function getDiscountPct(tier: DiscountTier): number {
   }
 }
 
-export function calcDynamicPrice(basePrice: number, deadlineAt: string): PricingInfo {
+export function calcDynamicPrice(basePrice: number, deadlineAt: string, autoDiscountEnabled = true): PricingInfo {
   const now = Date.now();
   const deadline = new Date(deadlineAt).getTime();
   const msRemaining = deadline - now;
   const hoursRemaining = msRemaining / (1000 * 60 * 60);
   const daysRemaining = hoursRemaining / 24;
 
-  const tier = getDiscountTier(deadlineAt);
+  const tier = autoDiscountEnabled ? getDiscountTier(deadlineAt) : 'none';
   const discountPct = getDiscountPct(tier);
   const currentPrice = Math.round(basePrice * (1 - discountPct / 100));
   const savings = basePrice - currentPrice;
