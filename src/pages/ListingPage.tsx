@@ -219,7 +219,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
   const hasSocialLinks = listing.seller_website_url || listing.seller_company_url || listing.seller_linkedin_url || listing.seller_twitter_url || listing.seller_instagram_url || listing.seller_youtube_url || listing.seller_tiktok_url || listing.seller_podcast_url;
 
   return (
-    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f] pt-[52px]">
       {showInquire && <InquireModal listing={listing} onClose={() => setShowInquire(false)} />}
 
       <div className="border-b border-black/[0.06] bg-white/80 backdrop-blur-xl sticky top-[52px] z-10">
