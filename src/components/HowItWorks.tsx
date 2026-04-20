@@ -1,20 +1,20 @@
-import { Search, CreditCard, FileText, Mail } from 'lucide-react';
+import { Search, CreditCard, FileText, SlidersHorizontal } from 'lucide-react';
 
 const STEPS = [
   {
     icon: <Search className="w-4 h-4 text-sky-600" />,
     iconBg: 'bg-sky-50',
     number: '01',
-    title: 'Browse newsletter slots',
-    description: 'Filter by niche, subscriber count, geography, and budget. Each listing shows real audience data, the send date, and a countdown to the booking deadline.',
+    title: 'Browse live sponsorship slots',
+    description: 'Filter by niche, audience size, geography, and budget. Each listing shows verified audience data, the send date, and a live countdown to the booking deadline.',
     note: null,
   },
   {
-    icon: <Mail className="w-4 h-4 text-orange-500" />,
+    icon: <SlidersHorizontal className="w-4 h-4 text-orange-500" />,
     iconBg: 'bg-orange-50',
     number: '02',
-    title: 'Find a newsletter worth sponsoring',
-    description: 'Publishers discount unsold sponsorship slots to fill them fast. Prices drop automatically — up to 30% off the standard rate as the send date gets closer.',
+    title: 'Find the right match for your brand',
+    description: 'Smart match scoring surfaces newsletters that fit your niche and audience. Some publishers also offer discounted rates as the send date approaches — entirely their choice.',
     note: null,
   },
   {
@@ -30,7 +30,7 @@ const STEPS = [
     iconBg: 'bg-rose-50',
     number: '04',
     title: 'Send your ad copy',
-    description: "The publisher's contact details are released after deposit. You settle the balance directly and hand over your ad copy before the send date.",
+    description: "The publisher's contact details are released after your deposit. You settle the balance directly and hand over your ad copy before the send date.",
     note: null,
   },
 ];
@@ -46,10 +46,10 @@ export default function HowItWorks({ onListSlot }: HowItWorksProps) {
         <div className="max-w-2xl mb-14">
           <p className="text-[12px] font-semibold uppercase tracking-widest text-[#86868b] mb-4">How it works</p>
           <h2 className="text-4xl font-semibold text-[#1d1d1f] mb-4 leading-tight tracking-[-0.02em]">
-            Reserve a newsletter slot in minutes,<br />pay the publisher directly.
+            Find the right newsletter slot,<br />book it in minutes.
           </h2>
           <p className="text-[#6e6e73] text-[17px] leading-relaxed font-light">
-            A 5% deposit locks in your sponsorship. The remaining 95% is settled directly with the newsletter publisher — fast, flexible, and commercial.
+            A curated marketplace of verified newsletter sponsorship slots. Filter, match, reserve — then settle directly with the publisher. Fast, flexible, and transparent.
           </p>
         </div>
 
@@ -97,8 +97,8 @@ export default function HowItWorks({ onListSlot }: HowItWorksProps) {
 
         <div className="mt-12 bg-[#1d1d1f] rounded-3xl p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
-            <h3 className="text-white font-semibold text-[17px] mb-1 tracking-[-0.01em]">Got unsold ad slots across your newsletters?</h3>
-            <p className="text-white/55 text-[14px]">Add your newsletters once, then create listings in seconds. Set a deadline, enable automatic discounting, and let buyers come to you before the slot goes out.</p>
+            <h3 className="text-white font-semibold text-[17px] mb-1 tracking-[-0.01em]">Got sponsorship slots to fill across your newsletters?</h3>
+            <p className="text-white/55 text-[14px]">Add your newsletters once, then create listings in seconds. Set a price and deadline, optionally enable automatic discounting, and let buyers come to you.</p>
           </div>
           <button onClick={onListSlot} className="flex-shrink-0 bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap shadow-lg shadow-green-500/25">
             List a Slot Free

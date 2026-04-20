@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Mail, Inbox, Zap, CheckCircle, TrendingDown, Clock } from 'lucide-react';
+import { ArrowRight, Mail, Inbox, Zap, CheckCircle, Target, Clock, Users } from 'lucide-react';
 
 interface HeroProps {
   onBrowse: () => void;
@@ -17,9 +17,9 @@ const MESSY_EMAILS = [
 ];
 
 const LIVE_SLOTS = [
-  { name: 'SaaS Insider', subs: '62k', discount: '−22%', deadline: '18h', tier: 'hot' },
-  { name: 'FinanceFeed Weekly', subs: '84k', discount: '−10%', deadline: '3d', tier: 'early' },
-  { name: 'Founder Weekly', subs: '31k', discount: '−30%', deadline: '6h', tier: 'last' },
+  { name: 'SaaS Insider', subs: '62k', tag: 'B2B SaaS', deadline: '18h', tier: 'urgent' },
+  { name: 'FinanceFeed Weekly', subs: '84k', tag: 'Personal Finance', deadline: '3d', tier: 'open' },
+  { name: 'Founder Weekly', subs: '31k', tag: 'Startups', deadline: '6h', tier: 'urgent' },
 ];
 
 export default function Hero({ onBrowse, onListSlot }: HeroProps) {
@@ -54,12 +54,12 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(160deg, rgba(236,253,245,0.45) 0%, rgba(255,255,255,0) 40%, rgba(240,249,255,0.15) 100%)',
+          background: 'linear-gradient(160deg, rgba(236,253,245,0.35) 0%, rgba(255,255,255,0) 40%, rgba(240,249,255,0.12) 100%)',
         }}
       />
 
       <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-14 lg:pt-32 lg:pb-20">
-        <div className="grid lg:grid-cols-[400px_1fr] xl:grid-cols-[440px_1fr] gap-12 xl:gap-16 items-start">
+        <div className="grid lg:grid-cols-[420px_1fr] xl:grid-cols-[460px_1fr] gap-12 xl:gap-16 items-start">
 
           <div
             className="lg:sticky lg:top-28"
@@ -71,18 +71,18 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
           >
             <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-semibold px-3.5 py-1.5 rounded-full mb-7 tracking-widest uppercase">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse flex-shrink-0" />
-              Live newsletter sponsorships
+              Media sponsorship marketplace
             </div>
 
             <h1
               className="font-bold text-slate-900 tracking-[-0.045em] leading-[1.0] mb-5"
               style={{ fontSize: 'clamp(34px, 4.2vw, 58px)' }}
             >
-              Last-minute newsletter{' '}
+              Discover newsletter{' '}
               <br className="hidden sm:block" />
-              ad slots.{' '}
+              sponsorship{' '}
               <span className="relative inline-block" style={{ color: '#0f766e' }}>
-                Priced to move.
+                opportunities.
                 <span
                   className="absolute left-0 right-0 h-[3px] rounded-full"
                   style={{ bottom: '-2px', background: 'linear-gradient(90deg, #0f766e, #14b8a6)' }}
@@ -90,11 +90,11 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
               </span>
             </h1>
 
-            <p className="text-[17px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[400px]">
-              Browse unsold sponsorship slots from verified newsletter publishers — discounted as their send date approaches.
+            <p className="text-[17px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[420px]">
+              Browse verified sponsorship slots from newsletter publishers. Filter by niche, audience, and budget — then book directly in minutes.
             </p>
-            <p className="text-[14px] text-slate-400 font-medium mb-10 max-w-[360px]">
-              Pay a 5% deposit to reserve. Balance goes straight to the publisher.
+            <p className="text-[14px] text-slate-400 font-medium mb-10 max-w-[380px]">
+              Pay a 5% deposit to reserve your slot. The balance goes direct to the publisher.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 mb-8">
@@ -102,7 +102,7 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                 onClick={onBrowse}
                 className="group inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-7 py-3.5 rounded-xl text-[15px] transition-all duration-200 shadow-[0_8px_28px_rgba(15,23,42,0.18)] hover:shadow-[0_12px_36px_rgba(15,23,42,0.24)] hover:-translate-y-px"
               >
-                Browse Live Slots
+                Browse Opportunities
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-150" />
               </button>
               <button
@@ -116,9 +116,9 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
 
             <div className="space-y-2.5">
               {[
-                { icon: <TrendingDown className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />, text: 'Prices auto-drop up to 30% as the send date gets closer' },
-                { icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />, text: 'Smart match scoring surfaces deals that fit your niche and budget' },
-                { icon: <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />, text: 'Slots expire — act fast or lose the deal to another buyer' },
+                { icon: <Target className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />, text: 'Filter by niche, audience size, geography, and budget' },
+                { icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />, text: 'Verified publisher inventory with real audience data' },
+                { icon: <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />, text: 'Live booking deadlines — slots fill up fast' },
               ].map(b => (
                 <span key={b.text} className="flex items-start gap-2.5 text-[13px] text-slate-500 font-medium leading-snug">
                   {b.icon}{b.text}
@@ -127,7 +127,7 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
             </div>
 
             <p className="mt-7 text-[11px] text-slate-400 font-medium tracking-wide uppercase">
-              Verified publisher inventory &middot; Real send dates &middot; No spam
+              Verified publisher inventory &middot; Real send dates &middot; Direct booking
             </p>
           </div>
 
@@ -197,19 +197,21 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                     <div
                       key={i}
                       className={`rounded-xl border px-3 py-2.5 flex items-center gap-3
-                        ${slot.tier === 'last' ? 'bg-red-50 border-red-100' : slot.tier === 'hot' ? 'bg-orange-50 border-orange-100' : 'bg-white border-slate-100'}`}
+                        ${slot.tier === 'urgent' ? 'bg-amber-50 border-amber-100' : 'bg-white border-slate-100'}`}
                       style={{ animation: 'slotFade 0.5s ease both', animationDelay: `${400 + i * 120}ms` }}
                     >
                       <div className="flex-1 min-w-0">
                         <p className="text-[12px] font-bold text-slate-800 truncate">{slot.name}</p>
-                        <p className="text-[10px] text-slate-400 font-medium">{slot.subs} subscribers</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <Users className="w-2.5 h-2.5 text-slate-400" />
+                          <p className="text-[10px] text-slate-400 font-medium">{slot.subs} subscribers</p>
+                        </div>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <span className={`text-[11px] font-bold px-2 py-0.5 rounded-lg
-                          ${slot.tier === 'last' ? 'bg-red-500 text-white' : slot.tier === 'hot' ? 'bg-orange-500 text-white' : 'bg-amber-400 text-white'}`}>
-                          {slot.discount}
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600">
+                          {slot.tag}
                         </span>
-                        <div className={`flex items-center gap-1 mt-1 justify-end ${slot.tier === 'last' ? 'text-red-500' : 'text-slate-400'}`}>
+                        <div className={`flex items-center gap-1 mt-1 justify-end ${slot.tier === 'urgent' ? 'text-amber-600' : 'text-slate-400'}`}>
                           <Clock className="w-2.5 h-2.5" />
                           <p className="text-[9px] font-semibold">{slot.deadline}</p>
                         </div>
@@ -219,8 +221,8 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
 
                   <div className="mt-1 grid grid-cols-3 gap-2 pt-2.5 border-t border-slate-100">
                     {[
-                      { val: '30%', label: 'max. discount', color: 'text-orange-500' },
-                      { val: '5%', label: 'deposit to reserve', color: 'text-teal-600' },
+                      { val: '200+', label: 'live slots', color: 'text-teal-600' },
+                      { val: '5%', label: 'deposit to reserve', color: 'text-slate-700' },
                       { val: '95%', label: 'direct to publisher', color: 'text-slate-800' },
                     ].map(s => (
                       <div key={s.label} className="text-center">
@@ -232,14 +234,14 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
                 </div>
 
                 <div className="px-4 py-2.5 border-t border-slate-50 bg-slate-50/60 flex items-center justify-between">
-                  <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest">Curated. Matched. Priced to move.</span>
-                  <span className="text-[9px] text-slate-400">Prices update live</span>
+                  <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest">Curated. Matched. Ready to book.</span>
+                  <span className="text-[9px] text-slate-400">Slots update live</span>
                 </div>
               </div>
             </div>
 
             <p className="text-center text-[10px] text-slate-400 font-medium">
-              Publisher-verified inventory · Automatic discounts · Direct booking
+              Publisher-verified inventory · Smart audience matching · Direct booking
             </p>
           </div>
         </div>
