@@ -46,7 +46,7 @@ export function useListings(filters: FilterState) {
     ];
     const hasTagFilter = allTagSlugs.length > 0;
 
-    let query = supabase.from('listings').select('*, media_profile:media_profiles(*)').eq('status', 'live');
+    let query = supabase.from('listings').select('*, media_profile:media_profiles(*), newsletter:newsletters(*)').eq('status', 'live');
 
     if (filters.category !== 'all') {
       query = query.eq('media_type', filters.category);

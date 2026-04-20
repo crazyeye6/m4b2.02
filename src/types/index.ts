@@ -77,6 +77,8 @@ export interface Listing {
   seller_podcast_url?: string | null;
   portfolio_links?: string[] | null;
   auto_discount_enabled: boolean;
+  newsletter_id?: string | null;
+  newsletter?: Newsletter | null;
   media_profile_id?: string | null;
   media_profile?: MediaProfile | null;
   created_at: string;
@@ -138,6 +140,25 @@ export interface SlotBooking {
   budget_confirmed: boolean;
   creative_ready: boolean;
   booking_type: 'review' | 'proceed';
+}
+
+export interface Newsletter {
+  id: string;
+  seller_user_id: string;
+  seller_email: string;
+  name: string;
+  publisher_name: string;
+  subscriber_count: number | null;
+  avg_open_rate: string | null;
+  niche: string | null;
+  primary_geography: string | null;
+  send_frequency: string | null;
+  description: string | null;
+  logo_url: string | null;
+  website_url: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface MediaProfile {

@@ -227,11 +227,14 @@ export default function App() {
     }
   };
 
-  const handleListSlot = () => {
+  const [preselectedNewsletterId, setPreselectedNewsletterId] = useState<string | null>(null);
+
+  const handleListSlot = (newsletterId?: string) => {
     if (!profile) {
       setShowAuthModal(true);
       return;
     }
+    setPreselectedNewsletterId(newsletterId ?? null);
     setListingInUrl(null);
     setPage('list-slot');
     window.scrollTo(0, 0);
@@ -315,6 +318,7 @@ export default function App() {
           <ListSlotPage
             onBack={() => { goHome(); refetch(); }}
             onEditProfile={() => { setPage('dashboard'); window.scrollTo(0, 0); }}
+            preselectedNewsletterId={preselectedNewsletterId}
           />
         </Suspense>
       </div>
@@ -335,7 +339,7 @@ export default function App() {
         <Suspense fallback={<PageFallback />}>
           <SellerDashboard
             onBack={() => { goHome(); window.scrollTo(0, 0); }}
-            onListSlot={() => { setPage('list-slot'); window.scrollTo(0, 0); }}
+            onListSlot={(newsletterId) => { handleListSlot(newsletterId); }}
           />
         </Suspense>
       );
