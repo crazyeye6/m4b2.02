@@ -89,21 +89,21 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
         </button>
 
         <div className="bg-white rounded-3xl border border-black/[0.06] shadow-sm overflow-hidden mb-6">
-          <div className="h-32 bg-gradient-to-br from-slate-100 to-slate-200 relative">
+          <div className="h-44 bg-gradient-to-br from-slate-100 to-slate-200 relative overflow-hidden">
             {profile.cover_image_url && (
               <img
                 src={profile.cover_image_url}
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
                 onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
           </div>
 
           <div className="px-6 pb-6">
-            <div className="flex items-end gap-4 -mt-8 mb-4">
-              <div className="w-16 h-16 rounded-2xl bg-white border-2 border-white shadow-md flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div className="flex items-end gap-4 -mt-10 mb-4">
+              <div className="w-20 h-20 rounded-2xl bg-white border-2 border-white shadow-md flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {profile.logo_url ? (
                   <img
                     src={profile.logo_url}
