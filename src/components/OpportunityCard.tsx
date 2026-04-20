@@ -27,8 +27,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
   const { formatPrice, browserLocale } = useLocale();
   const tx = useTranslations();
 
-  const autoDiscount = listing.auto_discount_enabled !== false;
-  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at, autoDiscount);
+  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
   const { currentPrice, discountPct, savings, tier, urgencyLabel } = pricing;
   const tierStyle = TIER_STYLES[tier];
   const depositAmount = Math.round(currentPrice * 0.05);
@@ -179,24 +178,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
             : 'bg-[#f5f5f7]'
           }`}>
           <div>
-            <div className="flex items-center gap-1.5 mb-1">
-              <p className="text-[#86868b] text-[10px] font-medium uppercase tracking-wide">{tx.card.pricePerSlot}</p>
-              <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none ${
-                hasDiscount
-                  ? tier === 'last_chance'
-                    ? 'bg-red-100 text-red-700'
-                    : tier === 'mid'
-                    ? 'bg-orange-100 text-orange-700'
-                    : 'bg-amber-100 text-amber-700'
-                  : 'bg-[#f0f0f2] text-[#86868b]'
-              }`}>
-                {hasDiscount
-                  ? `${discountPct}% Off`
-                  : autoDiscount
-                  ? 'Auto-Discount Enabled'
-                  : 'No Active Discount'}
-              </span>
-            </div>
+            <p className="text-[#86868b] text-[10px] font-medium uppercase tracking-wide mb-1">{tx.card.pricePerSlot}</p>
             <div className="flex items-baseline gap-2">
               <span className="text-[#1d1d1f] text-2xl font-semibold tracking-[-0.02em]">{formatPrice(currentPrice)}</span>
               {hasDiscount && (
@@ -210,9 +192,13 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
               </div>
             )}
           </div>
-          {hasDiscount && (
+          {hasDiscount ? (
             <div className={`text-white text-[15px] font-bold px-3 py-1.5 rounded-2xl tabular-nums shadow-sm ${tierStyle.badge}`}>
               -{discountPct}%
+            </div>
+          ) : (
+            <div className="bg-[#1d1d1f] text-white text-[11px] font-semibold px-2.5 py-1 rounded-xl">
+              Full price
             </div>
           )}
         </div>
@@ -286,9 +272,9 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
 
         <div className="mt-auto pt-2 flex flex-col gap-2">
           {isLive && <CountdownTimer deadline={listing.deadline_at} compact />}
-          {isLive && !hasDiscount && autoDiscount && (
+          {isLive && !hasDiscount && (
             <p className="text-[10px] text-center text-[#aeaeb2]">
-              Price may reduce as the deadline approaches
+              Price reduces automatically as the deadline approaches
             </p>
           )}
           <button

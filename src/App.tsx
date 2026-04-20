@@ -94,7 +94,7 @@ export default function App() {
     if (getCheckoutIdFromUrl()) return 'checkout';
     if (getListingIdFromUrl()) return 'listing';
     if (getMediaProfileIdFromUrl()) return 'media-profile';
-    return 'opportunities';
+    return 'home';
   });
   const [listingId, setListingId] = useState<string | null>(() => getListingIdFromUrl());
   const [checkoutListingId, setCheckoutListingId] = useState<string | null>(() => getCheckoutIdFromUrl());
@@ -126,7 +126,7 @@ export default function App() {
   const [showContactModal, setShowContactModal] = useState(false);
   const { prefs, setPrefs } = useBuyerPreferences();
 
-  const { user: authUser, profile, loading: authLoading } = useAuth();
+  const { profile } = useAuth();
   const { listings, loading, stats, updateListingStatus, refetch } = useListings(filters);
 
   // Onboarding popup disabled for now
@@ -157,7 +157,12 @@ export default function App() {
         setListingId(null);
         setCheckoutListingId(null);
         setMediaProfileId(null);
-        setPage('opportunities');
+        const p = new URLSearchParams(window.location.search);
+        if (p.get('page') === 'opportunities') {
+          setPage('opportunities');
+        } else {
+          setPage('home');
+        }
       }
     };
     window.addEventListener('popstate', handlePopState);
@@ -223,8 +228,7 @@ export default function App() {
   };
 
   const handleListSlot = () => {
-    if (authLoading) return;
-    if (!authUser) {
+    if (!profile) {
       setShowAuthModal(true);
       return;
     }
@@ -240,8 +244,7 @@ export default function App() {
   };
 
   const handleDashboard = () => {
-    if (authLoading) return;
-    if (!authUser) {
+    if (!profile) {
       setShowAuthModal(true);
       return;
     }
@@ -280,7 +283,7 @@ export default function App() {
     onHowItWorks: handleHowItWorks,
   };
 
-  const goHome = () => { setListingInUrl(null); setListingId(null); setCheckoutListingId(null); setPage('opportunities'); };
+  const goHome = () => { setListingInUrl(null); setListingId(null); setCheckoutListingId(null); setPage('home'); };
 
   if (page === 'terms') {
     return (
@@ -327,8 +330,6 @@ export default function App() {
   }
 
   if (page === 'dashboard') {
-    if (authLoading) return <PageFallback />;
-
     if (profile?.role === 'seller') {
       return (
         <Suspense fallback={<PageFallback />}>
@@ -358,9 +359,9 @@ export default function App() {
   if (page === 'not-found') {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
-        <Header {...sharedHeaderProps} onHome={goHome} />
+        <Header {...sharedHeaderProps} onHome={() => { setListingInUrl(null); setPage('home'); }} />
         <Suspense fallback={<PageFallback />}>
-          <NotFoundPage onHome={goHome} onBrowse={goHome} />
+          <NotFoundPage onHome={() => { setListingInUrl(null); setPage('home'); }} onBrowse={() => { setListingInUrl(null); setPage('home'); }} />
         </Suspense>
       </div>
     );
@@ -471,7 +472,7 @@ export default function App() {
           </section>
 
           <SmartMatchCallout
-            isLoggedIn={!!authUser}
+            isLoggedIn={!!profile}
             onSignIn={() => setShowAuthModal(true)}
             onDashboard={handleDashboard}
           />
@@ -515,7 +516,7 @@ export default function App() {
         />
 
         <SmartMatchCallout
-          isLoggedIn={!!authUser}
+          isLoggedIn={!!profile}
           onSignIn={() => setShowAuthModal(true)}
           onDashboard={handleDashboard}
         />

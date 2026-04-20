@@ -207,8 +207,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
 
   const { formatPrice } = useLocale();
   const mc = MEDIA_CONFIG[listing.media_type];
-  const autoDiscount = listing.auto_discount_enabled !== false;
-  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at, autoDiscount);
+  const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at);
   const { currentPrice, discountPct, savings, tier, urgencyLabel } = pricing;
   const tierStyle = TIER_STYLES[tier];
   const hasDiscount = discountPct > 0;
@@ -290,16 +289,12 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                 <p className="text-[#86868b] text-[10px] uppercase tracking-widest font-semibold mb-2">Price per slot</p>
                 <p className="text-[#1d1d1f] text-4xl font-semibold mb-1 tracking-[-0.02em]">{formatPrice(currentPrice)}</p>
                 <div className="flex items-center gap-2 mb-3 flex-wrap">
-                  {hasDiscount ? (
+                  {hasDiscount && (
                     <>
                       <span className="text-[#aeaeb2] text-[13px] line-through">{formatPrice(listing.original_price)}</span>
-                      <span className={`text-white text-[11px] font-bold px-2 py-0.5 rounded-lg ${tierStyle.badge}`}>{discountPct}% Off</span>
+                      <span className={`text-white text-[11px] font-bold px-2 py-0.5 rounded-lg ${tierStyle.badge}`}>-{discountPct}%</span>
                       <span className="text-green-600 text-[12px] font-semibold">Save {formatPrice(savings)}</span>
                     </>
-                  ) : (
-                    <span className="text-[11px] font-semibold text-[#6e6e73] bg-[#f5f5f7] border border-black/[0.08] px-2.5 py-1 rounded-lg">
-                      {autoDiscount ? 'Auto-Discount Enabled' : 'No Active Discount'}
-                    </span>
                   )}
                 </div>
                 {hasDiscount && (
@@ -578,46 +573,30 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
               </PageSection>
             )}
 
-            <PageSection title="Pricing" icon={<TrendingDown className="w-4 h-4 text-[#6e6e73]" />}>
+            <PageSection title="How pricing works" icon={<TrendingDown className="w-4 h-4 text-[#6e6e73]" />}>
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${autoDiscount ? 'bg-[#f5f5f7] border-black/[0.08] text-[#6e6e73]' : 'bg-[#f5f5f7] border-black/[0.08] text-[#6e6e73]'}`}>
-                    {autoDiscount ? 'Auto-Discount Enabled' : 'No Active Discount'}
-                  </span>
-                </div>
-                {autoDiscount ? (
-                  <>
-                    <p className="text-[#6e6e73] text-[13px] leading-relaxed">
-                      This publisher has enabled auto-discount. The price reduces automatically as the booking deadline approaches.
-                    </p>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {[
-                        { label: 'Full price', sub: 'More than 5 days left', color: 'bg-[#f5f5f7] text-[#1d1d1f]' },
-                        { label: '−10%', sub: '3–5 days left', color: 'bg-amber-50 text-amber-700 border border-amber-200' },
-                        { label: '−20%', sub: '1–3 days left', color: 'bg-orange-50 text-orange-700 border border-orange-200' },
-                        { label: '−30%', sub: 'Under 24 hours', color: 'bg-red-50 text-red-700 border border-red-200' },
-                      ].map((row, i) => (
-                        <div key={i} className={`rounded-2xl p-3 text-center ${row.color}`}>
-                          <p className="text-[14px] font-bold">{row.label}</p>
-                          <p className="text-[10px] mt-0.5 opacity-70">{row.sub}</p>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex items-start gap-2 rounded-xl px-3 py-2.5 bg-amber-50 border border-amber-200">
-                      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-amber-600 mt-0.5" />
-                      <p className="text-[12px] text-amber-700 leading-snug">
-                        Waiting for a deeper discount risks losing the slot to another buyer. Book early to be certain.
-                      </p>
-                    </div>
-                  </>
-                ) : (
-                  <p className="text-[#6e6e73] text-[13px] leading-relaxed">
-                    This publisher has set a fixed price for this slot. The price will not change before the booking deadline.
-                  </p>
-                )}
-                <p className="text-[#aeaeb2] text-[11px] leading-relaxed border-t border-black/[0.06] pt-3">
-                  Price may reduce as the deadline approaches if auto-discount is enabled.
+                <p className="text-[#6e6e73] text-[13px] leading-relaxed">
+                  Prices are set by publishers and then reduced automatically as the booking deadline approaches. No negotiation needed — the discount is applied for you.
                 </p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { label: 'Full price', sub: 'More than 5 days left', color: 'bg-[#f5f5f7] text-[#1d1d1f]' },
+                    { label: '−10%', sub: '3–5 days left', color: 'bg-amber-50 text-amber-700 border border-amber-200' },
+                    { label: '−20%', sub: '1–3 days left', color: 'bg-orange-50 text-orange-700 border border-orange-200' },
+                    { label: '−30%', sub: 'Under 24 hours', color: 'bg-red-50 text-red-700 border border-red-200' },
+                  ].map((row, i) => (
+                    <div key={i} className={`rounded-2xl p-3 text-center ${row.color}`}>
+                      <p className="text-[14px] font-bold">{row.label}</p>
+                      <p className="text-[10px] mt-0.5 opacity-70">{row.sub}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-start gap-2 rounded-xl px-3 py-2.5 bg-amber-50 border border-amber-200">
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0 text-amber-600 mt-0.5" />
+                  <p className="text-[12px] text-amber-700 leading-snug">
+                    Waiting for a deeper discount risks losing the slot to another buyer. Book early to be certain.
+                  </p>
+                </div>
               </div>
             </PageSection>
 
@@ -662,15 +641,11 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
               <div className={`bg-white border rounded-3xl p-5 shadow-sm ${hasDiscount ? tierStyle.border : 'border-black/[0.06]'}`}>
                 <p className="text-[#1d1d1f] font-semibold text-2xl mb-0.5 tracking-[-0.02em]">{formatPrice(currentPrice)}</p>
                 <div className="flex items-center gap-2 mb-4 flex-wrap">
-                  {hasDiscount ? (
+                  {hasDiscount && (
                     <>
                       <span className="text-[#aeaeb2] text-[13px] line-through">{formatPrice(listing.original_price)}</span>
-                      <span className={`text-white text-[10px] font-bold px-2 py-0.5 rounded-lg ${tierStyle.badge}`}>{discountPct}% Off</span>
+                      <span className={`text-white text-[10px] font-bold px-2 py-0.5 rounded-lg ${tierStyle.badge}`}>-{discountPct}%</span>
                     </>
-                  ) : (
-                    <span className="text-[10px] font-semibold text-[#6e6e73] bg-[#f5f5f7] border border-black/[0.08] px-2 py-0.5 rounded-lg">
-                      {autoDiscount ? 'Auto-Discount Enabled' : 'No Active Discount'}
-                    </span>
                   )}
                   {urgencyLabel && (
                     <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${tierStyle.badge}`}>

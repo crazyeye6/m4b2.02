@@ -102,8 +102,7 @@ export function useListings(filters: FilterState) {
     let result = (data as Listing[]) || [];
 
     result = result.map(l => {
-      const autoDiscount = l.auto_discount_enabled !== false;
-      const pricing = calcDynamicPrice(l.original_price, l.deadline_at, autoDiscount);
+      const pricing = calcDynamicPrice(l.original_price, l.deadline_at);
       return {
         ...l,
         discounted_price: pricing.currentPrice,
@@ -115,12 +114,6 @@ export function useListings(filters: FilterState) {
         const pct = Math.round(((l.original_price - l.discounted_price) / l.original_price) * 100);
         return pct >= filters.discountMin;
       });
-    }
-
-    if (filters.discountMode === 'discounted_only') {
-      result = result.filter(l => l.discounted_price < l.original_price);
-    } else if (filters.discountMode === 'no_discount_only') {
-      result = result.filter(l => l.auto_discount_enabled === false);
     }
 
     if (filters.audienceMin > 0) {

@@ -1,7 +1,7 @@
 import {
   Mail, Mic, Instagram, MapPin, Tag, DollarSign, TrendingDown, Clock,
   LayoutGrid, Check, X, ChevronDown, ChevronUp, SlidersHorizontal,
-  ArrowUpDown, Users, Percent,
+  ArrowUpDown, Users,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
@@ -169,7 +169,6 @@ export default function FilterSidebar({
     (filters.selectedGeographies?.length ?? 0) > 0,
     filters.priceMin > 0 || filters.priceMax > 0,
     filters.discountMin > 0,
-    filters.discountMode && filters.discountMode !== 'all',
     !!filters.deadlineWindow,
     (filters.selectedTags?.length ?? 0) > 0,
   ].filter(Boolean).length;
@@ -313,35 +312,6 @@ export default function FilterSidebar({
                   {v}%+ off
                 </CheckRow>
               ))}
-            </div>
-          </Section>
-
-          {/* Pricing Mode */}
-          <Section
-            label="Pricing mode"
-            icon={<Percent className="w-3.5 h-3.5" />}
-            count={filters.discountMode && filters.discountMode !== 'all' ? 1 : 0}
-            defaultOpen={false}
-          >
-            <div className="flex flex-col gap-0.5">
-              <CheckRow
-                active={!filters.discountMode || filters.discountMode === 'all'}
-                onClick={() => onChange({ discountMode: 'all' })}
-              >
-                All listings
-              </CheckRow>
-              <CheckRow
-                active={filters.discountMode === 'discounted_only'}
-                onClick={() => onChange({ discountMode: filters.discountMode === 'discounted_only' ? 'all' : 'discounted_only' })}
-              >
-                Discounted Only
-              </CheckRow>
-              <CheckRow
-                active={filters.discountMode === 'no_discount_only'}
-                onClick={() => onChange({ discountMode: filters.discountMode === 'no_discount_only' ? 'all' : 'no_discount_only' })}
-              >
-                No Discount Only
-              </CheckRow>
             </div>
           </Section>
 

@@ -1,4 +1,4 @@
-import type { FilterState, SortOption, ViewMode, DeadlineWindow, DiscountMode } from '../types';
+import type { FilterState, SortOption, ViewMode, DeadlineWindow } from '../types';
 
 const DEFAULT_FILTERS: FilterState = {
   category: 'all',
@@ -14,7 +14,6 @@ const DEFAULT_FILTERS: FilterState = {
   selectedTags: [],
   sort: 'deadline_asc',
   slotDate: null,
-  discountMode: 'all',
 };
 
 export function encodeFiltersToUrl(filters: FilterState, viewMode: ViewMode, columns: number): void {
@@ -35,7 +34,6 @@ export function encodeFiltersToUrl(filters: FilterState, viewMode: ViewMode, col
   if (filters.selectedTags.length > 0) p.set('tags', filters.selectedTags.join(',')); else p.delete('tags');
   if (filters.sort !== d.sort) p.set('sort', filters.sort); else p.delete('sort');
   if (filters.slotDate) p.set('sdate', filters.slotDate); else p.delete('sdate');
-  if (filters.discountMode && filters.discountMode !== 'all') p.set('dmode', filters.discountMode); else p.delete('dmode');
   if (viewMode !== 'grid') p.set('view', viewMode); else p.delete('view');
   if (columns !== 2) p.set('cols', String(columns)); else p.delete('cols');
 
@@ -62,7 +60,6 @@ export function decodeFiltersFromUrl(): { filters: FilterState; viewMode: ViewMo
     selectedTags: p.get('tags') ? p.get('tags')!.split(',').filter(Boolean) : [],
     sort: (p.get('sort') as SortOption) || DEFAULT_FILTERS.sort,
     slotDate: p.get('sdate') || null,
-    discountMode: (['all', 'discounted_only', 'no_discount_only'].includes(p.get('dmode') ?? '') ? p.get('dmode') : 'all') as DiscountMode,
   };
 
   const viewModeParam = p.get('view');
