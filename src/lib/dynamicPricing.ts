@@ -39,15 +39,16 @@ export function calcDynamicPrice(basePrice: number, deadlineAt: string, autoDisc
   const hoursRemaining = msRemaining / (1000 * 60 * 60);
   const daysRemaining = hoursRemaining / 24;
 
-  const tier = autoDiscountEnabled ? getDiscountTier(deadlineAt) : 'none';
+  const timeTier = getDiscountTier(deadlineAt);
+  const tier = autoDiscountEnabled ? timeTier : 'none';
   const discountPct = getDiscountPct(tier);
   const currentPrice = Math.round(basePrice * (1 - discountPct / 100));
   const savings = basePrice - currentPrice;
 
   let urgencyLabel: PricingInfo['urgencyLabel'] = null;
-  if (tier === 'last_chance') urgencyLabel = 'Last Chance';
-  else if (tier === 'mid') urgencyLabel = 'Ending Soon';
-  else if (tier === 'early') urgencyLabel = 'Ending This Week';
+  if (timeTier === 'last_chance') urgencyLabel = 'Last Chance';
+  else if (timeTier === 'mid') urgencyLabel = 'Ending Soon';
+  else if (timeTier === 'early') urgencyLabel = 'Ending This Week';
 
   return {
     currentPrice,
