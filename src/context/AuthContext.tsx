@@ -65,7 +65,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select('*')
         .eq('id', userId)
         .maybeSingle();
-      setProfile(data as UserProfile | null);
+
+      if (data) {
+        setProfile(data as UserProfile);
+        return;
+      }
+
+      const { data: authData } = await supabase.auth.getUser();
+      const meta = authData?.user?.user_metadata;
+      const { data: created } = await supabase
+        .from('user_profiles')
+        .upsert({
+          id: userId,
+          role: meta?.role || 'buyer',
+          display_name: meta?.display_name || '',
+          company: meta?.company || '',
+        }, { onConflict: 'id' })
+        .select()
+        .maybeSingle();
+      setProfile(created as UserProfile | null);
     } catch {
       setProfile(null);
     }
@@ -130,19 +148,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     displayName: string,
     company: string
   ) => {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { role, display_name: displayName, company },
+      },
+    });
     if (error || !data.user) return { error };
 
-    const { error: profileError } = await supabase.from('user_profiles').insert({
-      id: data.user.id,
-      role,
-      display_name: displayName,
-      company,
-    });
+    if (data.session) {
+      await fetchProfile(data.user.id);
+    }
 
     sendWelcomeEmail(email, role, displayName, data.session?.access_token);
 
-    return { error: profileError };
+    return { error: null };
   };
 
   const saveDigestPreferences = async (userId: string, prefs: DigestPreferences) => {
