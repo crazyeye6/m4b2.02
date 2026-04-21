@@ -715,8 +715,6 @@ function Pill({ label, value }: { label: string; value: string }) {
 
 const MEDIA_TYPE_OPTIONS = [
   { value: 'newsletter', label: 'Newsletter', active: 'bg-blue-50 border-blue-200 text-blue-700' },
-  { value: 'podcast', label: 'Podcast', active: 'bg-green-50 border-green-200 text-green-700' },
-  { value: 'influencer', label: 'Influencer', active: 'bg-orange-50 border-orange-200 text-orange-700' },
 ];
 
 const LOCATION_OPTIONS = ['Global', 'US', 'UK', 'EU', 'Canada', 'Australia', 'Asia', 'Latin America'];

@@ -1,6 +1,7 @@
 import { Globe, FileText, Users, MapPin, BarChart2, Radio, Tag, Link, Image } from 'lucide-react';
 import type { MediaProfileFormData } from './types';
-import { CATEGORIES, GEOGRAPHIES, AUDIENCE_TYPES, FREQUENCIES, AD_FORMAT_OPTIONS } from './types';
+import { FREQUENCIES, AD_FORMAT_OPTIONS } from './types';
+import TagComboInput from '../TagInput/TagComboInput';
 
 interface Props {
   form: MediaProfileFormData;
@@ -102,13 +103,13 @@ export default function ProfileForm({ form, onChange }: Props) {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Field label="Category" icon={<Tag className="w-3 h-3" />}>
-          <Select value={form.category} onChange={set('category')} options={CATEGORIES} placeholder="Select category..." />
+          <TagComboInput value={form.category} onChange={set('category')} tagType="niche" placeholder="e.g. Marketing, Finance…" allowFreeText />
         </Field>
         <Field label="Primary Geography" icon={<MapPin className="w-3 h-3" />}>
-          <Select value={form.primary_geography} onChange={set('primary_geography')} options={GEOGRAPHIES} placeholder="Select geography..." />
+          <TagComboInput value={form.primary_geography} onChange={set('primary_geography')} tagType="geography" placeholder="e.g. US, UK, Global…" allowFreeText />
         </Field>
         <Field label="Audience Type" icon={<Users className="w-3 h-3" />}>
-          <Select value={form.audience_type} onChange={set('audience_type')} options={AUDIENCE_TYPES} placeholder="Select audience type..." />
+          <TagComboInput value={form.audience_type} onChange={set('audience_type')} tagType="audience" placeholder="e.g. B2B, Founders…" allowFreeText />
         </Field>
       </div>
 
