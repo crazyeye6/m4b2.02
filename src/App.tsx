@@ -11,6 +11,7 @@ import AuthModal from './components/AuthModal';
 import PreferencesOnboarding from './components/PreferencesOnboarding';
 import PreferencesModal from './components/PreferencesModal';
 import SmartMatchCallout from './components/SmartMatchCallout';
+import WhyNewsletterAds from './components/WhyNewsletterAds';
 import { useBuyerPreferences } from './hooks/useBuyerPreferences';
 
 const ListSlotPage = lazy(() => import('./pages/ListSlotPage'));
@@ -526,6 +527,8 @@ export default function App() {
           avgDiscount={stats.avgDiscount}
           totalSavings={stats.totalSavings}
         />
+
+        <WhyNewsletterAds onBrowse={handleBrowse} />
 
         <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-center justify-between mb-6">
