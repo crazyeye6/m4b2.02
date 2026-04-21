@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { parseEmailBody, confidenceLabel, fieldConfidenceColor } from '../lib/emailParser';
 import { sendAdminSlotPublishedEmail } from '../lib/email';
+import AdminPublisherImport from '../components/AdminPublisherImport';
 
 interface EmailSubmission {
   id: string;
@@ -98,7 +99,7 @@ interface AdminPageProps {
   onBack: () => void;
 }
 
-type AdminTab = 'bookings' | 'refunds' | 'email_submissions' | 'csv_uploads' | 'emails' | 'sellers' | 'settings';
+type AdminTab = 'bookings' | 'refunds' | 'email_submissions' | 'csv_uploads' | 'publisher_imports' | 'emails' | 'sellers' | 'settings';
 
 interface ManagedSeller {
   id: string;
@@ -361,6 +362,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             ['bookings', 'Bookings'],
             ['refunds', 'Refund Requests'],
             ['csv_uploads', 'CSV Uploads'],
+            ['publisher_imports', 'Publisher Imports'],
             ['emails', 'Resend Emails'],
             ['sellers', 'Managed Sellers'],
             ['settings', 'Settings'],
@@ -409,6 +411,8 @@ export default function AdminPage({ onBack }: AdminPageProps) {
           }} />
         ) : tab === 'csv_uploads' ? (
           <CsvUploadsTable slots={csvSlots} onSelect={setSelectedCsvSlot} />
+        ) : tab === 'publisher_imports' ? (
+          <AdminPublisherImport onRefreshStats={fetchData} />
         ) : tab === 'emails' ? (
           <EmailsPanel />
         ) : tab === 'sellers' ? (
