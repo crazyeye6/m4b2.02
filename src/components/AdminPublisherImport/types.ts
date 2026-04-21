@@ -1,3 +1,5 @@
+export type ImportTag = 'new' | 'updated' | 'unchanged' | 'duplicate';
+
 export interface ImportRow {
   rowIndex: number;
   newsletter_name: string;
@@ -13,6 +15,12 @@ export interface ImportRow {
   errors: ImportError[];
   hasErrors: boolean;
   hasWarnings: boolean;
+  // Filled in during batch comparison
+  fingerprint: string;
+  importTag: ImportTag;
+  previousSlotId: string | null;
+  // If 'updated', which fields changed
+  changedFields: string[];
 }
 
 export interface ImportError {
@@ -87,6 +95,21 @@ export interface ImportSlot {
   validation_errors: ImportError[];
   admin_notes: string;
   listing_id: string | null;
+  slot_fingerprint: string;
+  import_tag: ImportTag;
+  previous_slot_id: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// ── Previous slot snapshot used for diff display ──────────────────────────────
+export interface PreviousSlotSnapshot {
+  id: string;
+  fingerprint: string;
+  send_date: string;
+  deadline: string;
+  price: string;
+  sponsorship_type: string;
+  slots_available: string;
+  status: string;
 }
