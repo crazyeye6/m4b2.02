@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Mail, Inbox, Zap, Clock, Users } from 'lucide-react';
+import { ArrowRight, Mail, Eye, MousePointerClick, TrendingUp, BarChart3, Users, Star } from 'lucide-react';
 
 interface HeroProps {
   onBrowse: () => void;
@@ -7,37 +7,26 @@ interface HeroProps {
   liveCount?: number;
 }
 
-const MESSY_EMAILS = [
-  { from: 'Sarah @ TechBrief', subject: 'Re: ad slot still available?', time: '2d', read: false },
-  { from: 'newsletter@dailyfinance.co', subject: 'FWD: Sponsorship rates — Q2', time: '3d', read: true },
-  { from: 'partnerships@devweekly.io', subject: 'Quick question about your rates…', time: '5d', read: false },
-  { from: 'Mike Patel', subject: 'RE: RE: RE: ad copy deadline', time: '1w', read: true },
-  { from: 'noreply@mailchimp.com', subject: 'Your campaign stats for April…', time: '1w', read: true },
-  { from: 'alex@growthletters.com', subject: 'Is the March slot still open??', time: '2w', read: false },
-  { from: 'hello@founderweekly.com', subject: 'Newsletter sponsorship — rates?', time: '2w', read: false },
-];
-
-const LIVE_SLOTS = [
-  { name: 'SaaS Insider', subs: '62k', tag: 'B2B SaaS', deadline: '18h', tier: 'urgent' as const },
-  { name: 'FinanceFeed Weekly', subs: '84k', tag: 'Personal Finance', deadline: '3d', tier: 'open' as const },
-  { name: 'Founder Weekly', subs: '31k', tag: 'Startups', deadline: '6h', tier: 'urgent' as const },
-];
-
 const TRUST_LOGOS = [
   'SaaS Weekly', 'AI Frontier', 'Founder HQ', 'Marketing Brew', 'Dev Current', 'Fintech Forward',
 ];
 
 export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps) {
   const [visible, setVisible] = useState(false);
+  const [statStep, setStatStep] = useState(0);
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 60);
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => setStatStep(s => (s + 1) % 3), 2800);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="relative overflow-hidden bg-white">
-      {/* Grid background */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -60,7 +49,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
       <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-14 lg:pt-32 lg:pb-20">
         <div className="grid lg:grid-cols-[420px_1fr] xl:grid-cols-[460px_1fr] gap-12 xl:gap-16 items-start">
 
-          {/* LEFT — Copy */}
+          {/* LEFT -- Copy */}
           <div
             className="lg:sticky lg:top-28"
             style={{
@@ -114,7 +103,6 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
               </button>
             </div>
 
-            {/* Trust row */}
             <div className="border-t border-slate-100 pt-7">
               <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-widest mb-4">
                 Featured publishers
@@ -129,7 +117,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
             </div>
           </div>
 
-          {/* RIGHT — Inbox chaos → clean platform visual */}
+          {/* RIGHT -- Newsletter preview with sponsored ad */}
           <div
             className="hidden lg:flex flex-col gap-4"
             style={{
@@ -138,129 +126,142 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
               transition: 'opacity 0.65s ease 0.14s, transform 0.65s ease 0.14s',
             }}
           >
-            <div className="flex items-stretch gap-4">
-
-              {/* Messy inbox panel */}
-              <div className="w-[196px] flex-shrink-0 rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] flex flex-col">
-                <div className="px-3.5 pt-3 pb-2 border-b border-slate-200 bg-white flex items-center gap-1.5 flex-shrink-0">
-                  <Inbox className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">Your Inbox</span>
-                  <span className="ml-auto text-[9px] bg-red-100 text-red-500 font-bold px-1.5 py-0.5 rounded-full">47 new</span>
+            {/* Simulated newsletter email */}
+            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.08)]">
+              {/* Email chrome bar */}
+              <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-3">
+                <div className="flex gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
                 </div>
-                <div className="flex-1 divide-y divide-slate-100 overflow-hidden">
-                  {MESSY_EMAILS.map((email, i) => (
-                    <div
-                      key={i}
-                      className={`px-3 py-2 ${email.read ? 'opacity-40' : ''}`}
-                      style={{ animation: 'emailSlide 0.4s ease both', animationDelay: `${280 + i * 55}ms` }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        {!email.read
-                          ? <span className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />
-                          : <span className="w-1.5 h-1.5 flex-shrink-0" />}
-                        <p className="text-[9px] font-semibold text-slate-700 truncate">{email.from}</p>
-                        <span className="ml-auto text-[8px] text-slate-400 flex-shrink-0">{email.time}</span>
-                      </div>
-                      <p className="text-[9px] text-slate-400 truncate pl-3">{email.subject}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="relative h-10 flex-shrink-0" style={{ background: 'linear-gradient(to bottom, transparent, rgba(248,250,252,0.98))' }}>
-                  <div className="absolute bottom-2 inset-x-0 text-center">
-                    <span className="text-[8px] text-red-400 font-bold uppercase tracking-widest">Slow. Noisy. Chaotic.</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Connector */}
-              <div className="flex flex-col items-center justify-center gap-2 w-10 flex-shrink-0">
-                <div
-                  className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center shadow-[0_4px_16px_rgba(15,23,42,0.25)]"
-                  style={{ animation: 'connectorPulse 2.2s ease-in-out infinite' }}
-                >
-                  <Zap className="w-4 h-4 text-white" />
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-300" />
-              </div>
-
-              {/* Clean platform panel */}
-              <div className="flex-1 min-w-0 rounded-2xl border border-emerald-100 bg-white overflow-hidden shadow-[0_4px_32px_rgba(0,0,0,0.07)] flex flex-col">
-                <div className="px-4 pt-3 pb-2.5 border-b border-slate-100 flex items-center gap-2 flex-shrink-0">
-                  <Zap className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-[10px] font-bold text-slate-700 tracking-widest uppercase">EndingThisWeek.media</span>
-                  <span className="ml-auto flex items-center gap-1 text-[9px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-full border border-emerald-100">
-                    <span className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
-                    {liveCount > 0 ? `${liveCount} live` : 'Live feed'}
+                <div className="flex-1 flex items-center justify-center">
+                  <span className="text-[10px] text-slate-400 font-medium bg-white border border-slate-200 rounded-md px-3 py-0.5">
+                    mail.google.com/inbox
                   </span>
                 </div>
+              </div>
 
-                <div className="flex-1 p-3.5 flex flex-col gap-2.5">
-                  {LIVE_SLOTS.map((slot, i) => (
-                    <div
-                      key={i}
-                      className={`rounded-xl border px-3 py-2.5 flex items-center gap-3
-                        ${slot.tier === 'urgent' ? 'bg-amber-50 border-amber-100' : 'bg-white border-slate-100'}`}
-                      style={{ animation: 'slotFade 0.5s ease both', animationDelay: `${400 + i * 120}ms` }}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-bold text-slate-800 truncate">{slot.name}</p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <Users className="w-2.5 h-2.5 text-slate-400" />
-                          <p className="text-[10px] text-slate-400 font-medium">{slot.subs} subscribers</p>
-                        </div>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600">
-                          {slot.tag}
-                        </span>
-                        <div className={`flex items-center gap-1 mt-1 justify-end ${slot.tier === 'urgent' ? 'text-amber-600' : 'text-slate-400'}`}>
-                          <Clock className="w-2.5 h-2.5" />
-                          <p className="text-[9px] font-semibold">{slot.deadline}</p>
-                        </div>
+              {/* Email header */}
+              <div className="px-5 pt-4 pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-[11px] font-bold">SF</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[12px] font-bold text-slate-800">SaaS Founder Weekly</p>
+                      <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-medium">62,400 subscribers</span>
+                    </div>
+                    <p className="text-[10px] text-slate-400">to me &middot; Tuesday 9:04 AM</p>
+                  </div>
+                  <Star className="w-4 h-4 text-amber-400 fill-amber-400 flex-shrink-0" />
+                </div>
+                <p className="text-[13px] font-semibold text-slate-700">#247 &mdash; How to scale your GTM motion in 2026</p>
+              </div>
+
+              {/* Newsletter body content */}
+              <div className="px-5 py-4 space-y-3">
+                {/* Fake text lines */}
+                <div className="space-y-1.5">
+                  <div className="h-2.5 bg-slate-100 rounded-full w-full" />
+                  <div className="h-2.5 bg-slate-100 rounded-full w-[92%]" />
+                  <div className="h-2.5 bg-slate-100 rounded-full w-[78%]" />
+                </div>
+
+                {/* Sponsored ad placement -- the hero moment */}
+                <div
+                  className="relative rounded-xl border-2 border-teal-200 bg-gradient-to-br from-teal-50/80 to-emerald-50/50 p-4 my-2"
+                  style={{ animation: 'adGlow 3s ease-in-out infinite' }}
+                >
+                  <div className="absolute -top-2.5 left-4">
+                    <span className="text-[9px] font-bold text-teal-600 bg-teal-100 px-2 py-0.5 rounded-full uppercase tracking-widest border border-teal-200">
+                      Your Ad Here
+                    </span>
+                  </div>
+                  <div className="mt-1.5 flex gap-3">
+                    <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-[18px] font-bold">A</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-bold text-slate-800 mb-0.5">Acme Analytics — Know your customers better</p>
+                      <p className="text-[10px] text-slate-500 leading-relaxed">Join 4,000+ SaaS teams using Acme to understand user behavior and reduce churn by 35%. Start free today.</p>
+                      <div className="mt-2 inline-flex items-center gap-1.5 bg-slate-800 text-white text-[9px] font-bold px-2.5 py-1 rounded-md">
+                        Try Acme Free <ArrowRight className="w-2.5 h-2.5" />
                       </div>
                     </div>
-                  ))}
-
-                  <div className="mt-1 grid grid-cols-3 gap-2 pt-2.5 border-t border-slate-100">
-                    {[
-                      { val: liveCount > 0 ? `${liveCount}` : '200+', label: 'live slots', color: 'text-teal-600' },
-                      { val: '5%', label: 'deposit to reserve', color: 'text-slate-700' },
-                      { val: '95%', label: 'direct to publisher', color: 'text-slate-800' },
-                    ].map(s => (
-                      <div key={s.label} className="text-center">
-                        <p className={`text-[17px] font-bold tracking-tight ${s.color}`}>{s.val}</p>
-                        <p className="text-[9px] text-slate-400 font-medium uppercase tracking-wide mt-0.5 leading-tight">{s.label}</p>
-                      </div>
-                    ))}
                   </div>
                 </div>
 
-                <div className="px-4 py-2.5 border-t border-slate-50 bg-slate-50/60 flex items-center justify-between">
-                  <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest">Curated. Matched. Ready to book.</span>
-                  <span className="text-[9px] text-slate-400">Slots update live</span>
+                {/* More fake text */}
+                <div className="space-y-1.5">
+                  <div className="h-2.5 bg-slate-100 rounded-full w-[88%]" />
+                  <div className="h-2.5 bg-slate-100 rounded-full w-full" />
+                  <div className="h-2.5 bg-slate-100 rounded-full w-[65%]" />
                 </div>
               </div>
             </div>
 
-            <p className="text-center text-[10px] text-slate-400 font-medium">
-              Publisher-verified inventory &middot; Smart audience matching &middot; Direct booking
-            </p>
+            {/* Performance metrics strip */}
+            <div className="grid grid-cols-3 gap-2.5">
+              {[
+                { icon: <Eye className="w-3.5 h-3.5 text-teal-600" />, label: 'Open rate', value: '47.2%', bg: 'bg-teal-50', border: 'border-teal-100' },
+                { icon: <MousePointerClick className="w-3.5 h-3.5 text-sky-600" />, label: 'Click rate', value: '4.8%', bg: 'bg-sky-50', border: 'border-sky-100' },
+                { icon: <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />, label: 'Est. ROI', value: '6.2x', bg: 'bg-emerald-50', border: 'border-emerald-100' },
+              ].map((m, i) => (
+                <div
+                  key={m.label}
+                  className={`rounded-xl border ${m.border} ${m.bg} p-3 transition-all duration-500 ${
+                    statStep === i ? 'scale-[1.03] shadow-md' : 'shadow-sm'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    {m.icon}
+                    <span className="text-[10px] text-slate-500 font-medium">{m.label}</span>
+                  </div>
+                  <p className="text-[20px] font-bold text-slate-800 tracking-tight leading-none">{m.value}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Social proof bar */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-1.5">
+                  {[
+                    'bg-gradient-to-br from-teal-400 to-emerald-500',
+                    'bg-gradient-to-br from-sky-400 to-blue-500',
+                    'bg-gradient-to-br from-amber-400 to-orange-500',
+                    'bg-gradient-to-br from-slate-500 to-slate-700',
+                  ].map((bg, i) => (
+                    <div key={i} className={`w-5 h-5 rounded-full ${bg} border-2 border-white flex items-center justify-center`}>
+                      <span className="text-white text-[7px] font-bold">{['M','J','K','S'][i]}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[10px] text-slate-400 font-medium">
+                  <span className="text-slate-600 font-semibold">2,400+</span> sponsors have booked slots
+                </p>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <BarChart3 className="w-3 h-3 text-slate-300" />
+                <span className="text-[10px] text-slate-400 font-medium">
+                  <span className="text-emerald-600 font-semibold">{liveCount > 0 ? liveCount : '200+'}</span> slots live now
+                </span>
+                <Users className="w-3 h-3 text-slate-300 ml-2" />
+                <span className="text-[10px] text-slate-400 font-medium">
+                  <span className="text-slate-600 font-semibold">340+</span> publishers
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <style>{`
-        @keyframes emailSlide {
-          from { opacity: 0; transform: translateX(-8px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-        @keyframes slotFade {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes connectorPulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(15,23,42,0.22); }
-          50% { transform: scale(1.1); box-shadow: 0 6px 24px rgba(15,23,42,0.32); }
+        @keyframes adGlow {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(20,184,166,0); }
+          50% { box-shadow: 0 0 20px 4px rgba(20,184,166,0.1); }
         }
       `}</style>
     </section>
