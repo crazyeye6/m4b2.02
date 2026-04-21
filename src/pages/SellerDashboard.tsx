@@ -8,8 +8,8 @@ import {
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import SubmitByEmail from '../components/SubmitByEmail';
-import CsvUpload from '../components/CsvUpload';
 import MediaProfileEditor from '../components/MediaProfileEditor';
+import SellerCsvUpload from '../components/SellerCsvUpload';
 import NewsletterManager from '../components/NewsletterManager';
 import type { Listing, ListingStatus, DepositBooking, BookingStatus, MediaProfile, Newsletter } from '../types';
 import { calcDynamicPrice, TIER_STYLES } from '../lib/dynamicPricing';
@@ -19,7 +19,7 @@ interface SellerDashboardProps {
   onListSlot: (newsletterId?: string) => void;
 }
 
-type DashTab = 'listings' | 'newsletters' | 'bookings' | 'media' | 'profile';
+type DashTab = 'listings' | 'newsletters' | 'bookings' | 'media' | 'csv_upload' | 'profile';
 
 interface MarketInsights {
   avgPrice: number;
@@ -148,6 +148,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
     ['newsletters', 'Newsletters'],
     ['bookings', 'Bookings'],
     ['media', 'Media Profiles'],
+    ['csv_upload', 'CSV Upload'],
     ['profile', 'Profile'],
   ];
 
@@ -283,6 +284,8 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
             <MediaProfileBanner onListSlot={() => onListSlot()} hasProfiles={mediaProfiles.length > 0} />
             <MediaProfileEditor onProfilesChanged={setMediaProfiles} />
           </div>
+        ) : tab === 'csv_upload' ? (
+          <SellerCsvUpload />
         ) : (
           <SellerProfilePanel profile={profile} userEmail={user?.email} onSaved={refreshProfile} />
         )}
@@ -322,7 +325,6 @@ function ListingsTab({ listings, duplicating, onSelect, onListSlot, onDuplicate,
           action={{ label: 'New Listing', onClick: onListSlot }}
         />
         <SubmitByEmail variant="compact" />
-        <CsvUpload variant="compact" />
       </div>
     );
   }
@@ -345,9 +347,8 @@ function ListingsTab({ listings, duplicating, onSelect, onListSlot, onDuplicate,
           <ListingsTable listings={expiredListings} duplicating={duplicating} onSelect={onSelect} onDuplicate={onDuplicate} />
         </div>
       )}
-      <div className="pt-2 space-y-3">
+      <div className="pt-2">
         <SubmitByEmail variant="compact" />
-        <CsvUpload variant="compact" />
       </div>
       {insights && <MarketInsightsPanel insights={insights} />}
     </div>
