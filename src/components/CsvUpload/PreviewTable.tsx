@@ -10,40 +10,41 @@ interface PreviewTableProps {
 }
 
 const EDITABLE_COLS: CsvColumnKey[] = [
+  'publisher_name',
   'newsletter_name',
   'subscriber_count',
   'niche',
-  'audience_description',
   'sponsorship_type',
-  'original_price',
-  'discount_price',
+  'price',
   'slots_available',
+  'send_date',
   'deadline',
   'booking_url',
   'description',
 ];
 
 const VISIBLE_COLS: CsvColumnKey[] = [
+  'publisher_name',
   'newsletter_name',
   'subscriber_count',
   'sponsorship_type',
-  'original_price',
-  'discount_price',
+  'price',
+  'send_date',
   'deadline',
 ];
 
 const COL_LABELS: Record<CsvColumnKey, string> = {
-  newsletter_name: 'Newsletter',
+  publisher_name:   'Publisher',
+  newsletter_name:  'Newsletter',
   subscriber_count: 'Subscribers',
-  niche: 'Niche',
-  audience_description: 'Audience description',
-  sponsorship_type: 'Sponsorship type',
-  original_price: 'Orig. price',
-  discount_price: 'Disc. price',
-  slots_available: 'Slots',
-  deadline: 'Deadline',
-  booking_url: 'Booking URL',
-  description: 'Description',
+  niche:            'Niche',
+  sponsorship_type: 'Sponsorship Type',
+  price:            'Price',
+  slots_available:  'Slots',
+  send_date:        'Send Date',
+  deadline:         'Deadline',
+  booking_url:      'Booking URL',
+  description:      'Description',
 };
 
 interface EditingCell {
@@ -109,7 +110,7 @@ function EditRowModal({ row, onSave, onClose }: EditRowModalProps) {
                   {COL_LABELS[col]}
                   {colDef?.required && <span className="ml-1 text-red-400">*</span>}
                 </label>
-                {col === 'description' || col === 'audience_description' ? (
+                {col === 'description' ? (
                   <textarea
                     value={draft[col]}
                     onChange={e => setDraft(d => ({ ...d, [col]: e.target.value }))}

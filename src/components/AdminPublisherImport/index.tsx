@@ -351,7 +351,8 @@ function NewImportWizard({ publishers, batches, onDone, onCancel }: {
         status: row.hasErrors ? 'needs_review' : (row.importTag === 'unchanged' ? 'approved' : 'pending_review'),
         media_name: row.newsletter_name || publisher.newsletter_name,
         media_type: 'newsletter', audience_size: row.subscriber_count,
-        opportunity_type: row.sponsorship_type, original_price: row.price, discount_price: row.price,
+        opportunity_type: row.sponsorship_type,
+        original_price: row.price, discount_price: row.price, price: row.price,
         slots_available: row.slots_available || '1', send_date: row.send_date,
         deadline: row.deadline, category: row.niche || publisher.category,
         booking_url: row.booking_url, description: row.description,
@@ -550,11 +551,11 @@ function NewImportWizard({ publishers, batches, onDone, onCancel }: {
                           className="rounded" />
                       </th>
                       <th className="px-3 py-2.5 text-left font-semibold text-[#1d1d1f]">Tag</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-[#1d1d1f]">Publisher</th>
                       <th className="px-3 py-2.5 text-left font-semibold text-[#1d1d1f]">Newsletter</th>
-                      <th className="px-3 py-2.5 text-left font-semibold text-[#1d1d1f]">Niche</th>
-                      <th className="px-3 py-2.5 text-left font-semibold text-[#1d1d1f]">Type</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-[#1d1d1f]">Sponsorship Type</th>
                       <th className="px-3 py-2.5 text-left font-semibold text-[#1d1d1f]">Price</th>
-                      <th className="px-3 py-2.5 text-left font-semibold text-[#1d1d1f]">Send</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-[#1d1d1f]">Send Date</th>
                       <th className="px-3 py-2.5 text-left font-semibold text-[#1d1d1f]">Deadline</th>
                       <th className="px-3 py-2.5 w-16" />
                     </tr>
@@ -585,8 +586,8 @@ function NewImportWizard({ publishers, batches, onDone, onCancel }: {
                           </td>
                           {isEditing ? (
                             <>
+                              <td className="px-2 py-1.5"><input value={editValues.publisher_name ?? ''} onChange={e => setEditValues(v => ({ ...v, publisher_name: e.target.value }))} className="w-full border border-black/[0.1] rounded-lg px-2 py-1 text-[11px]" /></td>
                               <td className="px-2 py-1.5"><input value={editValues.newsletter_name ?? ''} onChange={e => setEditValues(v => ({ ...v, newsletter_name: e.target.value }))} className="w-full border border-black/[0.1] rounded-lg px-2 py-1 text-[11px]" /></td>
-                              <td className="px-2 py-1.5"><input value={editValues.niche ?? ''} onChange={e => setEditValues(v => ({ ...v, niche: e.target.value }))} className="w-full border border-black/[0.1] rounded-lg px-2 py-1 text-[11px]" /></td>
                               <td className="px-2 py-1.5"><input value={editValues.sponsorship_type ?? ''} onChange={e => setEditValues(v => ({ ...v, sponsorship_type: e.target.value }))} className="w-full border border-black/[0.1] rounded-lg px-2 py-1 text-[11px]" /></td>
                               <td className="px-2 py-1.5"><input value={editValues.price ?? ''} onChange={e => setEditValues(v => ({ ...v, price: e.target.value }))} className="w-24 border border-black/[0.1] rounded-lg px-2 py-1 text-[11px]" /></td>
                               <td className="px-2 py-1.5"><input value={editValues.send_date ?? ''} onChange={e => setEditValues(v => ({ ...v, send_date: e.target.value }))} className="w-28 border border-black/[0.1] rounded-lg px-2 py-1 text-[11px]" /></td>
@@ -600,8 +601,8 @@ function NewImportWizard({ publishers, batches, onDone, onCancel }: {
                             </>
                           ) : (
                             <>
-                              <td className="px-3 py-2.5 font-medium text-[#1d1d1f] max-w-[160px] truncate">{row.newsletter_name || '—'}</td>
-                              <td className="px-3 py-2.5 text-[#6e6e73] truncate">{row.niche || '—'}</td>
+                              <td className="px-3 py-2.5 text-[#6e6e73] truncate max-w-[120px]">{row.publisher_name || '—'}</td>
+                              <td className="px-3 py-2.5 font-medium text-[#1d1d1f] max-w-[140px] truncate">{row.newsletter_name || '—'}</td>
                               <td className="px-3 py-2.5 text-[#6e6e73] truncate">{row.sponsorship_type || '—'}</td>
                               <td className="px-3 py-2.5 font-semibold text-[#1d1d1f]">{row.price ? `$${row.price.replace(/[^0-9.]/g, '')}` : '—'}</td>
                               <td className="px-3 py-2.5 text-[#6e6e73]">{row.send_date || '—'}</td>
