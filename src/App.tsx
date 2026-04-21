@@ -521,7 +521,7 @@ export default function App() {
       <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
 
       <main>
-        <Hero onBrowse={handleBrowse} onListSlot={handleListSlot} />
+        <Hero onBrowse={handleBrowse} onListSlot={handleListSlot} liveCount={stats.liveCount} />
         <StatsBar
           liveCount={stats.liveCount}
           avgDiscount={stats.avgDiscount}

@@ -1,30 +1,26 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Mail, Inbox, Zap, CheckCircle, Target, Clock, Users } from 'lucide-react';
+import { ArrowRight, Mail, Zap, Clock, Users, TrendingDown, Shield, Sparkles } from 'lucide-react';
 
 interface HeroProps {
   onBrowse: () => void;
   onListSlot: () => void;
+  liveCount?: number;
 }
 
-const MESSY_EMAILS = [
-  { from: 'Sarah @ TechBrief', subject: 'Re: ad slot still available?', time: '2d', read: false },
-  { from: 'newsletter@dailyfinance.co', subject: 'FWD: Sponsorship rates — Q2', time: '3d', read: true },
-  { from: 'partnerships@devweekly.io', subject: 'Quick question about your rates…', time: '5d', read: false },
-  { from: 'Mike Patel', subject: 'RE: RE: RE: ad copy deadline', time: '1w', read: true },
-  { from: 'noreply@mailchimp.com', subject: 'Your campaign stats for April…', time: '1w', read: true },
-  { from: 'alex@growthletters.com', subject: 'Is the March slot still open??', time: '2w', read: false },
-  { from: 'hello@founderweekly.com', subject: 'Newsletter sponsorship — rates?', time: '2w', read: false },
+const FEATURED_SLOTS = [
+  { name: 'AI Frontier', subs: '88k', niche: 'AI & ML', deadline: '12d', format: 'Sponsored post', price: '$4,200', tier: 'premium' as const },
+  { name: 'SaaS Weekly', subs: '52k', niche: 'B2B SaaS', deadline: '8d', format: 'Sponsored post', price: '$2,400', tier: 'standard' as const },
+  { name: 'Founder HQ', subs: '38k', niche: 'Startups', deadline: '10d', format: 'Dedicated send', price: '$3,800', tier: 'premium' as const },
+  { name: 'Dev Current', subs: '44k', niche: 'Engineering', deadline: '8d', format: 'Sponsored post', price: '$2,100', tier: 'standard' as const },
 ];
 
-const LIVE_SLOTS = [
-  { name: 'SaaS Insider', subs: '62k', tag: 'B2B SaaS', deadline: '18h', tier: 'urgent' },
-  { name: 'FinanceFeed Weekly', subs: '84k', tag: 'Personal Finance', deadline: '3d', tier: 'open' },
-  { name: 'Founder Weekly', subs: '31k', tag: 'Startups', deadline: '6h', tier: 'urgent' },
+const TRUST_LOGOS = [
+  'SaaS Weekly', 'AI Frontier', 'Founder HQ', 'Marketing Brew', 'Dev Current', 'Fintech Forward',
 ];
 
-export default function Hero({ onBrowse, onListSlot }: HeroProps) {
+export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps) {
   const [visible, setVisible] = useState(false);
-  const [tick, setTick] = useState(0);
+  const [activeSlot, setActiveSlot] = useState(0);
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 60);
@@ -32,13 +28,13 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => setTick(t => t + 1), 3000);
+    const interval = setInterval(() => setActiveSlot(s => (s + 1) % FEATURED_SLOTS.length), 3200);
     return () => clearInterval(interval);
   }, []);
-  void tick;
 
   return (
     <section className="relative overflow-hidden bg-white">
+      {/* Grid background */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -59,10 +55,10 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
       />
 
       <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-14 lg:pt-32 lg:pb-20">
-        <div className="grid lg:grid-cols-[420px_1fr] xl:grid-cols-[460px_1fr] gap-12 xl:gap-16 items-start">
+        <div className="grid lg:grid-cols-[1fr_1fr] xl:grid-cols-[480px_1fr] gap-12 xl:gap-16 items-center">
 
+          {/* LEFT — Copy */}
           <div
-            className="lg:sticky lg:top-28"
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? 'translateY(0)' : 'translateY(22px)',
@@ -71,18 +67,18 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
           >
             <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-semibold px-3.5 py-1.5 rounded-full mb-7 tracking-widest uppercase">
               <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse flex-shrink-0" />
-              Media sponsorship marketplace
+              Newsletter sponsorship marketplace
             </div>
 
             <h1
               className="font-bold text-slate-900 tracking-[-0.045em] leading-[1.0] mb-5"
-              style={{ fontSize: 'clamp(34px, 4.2vw, 58px)' }}
+              style={{ fontSize: 'clamp(34px, 4.2vw, 56px)' }}
             >
-              Discover newsletter{' '}
+              Book newsletter{' '}
               <br className="hidden sm:block" />
-              sponsorship{' '}
+              ad slots{' '}
               <span className="relative inline-block" style={{ color: '#0f766e' }}>
-                opportunities.
+                directly.
                 <span
                   className="absolute left-0 right-0 h-[3px] rounded-full"
                   style={{ bottom: '-2px', background: 'linear-gradient(90deg, #0f766e, #14b8a6)' }}
@@ -90,19 +86,19 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
               </span>
             </h1>
 
-            <p className="text-[17px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[420px]">
-              Browse verified sponsorship slots from newsletter publishers. Filter by niche, audience, and budget — then book directly in minutes.
+            <p className="text-[17px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[440px]">
+              Browse verified sponsorship slots from top newsletter publishers. Pick your niche, audience, and budget — then reserve with a 5% deposit.
             </p>
-            <p className="text-[14px] text-slate-400 font-medium mb-10 max-w-[380px]">
-              Pay a 5% deposit to reserve your slot. The balance goes direct to the publisher.
+            <p className="text-[14px] text-slate-400 font-medium mb-9 max-w-[400px]">
+              The balance goes direct to the publisher. No middlemen, no markup.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 mb-8">
+            <div className="flex flex-col sm:flex-row gap-3 mb-10">
               <button
                 onClick={onBrowse}
                 className="group inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-7 py-3.5 rounded-xl text-[15px] transition-all duration-200 shadow-[0_8px_28px_rgba(15,23,42,0.18)] hover:shadow-[0_12px_36px_rgba(15,23,42,0.24)] hover:-translate-y-px"
               >
-                Browse Opportunities
+                Browse {liveCount > 0 ? `${liveCount} Live Slots` : 'Opportunities'}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-150" />
               </button>
               <button
@@ -114,151 +110,125 @@ export default function Hero({ onBrowse, onListSlot }: HeroProps) {
               </button>
             </div>
 
-            <div className="space-y-2.5">
-              {[
-                { icon: <Target className="w-3.5 h-3.5 text-teal-600 flex-shrink-0" />, text: 'Filter by niche, audience size, geography, and budget' },
-                { icon: <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />, text: 'Verified publisher inventory with real audience data' },
-                { icon: <Clock className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />, text: 'Live booking deadlines — slots fill up fast' },
-              ].map(b => (
-                <span key={b.text} className="flex items-start gap-2.5 text-[13px] text-slate-500 font-medium leading-snug">
-                  {b.icon}{b.text}
-                </span>
-              ))}
+            {/* Trust row */}
+            <div className="border-t border-slate-100 pt-7">
+              <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-widest mb-4">
+                Featured publishers
+              </p>
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
+                {TRUST_LOGOS.map(name => (
+                  <span key={name} className="text-[13px] font-semibold text-slate-300 hover:text-slate-500 transition-colors duration-200 cursor-default">
+                    {name}
+                  </span>
+                ))}
+              </div>
             </div>
-
-            <p className="mt-7 text-[11px] text-slate-400 font-medium tracking-wide uppercase">
-              Verified publisher inventory &middot; Real send dates &middot; Direct booking
-            </p>
           </div>
 
+          {/* RIGHT — Visual showcase */}
           <div
-            className="hidden lg:flex flex-col gap-4"
+            className="hidden lg:block"
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? 'translateY(0)' : 'translateY(30px)',
               transition: 'opacity 0.65s ease 0.14s, transform 0.65s ease 0.14s',
             }}
           >
-            <div className="flex items-stretch gap-4">
-
-              <div className="w-[196px] flex-shrink-0 rounded-2xl border border-slate-200 bg-slate-50 overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.05)] flex flex-col">
-                <div className="px-3.5 pt-3 pb-2 border-b border-slate-200 bg-white flex items-center gap-1.5 flex-shrink-0">
-                  <Inbox className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="text-[10px] font-bold text-slate-500 tracking-widest uppercase">Your Inbox</span>
-                  <span className="ml-auto text-[9px] bg-red-100 text-red-500 font-bold px-1.5 py-0.5 rounded-full">47 new</span>
+            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.08)]">
+              {/* Header bar */}
+              <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-emerald-500" />
+                  <span className="text-[11px] font-bold text-slate-700 tracking-widest uppercase">Live Sponsorship Slots</span>
                 </div>
-                <div className="flex-1 divide-y divide-slate-100 overflow-hidden">
-                  {MESSY_EMAILS.map((email, i) => (
-                    <div
-                      key={i}
-                      className={`px-3 py-2 ${email.read ? 'opacity-40' : ''}`}
-                      style={{ animation: 'emailSlide 0.4s ease both', animationDelay: `${280 + i * 55}ms` }}
-                    >
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        {!email.read
-                          ? <span className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />
-                          : <span className="w-1.5 h-1.5 flex-shrink-0" />}
-                        <p className="text-[9px] font-semibold text-slate-700 truncate">{email.from}</p>
-                        <span className="ml-auto text-[8px] text-slate-400 flex-shrink-0">{email.time}</span>
-                      </div>
-                      <p className="text-[9px] text-slate-400 truncate pl-3">{email.subject}</p>
+                <span className="flex items-center gap-1.5 text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2.5 py-1 rounded-full border border-emerald-100">
+                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                  {liveCount > 0 ? `${liveCount} live` : 'Live feed'}
+                </span>
+              </div>
+
+              {/* Slot cards */}
+              <div className="p-4 space-y-2.5">
+                {FEATURED_SLOTS.map((slot, i) => (
+                  <div
+                    key={slot.name}
+                    className={`rounded-xl border px-4 py-3.5 flex items-center gap-4 transition-all duration-500 ${
+                      activeSlot === i
+                        ? 'bg-teal-50/60 border-teal-200 shadow-[0_2px_12px_rgba(15,118,110,0.08)]'
+                        : 'bg-white border-slate-100 hover:border-slate-200'
+                    }`}
+                    style={{ animation: 'slotFade 0.5s ease both', animationDelay: `${350 + i * 100}ms` }}
+                  >
+                    {/* Avatar circle */}
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                      slot.tier === 'premium'
+                        ? 'bg-gradient-to-br from-teal-500 to-emerald-500'
+                        : 'bg-gradient-to-br from-slate-600 to-slate-800'
+                    }`}>
+                      <span className="text-white text-[13px] font-bold">{slot.name.charAt(0)}</span>
                     </div>
-                  ))}
-                </div>
-                <div className="relative h-10 flex-shrink-0" style={{ background: 'linear-gradient(to bottom, transparent, rgba(248,250,252,0.98))' }}>
-                  <div className="absolute bottom-2 inset-x-0 text-center">
-                    <span className="text-[8px] text-red-400 font-bold uppercase tracking-widest">Slow. Noisy. Chaotic.</span>
-                  </div>
-                </div>
-              </div>
 
-              <div className="flex flex-col items-center justify-center gap-2 w-10 flex-shrink-0">
-                <div
-                  className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center shadow-[0_4px_16px_rgba(15,23,42,0.25)]"
-                  style={{ animation: 'connectorPulse 2.2s ease-in-out infinite' }}
-                >
-                  <Zap className="w-4 h-4 text-white" />
-                </div>
-                <ArrowRight className="w-4 h-4 text-slate-300" />
-              </div>
-
-              <div className="flex-1 min-w-0 rounded-2xl border border-emerald-100 bg-white overflow-hidden shadow-[0_4px_32px_rgba(0,0,0,0.07)] flex flex-col">
-                <div className="px-4 pt-3 pb-2.5 border-b border-slate-100 flex items-center gap-2 flex-shrink-0">
-                  <Zap className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-[10px] font-bold text-slate-700 tracking-widest uppercase">EndingThisWeek.media</span>
-                  <span className="ml-auto flex items-center gap-1 text-[9px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-full border border-emerald-100">
-                    <span className="w-1 h-1 bg-emerald-400 rounded-full animate-pulse" />
-                    Live feed
-                  </span>
-                </div>
-
-                <div className="flex-1 p-3.5 flex flex-col gap-2.5">
-                  {LIVE_SLOTS.map((slot, i) => (
-                    <div
-                      key={i}
-                      className={`rounded-xl border px-3 py-2.5 flex items-center gap-3
-                        ${slot.tier === 'urgent' ? 'bg-amber-50 border-amber-100' : 'bg-white border-slate-100'}`}
-                      style={{ animation: 'slotFade 0.5s ease both', animationDelay: `${400 + i * 120}ms` }}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-[12px] font-bold text-slate-800 truncate">{slot.name}</p>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <Users className="w-2.5 h-2.5 text-slate-400" />
-                          <p className="text-[10px] text-slate-400 font-medium">{slot.subs} subscribers</p>
-                        </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-[13px] font-bold text-slate-800 truncate">{slot.name}</p>
+                        {slot.tier === 'premium' && (
+                          <Sparkles className="w-3 h-3 text-teal-500 flex-shrink-0" />
+                        )}
                       </div>
-                      <div className="text-right flex-shrink-0">
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-100 text-slate-600">
-                          {slot.tag}
+                      <div className="flex items-center gap-3 mt-0.5">
+                        <span className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
+                          <Users className="w-2.5 h-2.5" />
+                          {slot.subs}
                         </span>
-                        <div className={`flex items-center gap-1 mt-1 justify-end ${slot.tier === 'urgent' ? 'text-amber-600' : 'text-slate-400'}`}>
-                          <Clock className="w-2.5 h-2.5" />
-                          <p className="text-[9px] font-semibold">{slot.deadline}</p>
-                        </div>
+                        <span className="text-[10px] text-slate-300">|</span>
+                        <span className="text-[10px] text-slate-400 font-medium">{slot.format}</span>
+                      </div>
+                    </div>
+
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-[14px] font-bold text-slate-800">{slot.price}</p>
+                      <div className="flex items-center gap-1 mt-0.5 justify-end text-slate-400">
+                        <Clock className="w-2.5 h-2.5" />
+                        <p className="text-[10px] font-semibold">{slot.deadline}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Bottom stats strip */}
+              <div className="px-5 py-3.5 border-t border-slate-100 bg-slate-50/60">
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    { icon: <TrendingDown className="w-3.5 h-3.5 text-emerald-500" />, val: 'Auto-discounting', sub: 'Prices drop near deadline' },
+                    { icon: <Shield className="w-3.5 h-3.5 text-sky-500" />, val: '5% deposit only', sub: 'Balance direct to publisher' },
+                    { icon: <Sparkles className="w-3.5 h-3.5 text-amber-500" />, val: 'Smart matching', sub: 'Find your niche fit' },
+                  ].map(s => (
+                    <div key={s.val} className="flex items-start gap-2">
+                      <div className="w-6 h-6 rounded-lg bg-white border border-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        {s.icon}
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-semibold text-slate-700 leading-tight">{s.val}</p>
+                        <p className="text-[9px] text-slate-400 mt-0.5">{s.sub}</p>
                       </div>
                     </div>
                   ))}
-
-                  <div className="mt-1 grid grid-cols-3 gap-2 pt-2.5 border-t border-slate-100">
-                    {[
-                      { val: '200+', label: 'live slots', color: 'text-teal-600' },
-                      { val: '5%', label: 'deposit to reserve', color: 'text-slate-700' },
-                      { val: '95%', label: 'direct to publisher', color: 'text-slate-800' },
-                    ].map(s => (
-                      <div key={s.label} className="text-center">
-                        <p className={`text-[17px] font-bold tracking-tight ${s.color}`}>{s.val}</p>
-                        <p className="text-[9px] text-slate-400 font-medium uppercase tracking-wide mt-0.5 leading-tight">{s.label}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="px-4 py-2.5 border-t border-slate-50 bg-slate-50/60 flex items-center justify-between">
-                  <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-widest">Curated. Matched. Ready to book.</span>
-                  <span className="text-[9px] text-slate-400">Slots update live</span>
                 </div>
               </div>
             </div>
 
-            <p className="text-center text-[10px] text-slate-400 font-medium">
-              Publisher-verified inventory · Smart audience matching · Direct booking
+            <p className="text-center text-[10px] text-slate-400 font-medium mt-3">
+              Verified publishers &middot; Real send dates &middot; Direct booking
             </p>
           </div>
         </div>
       </div>
 
       <style>{`
-        @keyframes emailSlide {
-          from { opacity: 0; transform: translateX(-8px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
         @keyframes slotFade {
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes connectorPulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 4px 16px rgba(15,23,42,0.22); }
-          50% { transform: scale(1.1); box-shadow: 0 6px 24px rgba(15,23,42,0.32); }
         }
       `}</style>
     </section>
