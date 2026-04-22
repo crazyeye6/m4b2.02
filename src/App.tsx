@@ -11,7 +11,9 @@ import AuthModal from './components/AuthModal';
 import PreferencesOnboarding from './components/PreferencesOnboarding';
 import PreferencesModal from './components/PreferencesModal';
 import SmartMatchCallout from './components/SmartMatchCallout';
-import WhyNewsletterAds from './components/WhyNewsletterAds';
+import ExploreByCategory from './components/ExploreByCategory';
+import CategorySection from './components/CategorySection';
+import { Newspaper, Mic2, Users } from 'lucide-react';
 import { useBuyerPreferences } from './hooks/useBuyerPreferences';
 
 const ListSlotPage = lazy(() => import('./pages/ListSlotPage'));
@@ -516,51 +518,128 @@ export default function App() {
     );
   }
 
+  // Derived category lists from live listings
+  const newsletterListings = listings.filter(l =>
+    !l.media_type || l.media_type === 'newsletter' || (l.media_type as string) === 'Newsletter'
+  );
+  const podcastListings = listings.filter(l =>
+    l.media_type === 'podcast' || (l.media_type as string) === 'Podcast'
+  );
+  const influencerListings = listings.filter(l =>
+    l.media_type === 'influencer' || (l.media_type as string) === 'Influencer'
+  );
+
   return (
     <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
       <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
 
       <main>
+        {/* 1. Hero */}
         <Hero onBrowse={handleBrowse} onListSlot={handleListSlot} liveCount={stats.liveCount} />
+
+        {/* 2. Stats bar */}
         <StatsBar
           liveCount={stats.liveCount}
           avgDiscount={stats.avgDiscount}
           totalSavings={stats.totalSavings}
         />
 
-        <WhyNewsletterAds onBrowse={handleBrowse} />
+        {/* 3. Explore by Category */}
+        <ExploreByCategory onBrowse={handleBrowse} />
 
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-[22px] font-semibold text-[#1d1d1f] tracking-[-0.02em]">Live slots</h2>
-              <p className="text-[#6e6e73] text-[13px] mt-0.5">Prices auto-drop as deadlines approach</p>
+        {/* 4. Featured Opportunities — top picks across all categories */}
+        <section className="py-16 border-t border-black/[0.06] bg-white">
+          <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-start justify-between gap-4 mb-8">
+              <div>
+                <p className="text-[12px] font-semibold uppercase tracking-widest text-[#86868b] mb-2">This week</p>
+                <h2 className="text-[22px] font-semibold text-[#1d1d1f] tracking-[-0.02em]">Featured opportunities</h2>
+                <p className="text-[#6e6e73] text-[13px] mt-0.5">Hand-picked inventory across creator channels — book before they're gone</p>
+              </div>
+              <button
+                onClick={handleBrowse}
+                className="flex-shrink-0 text-[13px] font-medium text-[#1d1d1f] hover:text-[#1F7A63] transition-colors underline underline-offset-2 mt-1"
+              >
+                View all {stats.liveCount}
+              </button>
             </div>
-            <button
-              onClick={handleBrowse}
-              className="text-[13px] font-medium text-[#1d1d1f] hover:text-[#0f766e] transition-colors underline underline-offset-2"
-            >
-              View all {stats.liveCount}
-            </button>
+            <ListingsGrid
+              listings={listings.slice(0, 4)}
+              loading={loading}
+              onSecure={handleSecure}
+              onDetails={handleViewListing}
+              onViewMediaProfile={handleViewMediaProfile}
+              columns={2}
+              viewMode="grid"
+              sort={filters.sort}
+            />
           </div>
-          <ListingsGrid
-            listings={listings.slice(0, 2)}
+        </section>
+
+        {/* 5. Newsletter opportunities */}
+        <div className="bg-white">
+          <CategorySection
+            title="Newsletter opportunities"
+            subtitle="Sponsored placements in niche email newsletters — reach loyal, engaged subscribers"
+            icon={<Newspaper className="w-5 h-5" />}
+            listings={newsletterListings}
             loading={loading}
             onSecure={handleSecure}
             onDetails={handleViewListing}
             onViewMediaProfile={handleViewMediaProfile}
-            columns={2}
-            viewMode="grid"
-            sort={filters.sort}
+            onViewAll={handleBrowse}
+            totalCount={newsletterListings.length}
+            accentColor="#1F7A63"
+            maxCards={4}
           />
-        </section>
+        </div>
 
+        {/* 6. Podcast opportunities */}
+        <CategorySection
+          title="Podcast opportunities"
+          subtitle="Pre-roll, mid-roll, and host-read sponsorship slots across independent podcasts"
+          icon={<Mic2 className="w-5 h-5" />}
+          listings={podcastListings}
+          loading={loading}
+          onSecure={handleSecure}
+          onDetails={handleViewListing}
+          onViewMediaProfile={handleViewMediaProfile}
+          onViewAll={handleBrowse}
+          totalCount={podcastListings.length}
+          comingSoon={podcastListings.length === 0}
+          comingSoonDesc="We're onboarding independent podcasters now. Enter your email to be notified when the first podcast placements go live."
+          accentColor="#ea580c"
+          maxCards={4}
+        />
+
+        {/* 7. Influencer opportunities */}
+        <div className="bg-white">
+          <CategorySection
+            title="Influencer opportunities"
+            subtitle="Time-sensitive creator collaboration slots across Instagram, TikTok, YouTube, and more"
+            icon={<Users className="w-5 h-5" />}
+            listings={influencerListings}
+            loading={loading}
+            onSecure={handleSecure}
+            onDetails={handleViewListing}
+            onViewMediaProfile={handleViewMediaProfile}
+            onViewAll={handleBrowse}
+            totalCount={influencerListings.length}
+            comingSoon={influencerListings.length === 0}
+            comingSoonDesc="Influencer collaborations are coming to the platform. Get notified when creators list their first opportunities."
+            accentColor="#e11d48"
+            maxCards={4}
+          />
+        </div>
+
+        {/* 8. Smart match callout */}
         <SmartMatchCallout
           isLoggedIn={!!profile}
           onSignIn={() => setShowAuthModal(true)}
           onDashboard={handleDashboard}
         />
 
+        {/* 9. How it works */}
         <HowItWorks onListSlot={handleListSlot} />
       </main>
 

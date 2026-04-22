@@ -1,4 +1,4 @@
-import { Menu, X, User, ChevronDown, Globe } from 'lucide-react';
+import { Menu, X, User, ChevronDown, Globe, Newspaper, Mic2, Users, Monitor, Handshake, Calendar, LayoutGrid } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
@@ -16,23 +16,25 @@ interface HeaderProps {
   onHowItWorks?: () => void;
 }
 
+const MORE_CATEGORIES = [
+  { icon: <Monitor className="w-3.5 h-3.5" />, label: 'Website Ads', desc: 'Display & sponsored content' },
+  { icon: <Handshake className="w-3.5 h-3.5" />, label: 'Sponsorships', desc: 'Brand partnership opportunities' },
+  { icon: <Calendar className="w-3.5 h-3.5" />, label: 'Events', desc: 'Event & webinar sponsorships' },
+];
+
 export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSignIn, onOpportunities, onHowItWorks }: HeaderProps) {
   const handleOpportunities = () => {
-    if (onOpportunities) {
-      onOpportunities();
-    } else {
-      onHome();
-    }
+    if (onOpportunities) onOpportunities();
+    else onHome();
   };
 
   const handleHowItWorks = (e: React.MouseEvent) => {
-    if (onHowItWorks) {
-      e.preventDefault();
-      onHowItWorks();
-    }
+    if (onHowItWorks) { e.preventDefault(); onHowItWorks(); }
   };
 
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [moreCatsOpen, setMoreCatsOpen] = useState(false);
+  const moreCatsRef = useRef<HTMLDivElement>(null);
   const { user, profile, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState<{ top: number; right: number }>({ top: 0, right: 0 });
@@ -45,9 +47,8 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (localeRef.current && !localeRef.current.contains(e.target as Node)) {
-        setLocaleOpen(false);
-      }
+      if (localeRef.current && !localeRef.current.contains(e.target as Node)) setLocaleOpen(false);
+      if (moreCatsRef.current && !moreCatsRef.current.contains(e.target as Node)) setMoreCatsOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -57,42 +58,87 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-black/[0.06]">
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-[52px]">
-          <button onClick={onHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity group">
+          {/* Logo */}
+          <button onClick={onHome} className="flex items-center gap-2 hover:opacity-80 transition-opacity group flex-shrink-0">
             <div className="w-[31px] h-[31px] bg-[#1d1d1f] rounded-[5px] flex items-center justify-center flex-shrink-0">
               <svg width="18" height="18" viewBox="0 0 12 12" fill="none">
                 <path d="M7 1L3 7h3.5L4 11l6-6.5H6.5L7 1z" fill="#4ade80" stroke="#22c55e" strokeWidth="0.3" strokeLinejoin="round"/>
               </svg>
             </div>
-            <span className="text-[#1d1d1f] font-bold text-[16px] tracking-[-0.03em] leading-none">
+            <span className="text-[#1d1d1f] font-bold text-[16px] tracking-[-0.03em] leading-none hidden sm:inline">
               EndingThisWeek
             </span>
-            <span className="text-[16px] font-bold text-white bg-[#1d1d1f] px-1.5 py-0.5 rounded-[4px] tracking-[-0.03em] leading-none">
+            <span className="text-[16px] font-bold text-white bg-[#1d1d1f] px-1.5 py-0.5 rounded-[4px] tracking-[-0.03em] leading-none hidden sm:inline">
               .media
             </span>
           </button>
 
-          <nav className="hidden md:flex items-center gap-0">
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-0 ml-4">
             <button
               onClick={handleOpportunities}
-              className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
+              className="flex items-center gap-1.5 text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-3 py-2 transition-colors"
             >
-              {tx.nav.opportunities}
+              <LayoutGrid className="w-3.5 h-3.5" />
+              Explore
             </button>
-            <a
-              href="#how-it-works"
-              onClick={handleHowItWorks}
-              className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
-            >
-              {tx.nav.howItWorks}
-            </a>
             <button
-              onClick={onListSlot}
-              className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
+              onClick={handleOpportunities}
+              className="flex items-center gap-1.5 text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-3 py-2 transition-colors"
             >
-              {tx.nav.forSellers}
+              <Newspaper className="w-3.5 h-3.5" />
+              Newsletters
             </button>
+            <button
+              onClick={handleOpportunities}
+              className="flex items-center gap-1.5 text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-3 py-2 transition-colors"
+            >
+              <Mic2 className="w-3.5 h-3.5" />
+              Podcasts
+            </button>
+            <button
+              onClick={handleOpportunities}
+              className="flex items-center gap-1.5 text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-3 py-2 transition-colors"
+            >
+              <Users className="w-3.5 h-3.5" />
+              Influencers
+            </button>
+
+            {/* More Categories dropdown */}
+            <div className="relative" ref={moreCatsRef}>
+              <button
+                onClick={() => setMoreCatsOpen(v => !v)}
+                className="flex items-center gap-1 text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-3 py-2 transition-colors"
+              >
+                More
+                <ChevronDown className={`w-3 h-3 transition-transform ${moreCatsOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {moreCatsOpen && (
+                <div className="absolute left-0 top-full mt-1 w-56 bg-white/95 backdrop-blur-xl border border-black/[0.08] rounded-2xl shadow-xl shadow-black/10 z-30 overflow-hidden py-1.5">
+                  {MORE_CATEGORIES.map(cat => (
+                    <button
+                      key={cat.label}
+                      onClick={() => { handleOpportunities(); setMoreCatsOpen(false); }}
+                      className="w-full text-left flex items-start gap-3 px-4 py-2.5 hover:bg-[#f5f5f7] transition-colors"
+                    >
+                      <div className="w-6 h-6 bg-[#f5f5f7] rounded-lg flex items-center justify-center text-[#6e6e73] flex-shrink-0 mt-0.5">
+                        {cat.icon}
+                      </div>
+                      <div>
+                        <p className="text-[13px] font-semibold text-[#1d1d1f]">{cat.label}</p>
+                        <p className="text-[11px] text-[#86868b]">{cat.desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                  <div className="mx-3 mt-1 pt-2 border-t border-black/[0.06]">
+                    <p className="text-[10px] text-[#aeaeb2] px-1 pb-1.5">More categories coming soon</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
 
+          {/* Desktop right */}
           <div className="hidden md:flex items-center gap-2">
             {/* Locale selector */}
             <div className="relative" ref={localeRef}>
@@ -116,19 +162,15 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                     {SUPPORTED_LANGUAGES.map(lang => (
                       <button
                         key={lang.code}
-                        onClick={() => { setLanguage(lang.code); }}
+                        onClick={() => setLanguage(lang.code)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all text-[12px]
-                          ${language.code === lang.code
-                            ? 'bg-[#1d1d1f] text-white font-semibold'
-                            : 'text-[#3a3a3c] hover:bg-[#f5f5f7]'
-                          }`}
+                          ${language.code === lang.code ? 'bg-[#1d1d1f] text-white font-semibold' : 'text-[#3a3a3c] hover:bg-[#f5f5f7]'}`}
                       >
                         <span className="text-[14px]">{lang.flag}</span>
                         <span className="truncate">{lang.nativeName}</span>
                       </button>
                     ))}
                   </div>
-
                   <div className="px-4 pt-2.5 pb-2 border-t border-black/[0.06]">
                     <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest">{tx.locale.currency}</p>
                   </div>
@@ -136,19 +178,15 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                     {SUPPORTED_CURRENCIES.map(cur => (
                       <button
                         key={cur.code}
-                        onClick={() => { setCurrency(cur.code); }}
+                        onClick={() => setCurrency(cur.code)}
                         className={`flex items-center gap-2 px-3 py-2 rounded-xl text-left transition-all text-[12px]
-                          ${currency.code === cur.code
-                            ? 'bg-[#1d1d1f] text-white font-semibold'
-                            : 'text-[#3a3a3c] hover:bg-[#f5f5f7]'
-                          }`}
+                          ${currency.code === cur.code ? 'bg-[#1d1d1f] text-white font-semibold' : 'text-[#3a3a3c] hover:bg-[#f5f5f7]'}`}
                       >
                         <span className="font-bold text-[13px] w-6 flex-shrink-0">{cur.symbol}</span>
                         <span className="truncate">{cur.code}</span>
                       </button>
                     ))}
                   </div>
-
                   <div className="px-4 py-2 border-t border-black/[0.06] bg-[#f5f5f7]">
                     <p className="text-[10px] text-[#aeaeb2]">{tx.locale.priceNote}</p>
                   </div>
@@ -195,10 +233,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                         <p className="text-[#6e6e73] text-[11px] truncate mt-0.5">{user.email}</p>
                         {profile?.role && (
                           <span className={`inline-block mt-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize
-                            ${profile.role === 'seller'
-                              ? 'bg-[#f5f5f7] text-[#1d1d1f]'
-                              : 'bg-green-50 text-green-600'
-                            }`}>
+                            ${profile.role === 'seller' ? 'bg-[#f5f5f7] text-[#1d1d1f]' : 'bg-green-50 text-green-600'}`}>
                             {profile.role}
                           </span>
                         )}
@@ -232,9 +267,9 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
                 </button>
                 <button
                   onClick={onListSlot}
-                  className="bg-green-500 hover:bg-green-400 active:bg-green-600 text-white text-[13px] font-semibold px-4 py-1.5 rounded-xl transition-all shadow-sm shadow-green-500/20"
+                  className="bg-[#1F7A63] hover:bg-[#186453] active:bg-[#145247] text-white text-[13px] font-semibold px-4 py-1.5 rounded-xl transition-all shadow-sm"
                 >
-                  {tx.nav.listSlot}
+                  List Your Opportunity
                 </button>
               </>
             )}
@@ -249,20 +284,31 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
         </div>
       </div>
 
+      {/* Mobile menu */}
       {mobileOpen && (
         <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-4 py-3 space-y-0.5">
-          <button onClick={() => { handleOpportunities(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">{tx.nav.opportunities}</button>
+          <button onClick={() => { handleOpportunities(); setMobileOpen(false); }} className="flex items-center gap-2.5 w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">
+            <LayoutGrid className="w-4 h-4 text-[#6e6e73]" /> Explore All
+          </button>
+          <button onClick={() => { handleOpportunities(); setMobileOpen(false); }} className="flex items-center gap-2.5 w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">
+            <Newspaper className="w-4 h-4 text-[#6e6e73]" /> Newsletters
+          </button>
+          <button onClick={() => { handleOpportunities(); setMobileOpen(false); }} className="flex items-center gap-2.5 w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">
+            <Mic2 className="w-4 h-4 text-[#6e6e73]" /> Podcasts
+          </button>
+          <button onClick={() => { handleOpportunities(); setMobileOpen(false); }} className="flex items-center gap-2.5 w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">
+            <Users className="w-4 h-4 text-[#6e6e73]" /> Influencers
+          </button>
+          <button onClick={() => { handleOpportunities(); setMobileOpen(false); }} className="flex items-center gap-2.5 w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">
+            <Monitor className="w-4 h-4 text-[#6e6e73]" /> Website Ads
+          </button>
           <a
             href="#how-it-works"
-            onClick={(e) => {
-              if (onHowItWorks) { e.preventDefault(); onHowItWorks(); }
-              setMobileOpen(false);
-            }}
+            onClick={(e) => { if (onHowItWorks) { e.preventDefault(); onHowItWorks(); } setMobileOpen(false); }}
             className="block text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all"
           >{tx.nav.howItWorks}</a>
-          <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">{tx.nav.forSellers}</button>
 
-          {/* Mobile locale selectors */}
+          {/* Mobile locale */}
           <div className="pt-2 border-t border-black/[0.06] mt-2">
             <p className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest px-3 mb-2">{tx.locale.language}</p>
             <div className="grid grid-cols-4 gap-1">
@@ -306,7 +352,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
             ) : (
               <>
                 <button onClick={() => { onSignIn(); setMobileOpen(false); }} className="flex-1 text-[#1d1d1f] text-[13px] font-medium px-4 py-2.5 rounded-xl border border-[#d2d2d7] hover:bg-[#f5f5f7] transition-all">{tx.nav.signIn}</button>
-                <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="flex-1 bg-green-500 hover:bg-green-400 text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl transition-all">{tx.nav.listSlot}</button>
+                <button onClick={() => { onListSlot(); setMobileOpen(false); }} className="flex-1 bg-[#1F7A63] hover:bg-[#186453] text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl transition-all">List Opportunity</button>
               </>
             )}
           </div>
