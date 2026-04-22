@@ -3,7 +3,8 @@ import {
   ArrowLeft, RefreshCw, Loader2, CheckCircle, Send, Ban,
   RotateCcw, Eye, AlertTriangle, Zap, Check,
   ChevronDown, ChevronUp, LayoutList, Table, ExternalLink,
-  AlertCircle, Package, Users, BookOpen, TrendingUp,
+  AlertCircle, Package, Users, BookOpen, TrendingUp, Archive,
+  RefreshCcw as SyncIcon,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { ImportBatch, ImportSlot } from './types';
@@ -18,6 +19,8 @@ interface Props {
   onBack: () => void;
   onRefresh: () => void;
   onRefreshStats?: () => void;
+  publishers?: import('./types').PublisherProfile[];
+  onPublisherRefreshed?: () => void;
 }
 
 type ViewMode = 'grouped' | 'table';
@@ -46,7 +49,7 @@ function buildNewsletterGroups(slots: ImportSlot[]): NewsletterGroup[] {
 }
 
 export default function BatchDetail({
-  batch, updatingSlot, onUpdateSlotStatus, onPublishSlot, onSelectSlot, onBack, onRefresh, onRefreshStats,
+  batch, updatingSlot, onUpdateSlotStatus, onPublishSlot, onSelectSlot, onBack, onRefresh, onRefreshStats, publishers, onPublisherRefreshed,
 }: Props) {
   const [slots, setSlots]           = useState<ImportSlot[]>([]);
   const [loading, setLoading]       = useState(true);
@@ -55,6 +58,8 @@ export default function BatchDetail({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkLoading, setBulkLoading] = useState(false);
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [syncingProfile, setSyncingProfile] = useState(false);
+  const [syncDone, setSyncDone] = useState(false);
 
   const loadSlots = useCallback(async () => {
     setLoading(true);
@@ -153,6 +158,39 @@ export default function BatchDetail({
     onRefreshStats?.();
   };
 
+  const bulkSaveAsDraft = () => runBulk(
+    async targets => {
+      for (const s of targets) {
+        await supabase.from('csv_upload_slots')
+          .update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: 'Admin', updated_at: new Date().toISOString() })
+          .eq('id', s.id);
+      }
+    },
+    s => s.status === 'pending_review' || s.status === 'needs_review'
+  );
+
+  // Refresh the publisher's media_profile with data from the batch's slots
+  const syncPublisherProfile = async () => {
+    if (!batch.media_profile_id) return;
+    setSyncingProfile(true);
+    const slotsForSync = slots.filter(s => s.audience_size || s.category);
+    const firstSlot = slotsForSync[0];
+    if (firstSlot) {
+      const subCount = firstSlot.audience_size
+        ? parseInt(firstSlot.audience_size.replace(/[^0-9]/g, '')) || null
+        : null;
+      const updates: Record<string, string | number | null> = {};
+      if (subCount) updates.subscriber_count = subCount;
+      if (firstSlot.category) updates.category = firstSlot.category;
+      updates.updated_at = new Date().toISOString();
+      await supabase.from('media_profiles').update(updates).eq('id', batch.media_profile_id);
+    }
+    setSyncingProfile(false);
+    setSyncDone(true);
+    setTimeout(() => setSyncDone(false), 3000);
+    onPublisherRefreshed?.();
+  };
+
   const fastPublish = async () => {
     setBulkLoading(true);
     const targets = slots.filter(s =>
@@ -236,6 +274,13 @@ export default function BatchDetail({
             className="flex items-center gap-1.5 text-slate-400 hover:text-slate-700 text-[12px] border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-xl transition-all">
             <RefreshCw className="w-3.5 h-3.5" /> Refresh
           </button>
+          {batch.media_profile_id && (
+            <button onClick={syncPublisherProfile} disabled={syncingProfile || syncDone}
+              className={`flex items-center gap-1.5 text-[12px] font-semibold border px-3 py-1.5 rounded-xl transition-all ${syncDone ? 'bg-teal-50 border-teal-200 text-teal-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'}`}>
+              {syncingProfile ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : syncDone ? <Check className="w-3.5 h-3.5" /> : <SyncIcon className="w-3.5 h-3.5" />}
+              {syncDone ? 'Profile synced' : 'Sync profile'}
+            </button>
+          )}
           {fastPublishCount > 0 && (
             <button onClick={fastPublish} disabled={bulkLoading}
               className="flex items-center gap-1.5 text-[12px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-xl transition-all shadow-sm disabled:opacity-50">
@@ -369,6 +414,10 @@ export default function BatchDetail({
                 className="flex items-center gap-1 text-[11px] font-semibold text-teal-700 bg-teal-50 border border-teal-200 hover:bg-teal-100 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50">
                 <CheckCircle className="w-3 h-3" /> Approve selected
               </button>
+              <button onClick={bulkSaveAsDraft} disabled={bulkLoading}
+                className="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-50 border border-slate-200 hover:bg-slate-100 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50">
+                <Archive className="w-3 h-3" /> Save as draft
+              </button>
               <button onClick={bulkPublishSelected} disabled={bulkLoading}
                 className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50">
                 <Send className="w-3 h-3" /> Publish selected
@@ -381,10 +430,26 @@ export default function BatchDetail({
           ) : (
             <>
               {(counts.pending + counts.review) > 0 && (
-                <button onClick={bulkApproveAll} disabled={bulkLoading}
-                  className="flex items-center gap-1 text-[11px] font-semibold text-teal-700 bg-teal-50 border border-teal-200 hover:bg-teal-100 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50">
-                  <CheckCircle className="w-3 h-3" /> Approve all pending
-                </button>
+                <>
+                  <button onClick={bulkApproveAll} disabled={bulkLoading}
+                    className="flex items-center gap-1 text-[11px] font-semibold text-teal-700 bg-teal-50 border border-teal-200 hover:bg-teal-100 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50">
+                    <CheckCircle className="w-3 h-3" /> Approve all pending
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setBulkLoading(true);
+                      for (const s of slots.filter(x => x.status === 'pending_review' || x.status === 'needs_review')) {
+                        await supabase.from('csv_upload_slots')
+                          .update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: 'Admin', updated_at: new Date().toISOString() })
+                          .eq('id', s.id);
+                      }
+                      await loadSlots(); setBulkLoading(false); onRefreshStats?.();
+                    }}
+                    disabled={bulkLoading}
+                    className="flex items-center gap-1 text-[11px] font-semibold text-slate-600 bg-slate-50 border border-slate-200 hover:bg-slate-100 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50">
+                    <Archive className="w-3 h-3" /> Save all as draft
+                  </button>
+                </>
               )}
               {counts.approved > 0 && (
                 <button onClick={bulkPublishApproved} disabled={bulkLoading}

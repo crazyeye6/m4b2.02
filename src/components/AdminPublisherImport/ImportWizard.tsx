@@ -3,6 +3,7 @@ import {
   ChevronRight, Search, Check, X, Download, Upload, AlertCircle, Loader2,
   Send, RotateCcw, Trash2, FileText, ChevronDown, ChevronUp,
   Table, LayoutList, AlertTriangle, CheckCircle, Pencil, ShieldAlert, ShieldCheck,
+  Plus, BookOpen, Users, HelpCircle, Info,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { ImportRow, ImportBatch, PublisherProfile, ImportTag, PreviousSlotSnapshot } from './types';
@@ -15,6 +16,7 @@ interface Props {
   onFetchPreviousSlots: (profileId: string) => Promise<PreviousSlotSnapshot[]>;
   onDone: () => void;
   onCancel: () => void;
+  onPublisherCreated?: () => void;
 }
 
 type ViewMode = 'grouped' | 'table';
@@ -52,7 +54,6 @@ function validatePublisherMatch(
   );
 
   if (detected.length === 0) {
-    // No publisher_name column at all — treat as ok, let other validations catch it
     return { status: 'ok' };
   }
 
@@ -70,7 +71,23 @@ function validatePublisherMatch(
   return { status: 'awaiting_confirm', detected, selected: selectedPublisher.newsletter_name };
 }
 
-export default function ImportWizard({ publishers, batches, onFetchPreviousSlots, onDone, onCancel }: Props) {
+// ── Field help reference ──────────────────────────────────────────────────────
+
+const FIELD_HELP = [
+  { field: 'publisher_name',   required: true,  example: 'North Star Media',         note: 'Company/publisher name. Must match what you selected above.' },
+  { field: 'newsletter_name',  required: true,  example: 'SaaS Growth Weekly',       note: 'Name of the specific newsletter.' },
+  { field: 'subscriber_count', required: true,  example: '25000',                    note: 'Total active subscribers. Numbers only.' },
+  { field: 'niche',            required: true,  example: 'SaaS, Marketing, Fintech', note: 'Primary topic or niche of the newsletter.' },
+  { field: 'sponsorship_type', required: true,  example: 'Featured Sponsor',         note: 'e.g. Featured Sponsor, Dedicated Email, Text Ad, Classified' },
+  { field: 'price',            required: true,  example: '500',                      note: 'Price in USD. Numbers only (no currency symbol).' },
+  { field: 'slots_available',  required: false, example: '2',                        note: 'How many slots are available. Defaults to 1.' },
+  { field: 'send_date',        required: false, example: '2026-05-06',               note: 'Scheduled send date (YYYY-MM-DD).' },
+  { field: 'deadline',         required: true,  example: '2026-05-04',               note: 'Booking deadline (YYYY-MM-DD). Must be before send_date.' },
+  { field: 'booking_url',      required: false, example: 'https://…',               note: 'Direct URL for buyers to book.' },
+  { field: 'description',      required: false, example: 'Featured ad in Tuesday…', note: 'Short description of the slot shown to buyers.' },
+];
+
+export default function ImportWizard({ publishers, batches, onFetchPreviousSlots, onDone, onCancel, onPublisherCreated }: Props) {
   const [step, setStep]           = useState<1 | 2 | 3>(1);
   const [publisher, setPublisher] = useState<PublisherProfile | null>(null);
   const [publisherSearch, setPublisherSearch] = useState('');
@@ -88,6 +105,22 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
   const [collapsedNewsletters, setCollapsedNewsletters] = useState<Set<string>>(new Set());
   const [pubValidation, setPubValidation] = useState<PublisherValidationState | null>(null);
   const [pendingRows, setPendingRows] = useState<ImportRow[]>([]);
+  const [showFieldHelp, setShowFieldHelp] = useState(false);
+
+  // Create publisher form
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createForm, setCreateForm] = useState({
+    newsletter_name: '',
+    seller_email: '',
+    category: '',
+    subscriber_count: '',
+    tagline: '',
+    website_url: '',
+    primary_geography: '',
+  });
+
   const fileRef = useRef<HTMLInputElement>(null);
 
   const filtered = publishers.filter(p =>
@@ -115,18 +148,15 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
       if (publisher) {
         const validation = validatePublisherMatch(parsed, publisher);
         if (validation.status === 'ok') {
-          // No publisher_name column — proceed directly
           setRows(parsed);
           setStep(3);
         } else if (validation.status === 'mismatch' || validation.status === 'multi_publisher') {
           setPubValidation(validation);
           setPendingRows(parsed);
-          // Stay on step 2 — show blocking error
         } else {
           // awaiting_confirm
           setPubValidation(validation);
           setPendingRows(parsed);
-          // Show confirmation modal (stay on step 2)
         }
       } else {
         setRows(parsed);
@@ -214,6 +244,43 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
     setSubmitting(false);
   };
 
+  const handleCreatePublisher = async () => {
+    if (!createForm.newsletter_name.trim()) {
+      setCreateError('Publisher name is required.');
+      return;
+    }
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const { data: newPub, error } = await supabase
+        .from('media_profiles')
+        .insert([{
+          newsletter_name: createForm.newsletter_name.trim(),
+          seller_email: createForm.seller_email.trim() || null,
+          category: createForm.category.trim() || null,
+          subscriber_count: createForm.subscriber_count ? parseInt(createForm.subscriber_count.replace(/,/g, '')) || null : null,
+          tagline: createForm.tagline.trim() || null,
+          website_url: createForm.website_url.trim() || null,
+          primary_geography: createForm.primary_geography.trim() || null,
+          is_active: true,
+          media_type: 'newsletter',
+        }])
+        .select('*')
+        .maybeSingle();
+
+      if (error) throw error;
+      if (newPub) {
+        setPublisher(newPub as PublisherProfile);
+        setShowCreateForm(false);
+        setCreateForm({ newsletter_name: '', seller_email: '', category: '', subscriber_count: '', tagline: '', website_url: '', primary_geography: '' });
+        onPublisherCreated?.();
+      }
+    } catch (err) {
+      setCreateError(String(err));
+    }
+    setCreating(false);
+  };
+
   const tagCounts = rows.reduce((acc, r) => {
     acc[r.importTag] = (acc[r.importTag] || 0) + 1; return acc;
   }, {} as Record<ImportTag, number>);
@@ -233,8 +300,8 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
 
   return (
     <div className="min-h-[500px] flex flex-col">
-      {/* Wizard header */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden flex-1 flex flex-col">
+        {/* Wizard header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {([
@@ -258,75 +325,208 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
           </button>
         </div>
 
-        <div className="p-6 flex-1">
+        <div className="p-6 flex-1 overflow-y-auto">
 
-          {/* ── Step 1: Select publisher ── */}
+          {/* ── Step 1: Select or create publisher ── */}
           {step === 1 && (
             <div className="max-w-2xl">
               <h3 className="text-[16px] font-bold text-slate-900 mb-1">Select a publisher</h3>
               <p className="text-[13px] text-slate-500 mb-5">
-                Choose which publisher this CSV belongs to. Slots will be compared against their existing inventory.
+                Choose which publisher this CSV belongs to, or create a new one. Slots will be compared against their existing inventory.
               </p>
 
-              <div className="relative mb-4">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input
-                  type="text" value={publisherSearch}
-                  onChange={e => setPublisherSearch(e.target.value)}
-                  placeholder="Search by name or email…"
-                  className="w-full pl-9 pr-3 py-2.5 text-[13px] border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all"
-                />
-              </div>
-
-              <div className="space-y-1.5 max-h-72 overflow-y-auto">
-                {filtered.map(pub => {
-                  const pubBatch = batches.find(b => b.media_profile_id === pub.id);
-                  const selected = publisher?.id === pub.id;
-                  return (
+              {!showCreateForm ? (
+                <>
+                  {/* Search + create button */}
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input
+                        type="text" value={publisherSearch}
+                        onChange={e => setPublisherSearch(e.target.value)}
+                        placeholder="Search by name or email…"
+                        className="w-full pl-9 pr-3 py-2.5 text-[13px] border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-200 transition-all"
+                      />
+                    </div>
                     <button
-                      key={pub.id}
-                      onClick={() => { setPublisher(pub); setPubValidation(null); setPendingRows([]); setFileName(''); }}
-                      className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${selected ? 'border-teal-300 bg-teal-50' : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300'}`}
+                      onClick={() => setShowCreateForm(true)}
+                      className="flex items-center gap-1.5 text-[12px] font-semibold text-teal-700 bg-teal-50 border border-teal-200 hover:bg-teal-100 px-3.5 py-2.5 rounded-xl transition-all flex-shrink-0"
                     >
-                      <div className="flex items-center gap-3">
-                        {pub.logo_url
-                          ? <img src={pub.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
-                          : (
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                              <span className="text-white text-[11px] font-bold">{pub.newsletter_name.charAt(0)}</span>
-                            </div>
-                          )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[13px] font-semibold text-slate-900 truncate">{pub.newsletter_name}</p>
-                          <p className="text-[11px] text-slate-400">{pub.category} · {pub.subscriber_count?.toLocaleString() ?? '—'} subs</p>
-                        </div>
-                        {pubBatch && (
-                          <span className="text-[9px] text-slate-400 border border-slate-200 bg-slate-50 px-2 py-0.5 rounded-full flex-shrink-0">
-                            Last: {new Date(pubBatch.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                          </span>
-                        )}
-                        {selected && <Check className="w-4 h-4 text-teal-600 flex-shrink-0" />}
-                      </div>
+                      <Plus className="w-3.5 h-3.5" /> New Publisher
                     </button>
-                  );
-                })}
-                {filtered.length === 0 && (
-                  <div className="text-center py-8 text-[13px] text-slate-400">No publishers found</div>
-                )}
-              </div>
+                  </div>
 
-              {publisher && lastBatch && (
-                <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-2.5">
-                  <FileText className="w-3.5 h-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-[11px] text-slate-600">
-                    <span className="font-semibold text-slate-900">Previous import found</span> — new CSV will be compared against {lastBatch.row_count} slots from {new Date(lastBatch.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}. Rows tagged new/updated/unchanged automatically.
-                  </p>
+                  <div className="space-y-1.5 max-h-72 overflow-y-auto">
+                    {filtered.map(pub => {
+                      const pubBatch = batches.find(b => b.media_profile_id === pub.id);
+                      const selected = publisher?.id === pub.id;
+                      return (
+                        <button
+                          key={pub.id}
+                          onClick={() => { setPublisher(pub); setPubValidation(null); setPendingRows([]); setFileName(''); }}
+                          className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${selected ? 'border-teal-300 bg-teal-50' : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300'}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            {pub.logo_url
+                              ? <img src={pub.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
+                              : (
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-white text-[11px] font-bold">{pub.newsletter_name.charAt(0)}</span>
+                                </div>
+                              )}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[13px] font-semibold text-slate-900 truncate">{pub.newsletter_name}</p>
+                              <p className="text-[11px] text-slate-400">{pub.category}{pub.subscriber_count ? ` · ${pub.subscriber_count.toLocaleString()} subs` : ''}</p>
+                            </div>
+                            {pubBatch && (
+                              <span className="text-[9px] text-slate-400 border border-slate-200 bg-slate-50 px-2 py-0.5 rounded-full flex-shrink-0">
+                                Last: {new Date(pubBatch.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                              </span>
+                            )}
+                            {selected && <Check className="w-4 h-4 text-teal-600 flex-shrink-0" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                    {filtered.length === 0 && (
+                      <div className="text-center py-8">
+                        <p className="text-[13px] text-slate-400 mb-3">No publishers found matching "{publisherSearch}"</p>
+                        <button
+                          onClick={() => setShowCreateForm(true)}
+                          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-teal-700 bg-teal-50 border border-teal-200 px-3.5 py-2 rounded-xl hover:bg-teal-100 transition-all"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Create new publisher
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {publisher && lastBatch && (
+                    <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-start gap-2.5">
+                      <FileText className="w-3.5 h-3.5 text-slate-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-[11px] text-slate-600">
+                        <span className="font-semibold text-slate-900">Previous import found</span> — new CSV will be compared against {lastBatch.row_count} slots from {new Date(lastBatch.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}. Rows tagged new/updated/unchanged automatically.
+                      </p>
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* ── Create publisher form ── */
+                <div className="border border-teal-200 bg-teal-50/30 rounded-2xl p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-[14px] font-bold text-slate-900">Create new publisher</h4>
+                      <p className="text-[12px] text-slate-500 mt-0.5">This creates a publisher profile you can import CSVs for.</p>
+                    </div>
+                    <button onClick={() => { setShowCreateForm(false); setCreateError(null); }} className="p-1.5 hover:bg-white rounded-xl text-slate-400 hover:text-slate-700 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">
+                        Publisher / Company Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={createForm.newsletter_name}
+                        onChange={e => setCreateForm(f => ({ ...f, newsletter_name: e.target.value }))}
+                        placeholder="e.g. North Star Media"
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-300 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Contact Email</label>
+                      <input
+                        type="email"
+                        value={createForm.seller_email}
+                        onChange={e => setCreateForm(f => ({ ...f, seller_email: e.target.value }))}
+                        placeholder="publisher@example.com"
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-300 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Primary Niche</label>
+                      <input
+                        type="text"
+                        value={createForm.category}
+                        onChange={e => setCreateForm(f => ({ ...f, category: e.target.value }))}
+                        placeholder="e.g. SaaS, Marketing, Finance"
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-300 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Subscriber Count</label>
+                      <input
+                        type="text"
+                        value={createForm.subscriber_count}
+                        onChange={e => setCreateForm(f => ({ ...f, subscriber_count: e.target.value }))}
+                        placeholder="e.g. 25000"
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-300 transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Primary Geography</label>
+                      <input
+                        type="text"
+                        value={createForm.primary_geography}
+                        onChange={e => setCreateForm(f => ({ ...f, primary_geography: e.target.value }))}
+                        placeholder="e.g. US, Global, UK"
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-300 transition-all"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Tagline / Short Description</label>
+                      <input
+                        type="text"
+                        value={createForm.tagline}
+                        onChange={e => setCreateForm(f => ({ ...f, tagline: e.target.value }))}
+                        placeholder="One line about this publisher"
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-300 transition-all"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-1">Website URL</label>
+                      <input
+                        type="url"
+                        value={createForm.website_url}
+                        onChange={e => setCreateForm(f => ({ ...f, website_url: e.target.value }))}
+                        placeholder="https://example.com"
+                        className="w-full border border-slate-200 rounded-xl px-3 py-2 text-[13px] bg-white focus:outline-none focus:ring-2 focus:ring-teal-200 focus:border-teal-300 transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  {createError && (
+                    <div className="mt-3 flex items-center gap-2 text-[12px] text-red-700 bg-red-50 border border-red-200 rounded-xl px-3 py-2">
+                      <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+                      {createError}
+                    </div>
+                  )}
+
+                  <div className="flex gap-2 mt-4">
+                    <button
+                      onClick={handleCreatePublisher}
+                      disabled={creating || !createForm.newsletter_name.trim()}
+                      className="flex items-center gap-1.5 text-[13px] font-semibold bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl disabled:opacity-40 transition-all"
+                    >
+                      {creating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+                      {creating ? 'Creating…' : 'Create Publisher'}
+                    </button>
+                    <button
+                      onClick={() => { setShowCreateForm(false); setCreateError(null); }}
+                      className="text-[13px] font-medium text-slate-500 border border-slate-200 hover:border-slate-300 px-4 py-2.5 rounded-xl transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
                 </div>
               )}
 
               <div className="mt-6 flex justify-end">
                 <button
-                  onClick={() => setStep(2)} disabled={!publisher}
+                  onClick={() => setStep(2)} disabled={!publisher || showCreateForm}
                   className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl disabled:opacity-40 transition-all"
                 >
                   Continue <ChevronRight className="w-4 h-4" />
@@ -342,12 +542,6 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
                 <h3 className="text-[16px] font-bold text-slate-900">
                   Upload CSV for <span className="text-teal-600">{publisher?.newsletter_name}</span>
                 </h3>
-                <button
-                  onClick={downloadAdminTemplate}
-                  className="flex items-center gap-1.5 text-[12px] text-slate-500 hover:text-slate-900 font-medium transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5" /> Download template
-                </button>
               </div>
               <p className="text-[13px] text-slate-500 mb-5">
                 Each row = one ad slot. Slots will be auto-compared against this publisher's existing inventory.
@@ -496,6 +690,60 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
                 </div>
               )}
 
+              {/* ── CSV field help ── */}
+              <div className="mt-6 border border-slate-200 rounded-2xl overflow-hidden">
+                <button
+                  onClick={() => setShowFieldHelp(v => !v)}
+                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center">
+                      <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
+                    </div>
+                    <span className="text-[13px] font-semibold text-slate-700">CSV format reference</span>
+                    <span className="text-[11px] text-slate-400">11 fields · click to expand</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={e => { e.stopPropagation(); downloadAdminTemplate(); }}
+                      className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-all"
+                    >
+                      <Download className="w-3 h-3" /> Download template
+                    </button>
+                    {showFieldHelp ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                  </div>
+                </button>
+
+                {showFieldHelp && (
+                  <div className="border-t border-slate-100 p-4">
+                    <div className="mb-3 flex items-start gap-2 text-[11px] text-blue-700 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2">
+                      <Info className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+                      <span>Each row in the CSV represents one ad slot. A publisher can have multiple newsletters and each newsletter can have multiple slots.</span>
+                    </div>
+                    <div className="space-y-0 border border-slate-100 rounded-xl overflow-hidden">
+                      <div className="grid grid-cols-4 gap-0 px-3 py-1.5 bg-slate-50 text-[9px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                        <span>Field</span>
+                        <span>Required</span>
+                        <span>Example</span>
+                        <span>Notes</span>
+                      </div>
+                      {FIELD_HELP.map((f, i) => (
+                        <div key={f.field} className={`grid grid-cols-4 gap-0 px-3 py-2 text-[11px] ${i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}`}>
+                          <span className="font-mono font-semibold text-slate-800">{f.field}</span>
+                          <span>
+                            {f.required
+                              ? <span className="text-red-600 font-semibold">Required</span>
+                              : <span className="text-slate-400">Optional</span>}
+                          </span>
+                          <span className="text-slate-500 truncate">{f.example}</span>
+                          <span className="text-slate-400 text-[10px]">{f.note}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="mt-6 flex gap-2">
                 <button onClick={() => setStep(1)}
                   className="flex items-center gap-2 text-[13px] text-slate-600 font-medium px-4 py-2.5 rounded-xl border border-slate-200 hover:border-slate-300 transition-all">
@@ -638,20 +886,36 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
                               const nlKey = `${pubName}__${nlName}`;
                               const isNLCollapsed = collapsedNewsletters.has(nlKey);
                               const nlErrors = nlRows.filter(r => r.hasErrors).length;
+                              const firstRow = nlRows[0];
+                              const subCount = firstRow?.subscriber_count;
+                              const niche = firstRow?.niche;
                               return (
                                 <div key={nlName}>
                                   {/* Newsletter sub-header */}
                                   <button
                                     onClick={() => toggleNL(nlKey)}
-                                    className="w-full flex items-center gap-3 px-5 py-2.5 bg-white hover:bg-slate-50 transition-colors text-left border-b border-slate-100"
+                                    className="w-full flex items-center gap-3 px-5 py-3 bg-white hover:bg-slate-50 transition-colors text-left border-b border-slate-100"
                                   >
-                                    <div className="w-1.5 h-1.5 rounded-full bg-teal-400 flex-shrink-0" />
-                                    <p className="text-[12px] font-semibold text-slate-700 flex-1">{nlName}</p>
-                                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-                                      {nlRows[0]?.subscriber_count && <span>{nlRows[0].subscriber_count} subs</span>}
-                                      <span>·</span>
-                                      <span>{nlRows.length} slot{nlRows.length !== 1 ? 's' : ''}</span>
-                                      {nlErrors > 0 && <span className="text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded-full border border-red-100">{nlErrors} errors</span>}
+                                    <div className="w-6 h-6 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
+                                      <BookOpen className="w-3.5 h-3.5 text-teal-500" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <p className="text-[12px] font-semibold text-slate-800">{nlName}</p>
+                                        {niche && (
+                                          <span className="text-[9px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full">{niche}</span>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
+                                        {subCount && (
+                                          <span className="flex items-center gap-1">
+                                            <Users className="w-2.5 h-2.5" />
+                                            {parseInt(subCount.replace(/,/g, '')).toLocaleString()} subs
+                                          </span>
+                                        )}
+                                        <span>{nlRows.length} slot{nlRows.length !== 1 ? 's' : ''}</span>
+                                        {nlErrors > 0 && <span className="text-red-500 font-semibold">{nlErrors} error{nlErrors !== 1 ? 's' : ''}</span>}
+                                      </div>
                                     </div>
                                     {isNLCollapsed ? <ChevronDown className="w-3.5 h-3.5 text-slate-300" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-300" />}
                                   </button>
