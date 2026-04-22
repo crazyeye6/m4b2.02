@@ -1,4 +1,4 @@
-import { Users, MapPin, Mail, Shield, Clock, Lock, Zap, CalendarClock, Flame, TrendingDown, Tag, ChevronRight } from 'lucide-react';
+import { Users, MapPin, Mail, Shield, Clock, Eye, Lock, Zap, CalendarClock, Flame, TrendingDown } from 'lucide-react';
 import type { Listing, Newsletter } from '../types';
 import CountdownTimer from './CountdownTimer';
 import { resolvePublishDate, formatDeadlineDate } from '../lib/dateUtils';
@@ -28,11 +28,8 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
   const tx = useTranslations();
 
   const newsletter = (listing as any).newsletter as Newsletter | null;
-
-  // Publisher → Newsletter → Slot identity
-  const newsletterName = newsletter?.name || listing.property_name;
+  const displayName = newsletter?.name || listing.property_name;
   const publisherName = newsletter?.publisher_name || listing.media_company_name || listing.media_owner_name;
-  const niche = listing.media_profile?.category || newsletter?.niche || null;
 
   const autoDiscount = listing.auto_discount_enabled !== false;
   const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at, autoDiscount);
@@ -66,7 +63,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
     ? 'bg-orange-500'
     : tier === 'early'
     ? 'bg-amber-400'
-    : 'bg-teal-500';
+    : 'bg-emerald-400';
 
   const cardBorderClass = (() => {
     if (!isLive) return 'border-black/[0.06]';
@@ -82,12 +79,6 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
     return '';
   })();
 
-  const subscriberCount = listing.media_profile?.subscriber_count ?? listing.subscribers;
-  const openRate = listing.media_profile?.open_rate || listing.open_rate;
-  const geography = listing.media_profile?.primary_geography || listing.location;
-  const pastAdvertisers = listing.media_profile?.past_advertisers ?? listing.past_advertisers;
-  const canViewProfile = !!(listing.media_profile_id && onViewMediaProfile);
-
   return (
     <div
       className={`relative bg-white rounded-3xl flex flex-col overflow-hidden border transition-all duration-200
@@ -95,24 +86,16 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
         ${isLive ? 'shadow-sm shadow-black/[0.06] hover:shadow-lg hover:shadow-black/[0.09] hover:border-black/[0.10] hover:-translate-y-px' : 'shadow-sm'}
       `}
     >
-      {/* Urgency accent line */}
       {isLive && <div className={`h-[2px] w-full ${urgencyAccentClass}`} />}
 
       <div className="p-5 flex flex-col h-full">
 
-        {/* Row 1: Format badge + urgency + slots indicator */}
         <div className="flex items-start justify-between mb-3 gap-2">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 border border-teal-100 bg-teal-50 text-teal-700 text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide flex-shrink-0">
+            <span className="inline-flex items-center gap-1.5 border border-green-100 bg-green-50 text-green-600 text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide flex-shrink-0">
               <Mail className="w-3.5 h-3.5" />
               Newsletter
             </span>
-            {niche && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 bg-[#f5f5f7] border border-black/[0.06] px-2 py-0.5 rounded-full">
-                <Tag className="w-2.5 h-2.5" />
-                {niche}
-              </span>
-            )}
             {isLive && urgencyLabel && (
               <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${tierStyle.badge}`}>
                 {tier === 'last_chance' && <Flame className="w-2.5 h-2.5" />}
@@ -123,76 +106,77 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
 
           {isLive && (
             <div className="flex items-center gap-1.5 flex-shrink-0">
-              <span className={`text-[10px] font-semibold ${isScarce ? 'text-orange-500' : 'text-slate-400'}`}>
+              <span className={`text-[10px] font-semibold ${isScarce ? 'text-orange-500' : 'text-[#6e6e73]'}`}>
                 {listing.slots_remaining} {listing.slots_remaining === 1 ? tx.card.slot : tx.card.slots}
               </span>
               <div className="flex gap-0.5">
                 {Array.from({ length: Math.min(listing.slots_total || 5, 5) }).map((_, i) => (
-                  <span key={i} className={`block w-2 h-2 rounded-full ${i < listing.slots_remaining ? (isScarce ? 'bg-orange-400' : 'bg-teal-500') : 'bg-[#e5e5ea]'}`} />
+                  <span
+                    key={i}
+                    className={`block w-2 h-2 rounded-full ${
+                      i < listing.slots_remaining
+                        ? isScarce ? 'bg-orange-400' : 'bg-green-500'
+                        : 'bg-[#e5e5ea]'
+                    }`}
+                  />
                 ))}
               </div>
             </div>
           )}
         </div>
 
-        {/* Row 2: Newsletter identity — the primary identity */}
-        <div className="mb-2">
-          <div className="flex items-center gap-2 mb-0.5">
-            {listing.media_profile?.logo_url && (
-              <img
-                src={listing.media_profile.logo_url}
-                alt={newsletterName}
-                className="w-5 h-5 rounded-md object-cover border border-black/[0.06] flex-shrink-0"
-                onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
-              />
-            )}
-            <h3 className="text-slate-900 text-[15px] font-bold leading-tight line-clamp-1">{newsletterName}</h3>
-          </div>
-          {/* Publisher line — secondary, clickable */}
-          <button
-            onClick={canViewProfile ? (e) => { e.stopPropagation(); onViewMediaProfile!(listing.media_profile_id!); } : undefined}
-            disabled={!canViewProfile}
-            className={`flex items-center gap-1 text-[11px] font-medium ${canViewProfile ? 'text-sky-600 hover:text-sky-700 hover:underline cursor-pointer' : 'text-slate-400 cursor-default'} transition-colors`}
-          >
-            {publisherName}
-            {canViewProfile && <ChevronRight className="w-3 h-3 opacity-60" />}
-          </button>
-        </div>
-
-        {/* Row 3: Slot type — the slot's identity */}
-        {listing.slot_type && listing.slot_type !== newsletterName && (
-          <div className="mb-3 inline-flex items-center gap-1.5">
-            <span className="text-[11px] font-semibold text-slate-500 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full">
-              {listing.slot_type}
-            </span>
-          </div>
-        )}
-
-        {/* Row 4: Publish date + deadline */}
         <div className="grid grid-cols-2 gap-2 mb-3">
-          <div className="bg-teal-50 border border-teal-100 rounded-2xl p-3">
-            <p className="text-teal-500 text-[8px] font-bold uppercase tracking-widest leading-none mb-1.5">Issue Date</p>
+          <div
+            className={`bg-[#f9f9fb] border border-black/[0.04] rounded-2xl p-3 ${listing.media_profile_id && onViewMediaProfile ? 'cursor-pointer hover:bg-[#f0f0f5] transition-colors group/pub' : ''}`}
+            onClick={listing.media_profile_id && onViewMediaProfile ? (e) => { e.stopPropagation(); onViewMediaProfile(listing.media_profile_id!); } : undefined}
+          >
+            <p className="text-[#86868b] text-[8px] font-bold uppercase tracking-widest leading-none mb-1.5">{tx.card.publisher}</p>
+            {listing.media_profile?.logo_url ? (
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <img
+                  src={listing.media_profile.logo_url}
+                  alt={listing.media_profile.newsletter_name}
+                  className="w-5 h-5 rounded-md object-cover flex-shrink-0 border border-black/[0.06]"
+                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                />
+                <p className={`text-[13px] font-bold leading-tight truncate ${listing.media_profile_id && onViewMediaProfile ? 'text-sky-700 group-hover/pub:underline' : 'text-[#1d1d1f]'}`}>
+                  {displayName}
+                </p>
+              </div>
+            ) : (
+              <p className={`text-[13px] font-bold leading-tight truncate mb-0.5 ${listing.media_profile_id && onViewMediaProfile ? 'text-sky-700 group-hover/pub:underline' : 'text-[#1d1d1f]'}`}>
+                {displayName}
+              </p>
+            )}
+            {listing.media_profile?.tagline ? (
+              <p className="text-[#6e6e73] text-[10px] font-medium leading-snug line-clamp-2">{listing.media_profile.tagline}</p>
+            ) : (
+              <p className="text-[#6e6e73] text-[10px] font-medium leading-none truncate">{publisherName}</p>
+            )}
+            {listing.media_profile?.category && (
+              <span className="mt-1.5 inline-block text-[9px] font-semibold text-[#6e6e73] bg-white border border-black/[0.06] px-1.5 py-0.5 rounded-md">{listing.media_profile.category}</span>
+            )}
+          </div>
+
+          <div className="bg-green-50 border border-green-100 rounded-2xl p-3">
+            <p className="text-green-700/50 text-[8px] font-bold uppercase tracking-widest leading-none mb-1.5">{tx.card.publishDate}</p>
             {weekday ? (
               <>
-                <p className="text-teal-900 text-[13px] font-bold leading-tight truncate mb-0.5">{weekday}</p>
-                <p className="text-teal-600/60 text-[10px] font-medium leading-none truncate">{calDate}</p>
+                <p className="text-green-800 text-[13px] font-bold leading-tight truncate mb-0.5">{weekday}</p>
+                <p className="text-green-700/60 text-[10px] font-medium leading-none truncate">{calDate}</p>
               </>
             ) : (
-              <p className="text-teal-900 text-[13px] font-bold leading-tight truncate">{calDate || '—'}</p>
+              <p className="text-green-800 text-[13px] font-bold leading-tight truncate">{calDate || '—'}</p>
             )}
-          </div>
-
-          <div className={`rounded-2xl p-3 ${isLive ? 'bg-orange-50 border border-orange-100' : 'bg-[#f5f5f7] border border-black/[0.04]'}`}>
-            <p className={`text-[8px] font-bold uppercase tracking-widest leading-none mb-1.5 ${isLive ? 'text-orange-400' : 'text-slate-400'}`}>Book By</p>
-            <p className={`text-[13px] font-bold leading-tight ${isLive ? 'text-orange-700' : 'text-slate-900'}`}>{deadlineFormatted}</p>
-            <div className="flex items-center gap-1 mt-0.5">
-              <CalendarClock className={`w-2.5 h-2.5 ${isLive ? 'text-orange-400' : 'text-slate-300'}`} />
-              <p className="text-[9px] font-medium text-slate-400">Booking deadline</p>
-            </div>
           </div>
         </div>
 
-        {/* Row 5: Price */}
+        <div className={`flex items-center gap-2 mb-3 rounded-xl px-3 py-2 ${isLive ? 'bg-orange-50' : 'bg-[#f5f5f7]'}`}>
+          <CalendarClock className={`w-3.5 h-3.5 flex-shrink-0 ${isLive ? 'text-orange-500' : 'text-[#86868b]'}`} />
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#86868b] flex-shrink-0">{tx.card.bookBy}</p>
+          <p className={`text-[12px] font-bold ml-auto ${isLive ? 'text-orange-600' : 'text-[#1d1d1f]'}`}>{deadlineFormatted}</p>
+        </div>
+
         <div className={`flex items-center justify-between mb-2.5 rounded-2xl p-3.5
           ${hasDiscount && isLive
             ? tier === 'last_chance' ? 'bg-red-50 border border-red-100' : tier === 'mid' ? 'bg-orange-50 border border-orange-100' : 'bg-amber-50 border border-amber-100'
@@ -200,25 +184,33 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
           }`}>
           <div>
             <div className="flex items-center gap-1.5 mb-1">
-              <p className="text-slate-400 text-[10px] font-medium uppercase tracking-wide">{tx.card.pricePerSlot}</p>
+              <p className="text-[#86868b] text-[10px] font-medium uppercase tracking-wide">{tx.card.pricePerSlot}</p>
               <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md leading-none ${
                 hasDiscount
-                  ? tier === 'last_chance' ? 'bg-red-100 text-red-700' : tier === 'mid' ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700'
-                  : 'bg-[#f0f0f2] text-slate-500'
+                  ? tier === 'last_chance'
+                    ? 'bg-red-100 text-red-700'
+                    : tier === 'mid'
+                    ? 'bg-orange-100 text-orange-700'
+                    : 'bg-amber-100 text-amber-700'
+                  : 'bg-[#f0f0f2] text-[#86868b]'
               }`}>
-                {hasDiscount ? `${discountPct}% Off` : autoDiscount ? 'Auto-Discount' : 'Fixed'}
+                {hasDiscount
+                  ? `${discountPct}% Off`
+                  : autoDiscount
+                  ? 'Auto-Discount Enabled'
+                  : 'No Active Discount'}
               </span>
             </div>
             <div className="flex items-baseline gap-2">
-              <span className="text-slate-900 text-2xl font-semibold tracking-[-0.02em]">{formatPrice(currentPrice)}</span>
+              <span className="text-[#1d1d1f] text-2xl font-semibold tracking-[-0.02em]">{formatPrice(currentPrice)}</span>
               {hasDiscount && (
-                <span className="text-slate-300 text-sm line-through">{formatPrice(listing.original_price)}</span>
+                <span className="text-[#aeaeb2] text-sm line-through">{formatPrice(listing.original_price)}</span>
               )}
             </div>
             {hasDiscount && (
               <div className="flex items-center gap-1.5 mt-0.5">
-                <TrendingDown className="w-3 h-3 text-teal-600" />
-                <p className="text-teal-600 text-[11px] font-semibold">{tx.card.save} {formatPrice(savings)}</p>
+                <TrendingDown className="w-3 h-3 text-green-600" />
+                <p className="text-green-600 text-[11px] font-semibold">{tx.card.save} {formatPrice(savings)}</p>
               </div>
             )}
           </div>
@@ -236,79 +228,70 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
               {tier === 'last_chance'
                 ? `${discountPct}% off — final price, closes in under 24 hours`
                 : tier === 'mid'
-                ? `${discountPct}% off — deadline approaching`
-                : `${discountPct}% off — early discount active`}
+                ? `${discountPct}% off — deadline approaching, price drops further if unsold`
+                : `${discountPct}% off — early discount, increases as deadline nears`}
             </p>
           </div>
         )}
 
-        {/* Row 6: Deposit strip */}
-        <div className="flex items-center justify-between mb-3 bg-teal-50 border border-teal-100 rounded-2xl px-3.5 py-2.5">
+        <div className="flex items-center justify-between mb-3 bg-green-50 border border-green-100 rounded-2xl px-3.5 py-2.5">
           <div>
-            <p className="text-teal-700 text-[12px] font-semibold">{tx.card.reserveWithDeposit}</p>
-            <p className="text-teal-600/70 text-[10px] mt-0.5">{tx.card.balanceDirect}</p>
+            <p className="text-green-700 text-[12px] font-semibold">{tx.card.reserveWithDeposit}</p>
+            <p className="text-green-600/70 text-[10px] mt-0.5">{tx.card.balanceDirect}</p>
           </div>
           <div className="text-right">
-            <p className="text-teal-700 text-[18px] font-bold tracking-[-0.02em]">{formatPrice(depositAmount)}</p>
-            <p className="text-teal-600/70 text-[10px]">{tx.card.now}</p>
+            <p className="text-green-700 text-[18px] font-bold tracking-[-0.02em]">{formatPrice(depositAmount)}</p>
+            <p className="text-green-600/70 text-[10px]">{tx.card.now}</p>
           </div>
         </div>
 
-        {/* Row 7: Audience stats */}
         <div className="grid grid-cols-3 gap-1.5 mb-3">
           <StatPill
             label={tx.card.subscribers}
-            value={subscriberCount ? fmtCompact(subscriberCount, browserLocale) : '—'}
+            value={fmtCompact(listing.media_profile?.subscriber_count ?? listing.subscribers ?? 0, browserLocale)}
           />
           <StatPill
             label={tx.card.openRate}
-            value={openRate || '—'}
+            value={listing.media_profile?.open_rate || listing.open_rate || '—'}
             accent
           />
-          <StatPill label={tx.card.ctr} value={listing.media_profile?.ctr || listing.ctr || '—'} />
+          <StatPill label={tx.card.ctr} value={listing.ctr || '—'} />
         </div>
 
-        {/* Row 8: Geography + audience */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[11px] text-slate-400">
-          {geography && (
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-slate-300" />
-              {geography}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-3 text-[11px] text-[#6e6e73]">
+          <span className="flex items-center gap-1">
+            <MapPin className="w-3 h-3 text-[#aeaeb2]" />
+            {listing.media_profile?.primary_geography || listing.location}
+          </span>
+          <span className="flex items-center gap-1">
+            <Users className="w-3 h-3 text-[#aeaeb2]" />
+            <span className="truncate max-w-[140px]">
+              {listing.media_profile?.audience_type ? listing.media_profile.audience_type : listing.audience}
             </span>
-          )}
-          {(listing.media_profile?.audience_type || listing.audience) && (
-            <span className="flex items-center gap-1">
-              <Users className="w-3 h-3 text-slate-300" />
-              <span className="truncate max-w-[140px]">
-                {listing.media_profile?.audience_type || listing.audience}
-              </span>
-            </span>
-          )}
+          </span>
         </div>
 
-        {/* Row 9: Past advertisers */}
-        {pastAdvertisers.length > 0 && (
+        {(listing.media_profile?.past_advertisers?.length ?? listing.past_advertisers.length) > 0 && (
           <div className="flex items-center gap-1.5 mb-3">
-            <Shield className="w-3 h-3 text-slate-300 flex-shrink-0" />
-            <p className="text-slate-400 text-[11px] flex-shrink-0">{tx.card.usedBy}</p>
+            <Shield className="w-3 h-3 text-[#aeaeb2] flex-shrink-0" />
+            <p className="text-[#86868b] text-[11px] flex-shrink-0">{tx.card.usedBy}</p>
             <div className="flex items-center gap-1 flex-wrap">
-              {pastAdvertisers.slice(0, 3).map(a => (
-                <span key={a} className="text-[10px] text-slate-500 font-medium bg-[#f5f5f7] px-2 py-0.5 rounded-full">
+              {(listing.media_profile?.past_advertisers ?? listing.past_advertisers).slice(0, 3).map(a => (
+                <span key={a} className="text-[10px] text-[#6e6e73] font-medium bg-[#f5f5f7] px-2 py-0.5 rounded-full">
                   {a}
                 </span>
               ))}
-              {pastAdvertisers.length > 3 && (
-                <span className="text-[10px] text-slate-300 font-medium">+{pastAdvertisers.length - 3}</span>
+              {(listing.media_profile?.past_advertisers ?? listing.past_advertisers).length > 3 && (
+                <span className="text-[10px] text-[#aeaeb2] font-medium">+{(listing.media_profile?.past_advertisers ?? listing.past_advertisers).length - 3}</span>
               )}
             </div>
           </div>
         )}
 
-        {/* Row 10: CTA */}
         <div className="mt-auto pt-2 flex flex-col gap-2">
           {isLive && <CountdownTimer deadline={listing.deadline_at} compact />}
           {isLive && !hasDiscount && autoDiscount && (
-            <p className="text-[10px] text-center text-slate-300">
+            <p className="text-[10px] text-center text-[#aeaeb2]">
               Price may reduce as the deadline approaches
             </p>
           )}
@@ -317,8 +300,8 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
             disabled={isSecured}
             className={`w-full font-semibold text-[14px] py-3 rounded-2xl transition-all flex items-center justify-center gap-2
               ${isSecured
-                ? 'bg-[#f5f5f7] text-slate-300 cursor-not-allowed'
-                : 'bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white shadow-sm'
+                ? 'bg-[#f5f5f7] text-[#aeaeb2] cursor-not-allowed'
+                : 'bg-green-600 hover:bg-green-700 active:bg-green-800 text-white shadow-sm'
               }`}
           >
             {!isSecured && <Lock className="w-3.5 h-3.5" />}
@@ -327,12 +310,12 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
           </button>
           {!isSecured && (
             <div className="flex items-center justify-between">
-              <p className="text-slate-300 text-[10px]">{tx.card.takes10s}</p>
+              <p className="text-[#aeaeb2] text-[10px]">{tx.card.takes10s}</p>
               <button
                 onClick={() => onDetails(listing)}
-                className="flex items-center gap-1.5 text-slate-500 hover:text-slate-900 text-[12px] font-medium transition-colors"
+                className="flex items-center gap-1.5 text-[#6e6e73] hover:text-[#1d1d1f] text-[12px] font-medium transition-colors"
               >
-                <Clock className="w-3.5 h-3.5" />
+                <Eye className="w-3.5 h-3.5" />
                 {tx.card.viewDetails}
               </button>
             </div>
@@ -346,8 +329,8 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
 function StatPill({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
     <div className="bg-[#f5f5f7] rounded-xl p-2.5 text-center">
-      <p className={`text-[12px] font-semibold ${accent ? 'text-teal-600' : 'text-slate-900'}`}>{value}</p>
-      <p className="text-slate-400 text-[9px] mt-0.5 uppercase tracking-wide font-medium leading-tight">{label}</p>
+      <p className={`text-[12px] font-semibold ${accent ? 'text-teal-600' : 'text-[#1d1d1f]'}`}>{value}</p>
+      <p className="text-[#aeaeb2] text-[9px] mt-0.5 uppercase tracking-wide font-medium leading-tight">{label}</p>
     </div>
   );
 }

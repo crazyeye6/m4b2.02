@@ -1,19 +1,40 @@
-// Admin import uses the same canonical CSV format as seller dashboard uploads.
-// The only operational difference is that admin can select/create a publisher
-// account explicitly, while seller uploads are scoped to their own account.
-
-import type { CsvRow, ValidationError } from '../CsvUpload/types';
-export type { CsvRow, ValidationError };
-
-export type ImportTag = 'new' | 'updated' | 'unchanged' | 'duplicate';
-
-export interface ImportRow extends CsvRow {
-  // Diff / comparison fields added during batch comparison
-  fingerprint: string;
-  importTag: ImportTag;
-  previousSlotId: string | null;
-  changedFields: string[];
+export interface ImportRow {
+  rowIndex: number;
+  newsletter_name: string;
+  subscriber_count: string;
+  niche: string;
+  sponsorship_type: string;
+  price: string;
+  slots_available: string;
+  send_date: string;
+  deadline: string;
+  booking_url: string;
+  description: string;
+  errors: ImportError[];
+  hasErrors: boolean;
+  hasWarnings: boolean;
 }
+
+export interface ImportError {
+  field: string;
+  severity: 'error' | 'warning';
+  message: string;
+}
+
+export const ADMIN_CSV_COLUMNS = [
+  'newsletter_name',
+  'subscriber_count',
+  'niche',
+  'sponsorship_type',
+  'price',
+  'slots_available',
+  'send_date',
+  'deadline',
+  'booking_url',
+  'description',
+] as const;
+
+export type AdminCsvColumnKey = typeof ADMIN_CSV_COLUMNS[number];
 
 export type ImportStep = 'select_publisher' | 'upload' | 'preview' | 'review' | 'done';
 
@@ -63,23 +84,9 @@ export interface ImportSlot {
   category: string;
   booking_url: string;
   description: string;
-  validation_errors: ValidationError[];
+  validation_errors: ImportError[];
   admin_notes: string;
   listing_id: string | null;
-  slot_fingerprint: string;
-  import_tag: ImportTag;
-  previous_slot_id: string | null;
   created_at: string;
   updated_at: string;
-}
-
-export interface PreviousSlotSnapshot {
-  id: string;
-  fingerprint: string;
-  send_date: string;
-  deadline: string;
-  price: string;
-  sponsorship_type: string;
-  slots_available: string;
-  status: string;
 }

@@ -1,13 +1,10 @@
-import { Globe, FileText, Users, MapPin, BarChart2, Radio, Tag, Link, Image, Lock } from 'lucide-react';
+import { Globe, FileText, Users, MapPin, BarChart2, Radio, Tag, Link, Image } from 'lucide-react';
 import type { MediaProfileFormData } from './types';
-import { FREQUENCIES, AD_FORMAT_OPTIONS } from './types';
-import TagComboInput from '../TagInput/TagComboInput';
+import { CATEGORIES, GEOGRAPHIES, AUDIENCE_TYPES, FREQUENCIES, AD_FORMAT_OPTIONS } from './types';
 
 interface Props {
   form: MediaProfileFormData;
   onChange: (f: MediaProfileFormData) => void;
-  isEditing?: boolean;
-  onRequestNameChange?: () => void;
 }
 
 function Field({ label, icon, hint, children }: { label: string; icon: React.ReactNode; hint?: string; children: React.ReactNode }) {
@@ -84,7 +81,7 @@ function MultiChip({ options, selected, onToggle }: { options: string[]; selecte
   );
 }
 
-export default function ProfileForm({ form, onChange, isEditing, onRequestNameChange }: Props) {
+export default function ProfileForm({ form, onChange }: Props) {
   const set = (key: keyof MediaProfileFormData) => (v: string) => onChange({ ...form, [key]: v });
 
   const toggleAdFormat = (f: string) => {
@@ -96,23 +93,7 @@ export default function ProfileForm({ form, onChange, isEditing, onRequestNameCh
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Field label="Newsletter / Media Name" icon={<FileText className="w-3 h-3" />}>
-          {isEditing ? (
-            <div className="flex items-center gap-2">
-              <div className="flex-1 flex items-center gap-2 bg-[#f5f5f7] border border-black/[0.08] rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm">
-                <Lock className="w-3 h-3 text-[#aeaeb2] shrink-0" />
-                <span className="truncate">{form.newsletter_name || '—'}</span>
-              </div>
-              <button
-                type="button"
-                onClick={onRequestNameChange}
-                className="shrink-0 text-[11px] font-semibold text-blue-600 hover:text-blue-700 border border-blue-200 hover:border-blue-300 bg-blue-50 hover:bg-blue-100 px-2.5 py-2 rounded-xl transition-all whitespace-nowrap"
-              >
-                Request change
-              </button>
-            </div>
-          ) : (
-            <Input value={form.newsletter_name} onChange={set('newsletter_name')} placeholder="e.g. The Rundown AI" />
-          )}
+          <Input value={form.newsletter_name} onChange={set('newsletter_name')} placeholder="e.g. The Rundown AI" />
         </Field>
         <Field label="Tagline" icon={<Tag className="w-3 h-3" />} hint="Short one-liner shown on cards">
           <Input value={form.tagline} onChange={set('tagline')} placeholder="e.g. AI news for operators & builders" />
@@ -121,13 +102,13 @@ export default function ProfileForm({ form, onChange, isEditing, onRequestNameCh
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Field label="Category" icon={<Tag className="w-3 h-3" />}>
-          <TagComboInput value={form.category} onChange={set('category')} tagType="niche" placeholder="e.g. Marketing, Finance…" allowFreeText />
+          <Select value={form.category} onChange={set('category')} options={CATEGORIES} placeholder="Select category..." />
         </Field>
         <Field label="Primary Geography" icon={<MapPin className="w-3 h-3" />}>
-          <TagComboInput value={form.primary_geography} onChange={set('primary_geography')} tagType="geography" placeholder="e.g. US, UK, Global…" allowFreeText />
+          <Select value={form.primary_geography} onChange={set('primary_geography')} options={GEOGRAPHIES} placeholder="Select geography..." />
         </Field>
         <Field label="Audience Type" icon={<Users className="w-3 h-3" />}>
-          <TagComboInput value={form.audience_type} onChange={set('audience_type')} tagType="audience" placeholder="e.g. B2B, Founders…" allowFreeText />
+          <Select value={form.audience_type} onChange={set('audience_type')} options={AUDIENCE_TYPES} placeholder="Select audience type..." />
         </Field>
       </div>
 

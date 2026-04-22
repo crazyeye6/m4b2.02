@@ -55,9 +55,6 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
     setStep('submitting');
     setSubmitError(null);
 
-    // Use the first publisher_name in the CSV as the batch label
-    const firstPublisherName = rows[0]?.publisher_name ?? '';
-
     const { data: batch, error: batchErr } = await supabase
       .from('csv_upload_batches')
       .insert({
@@ -66,8 +63,6 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
         filename: fileName,
         row_count: rows.length,
         status: 'pending_review',
-        publisher_name: firstPublisherName,
-        uploaded_by_admin: false,
       })
       .select('id')
       .single();
@@ -86,15 +81,14 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
       media_type: 'newsletter',
       audience_size: row.subscriber_count,
       opportunity_type: row.sponsorship_type,
-      original_price: row.price,
-      discount_price: row.price,
+      original_price: row.original_price,
+      discount_price: row.discount_price,
       slots_available: row.slots_available,
-      send_date: row.send_date,
       deadline: row.deadline,
       category: row.niche,
+      audience_description: row.audience_description,
       booking_url: row.booking_url,
       description: row.description,
-      price: row.price,
       validation_errors: row.errors,
     }));
 
@@ -223,10 +217,10 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
             Bulk Upload
           </div>
           <h2 className="text-3xl sm:text-4xl font-semibold text-[#1d1d1f] tracking-[-0.02em] mb-3">
-            Upload your newsletter sponsorship slots
+            Upload multiple newsletter slots via CSV
           </h2>
           <p className="text-[#6e6e73] text-lg max-w-xl mx-auto leading-relaxed">
-            Use our standard CSV format to list multiple sponsorship slots at once. Each row is one slot — group multiple newsletters under the same publisher name.
+            Upload a file with your available sponsorship slots and we'll create draft listings for review. Best for newsletter publishers with multiple opportunities.
           </p>
         </div>
 
@@ -268,7 +262,7 @@ export default function CsvUpload({ variant = 'full' }: CsvUploadProps) {
                   <span className="w-2.5 h-2.5 rounded-full bg-black/[0.08]" />
                   <span className="w-2.5 h-2.5 rounded-full bg-black/[0.08]" />
                 </div>
-                <span className="text-[#aeaeb2] text-xs ml-1">newsletter-sponsorship-template.csv — header row</span>
+                <span className="text-[#aeaeb2] text-xs ml-1">newsletter-slots-template.csv — header row</span>
               </div>
               <div className="p-5 overflow-x-auto">
                 <div className="flex flex-wrap gap-2">

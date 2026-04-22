@@ -1,4 +1,4 @@
-export type MediaType = 'newsletter';
+export type MediaType = 'newsletter' | 'podcast' | 'influencer';
 
 export type ListingStatus =
   | 'live'

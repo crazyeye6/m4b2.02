@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Lock } from 'lucide-react';
 
 const STORAGE_KEY = 'etw_preview_auth';
-const PASSWORD = 'etw2026';
+const PASSWORD = import.meta.env.VITE_PREVIEW_PASSWORD as string | undefined;
 
 interface PreviewGateProps {
   children: React.ReactNode;
@@ -24,7 +24,7 @@ export default function PreviewGate({ children }: PreviewGateProps) {
     }
   }, []);
 
-  if (unlocked) return <>{children}</>;
+  if (!PASSWORD || unlocked) return <>{children}</>;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

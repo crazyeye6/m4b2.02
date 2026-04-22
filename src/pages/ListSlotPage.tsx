@@ -4,7 +4,6 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { sendSlotListedEmail } from '../lib/email';
 import type { MediaProfile, Newsletter } from '../types';
-import TagComboInput from '../components/TagInput/TagComboInput';
 
 interface ListSlotPageProps {
   onBack: () => void;
@@ -58,6 +57,22 @@ const BLANK: FormState = {
   media_profile_id: null,
 };
 
+const SLOT_TYPES = [
+  'Sponsored post', 'Dedicated send', 'Banner ad', 'Classified ad',
+  'Podcast ad', 'Social post', 'Product feature', 'Newsletter mention', 'Other',
+];
+
+const AUDIENCE_OPTIONS = [
+  'B2B SaaS', 'Marketing', 'Finance', 'Fintech', 'Startup', 'Tech', 'AI',
+  'eCommerce', 'Health & Wellness', 'Fitness', 'Food', 'Travel', 'Fashion & Beauty',
+  'Education', 'Crypto', 'Investing', 'Real Estate', 'Climate', 'Sports', 'Entertainment',
+  'Creator Economy', 'HR & People', 'Product', 'Design', 'Dev & Engineering', 'General',
+];
+
+const GEOGRAPHIES = [
+  'US', 'UK', 'US / UK', 'Ireland / UK / US', 'UK / Europe', 'Europe',
+  'Global', 'APAC', 'LATAM', 'Canada', 'Australia', 'Middle East',
+];
 
 function SectionHeader({ number, title, subtitle }: { number: string; title: string; subtitle?: string }) {
   return (
@@ -350,37 +365,38 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
                 </div>
                 <div>
                   <FieldLabel required>Slot type</FieldLabel>
-                  <TagComboInput
+                  <select
                     value={form.slot_type}
-                    onChange={v => set('slot_type', v)}
-                    tagType="format"
-                    placeholder="e.g. Sponsored post, Banner ad…"
-                    allowFreeText
-                  />
-                  {errors.slot_type && <p className="text-red-500 text-[10px] mt-1">{errors.slot_type}</p>}
+                    onChange={e => set('slot_type', e.target.value)}
+                    className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all [color-scheme:light]"
+                  >
+                    {SLOT_TYPES.map(s => <option key={s} value={s}>{s}</option>)}
+                  </select>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <FieldLabel>Niche / Audience</FieldLabel>
-                  <TagComboInput
+                  <select
                     value={form.audience}
-                    onChange={v => set('audience', v)}
-                    tagType="niche"
-                    placeholder="e.g. Marketing, Fintech, Health…"
-                    allowFreeText
-                  />
+                    onChange={e => set('audience', e.target.value)}
+                    className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all [color-scheme:light]"
+                  >
+                    <option value="">Select niche…</option>
+                    {AUDIENCE_OPTIONS.map(a => <option key={a} value={a}>{a}</option>)}
+                  </select>
                 </div>
                 <div>
                   <FieldLabel>Primary geography</FieldLabel>
-                  <TagComboInput
+                  <select
                     value={form.location}
-                    onChange={v => set('location', v)}
-                    tagType="geography"
-                    placeholder="e.g. US, UK, Global…"
-                    allowFreeText
-                  />
+                    onChange={e => set('location', e.target.value)}
+                    className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all [color-scheme:light]"
+                  >
+                    <option value="">Select geography…</option>
+                    {GEOGRAPHIES.map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
                 </div>
               </div>
 

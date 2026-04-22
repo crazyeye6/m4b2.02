@@ -95,8 +95,18 @@ function confidenceToScore(c: ParsedField['confidence']): number {
   return 0;
 }
 
-function inferMediaType(_text: string): ParsedField {
-  return { value: 'newsletter', confidence: 'high' };
+function inferMediaType(text: string): ParsedField {
+  const lower = text.toLowerCase();
+  if (lower.includes('newsletter') || lower.includes('email') || lower.includes('subscribers') || lower.includes('open rate')) {
+    return { value: 'newsletter', confidence: 'high' };
+  }
+  if (lower.includes('podcast') || lower.includes('episode') || lower.includes('downloads') || lower.includes('listeners')) {
+    return { value: 'podcast', confidence: 'high' };
+  }
+  if (lower.includes('instagram') || lower.includes('tiktok') || lower.includes('youtube') || lower.includes('influencer') || lower.includes('followers')) {
+    return { value: 'influencer', confidence: 'high' };
+  }
+  return { value: 'newsletter', confidence: 'low' };
 }
 
 export function parseEmailBody(rawBody: string): ParsedSlot[] {
