@@ -228,6 +228,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
             transition: 'opacity 0.65s ease 0.2s, transform 0.65s ease 0.2s',
           }}
         >
+          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3 text-center">Discovery: Organized</p>
           <div className="bg-white rounded-2xl border border-teal-200 shadow-[0_8px_40px_rgba(20,184,166,0.10)] overflow-hidden">
             {/* Header row: logo + name/badges + stars */}
             <div className="px-6 pt-5 pb-4 flex items-center gap-4">
