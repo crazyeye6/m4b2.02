@@ -238,83 +238,92 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
             </p>
           </div>
           <div className="bg-white rounded-2xl border border-teal-200 shadow-[0_8px_40px_rgba(20,184,166,0.10)] overflow-hidden">
-            {/* Header row: logo + name/badges + stars */}
-            <div className="px-6 pt-5 pb-4 flex items-center gap-4">
+            {/* Header row */}
+            <div className="px-5 pt-5 pb-4 flex items-start gap-3.5">
               <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${slot.gradient} flex items-center justify-center flex-shrink-0`}>
                 <span className="text-white text-[13px] font-bold">{slot.initials}</span>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[17px] font-bold text-slate-900 leading-tight">{slot.newsletter}</p>
-                <div className="flex items-center gap-2 mt-0.5">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-[16px] font-bold text-slate-900 leading-tight">{slot.newsletter}</p>
+                  {slot.hot && (
+                    <span className="inline-flex items-center gap-1 text-[9px] font-bold bg-red-50 border border-red-200 text-red-600 px-1.5 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
+                      <Zap className="w-2.5 h-2.5 fill-red-500" />Hot
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mt-1 flex-wrap">
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold border border-green-200 bg-green-50 text-green-600 px-2 py-0.5 rounded-full uppercase tracking-wider">
                     <Mail className="w-2.5 h-2.5" />Newsletter
                   </span>
-                  <span className="text-[13px] text-slate-400">{slot.niche}</span>
+                  <span className="text-[12px] text-slate-400 font-medium">{slot.niche}</span>
                 </div>
               </div>
               <div className="flex items-center gap-0.5 flex-shrink-0">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />
+                  <Star key={i} className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                 ))}
               </div>
             </div>
 
-            <div className="px-6 pb-5 space-y-3">
-              {/* Stats grid */}
-              <div className="grid grid-cols-4 gap-3">
+            <div className="px-5 pb-5 space-y-3">
+              {/* Stats grid — 2 cols on mobile, 4 on sm+ */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {[
-                  { label: 'Subscribers', value: slot.subscribers, icon: <Users className="w-4 h-4 text-slate-400" /> },
-                  { label: 'Open Rate', value: slot.openRate, icon: <Eye className="w-4 h-4 text-teal-500" />, accent: true },
-                  { label: 'Send Date', value: slot.sendDate, icon: <Clock className="w-4 h-4 text-slate-400" /> },
-                  { label: 'Slots Left', value: `${slot.slotsLeft} of 3`, icon: <BarChart3 className="w-4 h-4 text-orange-400" /> },
+                  { label: 'Subscribers', value: slot.subscribers, icon: <Users className="w-3.5 h-3.5 text-slate-400" /> },
+                  { label: 'Open Rate', value: slot.openRate, icon: <Eye className="w-3.5 h-3.5 text-teal-500" />, accent: true },
+                  { label: 'Send Date', value: slot.sendDate, icon: <Clock className="w-3.5 h-3.5 text-slate-400" /> },
+                  { label: 'Slots Left', value: `${slot.slotsLeft} of 3`, icon: <BarChart3 className="w-3.5 h-3.5 text-orange-400" /> },
                 ].map(stat => (
                   <div key={stat.label} className="bg-slate-50 rounded-xl py-3 px-2 text-center">
                     <div className="flex justify-center mb-1.5">{stat.icon}</div>
-                    <p className={`text-[15px] font-bold leading-tight ${stat.accent ? 'text-teal-600' : 'text-slate-800'}`}>{stat.value}</p>
-                    <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">{stat.label}</p>
+                    <p className={`text-[14px] font-bold leading-tight ${stat.accent ? 'text-teal-600' : 'text-slate-800'}`}>{stat.value}</p>
+                    <p className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">{stat.label}</p>
                   </div>
                 ))}
               </div>
 
-              {/* Type + deadline row */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-slate-500">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="text-[13px] font-medium">{slot.sponsorType}</span>
+              {/* Sponsor type + deadline */}
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-1.5 text-slate-500">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                  <span className="text-[12px] font-semibold text-slate-600">{slot.sponsorType}</span>
                 </div>
-                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold ${slot.hot ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600'}`}>
-                  <Clock className="w-3.5 h-3.5" />
-                  Book by {slot.deadline}
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold flex-shrink-0 ${slot.hot ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-orange-50 text-orange-600 border border-orange-100'}`}>
+                  <Clock className="w-3 h-3" />
+                  Deadline in {slot.deadline}
                 </div>
               </div>
 
               {/* Price + CTA */}
-              <div className="flex items-center justify-between bg-teal-50 border border-teal-100 rounded-2xl px-5 py-4">
-                <div>
-                  <p className="text-[28px] font-bold text-slate-900 tracking-tight leading-none">{slot.price}</p>
-                  <div className="flex items-center gap-1.5 mt-1.5">
-                    <TrendingUp className="w-3.5 h-3.5 text-teal-600" />
-                    <p className="text-[11px] text-teal-600 font-semibold">5% deposit to reserve</p>
+              <div className="bg-teal-50 border border-teal-100 rounded-2xl px-4 py-4">
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div>
+                    <p className="text-[26px] sm:text-[28px] font-bold text-slate-900 tracking-tight leading-none">{slot.price}</p>
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <TrendingUp className="w-3.5 h-3.5 text-teal-600" />
+                      <p className="text-[11px] text-teal-600 font-semibold">5% deposit to reserve · balance direct to publisher</p>
+                    </div>
                   </div>
+                  <button
+                    onClick={triggerBookingDemo}
+                    className={`flex items-center gap-2 font-bold text-[14px] px-5 py-3 rounded-xl transition-all duration-300 flex-shrink-0 ${
+                      bookingStep === 'done'
+                        ? 'bg-emerald-500 text-white scale-95'
+                        : bookingStep === 'locking'
+                        ? 'bg-teal-700 text-white scale-95 opacity-80'
+                        : 'bg-teal-600 hover:bg-teal-700 text-white shadow-md hover:shadow-lg hover:-translate-y-px'
+                    }`}
+                  >
+                    {bookingStep === 'done' ? (
+                      <><CheckCircle className="w-4 h-4" />Slot Reserved!</>
+                    ) : bookingStep === 'locking' ? (
+                      <><Lock className="w-4 h-4 animate-pulse" />Securing…</>
+                    ) : (
+                      <><Lock className="w-4 h-4" />Secure Slot<Zap className="w-4 h-4 fill-white" /></>
+                    )}
+                  </button>
                 </div>
-                <button
-                  onClick={triggerBookingDemo}
-                  className={`flex items-center gap-2 font-bold text-[15px] px-6 py-3.5 rounded-xl transition-all duration-300 ${
-                    bookingStep === 'done'
-                      ? 'bg-emerald-500 text-white scale-95'
-                      : bookingStep === 'locking'
-                      ? 'bg-teal-700 text-white scale-95 opacity-80'
-                      : 'bg-teal-600 hover:bg-teal-700 text-white shadow-md hover:shadow-lg hover:-translate-y-px'
-                  }`}
-                >
-                  {bookingStep === 'done' ? (
-                    <><CheckCircle className="w-4 h-4" />Slot Reserved!</>
-                  ) : bookingStep === 'locking' ? (
-                    <><Lock className="w-4 h-4 animate-pulse" />Securing…</>
-                  ) : (
-                    <><Lock className="w-4 h-4" />Secure Slot<Zap className="w-4 h-4 fill-white" /></>
-                  )}
-                </button>
               </div>
 
               {/* Dot navigation */}
