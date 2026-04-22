@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import {
   ChevronRight, Search, Check, X, Download, Upload, AlertCircle, Loader2,
   Send, RotateCcw, Trash2, FileText, ChevronDown, ChevronUp,
-  Table, LayoutList, AlertTriangle, CheckCircle, Pencil,
+  Table, LayoutList, AlertTriangle, CheckCircle, Pencil, ShieldAlert, ShieldCheck,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { ImportRow, ImportBatch, PublisherProfile, ImportTag, PreviousSlotSnapshot } from './types';
@@ -33,6 +33,43 @@ function groupRows(rows: ImportRow[]): Map<string, Map<string, ImportRow[]>> {
   return pub;
 }
 
+type PublisherValidationState =
+  | { status: 'ok' }
+  | { status: 'multi_publisher'; detected: string[] }
+  | { status: 'mismatch'; detected: string[]; selected: string }
+  | { status: 'awaiting_confirm'; detected: string[]; selected: string };
+
+function normalizePublisherName(name: string): string {
+  return name.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function validatePublisherMatch(
+  csvRows: ImportRow[],
+  selectedPublisher: PublisherProfile,
+): PublisherValidationState {
+  const detected = Array.from(
+    new Set(csvRows.map(r => r.publisher_name?.trim()).filter(Boolean) as string[])
+  );
+
+  if (detected.length === 0) {
+    // No publisher_name column at all — treat as ok, let other validations catch it
+    return { status: 'ok' };
+  }
+
+  if (detected.length > 1) {
+    return { status: 'multi_publisher', detected };
+  }
+
+  const csvNorm = normalizePublisherName(detected[0]);
+  const selNorm = normalizePublisherName(selectedPublisher.newsletter_name);
+
+  if (csvNorm !== selNorm) {
+    return { status: 'mismatch', detected, selected: selectedPublisher.newsletter_name };
+  }
+
+  return { status: 'awaiting_confirm', detected, selected: selectedPublisher.newsletter_name };
+}
+
 export default function ImportWizard({ publishers, batches, onFetchPreviousSlots, onDone, onCancel }: Props) {
   const [step, setStep]           = useState<1 | 2 | 3>(1);
   const [publisher, setPublisher] = useState<PublisherProfile | null>(null);
@@ -49,6 +86,8 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
   const [editValues, setEditValues]       = useState<Partial<ImportRow>>({});
   const [collapsedPublishers, setCollapsedPublishers] = useState<Set<string>>(new Set());
   const [collapsedNewsletters, setCollapsedNewsletters] = useState<Set<string>>(new Set());
+  const [pubValidation, setPubValidation] = useState<PublisherValidationState | null>(null);
+  const [pendingRows, setPendingRows] = useState<ImportRow[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const filtered = publishers.filter(p =>
@@ -61,6 +100,7 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
     if (!file.name.endsWith('.csv')) { setHeaderError('Please upload a .csv file.'); return; }
     setFileName(file.name);
     setHeaderError(null);
+    setPubValidation(null);
     setLoadingPrev(true);
     const prevSlots = publisher ? await onFetchPreviousSlots(publisher.id) : [];
     setLoadingPrev(false);
@@ -70,10 +110,44 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
       const text = e.target?.result as string;
       const { rows: parsed, headerError: hErr } = parseAdminCSV(text, prevSlots);
       setHeaderError(hErr);
-      setRows(parsed);
-      if (!hErr && parsed.length > 0) setStep(3);
+      if (hErr || parsed.length === 0) return;
+
+      if (publisher) {
+        const validation = validatePublisherMatch(parsed, publisher);
+        if (validation.status === 'ok') {
+          // No publisher_name column — proceed directly
+          setRows(parsed);
+          setStep(3);
+        } else if (validation.status === 'mismatch' || validation.status === 'multi_publisher') {
+          setPubValidation(validation);
+          setPendingRows(parsed);
+          // Stay on step 2 — show blocking error
+        } else {
+          // awaiting_confirm
+          setPubValidation(validation);
+          setPendingRows(parsed);
+          // Show confirmation modal (stay on step 2)
+        }
+      } else {
+        setRows(parsed);
+        setStep(3);
+      }
     };
     reader.readAsText(file);
+  };
+
+  const confirmImport = () => {
+    setRows(pendingRows);
+    setPubValidation(null);
+    setPendingRows([]);
+    setStep(3);
+  };
+
+  const discardUpload = () => {
+    setPubValidation(null);
+    setPendingRows([]);
+    setFileName('');
+    if (fileRef.current) fileRef.current.value = '';
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -211,7 +285,7 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
                   return (
                     <button
                       key={pub.id}
-                      onClick={() => setPublisher(pub)}
+                      onClick={() => { setPublisher(pub); setPubValidation(null); setPendingRows([]); setFileName(''); }}
                       className={`w-full text-left px-4 py-3 rounded-xl border transition-all ${selected ? 'border-teal-300 bg-teal-50' : 'border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300'}`}
                     >
                       <div className="flex items-center gap-3">
@@ -310,6 +384,115 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
                 <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
                   <p className="text-[12px] text-red-700">{headerError}</p>
+                </div>
+              )}
+
+              {/* Publisher validation errors */}
+              {pubValidation?.status === 'multi_publisher' && (
+                <div className="mt-4 border border-red-300 bg-red-50 rounded-2xl overflow-hidden">
+                  <div className="flex items-start gap-3 px-4 py-3.5 border-b border-red-200 bg-red-100/60">
+                    <ShieldAlert className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-[13px] font-bold text-red-900">Multiple publishers detected</p>
+                      <p className="text-[12px] text-red-700 mt-0.5">
+                        This CSV contains data for multiple publishers. Please upload one publisher per CSV file.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="text-[11px] font-semibold text-red-700 uppercase tracking-wider mb-2">Publishers found in CSV</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {pubValidation.detected.map(name => (
+                        <span key={name} className="text-[12px] font-semibold text-red-800 bg-white border border-red-200 px-2.5 py-1 rounded-lg">
+                          {name}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        onClick={discardUpload}
+                        className="flex items-center gap-1.5 text-[12px] font-semibold text-red-700 bg-white border border-red-300 hover:bg-red-50 px-3.5 py-2 rounded-xl transition-all"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" /> Discard &amp; re-upload
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {pubValidation?.status === 'mismatch' && (
+                <div className="mt-4 border border-red-300 bg-red-50 rounded-2xl overflow-hidden">
+                  <div className="flex items-start gap-3 px-4 py-3.5 border-b border-red-200 bg-red-100/60">
+                    <ShieldAlert className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-[13px] font-bold text-red-900">Publisher mismatch detected</p>
+                      <p className="text-[12px] text-red-700 mt-0.5">
+                        The selected publisher does not match the <code className="font-mono bg-red-100 px-1 rounded text-[11px]">publisher_name</code> in the uploaded CSV.
+                        Please select the correct publisher or upload a matching CSV file.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="px-4 py-3 space-y-2">
+                    <div className="flex items-center gap-3 text-[12px]">
+                      <span className="text-slate-500 w-28 flex-shrink-0">Selected publisher</span>
+                      <span className="font-semibold text-slate-900 bg-white border border-slate-200 px-2.5 py-1 rounded-lg">{pubValidation.selected}</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-[12px]">
+                      <span className="text-slate-500 w-28 flex-shrink-0">Found in CSV</span>
+                      <span className="font-semibold text-red-800 bg-white border border-red-200 px-2.5 py-1 rounded-lg">{pubValidation.detected[0]}</span>
+                    </div>
+                    <div className="mt-3 flex gap-2 pt-1">
+                      <button
+                        onClick={() => { discardUpload(); setStep(1); }}
+                        className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 px-3.5 py-2 rounded-xl transition-all"
+                      >
+                        <Search className="w-3.5 h-3.5" /> Re-select publisher
+                      </button>
+                      <button
+                        onClick={discardUpload}
+                        className="flex items-center gap-1.5 text-[12px] font-semibold text-red-700 bg-white border border-red-300 hover:bg-red-50 px-3.5 py-2 rounded-xl transition-all"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" /> Discard &amp; re-upload
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {pubValidation?.status === 'awaiting_confirm' && (
+                <div className="mt-4 border border-teal-300 bg-teal-50 rounded-2xl overflow-hidden">
+                  <div className="flex items-start gap-3 px-4 py-3.5 border-b border-teal-200 bg-teal-100/60">
+                    <ShieldCheck className="w-5 h-5 text-teal-600 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="text-[13px] font-bold text-teal-900">Publisher match confirmed</p>
+                      <p className="text-[12px] text-teal-700 mt-0.5">
+                        CSV publisher matches the selected publisher. Review and confirm before proceeding.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="px-4 py-3">
+                    <div className="flex items-center gap-3 text-[12px] mb-3">
+                      <span className="text-slate-500 w-28 flex-shrink-0">Importing for</span>
+                      <span className="font-semibold text-teal-900 bg-white border border-teal-200 px-2.5 py-1 rounded-lg">{pubValidation.selected}</span>
+                    </div>
+                    <p className="text-[11px] text-teal-700 mb-3">
+                      You are about to import <span className="font-semibold">{pendingRows.length} slot{pendingRows.length !== 1 ? 's' : ''}</span> for this publisher. This action cannot be undone.
+                    </p>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={confirmImport}
+                        className="flex items-center gap-1.5 text-[12px] font-semibold text-white bg-teal-600 hover:bg-teal-700 px-4 py-2 rounded-xl transition-all"
+                      >
+                        <Check className="w-3.5 h-3.5" /> Confirm &amp; continue
+                      </button>
+                      <button
+                        onClick={discardUpload}
+                        className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-600 bg-white border border-slate-300 hover:bg-slate-50 px-3.5 py-2 rounded-xl transition-all"
+                      >
+                        <X className="w-3.5 h-3.5" /> Cancel
+                      </button>
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -716,3 +899,6 @@ function GroupedSlotRow({
     </div>
   );
 }
+
+
+export default ImportWizard
