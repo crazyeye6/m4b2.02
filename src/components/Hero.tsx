@@ -181,92 +181,131 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
             </div>
           </div>
 
-          {/* RIGHT — Platform UI preview */}
+          {/* RIGHT — Before/After visual */}
           <div
-            className="hidden lg:flex flex-col gap-3"
+            className="hidden lg:flex flex-col gap-4"
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? 'translateY(0)' : 'translateY(30px)',
               transition: 'opacity 0.65s ease 0.14s, transform 0.65s ease 0.14s',
             }}
           >
-            {/* Platform chrome / search bar */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
-              <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-3">
-                <div className="flex gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
-                </div>
-                <div className="flex-1 flex items-center justify-center">
-                  <span className="text-[10px] text-slate-400 font-medium bg-white border border-slate-200 rounded-md px-3 py-0.5">
-                    endingthisweek.media / browse
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                  <span className="text-[10px] text-emerald-600 font-semibold">{liveCount > 0 ? liveCount : '200+'} live</span>
-                </div>
+            {/* BEFORE — Cluttered inbox */}
+            <div className="relative">
+              <div className="absolute -top-2.5 left-4 z-10">
+                <span className="bg-slate-700 text-white text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-md">
+                  Before
+                </span>
               </div>
-
-              {/* Filter bar hint */}
-              <div className="px-4 py-2 border-b border-slate-100 flex items-center gap-2">
-                <span className="text-[11px] bg-slate-900 text-white font-semibold px-2.5 py-1 rounded-full">All</span>
-                <span className="text-[11px] text-slate-400 bg-slate-50 border border-slate-200 font-medium px-2.5 py-1 rounded-full">Ending This Week</span>
-                <span className="text-[11px] text-slate-400 bg-slate-50 border border-slate-200 font-medium px-2.5 py-1 rounded-full">SaaS</span>
-                <span className="text-[11px] text-slate-400 bg-slate-50 border border-slate-200 font-medium px-2.5 py-1 rounded-full">AI</span>
-                <span className="text-[10px] text-slate-300 ml-auto">Filters</span>
-              </div>
-
-              {/* Slot cards list */}
-              <div className="divide-y divide-slate-100">
-                {DEMO_SLOTS.map((s, i) => (
-                  <div
-                    key={s.newsletter}
-                    onClick={() => { setActiveSlot(i); setBookingStep('idle'); }}
-                    className={`px-4 py-3.5 flex items-center gap-3 cursor-pointer transition-all duration-200 ${
-                      activeSlot === i ? 'bg-teal-50/60' : 'hover:bg-slate-50'
-                    }`}
-                  >
-                    {/* Accent bar */}
-                    <div className={`absolute left-0 w-[3px] h-12 rounded-full ${s.hot ? 'bg-red-400' : 'bg-emerald-400'}`} style={{ display: 'none' }} />
-
-                    {/* Avatar */}
-                    <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${s.gradient} flex items-center justify-center flex-shrink-0`}>
-                      <span className="text-white text-[11px] font-bold">{s.initials}</span>
-                    </div>
-
-                    {/* Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <p className="text-[13px] font-bold text-slate-800 truncate">{s.newsletter}</p>
-                        {s.hot && (
-                          <span className="text-[8px] font-bold text-red-600 bg-red-50 border border-red-100 px-1.5 py-0.5 rounded-full uppercase tracking-wide flex-shrink-0">Hot</span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                          <Users className="w-2.5 h-2.5" />{s.subscribers}
-                        </span>
-                        <span className="text-[10px] text-teal-600 flex items-center gap-1 font-semibold">
-                          <Eye className="w-2.5 h-2.5" />{s.openRate} open
-                        </span>
-                        <span className="text-[10px] text-slate-400 truncate">{s.niche}</span>
-                      </div>
-                    </div>
-
-                    {/* Deadline + price */}
-                    <div className="text-right flex-shrink-0">
-                      <p className="text-[14px] font-bold text-slate-900">{s.price}</p>
-                      <div className={`flex items-center gap-1 justify-end text-[9px] font-semibold ${s.hot ? 'text-red-500' : 'text-slate-400'}`}>
-                        <Clock className="w-2.5 h-2.5" />
-                        {s.deadline} left
-                      </div>
-                    </div>
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
+                {/* Email client chrome */}
+                <div className="px-4 py-2.5 bg-slate-100 border-b border-slate-200 flex items-center gap-3">
+                  <div className="flex gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-300" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-300" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-green-300" />
                   </div>
-                ))}
+                  <div className="flex-1 flex items-center gap-2">
+                    <Mail className="w-3 h-3 text-slate-400" />
+                    <span className="text-[10px] text-slate-500 font-medium">Inbox — 47 unread</span>
+                  </div>
+                  <span className="text-[9px] text-slate-400 bg-slate-200 px-2 py-0.5 rounded">Search mail…</span>
+                </div>
+
+                {/* Inbox rows — newsletter sales pitches */}
+                <div className="divide-y divide-slate-100">
+                  {[
+                    {
+                      from: 'Sarah @ TechBuzz Weekly',
+                      avatar: 'TB',
+                      avatarBg: 'bg-blue-500',
+                      subject: 'Sponsorship opportunity — 85k subscribers',
+                      preview: 'Hi, we have an opening for the 14th...',
+                      time: '9:41 AM',
+                      unread: true,
+                      label: 'No price. No data.',
+                    },
+                    {
+                      from: 'Partnerships · AI Daily',
+                      avatar: 'AD',
+                      avatarBg: 'bg-violet-500',
+                      subject: 'RE: RE: RE: RE: Sponsorship rates',
+                      preview: 'Updated our media kit — see attached PDF',
+                      time: 'Mon',
+                      unread: true,
+                      label: '4th reply. Still no slot date.',
+                    },
+                    {
+                      from: 'info@fintech-news.co',
+                      avatar: 'FN',
+                      avatarBg: 'bg-amber-500',
+                      subject: 'Newsletter ad slot — limited availability!',
+                      preview: 'Act fast! Only 2 slots remain for May…',
+                      time: 'Mon',
+                      unread: false,
+                      label: 'Unverified numbers.',
+                    },
+                    {
+                      from: 'hello@startupbrief.io',
+                      avatar: 'SB',
+                      avatarBg: 'bg-rose-500',
+                      subject: 'Fwd: Media kit + rate card Q2 2025',
+                      preview: 'Attached — updated deck + rate card inside...',
+                      time: 'Sun',
+                      unread: false,
+                      label: 'PDF. No deadline.',
+                    },
+                    {
+                      from: 'Growth Memo · Sponsorships',
+                      avatar: 'GM',
+                      avatarBg: 'bg-emerald-600',
+                      subject: 'Following up on my last email about slots',
+                      preview: 'Just checking in — did you get a chance to...',
+                      time: 'Sat',
+                      unread: false,
+                      label: 'Third follow-up.',
+                    },
+                  ].map((row, i) => (
+                    <div key={i} className={`px-4 py-2.5 flex items-center gap-3 ${row.unread ? 'bg-blue-50/40' : ''}`}>
+                      <div className={`w-7 h-7 rounded-full ${row.avatarBg} flex items-center justify-center flex-shrink-0`}>
+                        <span className="text-white text-[8px] font-bold">{row.avatar}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          {row.unread && <span className="w-1.5 h-1.5 bg-blue-500 rounded-full flex-shrink-0" />}
+                          <p className={`text-[11px] truncate ${row.unread ? 'font-bold text-slate-800' : 'font-medium text-slate-500'}`}>{row.from}</p>
+                          <span className="text-[9px] text-slate-400 ml-auto flex-shrink-0">{row.time}</span>
+                        </div>
+                        <p className={`text-[10px] truncate mt-0.5 ${row.unread ? 'font-semibold text-slate-700' : 'text-slate-500'}`}>{row.subject}</p>
+                        <p className="text-[9px] text-slate-400 truncate">{row.preview}</p>
+                      </div>
+                      <span className="flex-shrink-0 text-[8px] font-semibold text-orange-600 bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded-full whitespace-nowrap">{row.label}</span>
+                    </div>
+                  ))}
+                  <div className="px-4 py-2 flex items-center justify-center gap-2 bg-slate-50">
+                    <span className="text-[9px] text-slate-400">+ 42 more sponsorship emails…</span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Arrow / transition */}
+            <div className="flex items-center gap-3 px-2">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+              <div className="flex items-center gap-2 bg-teal-50 border border-teal-200 rounded-full px-3 py-1.5">
+                <ArrowRight className="w-3 h-3 text-teal-600" />
+                <span className="text-[10px] font-semibold text-teal-700">endingthisweek.media</span>
+              </div>
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent" />
+            </div>
+
+            {/* AFTER — Platform UI */}
+            <div className="relative">
+              <div className="absolute -top-2.5 left-4 z-10">
+                <span className="bg-teal-600 text-white text-[9px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest shadow-md">
+                  After
+                </span>
+              </div>
 
             {/* Selected slot detail panel */}
             <div className="bg-white rounded-2xl border border-teal-200 shadow-[0_4px_20px_rgba(20,184,166,0.08)] overflow-hidden">
@@ -360,6 +399,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
                 </div>
               </div>
             </div>
+            </div>{/* end After wrapper */}
 
             {/* Social proof footer */}
             <div className="flex items-center justify-between px-1">
