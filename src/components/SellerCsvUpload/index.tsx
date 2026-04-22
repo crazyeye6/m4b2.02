@@ -249,11 +249,13 @@ export default function SellerCsvUpload() {
     <div className="space-y-6 max-w-4xl">
 
       {/* Section header */}
-      <div>
-        <h3 className="text-[16px] font-bold text-slate-900 mb-1">Upload Newsletter Slots via CSV</h3>
-        <p className="text-[13px] text-slate-500 leading-relaxed max-w-2xl">
-          Upload one CSV to add or update slots across one or more newsletters you own. Rows are grouped by newsletter and reviewed before going live.
-        </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h3 className="text-[16px] font-bold text-slate-900 mb-1">Upload your weekly slots in one file</h3>
+          <p className="text-[13px] text-slate-500 leading-relaxed max-w-2xl">
+            One row per ad slot. We group by newsletter, review for quality, and publish approved slots — usually within 24 hours.
+          </p>
+        </div>
       </div>
 
       {/* Upload card */}
@@ -267,16 +269,16 @@ export default function SellerCsvUpload() {
             </div>
             <div>
               <p className="text-[14px] font-semibold text-slate-900">
-                {step === 'idle' && 'Upload CSV file'}
+                {step === 'idle' && 'Upload your weekly slots'}
                 {step === 'error' && 'Upload error'}
-                {step === 'preview' && `Preview — ${rows.length} row${rows.length !== 1 ? 's' : ''} parsed`}
+                {step === 'preview' && `Review your slots — ${rows.length} row${rows.length !== 1 ? 's' : ''} found`}
                 {step === 'submitting' && 'Submitting…'}
-                {step === 'done' && 'Slots submitted'}
+                {step === 'done' && 'Slots submitted for review'}
               </p>
               <p className="text-[11px] text-slate-400">
-                {step === 'idle' && 'One row per ad slot · same format as admin import'}
-                {step === 'preview' && `${okCount} ready · ${errorCount} errors · ${warningCount} warnings`}
-                {step === 'done' && 'Pending admin review'}
+                {step === 'idle' && 'One row per ad slot · grouped by newsletter automatically'}
+                {step === 'preview' && `${okCount} ready · ${errorCount} errors · ${warningCount} warnings — edit anything before submitting`}
+                {step === 'done' && 'We\'ll review and publish approved slots, usually within 24 hours'}
               </p>
             </div>
           </div>
@@ -304,8 +306,8 @@ export default function SellerCsvUpload() {
               <div className="w-11 h-11 bg-white border border-slate-200 rounded-xl flex items-center justify-center mx-auto mb-3 shadow-sm">
                 <Upload className="w-5 h-5 text-slate-400" />
               </div>
-              <p className="text-[14px] font-semibold text-slate-700 mb-1">{isDragging ? 'Drop CSV here' : 'Drag & drop or click to upload'}</p>
-              <p className="text-[12px] text-slate-400">CSV only · Use the template for correct column names</p>
+              <p className="text-[14px] font-semibold text-slate-700 mb-1">{isDragging ? 'Drop CSV here' : 'Upload your weekly slots in one file'}</p>
+              <p className="text-[12px] text-slate-400">Drag & drop or click · CSV only · Download the template above for the correct format</p>
             </div>
           )}
 
@@ -527,13 +529,18 @@ export default function SellerCsvUpload() {
 
               {/* Submit footer */}
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                <p className="text-[12px] text-slate-400 leading-relaxed max-w-xs">
-                  Slots go to admin review before going live. You'll be notified once approved.
-                </p>
+                <div>
+                  <p className="text-[12px] text-slate-500 font-medium leading-relaxed">
+                    Happy with your slots? Submit for review and we handle the rest.
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Approved slots go live and can be featured in weekly buyer emails.
+                  </p>
+                </div>
                 <button
                   onClick={handleSubmit}
                   disabled={!user || rows.length === 0}
-                  className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl disabled:opacity-40 transition-all shadow-sm"
+                  className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl disabled:opacity-40 transition-all shadow-sm shrink-0"
                 >
                   <Send className="w-4 h-4" />
                   Submit {rows.length} slot{rows.length !== 1 ? 's' : ''} for review
@@ -578,23 +585,28 @@ export default function SellerCsvUpload() {
         </div>
       </div>
 
-      {/* ── How it works (only on idle) ── */}
+      {/* ── Weekly workflow reminder (only on idle) ── */}
       {step === 'idle' && (
         <div className="bg-slate-900 rounded-2xl px-5 py-5">
-          <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3">How it works</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-3">Your weekly workflow</p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-0">
             {[
-              { n: '1', title: 'Download template', desc: 'Get the CSV with all required column names' },
-              { n: '2', title: 'Fill in your slots', desc: 'One row = one ad slot. Group by newsletter name' },
-              { n: '3', title: 'Preview & fix issues', desc: 'Review parsed rows and edit before submitting' },
-              { n: '4', title: 'Admin reviews & publishes', desc: 'Approved slots go live in the marketplace' },
-            ].map(s => (
-              <div key={s.n} className="flex gap-3">
-                <span className="text-[11px] font-mono font-bold text-white/20 flex-shrink-0 pt-0.5">{s.n}</span>
-                <div>
-                  <p className="text-[12px] font-semibold text-white mb-0.5">{s.title}</p>
-                  <p className="text-[11px] text-white/40 leading-snug">{s.desc}</p>
+              { n: '1', label: 'Update your CSV' },
+              { n: '2', label: 'Upload here' },
+              { n: '3', label: 'Review & submit' },
+              { n: '4', label: 'Slots go live' },
+              { n: '5', label: 'Featured in buyer emails' },
+            ].map((s, i) => (
+              <div key={s.n} className="flex items-center gap-2 sm:gap-0">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-white/10 text-white/60 text-[10px] font-bold font-mono flex items-center justify-center flex-shrink-0">{s.n}</span>
+                  <p className="text-[12px] font-semibold text-white/80">{s.label}</p>
                 </div>
+                {i < 4 && (
+                  <svg className="hidden sm:block w-8 h-3 text-white/15 mx-1 flex-shrink-0" viewBox="0 0 32 12" fill="none">
+                    <path d="M0 6h28M24 2l6 4-6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
               </div>
             ))}
           </div>
@@ -604,7 +616,10 @@ export default function SellerCsvUpload() {
       {/* ── Past uploads ── */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
-          <p className="text-[14px] font-semibold text-slate-900">Upload History</p>
+          <div>
+            <p className="text-[14px] font-semibold text-slate-900">Past Uploads</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Your recent weekly uploads and their review status</p>
+          </div>
           <button onClick={loadBatches} className="text-slate-400 hover:text-slate-700 transition-colors">
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
