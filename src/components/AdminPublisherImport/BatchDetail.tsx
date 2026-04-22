@@ -3,7 +3,7 @@ import {
   ArrowLeft, RefreshCw, Loader2, CheckCircle, Send, Ban,
   RotateCcw, Eye, AlertTriangle, Zap, Check,
   ChevronDown, ChevronUp, LayoutList, Table, ExternalLink,
-  AlertCircle, Package,
+  AlertCircle, Package, Users, BookOpen, TrendingUp,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import type { ImportBatch, ImportSlot } from './types';
@@ -23,14 +23,26 @@ interface Props {
 type ViewMode = 'grouped' | 'table';
 type SlotFilter = 'all' | 'pending_review' | 'needs_review' | 'approved' | 'published' | 'rejected';
 
-function groupSlots(slots: ImportSlot[]): Map<string, ImportSlot[]> {
+interface NewsletterGroup {
+  name: string;
+  slots: ImportSlot[];
+  subscriberCount: string;
+  niche: string;
+}
+
+function buildNewsletterGroups(slots: ImportSlot[]): NewsletterGroup[] {
   const map = new Map<string, ImportSlot[]>();
   for (const slot of slots) {
     const key = slot.media_name || '(unnamed newsletter)';
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(slot);
   }
-  return map;
+  return Array.from(map.entries()).map(([name, nlSlots]) => ({
+    name,
+    slots: nlSlots,
+    subscriberCount: nlSlots[0]?.audience_size || '',
+    niche: nlSlots[0]?.category || '',
+  }));
 }
 
 export default function BatchDetail({
@@ -69,48 +81,55 @@ export default function BatchDetail({
     await loadSlots();
   };
 
+  const handleApproveAndPublish = async (slot: ImportSlot) => {
+    await supabase.from('csv_upload_slots')
+      .update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: 'Admin', updated_at: new Date().toISOString() })
+      .eq('id', slot.id);
+    await publishSlotToListings({ ...slot, status: 'approved' });
+    await loadSlots();
+    onRefreshStats?.();
+  };
+
   // ── Bulk actions ────────────────────────────────────────────────────────────
 
-  const bulkApproveSelected = async () => {
-    if (selectedIds.size === 0) return;
+  const runBulk = async (fn: (targets: ImportSlot[]) => Promise<void>, filter: (s: ImportSlot) => boolean) => {
     setBulkLoading(true);
-    const targets = slots.filter(s => selectedIds.has(s.id) && (s.status === 'pending_review' || s.status === 'needs_review'));
-    for (const s of targets) {
-      await supabase.from('csv_upload_slots')
-        .update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: 'Admin', updated_at: new Date().toISOString() })
-        .eq('id', s.id);
-    }
+    const targets = selectedIds.size > 0
+      ? slots.filter(s => selectedIds.has(s.id) && filter(s))
+      : slots.filter(filter);
+    await fn(targets);
     setSelectedIds(new Set());
     await loadSlots();
     setBulkLoading(false);
     onRefreshStats?.();
   };
 
-  const bulkPublishSelected = async () => {
-    if (selectedIds.size === 0) return;
-    setBulkLoading(true);
-    const targets = slots.filter(s => selectedIds.has(s.id) && s.status === 'approved');
-    for (const s of targets) await publishSlotToListings(s);
-    setSelectedIds(new Set());
-    await loadSlots();
-    setBulkLoading(false);
-    onRefreshStats?.();
-  };
+  const bulkApproveSelected = () => runBulk(
+    async targets => {
+      for (const s of targets) {
+        await supabase.from('csv_upload_slots')
+          .update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: 'Admin', updated_at: new Date().toISOString() })
+          .eq('id', s.id);
+      }
+    },
+    s => s.status === 'pending_review' || s.status === 'needs_review'
+  );
 
-  const bulkRejectSelected = async () => {
-    if (selectedIds.size === 0) return;
-    setBulkLoading(true);
-    const targets = slots.filter(s => selectedIds.has(s.id) && s.status !== 'published' && s.status !== 'rejected' && s.status !== 'expired');
-    for (const s of targets) {
-      await supabase.from('csv_upload_slots')
-        .update({ status: 'rejected', reviewed_at: new Date().toISOString(), reviewed_by: 'Admin', updated_at: new Date().toISOString() })
-        .eq('id', s.id);
-    }
-    setSelectedIds(new Set());
-    await loadSlots();
-    setBulkLoading(false);
-    onRefreshStats?.();
-  };
+  const bulkPublishSelected = () => runBulk(
+    async targets => { for (const s of targets) await publishSlotToListings(s); },
+    s => s.status === 'approved'
+  );
+
+  const bulkRejectSelected = () => runBulk(
+    async targets => {
+      for (const s of targets) {
+        await supabase.from('csv_upload_slots')
+          .update({ status: 'rejected', reviewed_at: new Date().toISOString(), reviewed_by: 'Admin', updated_at: new Date().toISOString() })
+          .eq('id', s.id);
+      }
+    },
+    s => s.status !== 'published' && s.status !== 'rejected' && s.status !== 'expired'
+  );
 
   const bulkApproveAll = async () => {
     setBulkLoading(true);
@@ -138,19 +157,15 @@ export default function BatchDetail({
     setBulkLoading(true);
     const targets = slots.filter(s =>
       (s.import_tag === 'new' || s.import_tag === 'updated') &&
-      s.status !== 'published' && s.status !== 'rejected' && s.status !== 'expired'
+      s.status !== 'published' && s.status !== 'rejected' && s.status !== 'expired' &&
+      !s.validation_errors?.some(e => e.severity === 'error')
     );
     for (const s of targets) {
       await supabase.from('csv_upload_slots')
         .update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: 'Admin', updated_at: new Date().toISOString() })
         .eq('id', s.id);
+      await publishSlotToListings({ ...s, status: 'approved' });
     }
-    await loadSlots();
-    const readyToPublish = slots.filter(s =>
-      (s.import_tag === 'new' || s.import_tag === 'updated') &&
-      s.status !== 'published' && s.status !== 'rejected' && s.status !== 'expired'
-    );
-    for (const s of readyToPublish) await publishSlotToListings({ ...s, status: 'approved' });
     await loadSlots();
     setBulkLoading(false);
     onRefreshStats?.();
@@ -159,11 +174,11 @@ export default function BatchDetail({
   // ── Counts ──────────────────────────────────────────────────────────────────
 
   const counts = {
-    pending:    slots.filter(s => s.status === 'pending_review').length,
-    review:     slots.filter(s => s.status === 'needs_review').length,
-    approved:   slots.filter(s => s.status === 'approved').length,
-    published:  slots.filter(s => s.status === 'published').length,
-    rejected:   slots.filter(s => s.status === 'rejected').length,
+    pending:   slots.filter(s => s.status === 'pending_review').length,
+    review:    slots.filter(s => s.status === 'needs_review').length,
+    approved:  slots.filter(s => s.status === 'approved').length,
+    published: slots.filter(s => s.status === 'published').length,
+    rejected:  slots.filter(s => s.status === 'rejected').length,
   };
   const tagCounts = {
     new:       slots.filter(s => s.import_tag === 'new').length,
@@ -172,11 +187,16 @@ export default function BatchDetail({
     duplicate: slots.filter(s => s.import_tag === 'duplicate').length,
   };
   const fastPublishCount = slots.filter(s =>
-    (s.import_tag === 'new' || s.import_tag === 'updated') && s.status !== 'published' && s.status !== 'rejected'
+    (s.import_tag === 'new' || s.import_tag === 'updated') &&
+    s.status !== 'published' && s.status !== 'rejected' &&
+    !s.validation_errors?.some(e => e.severity === 'error')
   ).length;
+  const errorCount = slots.filter(s => s.validation_errors?.some(e => e.severity === 'error')).length;
+
+  const publishPct = slots.length > 0 ? Math.round((counts.published / slots.length) * 100) : 0;
 
   const filteredSlots = slots.filter(s => slotFilter === 'all' || s.status === slotFilter);
-  const grouped = groupSlots(filteredSlots);
+  const nlGroups = buildNewsletterGroups(filteredSlots);
 
   const selectable = filteredSlots.filter(s => s.status !== 'published' && s.status !== 'expired');
   const allSelected = selectable.length > 0 && selectable.every(s => selectedIds.has(s.id));
@@ -199,7 +219,7 @@ export default function BatchDetail({
   return (
     <div className="space-y-4">
       {/* Back + title */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <button onClick={onBack}
           className="flex items-center gap-1.5 text-[13px] text-slate-500 hover:text-slate-900 font-medium transition-colors">
           <ArrowLeft className="w-4 h-4" /> All Imports
@@ -211,7 +231,7 @@ export default function BatchDetail({
             w/c {batch.import_week}
           </span>
         )}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2 flex-shrink-0">
           <button onClick={refreshAll}
             className="flex items-center gap-1.5 text-slate-400 hover:text-slate-700 text-[12px] border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-xl transition-all">
             <RefreshCw className="w-3.5 h-3.5" /> Refresh
@@ -220,55 +240,83 @@ export default function BatchDetail({
             <button onClick={fastPublish} disabled={bulkLoading}
               className="flex items-center gap-1.5 text-[12px] font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-1.5 rounded-xl transition-all shadow-sm disabled:opacity-50">
               {bulkLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />}
-              Fast Publish {fastPublishCount} new/updated
+              Fast Publish {fastPublishCount}
             </button>
           )}
         </div>
       </div>
 
-      {/* Batch metadata card */}
-      <div className="bg-white rounded-2xl border border-slate-200 px-5 py-4">
-        <div className="flex items-start justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm">
-              <span className="text-white text-[14px] font-bold">{(batch.publisher_name || 'P').charAt(0)}</span>
+      {/* Batch header card */}
+      <div className="bg-white rounded-2xl border border-slate-200 px-5 py-5">
+        <div className="flex items-start gap-4 flex-wrap">
+          {/* Publisher identity */}
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow-sm">
+              <span className="text-white text-[15px] font-bold">{(batch.publisher_name || 'P').charAt(0)}</span>
             </div>
-            <div>
-              <h2 className="text-[16px] font-bold text-slate-900">{batch.publisher_name || 'Unknown Publisher'}</h2>
-              <p className="text-[12px] text-slate-400 mt-0.5">
-                {batch.filename} · uploaded {new Date(batch.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+            <div className="min-w-0">
+              <h2 className="text-[16px] font-bold text-slate-900 truncate">{batch.publisher_name || 'Unknown Publisher'}</h2>
+              <p className="text-[11px] text-slate-400 mt-0.5 truncate">
+                {batch.filename} · {new Date(batch.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
           </div>
 
-          {/* Status stats */}
+          {/* Status counters */}
           <div className="flex items-center gap-2 flex-wrap">
             {[
-              { label: 'Total', value: slots.length, cls: 'bg-slate-100 text-slate-700' },
-              { label: 'Pending', value: counts.pending + counts.review, cls: 'bg-blue-100 text-blue-700' },
-              { label: 'Approved', value: counts.approved, cls: 'bg-teal-100 text-teal-700' },
-              { label: 'Live', value: counts.published, cls: 'bg-emerald-100 text-emerald-700' },
-              { label: 'Rejected', value: counts.rejected, cls: 'bg-slate-100 text-slate-500' },
+              { label: 'Total',    value: slots.length,                        cls: 'bg-slate-100 text-slate-700' },
+              { label: 'Pending',  value: counts.pending + counts.review,      cls: (counts.pending + counts.review) > 0 ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-500' },
+              { label: 'Approved', value: counts.approved,                     cls: counts.approved > 0 ? 'bg-teal-100 text-teal-700' : 'bg-slate-100 text-slate-500' },
+              { label: 'Live',     value: counts.published,                    cls: counts.published > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500' },
+              { label: 'Rejected', value: counts.rejected,                     cls: 'bg-slate-100 text-slate-500' },
             ].map(s => (
-              <div key={s.label} className={`px-3 py-1.5 rounded-xl text-center min-w-[52px] ${s.cls}`}>
-                <p className="text-[16px] font-bold leading-none">{s.value}</p>
+              <div key={s.label} className={`px-3 py-2 rounded-xl text-center min-w-[52px] ${s.cls}`}>
+                <p className="text-[17px] font-bold leading-none">{s.value}</p>
                 <p className="text-[9px] font-semibold uppercase tracking-wide mt-0.5 opacity-70">{s.label}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Tag summary */}
-        <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-          {(Object.entries(tagCounts) as [string, number][]).filter(([, v]) => v > 0).map(([tag, count]) => {
-            const cfg = TAG_CONFIG[tag as keyof typeof TAG_CONFIG];
-            return (
-              <span key={tag} className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${cfg.bg} ${cfg.border} ${cfg.color}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-                {count} {cfg.label}
+        {/* Progress + tag summary row */}
+        <div className="mt-4 space-y-2.5">
+          {/* Publish progress */}
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[11px] font-semibold text-slate-500">Publish progress</span>
+              <span className="text-[11px] font-bold text-slate-700">{publishPct}%</span>
+            </div>
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-teal-400 to-emerald-500 rounded-full transition-all duration-500" style={{ width: `${publishPct}%` }} />
+            </div>
+          </div>
+
+          {/* Tags + newsletter/slot summary */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+              <BookOpen className="w-3 h-3 text-slate-300" />
+              <span className="font-medium">{nlGroups.length} newsletter{nlGroups.length !== 1 ? 's' : ''}</span>
+              <span className="text-slate-300">·</span>
+              <span className="font-medium">{slots.length} slot{slots.length !== 1 ? 's' : ''}</span>
+            </div>
+            {errorCount > 0 && (
+              <span className="flex items-center gap-1 text-[10px] font-semibold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full">
+                <AlertCircle className="w-2.5 h-2.5" /> {errorCount} validation error{errorCount !== 1 ? 's' : ''}
               </span>
-            );
-          })}
+            )}
+            <div className="flex items-center gap-1 flex-wrap">
+              {(Object.entries(tagCounts) as [string, number][]).filter(([, v]) => v > 0).map(([tag, count]) => {
+                const cfg = TAG_CONFIG[tag as keyof typeof TAG_CONFIG];
+                return (
+                  <span key={tag} className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.border} ${cfg.color}`}>
+                    <span className={`w-1 h-1 rounded-full ${cfg.dot}`} />
+                    {count} {cfg.label}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
@@ -276,9 +324,9 @@ export default function BatchDetail({
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between gap-3 flex-wrap">
           {/* Filter tabs */}
-          <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 rounded-xl p-1 overflow-x-auto">
+          <div className="flex items-center gap-0.5 bg-slate-50 border border-slate-200 rounded-xl p-1 overflow-x-auto">
             {([
-              ['all',          `All (${slots.length})`],
+              ['all',            `All (${slots.length})`],
               ['pending_review', `Pending (${counts.pending})`],
               ['needs_review',   `Review (${counts.review})`],
               ['approved',       `Approved (${counts.approved})`],
@@ -306,7 +354,7 @@ export default function BatchDetail({
         </div>
 
         {/* Bulk actions bar */}
-        <div className="px-4 py-2.5 bg-slate-50/50 border-b border-slate-100 flex items-center gap-2 flex-wrap">
+        <div className="px-4 py-2.5 bg-slate-50/40 border-b border-slate-100 flex items-center gap-2 flex-wrap min-h-[44px]">
           <label className="flex items-center gap-2 flex-shrink-0 cursor-pointer">
             <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} className="rounded border-slate-300" />
             <span className="text-[11px] text-slate-500 font-medium select-none">
@@ -315,7 +363,6 @@ export default function BatchDetail({
           </label>
           <div className="w-px h-4 bg-slate-200 flex-shrink-0" />
 
-          {/* Contextual bulk actions for selected */}
           {selectedIds.size > 0 ? (
             <>
               <button onClick={bulkApproveSelected} disabled={bulkLoading}
@@ -342,7 +389,7 @@ export default function BatchDetail({
               {counts.approved > 0 && (
                 <button onClick={bulkPublishApproved} disabled={bulkLoading}
                   className="flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 px-2.5 py-1 rounded-lg transition-all disabled:opacity-50">
-                  <Send className="w-3 h-3" /> Publish all approved
+                  <Send className="w-3 h-3" /> Publish all approved ({counts.approved})
                 </button>
               )}
             </>
@@ -360,47 +407,96 @@ export default function BatchDetail({
         ) : viewMode === 'grouped' ? (
           // ── Grouped view ──
           <div className="divide-y divide-slate-100">
-            {Array.from(grouped.entries()).map(([nlName, nlSlots]) => {
-              const isCollapsed = collapsedGroups.has(nlName);
+            {nlGroups.map(group => {
+              const isCollapsed = collapsedGroups.has(group.name);
               const nlCounts = {
-                pending: nlSlots.filter(s => s.status === 'pending_review' || s.status === 'needs_review').length,
-                live: nlSlots.filter(s => s.status === 'published').length,
+                pending: group.slots.filter(s => s.status === 'pending_review' || s.status === 'needs_review').length,
+                approved: group.slots.filter(s => s.status === 'approved').length,
+                live: group.slots.filter(s => s.status === 'published').length,
+                errors: group.slots.filter(s => s.validation_errors?.some(e => e.severity === 'error')).length,
               };
-              const allNlSelected = nlSlots.every(s => selectedIds.has(s.id));
+              const allNlSelected = group.slots.every(s => selectedIds.has(s.id));
 
               return (
-                <div key={nlName}>
+                <div key={group.name}>
                   {/* Newsletter group header */}
-                  <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-50/70 hover:bg-slate-50 cursor-pointer" onClick={() => toggleGroup(nlName)}>
+                  <div
+                    className="flex items-center gap-3 px-4 py-3 bg-slate-50/60 hover:bg-slate-50 cursor-pointer select-none"
+                    onClick={() => toggleGroup(group.name)}
+                  >
                     <input type="checkbox" checked={allNlSelected}
                       onClick={e => e.stopPropagation()}
                       onChange={e => {
-                        if (e.target.checked) setSelectedIds(prev => new Set([...prev, ...nlSlots.map(s => s.id)]));
-                        else setSelectedIds(prev => { const n = new Set(prev); nlSlots.forEach(s => n.delete(s.id)); return n; });
+                        if (e.target.checked) setSelectedIds(prev => new Set([...prev, ...group.slots.map(s => s.id)]));
+                        else setSelectedIds(prev => { const n = new Set(prev); group.slots.forEach(s => n.delete(s.id)); return n; });
                       }}
-                      className="rounded border-slate-300"
+                      className="rounded border-slate-300 flex-shrink-0"
                     />
-                    <div className="w-1.5 h-1.5 rounded-full bg-teal-400 flex-shrink-0" />
-                    <p className="text-[13px] font-semibold text-slate-800 flex-1">{nlName}</p>
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
-                      <span>{nlSlots.length} slot{nlSlots.length !== 1 ? 's' : ''}</span>
-                      {nlCounts.pending > 0 && <span className="font-semibold text-orange-600">{nlCounts.pending} pending</span>}
-                      {nlCounts.live > 0 && <span className="font-semibold text-emerald-600">{nlCounts.live} live</span>}
+
+                    <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <BookOpen className="w-3.5 h-3.5 text-teal-500" />
                     </div>
-                    {isCollapsed ? <ChevronDown className="w-3.5 h-3.5 text-slate-300" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-300" />}
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-[13px] font-bold text-slate-900 truncate">{group.name}</p>
+                        {group.niche && (
+                          <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-full">{group.niche}</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400">
+                        {group.subscriberCount && (
+                          <span className="flex items-center gap-1">
+                            <Users className="w-2.5 h-2.5" />
+                            {group.subscriberCount} subs
+                          </span>
+                        )}
+                        <span>{group.slots.length} slot{group.slots.length !== 1 ? 's' : ''}</span>
+                        {nlCounts.pending > 0 && <span className="font-semibold text-orange-600">{nlCounts.pending} pending</span>}
+                        {nlCounts.approved > 0 && <span className="font-semibold text-teal-600">{nlCounts.approved} approved</span>}
+                        {nlCounts.live > 0 && <span className="font-semibold text-emerald-600">{nlCounts.live} live</span>}
+                        {nlCounts.errors > 0 && <span className="font-semibold text-red-500">{nlCounts.errors} error{nlCounts.errors !== 1 ? 's' : ''}</span>}
+                      </div>
+                    </div>
+
+                    {/* Group quick actions */}
+                    <div className="flex items-center gap-1.5 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                      {nlCounts.pending > 0 && (
+                        <button
+                          onClick={async () => {
+                            setBulkLoading(true);
+                            for (const s of group.slots.filter(x => x.status === 'pending_review' || x.status === 'needs_review')) {
+                              await supabase.from('csv_upload_slots')
+                                .update({ status: 'approved', reviewed_at: new Date().toISOString(), reviewed_by: 'Admin', updated_at: new Date().toISOString() })
+                                .eq('id', s.id);
+                            }
+                            await loadSlots(); setBulkLoading(false); onRefreshStats?.();
+                          }}
+                          disabled={bulkLoading}
+                          className="flex items-center gap-1 text-[10px] font-semibold text-teal-700 bg-white border border-teal-200 hover:bg-teal-50 px-2 py-1 rounded-lg transition-all"
+                          title="Approve all pending in this newsletter"
+                        >
+                          <Check className="w-2.5 h-2.5" /> Approve all
+                        </button>
+                      )}
+                    </div>
+
+                    <TrendingUp className="w-3 h-3 text-slate-300 flex-shrink-0" />
+                    {isCollapsed ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronUp className="w-3.5 h-3.5 text-slate-400" />}
                   </div>
 
                   {!isCollapsed && (
                     <div className="divide-y divide-slate-50">
-                      {nlSlots.map(slot => (
+                      {group.slots.map(slot => (
                         <SlotRow
                           key={slot.id}
                           slot={slot}
                           selected={selectedIds.has(slot.id)}
-                          updating={updatingSlot === slot.id}
+                          updating={updatingSlot === slot.id || bulkLoading}
                           onToggleSelect={() => setSelectedIds(prev => { const n = new Set(prev); n.has(slot.id) ? n.delete(slot.id) : n.add(slot.id); return n; })}
                           onUpdateStatus={handleUpdateStatus}
                           onPublish={handlePublish}
+                          onApproveAndPublish={handleApproveAndPublish}
                           onViewDetails={() => onSelectSlot(slot)}
                         />
                       ))}
@@ -426,16 +522,17 @@ export default function BatchDetail({
                   <th className="px-3 py-2.5 text-left font-semibold text-slate-500 text-[11px] uppercase tracking-wide">Send Date</th>
                   <th className="px-3 py-2.5 text-left font-semibold text-slate-500 text-[11px] uppercase tracking-wide">Deadline</th>
                   <th className="px-3 py-2.5 text-left font-semibold text-slate-500 text-[11px] uppercase tracking-wide">Status</th>
-                  <th className="px-3 py-2.5 w-28" />
+                  <th className="px-3 py-2.5 w-32" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {filteredSlots.map(slot => {
                   const tCfg = TAG_CONFIG[slot.import_tag ?? 'new'];
                   const sCfg = STATUS_CONFIG[slot.status];
+                  const hasErrors = slot.validation_errors?.some(e => e.severity === 'error');
                   return (
                     <tr key={slot.id}
-                      className={`group transition-colors ${slot.status === 'rejected' ? 'opacity-40' : 'hover:bg-slate-50/60'}`}>
+                      className={`group transition-colors ${slot.status === 'rejected' ? 'opacity-40' : hasErrors ? 'bg-red-50/20' : 'hover:bg-slate-50/60'}`}>
                       <td className="px-3 py-2.5">
                         <input type="checkbox" checked={selectedIds.has(slot.id)}
                           onChange={() => setSelectedIds(prev => { const n = new Set(prev); n.has(slot.id) ? n.delete(slot.id) : n.add(slot.id); return n; })}
@@ -452,18 +549,30 @@ export default function BatchDetail({
                       <td className="px-3 py-2.5 text-slate-500">{slot.send_date || '—'}</td>
                       <td className="px-3 py-2.5 text-slate-500">{slot.deadline || '—'}</td>
                       <td className="px-3 py-2.5">
-                        <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full ${sCfg.pill}`}>
-                          {sCfg.label}
-                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className={`inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full ${sCfg.pill}`}>
+                            {sCfg.label}
+                          </span>
+                          {hasErrors && <AlertCircle className="w-3 h-3 text-red-400" />}
+                        </div>
                       </td>
                       <td className="px-3 py-2.5">
                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button onClick={() => onSelectSlot(slot)} className="p-1 hover:bg-slate-100 rounded-lg text-slate-400" title="View details"><Eye className="w-3.5 h-3.5" /></button>
                           {(slot.status === 'pending_review' || slot.status === 'needs_review') && (
-                            <button onClick={() => handleUpdateStatus(slot.id, 'approved')} className="p-1 hover:bg-teal-50 rounded-lg text-slate-400 hover:text-teal-600" title="Approve"><CheckCircle className="w-3.5 h-3.5" /></button>
+                            <>
+                              <button onClick={() => handleUpdateStatus(slot.id, 'approved')} className="p-1 hover:bg-teal-50 rounded-lg text-slate-400 hover:text-teal-600" title="Approve"><CheckCircle className="w-3.5 h-3.5" /></button>
+                              <button onClick={() => handleApproveAndPublish(slot)} className="p-1 hover:bg-emerald-50 rounded-lg text-slate-400 hover:text-emerald-600" title="Approve & Publish"><Zap className="w-3.5 h-3.5" /></button>
+                            </>
                           )}
                           {slot.status === 'approved' && (
                             <button onClick={() => handlePublish(slot)} className="p-1 hover:bg-emerald-50 rounded-lg text-slate-400 hover:text-emerald-600" title="Publish"><Send className="w-3.5 h-3.5" /></button>
+                          )}
+                          {slot.status === 'published' && slot.listing_id && (
+                            <a href={`/listing/${slot.listing_id}`} target="_blank" rel="noopener noreferrer"
+                              className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-700" title="View live listing">
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </a>
                           )}
                           {slot.status !== 'rejected' && slot.status !== 'published' && slot.status !== 'expired' && (
                             <button onClick={() => handleUpdateStatus(slot.id, 'rejected')} className="p-1 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-500" title="Reject"><Ban className="w-3.5 h-3.5" /></button>
@@ -485,7 +594,7 @@ export default function BatchDetail({
 // ── Slot row (grouped view) ───────────────────────────────────────────────────
 
 function SlotRow({
-  slot, selected, updating, onToggleSelect, onUpdateStatus, onPublish, onViewDetails,
+  slot, selected, updating, onToggleSelect, onUpdateStatus, onPublish, onApproveAndPublish, onViewDetails,
 }: {
   slot: ImportSlot;
   selected: boolean;
@@ -493,18 +602,20 @@ function SlotRow({
   onToggleSelect: () => void;
   onUpdateStatus: (id: string, status: ImportSlot['status']) => void;
   onPublish: (slot: ImportSlot) => void;
+  onApproveAndPublish: (slot: ImportSlot) => void;
   onViewDetails: () => void;
 }) {
   const tCfg = TAG_CONFIG[slot.import_tag ?? 'new'];
   const sCfg = STATUS_CONFIG[slot.status];
   const hasErrors = slot.validation_errors?.some(e => e.severity === 'error');
+  const hasWarnings = slot.validation_errors?.some(e => e.severity === 'warning');
 
   return (
-    <div className={`flex items-center gap-0 group transition-colors ${slot.status === 'rejected' ? 'opacity-40' : 'hover:bg-slate-50/50'}`}>
+    <div className={`flex items-center gap-0 group transition-colors ${slot.status === 'rejected' ? 'opacity-40' : hasErrors ? 'bg-red-50/30' : 'hover:bg-slate-50/50'}`}>
       {/* Status bar */}
       <div className={`w-[3px] self-stretch flex-shrink-0 ${sCfg.bar}`} />
 
-      <div className="flex items-center gap-3 flex-1 min-w-0 px-4 py-2.5">
+      <div className="flex items-center gap-3 flex-1 min-w-0 px-4 py-3">
         <input type="checkbox" checked={selected} onChange={onToggleSelect} className="rounded border-slate-300 flex-shrink-0" />
 
         {/* Import tag */}
@@ -521,15 +632,26 @@ function SlotRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-[12px] font-semibold text-slate-900 truncate">{slot.opportunity_type || 'Sponsored Slot'}</p>
-            <p className="text-[12px] font-bold text-slate-900">{slot.original_price ? `$${slot.original_price.replace(/[^0-9.]/g, '')}` : '—'}</p>
-            {slot.slots_available && (
-              <span className="text-[10px] text-slate-400">{slot.slots_available} slot{parseInt(slot.slots_available) !== 1 ? 's' : ''}</span>
+            <p className="text-[12px] font-bold text-emerald-700">{slot.original_price ? `$${slot.original_price.replace(/[^0-9.]/g, '')}` : '—'}</p>
+            {slot.slots_available && parseInt(slot.slots_available) > 1 && (
+              <span className="text-[10px] text-slate-400">{slot.slots_available} slots</span>
             )}
           </div>
           <div className="flex items-center gap-3 mt-0.5 text-[10px] text-slate-400">
-            {slot.send_date && <span>Send: {slot.send_date}</span>}
-            {slot.deadline && <span>Deadline: {slot.deadline}</span>}
+            {slot.send_date && <span>Send: <span className="font-medium text-slate-600">{slot.send_date}</span></span>}
+            {slot.deadline && <span>Deadline: <span className="font-medium text-slate-600">{slot.deadline}</span></span>}
           </div>
+          {/* Validation issues inline */}
+          {(hasErrors || hasWarnings) && (
+            <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+              {slot.validation_errors?.slice(0, 3).map((e, i) => (
+                <span key={i} className={`inline-flex items-center gap-1 text-[9px] font-medium px-1.5 py-0.5 rounded ${e.severity === 'error' ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>
+                  {e.severity === 'error' ? <AlertCircle className="w-2 h-2" /> : <AlertTriangle className="w-2 h-2" />}
+                  {e.field}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Status pill */}
@@ -537,13 +659,8 @@ function SlotRow({
           {sCfg.label}
         </span>
 
-        {/* Validation warning */}
-        {hasErrors && (
-          <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" title="Has validation errors" />
-        )}
-
         {/* Row actions */}
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex items-center gap-0.5 flex-shrink-0">
           {updating ? (
             <Loader2 className="w-3.5 h-3.5 text-slate-300 animate-spin" />
           ) : (
@@ -552,15 +669,25 @@ function SlotRow({
                 <Eye className="w-3.5 h-3.5" />
               </button>
               {(slot.status === 'pending_review' || slot.status === 'needs_review') && (
-                <button onClick={() => onUpdateStatus(slot.id, 'approved')}
-                  className="p-1.5 hover:bg-teal-50 rounded-lg text-slate-400 hover:text-teal-600 transition-colors" title="Approve">
-                  <CheckCircle className="w-3.5 h-3.5" />
-                </button>
+                <>
+                  <button onClick={() => onUpdateStatus(slot.id, 'approved')}
+                    className="p-1.5 hover:bg-teal-50 rounded-lg text-slate-400 hover:text-teal-600 transition-colors" title="Approve only">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                  </button>
+                  {!hasErrors && (
+                    <button onClick={() => onApproveAndPublish(slot)}
+                      className="flex items-center gap-1 px-2 py-1 hover:bg-emerald-600 rounded-lg text-slate-400 hover:text-white bg-transparent hover:shadow-sm transition-all text-[10px] font-semibold" title="Approve & Publish immediately">
+                      <Zap className="w-3 h-3" />
+                      <span className="hidden sm:inline">Publish</span>
+                    </button>
+                  )}
+                </>
               )}
               {slot.status === 'approved' && (
                 <button onClick={() => onPublish(slot)}
-                  className="p-1.5 hover:bg-emerald-50 rounded-lg text-slate-400 hover:text-emerald-600 transition-colors" title="Publish live">
-                  <Send className="w-3.5 h-3.5" />
+                  className="flex items-center gap-1 px-2 py-1 bg-emerald-50 hover:bg-emerald-600 rounded-lg text-emerald-600 hover:text-white transition-all text-[10px] font-semibold border border-emerald-200 hover:border-emerald-600" title="Publish live">
+                  <Send className="w-3 h-3" />
+                  <span className="hidden sm:inline">Publish</span>
                 </button>
               )}
               {slot.status === 'published' && slot.listing_id && (

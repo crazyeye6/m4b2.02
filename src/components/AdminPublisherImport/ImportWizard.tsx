@@ -508,15 +508,30 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
           {/* ── Step 3: Review ── */}
           {step === 3 && (
             <div>
-              {/* Summary bar */}
-              <div className="flex items-start justify-between gap-4 mb-5">
-                <div>
+              {/* Summary header */}
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex-1 min-w-0">
                   <h3 className="text-[16px] font-bold text-slate-900">
-                    {rows.length} rows — <span className="text-teal-600">{publisher?.newsletter_name}</span>
+                    Review <span className="text-teal-600">{rows.length} slot{rows.length !== 1 ? 's' : ''}</span>
+                    {' '}<span className="text-slate-400 font-normal">for</span>{' '}
+                    {publisher?.newsletter_name}
                   </h3>
-                  <p className="text-[12px] text-slate-400 mt-0.5">{fileName}</p>
+                  <p className="text-[11px] text-slate-400 mt-0.5 truncate">{fileName}</p>
+
+                  {/* Newsletter + slot counts */}
+                  <div className="flex items-center gap-3 mt-2 text-[11px] text-slate-500 flex-wrap">
+                    <span className="font-medium">{grouped.size} publisher{grouped.size !== 1 ? 's' : ''} detected</span>
+                    <span className="text-slate-300">·</span>
+                    <span className="font-medium">
+                      {Array.from(grouped.values()).reduce((s, nl) => s + nl.size, 0)} newsletter{Array.from(grouped.values()).reduce((s, nl) => s + nl.size, 0) !== 1 ? 's' : ''}
+                    </span>
+                    <span className="text-slate-300">·</span>
+                    <span className="font-medium">{rows.length} slot{rows.length !== 1 ? 's' : ''}</span>
+                  </div>
+
+                  {/* Tag pills */}
                   <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
-                    {(Object.entries(tagCounts) as [ImportTag, number][]).map(([tag, count]) => {
+                    {(Object.entries(tagCounts) as [ImportTag, number][]).filter(([, c]) => c > 0).map(([tag, count]) => {
                       const cfg = TAG_CONFIG[tag];
                       return (
                         <span key={tag} className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${cfg.bg} ${cfg.border} ${cfg.color}`}>
@@ -527,12 +542,12 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
                     })}
                     {errorCount > 0 && (
                       <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-red-50 border border-red-200 text-red-700">
-                        <AlertCircle className="w-3 h-3" /> {errorCount} errors
+                        <AlertCircle className="w-3 h-3" /> {errorCount} error{errorCount !== 1 ? 's' : ''}
                       </span>
                     )}
                     {warningCount > 0 && (
                       <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700">
-                        <AlertTriangle className="w-3 h-3" /> {warningCount} warnings
+                        <AlertTriangle className="w-3 h-3" /> {warningCount} warning{warningCount !== 1 ? 's' : ''}
                       </span>
                     )}
                   </div>
@@ -557,25 +572,36 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
                       <Trash2 className="w-3.5 h-3.5" /> Delete {selectedRows.size}
                     </button>
                   )}
-                  <button onClick={() => { setFileName(''); setRows([]); setStep(2); }}
+                  <button onClick={() => { setFileName(''); setRows([]); setPubValidation(null); setStep(2); }}
                     className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium border border-slate-200 px-3 py-1.5 rounded-xl hover:border-slate-300 transition-all">
                     <RotateCcw className="w-3.5 h-3.5" /> Re-upload
                   </button>
                 </div>
               </div>
 
-              {/* Error summary */}
+              {/* Error summary — prominent */}
               {errorCount > 0 && (
-                <div className="mb-4 p-3.5 bg-red-50 border border-red-200 rounded-xl">
-                  <p className="text-[12px] font-semibold text-red-800 mb-2">
-                    {errorCount} row{errorCount !== 1 ? 's' : ''} with errors — will be saved as "Needs Review"
-                  </p>
-                  {rows.filter(r => r.hasErrors).map(r => (
-                    <div key={r.rowIndex} className="flex items-start gap-2 mt-1">
-                      <span className="text-[10px] font-bold text-red-400 w-12 flex-shrink-0">Row {r.rowIndex}</span>
-                      <p className="text-[11px] text-red-700">{r.errors.filter(e => e.severity === 'error').map(e => e.message).join(' · ')}</p>
-                    </div>
-                  ))}
+                <div className="mb-4 border border-red-200 bg-red-50 rounded-xl overflow-hidden">
+                  <div className="flex items-center gap-2 px-3.5 py-2.5 border-b border-red-200 bg-red-100/50">
+                    <AlertCircle className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
+                    <p className="text-[12px] font-semibold text-red-800">
+                      {errorCount} row{errorCount !== 1 ? 's' : ''} with validation errors — will be flagged as "Needs Review" and not auto-published
+                    </p>
+                  </div>
+                  <div className="px-3.5 py-2 space-y-1">
+                    {rows.filter(r => r.hasErrors).map(r => (
+                      <div key={r.rowIndex} className="flex items-start gap-2">
+                        <span className="text-[10px] font-bold text-red-400 w-12 flex-shrink-0 pt-0.5">Row {r.rowIndex}</span>
+                        <div className="flex flex-wrap gap-1">
+                          {r.errors.filter(e => e.severity === 'error').map((e, i) => (
+                            <span key={i} className="text-[10px] text-red-700 bg-white border border-red-100 px-1.5 py-0.5 rounded-md">
+                              {e.field}: {e.message}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -899,6 +925,3 @@ function GroupedSlotRow({
     </div>
   );
 }
-
-
-export default ImportWizard
