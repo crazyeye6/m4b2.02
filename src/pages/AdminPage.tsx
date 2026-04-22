@@ -10,6 +10,7 @@ import {
 import { parseEmailBody, confidenceLabel, fieldConfidenceColor } from '../lib/emailParser';
 import { sendAdminSlotPublishedEmail } from '../lib/email';
 import AdminPublisherImport from '../components/AdminPublisherImport';
+import { useAuth } from '../context/AuthContext';
 
 interface EmailSubmission {
   id: string;
@@ -99,7 +100,7 @@ interface AdminPageProps {
   onBack: () => void;
 }
 
-type AdminTab = 'bookings' | 'refunds' | 'email_submissions' | 'csv_uploads' | 'publisher_imports' | 'emails' | 'sellers' | 'settings';
+type AdminTab = 'bookings' | 'refunds' | 'email_submissions' | 'csv_uploads' | 'publisher_imports' | 'emails' | 'sellers' | 'name_changes' | 'settings';
 
 interface ManagedSeller {
   id: string;
@@ -365,6 +366,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             ['publisher_imports', 'Publisher Imports'],
             ['emails', 'Resend Emails'],
             ['sellers', 'Managed Sellers'],
+            ['name_changes', 'Name Changes'],
             ['settings', 'Settings'],
           ] as [AdminTab, string][]).map(([key, label]) => (
             <button
@@ -417,6 +419,8 @@ export default function AdminPage({ onBack }: AdminPageProps) {
           <EmailsPanel />
         ) : tab === 'sellers' ? (
           <SellersPanel sellers={managedSellers} onRefresh={fetchData} />
+        ) : tab === 'name_changes' ? (
+          <NameChangeRequestsPanel />
         ) : (
           <SettingsPanel />
         )}
@@ -1939,6 +1943,190 @@ function SettingsPanel() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+interface NameChangeRequest {
+  id: string;
+  entity_type: 'publisher' | 'newsletter';
+  entity_id: string;
+  current_name: string;
+  requested_name: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  seller_user_id: string;
+  seller_email: string;
+  admin_notes: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+}
+
+function NameChangeRequestsPanel() {
+  const { user } = useAuth();
+  const [requests, setRequests] = useState<NameChangeRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reviewing, setReviewing] = useState<string | null>(null);
+  const [adminNotes, setAdminNotes] = useState('');
+
+  const fetchRequests = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('name_change_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setRequests((data as NameChangeRequest[]) ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchRequests(); }, [fetchRequests]);
+
+  const decide = async (id: string, status: 'approved' | 'rejected') => {
+    setReviewing(id);
+    const req = requests.find(r => r.id === id);
+    if (!req) return;
+
+    await supabase.from('name_change_requests').update({
+      status,
+      admin_notes: adminNotes.trim() || null,
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: user?.email ?? '',
+    }).eq('id', id);
+
+    if (status === 'approved') {
+      if (req.entity_type === 'publisher') {
+        await supabase.from('media_profiles').update({ newsletter_name: req.requested_name }).eq('id', req.entity_id);
+      } else {
+        await supabase.from('newsletters').update({ name: req.requested_name }).eq('id', req.entity_id);
+      }
+    }
+
+    setReviewing(null);
+    setAdminNotes('');
+    await fetchRequests();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 text-[#1d1d1f] animate-spin" />
+      </div>
+    );
+  }
+
+  const pending = requests.filter(r => r.status === 'pending');
+  const decided = requests.filter(r => r.status !== 'pending');
+
+  return (
+    <div className="max-w-3xl space-y-6">
+      <div>
+        <h2 className="text-[#1d1d1f] font-semibold text-base mb-0.5">Name Change Requests</h2>
+        <p className="text-[#6e6e73] text-sm">Review and approve or reject seller requests to change publisher or newsletter names.</p>
+      </div>
+
+      {pending.length === 0 && (
+        <div className="bg-white border border-black/[0.06] rounded-3xl px-6 py-12 text-center">
+          <CheckCircle className="w-10 h-10 text-green-400 mx-auto mb-3" />
+          <p className="text-[#1d1d1f] font-semibold text-sm">All caught up</p>
+          <p className="text-[#6e6e73] text-sm mt-1">No pending name change requests.</p>
+        </div>
+      )}
+
+      {pending.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider">Pending ({pending.length})</p>
+          {pending.map(req => (
+            <div key={req.id} className="bg-white border border-orange-200 rounded-3xl overflow-hidden shadow-sm">
+              <div className="px-6 py-4 border-b border-black/[0.06] flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center shrink-0">
+                    <Clock className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full">
+                        {req.entity_type === 'publisher' ? 'Publisher name' : 'Newsletter name'}
+                      </span>
+                      <span className="text-[#aeaeb2] text-xs">{req.seller_email}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <span className="text-[#6e6e73] text-sm line-through">{req.current_name}</span>
+                      <span className="text-[#aeaeb2] text-xs">→</span>
+                      <span className="text-[#1d1d1f] text-sm font-semibold">{req.requested_name}</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[#aeaeb2] text-xs shrink-0">{new Date(req.created_at).toLocaleDateString()}</span>
+              </div>
+              <div className="px-6 py-4 space-y-3">
+                <div>
+                  <p className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Reason</p>
+                  <p className="text-[#1d1d1f] text-sm">{req.reason}</p>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1.5">Admin notes (optional)</label>
+                  <textarea
+                    value={adminNotes}
+                    onChange={e => setAdminNotes(e.target.value)}
+                    rows={2}
+                    placeholder="Add a note visible to the seller..."
+                    className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all resize-none"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => decide(req.id, 'approved')}
+                    disabled={reviewing === req.id}
+                    className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-40 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all"
+                  >
+                    {reviewing === req.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
+                    Approve &amp; Apply
+                  </button>
+                  <button
+                    onClick={() => decide(req.id, 'rejected')}
+                    disabled={reviewing === req.id}
+                    className="flex items-center gap-1.5 bg-[#f5f5f7] border border-black/[0.08] hover:border-black/[0.18] disabled:opacity-40 text-[#6e6e73] font-semibold text-sm px-5 py-2.5 rounded-xl transition-all"
+                  >
+                    <ThumbsDown className="w-4 h-4" />
+                    Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {decided.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider">History ({decided.length})</p>
+          {decided.map(req => (
+            <div key={req.id} className="bg-white border border-black/[0.06] rounded-2xl px-5 py-3 flex items-center gap-4">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${req.status === 'approved' ? 'bg-green-100' : 'bg-[#f5f5f7]'}`}>
+                {req.status === 'approved'
+                  ? <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+                  : <XCircle className="w-3.5 h-3.5 text-[#aeaeb2]" />
+                }
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#aeaeb2]">
+                    {req.entity_type === 'publisher' ? 'Publisher' : 'Newsletter'}
+                  </span>
+                  <span className="text-[#6e6e73] text-sm line-through truncate">{req.current_name}</span>
+                  <span className="text-[#aeaeb2] text-xs">→</span>
+                  <span className="text-[#1d1d1f] text-sm font-medium truncate">{req.requested_name}</span>
+                </div>
+                <p className="text-[#aeaeb2] text-xs mt-0.5">{req.seller_email} · {new Date(req.created_at).toLocaleDateString()}</p>
+              </div>
+              <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${req.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-[#f5f5f7] text-[#aeaeb2]'}`}>
+                {req.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

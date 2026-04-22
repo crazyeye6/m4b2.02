@@ -56,8 +56,6 @@ export default function NewsletterManager({ onCreateListingForNewsletter, onNews
 
   const handleUpdate = async (id: string, form: NewsletterFormData) => {
     await supabase.from('newsletters').update({
-      name: form.name.trim(),
-      publisher_name: form.publisher_name.trim(),
       subscriber_count: form.subscriber_count ? parseInt(form.subscriber_count) : null,
       avg_open_rate: form.avg_open_rate.trim() || null,
       niche: form.niche || null,
