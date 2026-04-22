@@ -51,7 +51,7 @@ const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: strin
 
 export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardProps) {
   const { user, profile, signOut, refreshProfile } = useAuth();
-  const [tab, setTab] = useState<DashTab>('listings');
+  const [tab, setTab] = useState<DashTab>('csv_upload');
   const [listings, setListings] = useState<Listing[]>([]);
   const [bookings, setBookings] = useState<DepositBooking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,11 +144,11 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
   };
 
   const tabs: [DashTab, string][] = [
+    ['csv_upload', 'Weekly Upload'],
     ['listings', 'My Listings'],
     ['newsletters', 'Newsletters'],
     ['bookings', 'Bookings'],
     ['media', 'Media Profiles'],
-    ['csv_upload', 'Weekly Upload'],
     ['profile', 'Profile'],
   ];
 
