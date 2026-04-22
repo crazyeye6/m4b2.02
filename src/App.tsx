@@ -535,7 +535,7 @@ export default function App() {
               View all {stats.liveCount}
             </button>
           </div>
-          <ListingsGrid listings={listings.slice(0, 2)} loading={loading} onSecure={handleSecure} onDetails={handleViewListing} onViewMediaProfile={handleViewMediaProfile} columns={2} viewMode="grid" sort={filters.sort} />
+          <ListingsGrid listings={listings.slice(0, 4)} loading={loading} onSecure={handleSecure} onDetails={handleViewListing} onViewMediaProfile={handleViewMediaProfile} columns={1} viewMode="list" sort={filters.sort} />
         </section>
 
         <SmartMatchCallout isLoggedIn={!!profile} onSignIn={() => setShowAuthModal(true)} onDashboard={handleDashboard} />
