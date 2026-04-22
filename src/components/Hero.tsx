@@ -228,7 +228,15 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
             transition: 'opacity 0.65s ease 0.2s, transform 0.65s ease 0.2s',
           }}
         >
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3 text-center">Discovery: Organized</p>
+          <div className="text-center mb-8">
+            <p className="text-[11px] font-bold text-teal-600 uppercase tracking-widest mb-3">The smarter way to buy newsletter ads</p>
+            <h2 className="text-[36px] sm:text-[44px] font-extrabold text-slate-900 leading-[1.08] tracking-[-0.03em] mb-3">
+              Discovery:<br className="sm:hidden" /> <span className="text-teal-600">Organized.</span>
+            </h2>
+            <p className="text-[16px] text-slate-500 max-w-[480px] mx-auto leading-relaxed">
+              Every open ad slot, every deadline, every price — in one place. No cold emails. No spreadsheets. Just find, book, and go.
+            </p>
+          </div>
           <div className="bg-white rounded-2xl border border-teal-200 shadow-[0_8px_40px_rgba(20,184,166,0.10)] overflow-hidden">
             {/* Header row: logo + name/badges + stars */}
             <div className="px-6 pt-5 pb-4 flex items-center gap-4">
