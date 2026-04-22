@@ -46,8 +46,8 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
         }}
       />
 
-      <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-14 lg:pt-32 lg:pb-20">
-        <div className="grid lg:grid-cols-[420px_1fr] xl:grid-cols-[460px_1fr] gap-12 xl:gap-16 items-start">
+      <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-10 sm:pt-28 sm:pb-14 lg:pt-32 lg:pb-20">
+        <div className="grid lg:grid-cols-[420px_1fr] xl:grid-cols-[460px_1fr] gap-8 sm:gap-12 xl:gap-16 items-start">
 
           {/* LEFT -- Copy */}
           <div
@@ -119,17 +119,28 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
 
           {/* RIGHT -- Newsletter preview with sponsored ad */}
           <div
-            className="hidden lg:flex flex-col gap-4"
+            className="flex flex-col gap-4"
             style={{
               opacity: visible ? 1 : 0,
               transform: visible ? 'translateY(0)' : 'translateY(30px)',
               transition: 'opacity 0.65s ease 0.14s, transform 0.65s ease 0.14s',
             }}
           >
+            {/* Section label */}
+            <div className="text-center mb-1 lg:mb-2">
+              <p className="text-[10px] font-bold text-teal-600 uppercase tracking-widest mb-2">The smarter way to buy newsletter ads</p>
+              <h2 className="text-[28px] sm:text-[36px] lg:text-[40px] font-extrabold text-slate-900 leading-[1.08] tracking-[-0.03em] mb-2">
+                Discovery: <span className="text-teal-600">Organized.</span>
+              </h2>
+              <p className="text-[14px] sm:text-[15px] text-slate-500 max-w-[420px] mx-auto leading-relaxed">
+                Every open ad slot, every deadline, every price — in one place. No cold emails. No spreadsheets.
+              </p>
+            </div>
+
             {/* Simulated newsletter email */}
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.08)]">
-              {/* Email chrome bar */}
-              <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-3">
+              {/* Email chrome bar — hidden on smallest screens to save space */}
+              <div className="hidden sm:flex px-4 py-2.5 bg-slate-50 border-b border-slate-200 items-center gap-3">
                 <div className="flex gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
                   <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
@@ -143,50 +154,51 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
               </div>
 
               {/* Email header */}
-              <div className="px-5 pt-4 pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-[11px] font-bold">SF</span>
+              <div className="px-4 sm:px-5 pt-3 sm:pt-4 pb-2 sm:pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2 sm:gap-3 mb-1.5 sm:mb-2">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                    <span className="text-white text-[10px] sm:text-[11px] font-bold">SF</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[12px] font-bold text-slate-800">SaaS Founder Weekly</p>
-                      <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-medium">62,400 subscribers</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                      <p className="text-[11px] sm:text-[12px] font-bold text-slate-800">SaaS Founder Weekly</p>
+                      <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-medium hidden sm:inline">62,400 subscribers</span>
                     </div>
-                    <p className="text-[10px] text-slate-400">to me &middot; Tuesday 9:04 AM</p>
+                    <p className="text-[10px] text-slate-400">to me &middot; Tue 9:04 AM</p>
                   </div>
-                  <Star className="w-4 h-4 text-amber-400 fill-amber-400 flex-shrink-0" />
+                  <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 fill-amber-400 flex-shrink-0" />
                 </div>
-                <p className="text-[13px] font-semibold text-slate-700">#247 &mdash; How to scale your GTM motion in 2026</p>
+                <p className="text-[11px] sm:text-[13px] font-semibold text-slate-700">#247 &mdash; How to scale your GTM motion in 2026</p>
               </div>
 
               {/* Newsletter body content */}
-              <div className="px-5 py-4 space-y-3">
-                {/* Fake text lines */}
-                <div className="space-y-1.5">
-                  <div className="h-2.5 bg-slate-100 rounded-full w-full" />
-                  <div className="h-2.5 bg-slate-100 rounded-full w-[92%]" />
-                  <div className="h-2.5 bg-slate-100 rounded-full w-[78%]" />
+              <div className="px-4 sm:px-5 py-3 sm:py-4 space-y-2.5 sm:space-y-3">
+                {/* Fake text lines — fewer on mobile */}
+                <div className="space-y-1.5 hidden sm:block">
+                  <div className="h-2 bg-slate-100 rounded-full w-full" />
+                  <div className="h-2 bg-slate-100 rounded-full w-[92%]" />
+                  <div className="h-2 bg-slate-100 rounded-full w-[78%]" />
                 </div>
 
                 {/* Sponsored ad placement -- the hero moment */}
                 <div
-                  className="relative rounded-xl border-2 border-teal-200 bg-gradient-to-br from-teal-50/80 to-emerald-50/50 p-4 my-2"
+                  className="relative rounded-xl border-2 border-teal-200 bg-gradient-to-br from-teal-50/80 to-emerald-50/50 p-3 sm:p-4 mt-1 sm:my-2"
                   style={{ animation: 'adGlow 3s ease-in-out infinite' }}
                 >
-                  <div className="absolute -top-2.5 left-4">
+                  <div className="absolute -top-2.5 left-3 sm:left-4">
                     <span className="text-[9px] font-bold text-teal-600 bg-teal-100 px-2 py-0.5 rounded-full uppercase tracking-widest border border-teal-200">
                       Your Ad Here
                     </span>
                   </div>
-                  <div className="mt-1.5 flex gap-3">
-                    <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-[18px] font-bold">A</span>
+                  <div className="mt-1.5 flex gap-2.5 sm:gap-3">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-[15px] sm:text-[18px] font-bold">A</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-bold text-slate-800 mb-0.5">Acme Analytics — Know your customers better</p>
-                      <p className="text-[10px] text-slate-500 leading-relaxed">Join 4,000+ SaaS teams using Acme to understand user behavior and reduce churn by 35%. Start free today.</p>
-                      <div className="mt-2 inline-flex items-center gap-1.5 bg-slate-800 text-white text-[9px] font-bold px-2.5 py-1 rounded-md">
+                      <p className="text-[11px] sm:text-[12px] font-bold text-slate-800 mb-0.5">Acme Analytics — Know your customers better</p>
+                      <p className="text-[10px] text-slate-500 leading-relaxed hidden sm:block">Join 4,000+ SaaS teams using Acme to understand user behavior and reduce churn by 35%. Start free today.</p>
+                      <p className="text-[10px] text-slate-500 leading-relaxed sm:hidden">Understand user behavior and reduce churn by 35%.</p>
+                      <div className="mt-1.5 sm:mt-2 inline-flex items-center gap-1.5 bg-slate-800 text-white text-[9px] font-bold px-2.5 py-1 rounded-md">
                         Try Acme Free <ArrowRight className="w-2.5 h-2.5" />
                       </div>
                     </div>
@@ -195,37 +207,37 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
 
                 {/* More fake text */}
                 <div className="space-y-1.5">
-                  <div className="h-2.5 bg-slate-100 rounded-full w-[88%]" />
-                  <div className="h-2.5 bg-slate-100 rounded-full w-full" />
-                  <div className="h-2.5 bg-slate-100 rounded-full w-[65%]" />
+                  <div className="h-2 bg-slate-100 rounded-full w-[88%]" />
+                  <div className="h-2 bg-slate-100 rounded-full w-full" />
+                  <div className="h-2 bg-slate-100 rounded-full w-[65%] hidden sm:block" />
                 </div>
               </div>
             </div>
 
             {/* Performance metrics strip */}
-            <div className="grid grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
               {[
-                { icon: <Eye className="w-3.5 h-3.5 text-teal-600" />, label: 'Open rate', value: '47.2%', bg: 'bg-teal-50', border: 'border-teal-100' },
-                { icon: <MousePointerClick className="w-3.5 h-3.5 text-sky-600" />, label: 'Click rate', value: '4.8%', bg: 'bg-sky-50', border: 'border-sky-100' },
-                { icon: <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />, label: 'Est. ROI', value: '6.2x', bg: 'bg-emerald-50', border: 'border-emerald-100' },
+                { icon: <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-teal-600" />, label: 'Open rate', value: '47.2%', bg: 'bg-teal-50', border: 'border-teal-100' },
+                { icon: <MousePointerClick className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-600" />, label: 'Click rate', value: '4.8%', bg: 'bg-sky-50', border: 'border-sky-100' },
+                { icon: <TrendingUp className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-600" />, label: 'Est. ROI', value: '6.2x', bg: 'bg-emerald-50', border: 'border-emerald-100' },
               ].map((m, i) => (
                 <div
                   key={m.label}
-                  className={`rounded-xl border ${m.border} ${m.bg} p-3 transition-all duration-500 ${
+                  className={`rounded-xl border ${m.border} ${m.bg} p-2.5 sm:p-3 transition-all duration-500 ${
                     statStep === i ? 'scale-[1.03] shadow-md' : 'shadow-sm'
                   }`}
                 >
-                  <div className="flex items-center gap-1.5 mb-1.5">
+                  <div className="flex items-center gap-1 sm:gap-1.5 mb-1 sm:mb-1.5">
                     {m.icon}
-                    <span className="text-[10px] text-slate-500 font-medium">{m.label}</span>
+                    <span className="text-[9px] sm:text-[10px] text-slate-500 font-medium">{m.label}</span>
                   </div>
-                  <p className="text-[20px] font-bold text-slate-800 tracking-tight leading-none">{m.value}</p>
+                  <p className="text-[17px] sm:text-[20px] font-bold text-slate-800 tracking-tight leading-none">{m.value}</p>
                 </div>
               ))}
             </div>
 
             {/* Social proof bar */}
-            <div className="flex items-center justify-between px-1">
+            <div className="flex items-center justify-between px-1 flex-wrap gap-y-2">
               <div className="flex items-center gap-2">
                 <div className="flex -space-x-1.5">
                   {[
@@ -240,15 +252,15 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
                   ))}
                 </div>
                 <p className="text-[10px] text-slate-400 font-medium">
-                  <span className="text-slate-600 font-semibold">2,400+</span> sponsors have booked slots
+                  <span className="text-slate-600 font-semibold">2,400+</span> sponsors booked
                 </p>
               </div>
               <div className="flex items-center gap-1.5">
                 <BarChart3 className="w-3 h-3 text-slate-300" />
                 <span className="text-[10px] text-slate-400 font-medium">
-                  <span className="text-emerald-600 font-semibold">{liveCount > 0 ? liveCount : '200+'}</span> slots live now
+                  <span className="text-emerald-600 font-semibold">{liveCount > 0 ? liveCount : '200+'}</span> slots live
                 </span>
-                <Users className="w-3 h-3 text-slate-300 ml-2" />
+                <Users className="w-3 h-3 text-slate-300 ml-1.5" />
                 <span className="text-[10px] text-slate-400 font-medium">
                   <span className="text-slate-600 font-semibold">340+</span> publishers
                 </span>
