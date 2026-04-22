@@ -400,32 +400,13 @@ export default function AdminPublisherImport({ onRefreshStats }: Props) {
               <span className="text-[13px] font-semibold text-slate-700">Publisher Profiles</span>
               <span className="text-[11px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">{publishers.length}</span>
             </div>
-            <button
-              onClick={() => setView('import')}
-              className="flex items-center gap-1.5 text-[11px] font-semibold text-teal-700 bg-teal-50 border border-teal-200 hover:bg-teal-100 px-2.5 py-1.5 rounded-xl transition-all"
-            >
-              <Plus className="w-3 h-3" /> New import
-            </button>
           </div>
           <div className="divide-y divide-slate-50">
-            {publishers.slice(0, 10).map(pub => {
+            {publishers.slice(0, 8).map(pub => {
               const pubBatches = batches.filter(b => b.media_profile_id === pub.id);
               const lastBatch = pubBatches[0];
-              // Aggregate published slot count from batchStats for this publisher's batches
-              const pubLiveSlots = pubBatches.reduce((sum, b) => sum + (batchStats.get(b.id)?.published ?? 0), 0);
-              const pubPendingSlots = pubBatches.reduce((sum, b) => {
-                const st = batchStats.get(b.id);
-                return sum + (st ? st.pending + st.needs_review + st.approved : 0);
-              }, 0);
               return (
-                <div key={pub.id}
-                  className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50/60 cursor-pointer group transition-colors"
-                  onClick={() => {
-                    const latestBatch = pubBatches[0];
-                    if (latestBatch) { setActiveBatch(latestBatch); setView('batch'); }
-                    else setView('import');
-                  }}
-                >
+                <div key={pub.id} className="flex items-center gap-3 px-5 py-3">
                   {pub.logo_url
                     ? <img src={pub.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
                     : (
@@ -435,37 +416,22 @@ export default function AdminPublisherImport({ onRefreshStats }: Props) {
                     )}
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-semibold text-slate-900 truncate">{pub.newsletter_name}</p>
-                    <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-400 flex-wrap">
-                      {pub.category && <span>{pub.category}</span>}
-                      {pub.subscriber_count && <span>{pub.subscriber_count.toLocaleString()} subs</span>}
-                      {lastBatch && <span>Last import: {new Date(lastBatch.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>}
-                    </div>
+                    <p className="text-[11px] text-slate-400">{pub.category} · {pub.subscriber_count?.toLocaleString() ?? '—'} subs</p>
                   </div>
-                  <div className="flex items-center gap-1.5 flex-shrink-0 text-[10px]">
-                    {pubLiveSlots > 0 && (
-                      <span className="font-semibold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-full">
-                        {pubLiveSlots} live
-                      </span>
-                    )}
-                    {pubPendingSlots > 0 && (
-                      <span className="font-semibold text-orange-600 bg-orange-50 border border-orange-100 px-2 py-0.5 rounded-full">
-                        {pubPendingSlots} pending
-                      </span>
-                    )}
-                    {pubBatches.length > 0 && (
-                      <span className="text-slate-400 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full">
+                  <div className="flex items-center gap-2 flex-shrink-0 text-[11px] text-slate-400">
+                    {lastBatch && (
+                      <span className="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full">
                         {pubBatches.length} import{pubBatches.length !== 1 ? 's' : ''}
                       </span>
                     )}
-                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${pub.is_active ? 'bg-emerald-400' : 'bg-slate-300'}`} title={pub.is_active ? 'Active' : 'Inactive'} />
-                    <ChevronRight className="w-3 h-3 text-slate-300 group-hover:text-slate-500 transition-colors" />
+                    <span className={`w-2 h-2 rounded-full ${pub.is_active ? 'bg-emerald-400' : 'bg-slate-300'}`} title={pub.is_active ? 'Active' : 'Inactive'} />
                   </div>
                 </div>
               );
             })}
-            {publishers.length > 10 && (
+            {publishers.length > 8 && (
               <div className="px-5 py-3 text-[12px] text-slate-400 text-center">
-                +{publishers.length - 10} more publishers
+                +{publishers.length - 8} more publishers
               </div>
             )}
           </div>
