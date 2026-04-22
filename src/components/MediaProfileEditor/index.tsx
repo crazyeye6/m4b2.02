@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Loader2, X, Save, BookOpen, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Plus, Loader2, X, Save, BookOpen, AlertTriangle, CheckCircle, Send } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import type { MediaProfile } from '../../types';
@@ -42,6 +42,11 @@ export default function MediaProfileEditor({ onProfilesChanged }: Props) {
   const [saved, setSaved] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showNameChangeForm, setShowNameChangeForm] = useState(false);
+  const [nameChangeReason, setNameChangeReason] = useState('');
+  const [requestedName, setRequestedName] = useState('');
+  const [submittingNameChange, setSubmittingNameChange] = useState(false);
+  const [nameChangeSent, setNameChangeSent] = useState(false);
 
   const fetchProfiles = useCallback(async () => {
     if (!user) return;
@@ -60,18 +65,43 @@ export default function MediaProfileEditor({ onProfilesChanged }: Props) {
 
   useEffect(() => { fetchProfiles(); }, [fetchProfiles]);
 
-  const openNew = () => { setForm(EMPTY_FORM); setEditing('new'); };
-  const openEdit = (p: MediaProfile) => { setForm(profileToForm(p)); setEditing(p); };
-  const closeEditor = () => { setEditing(null); setSaved(false); };
+  const openNew = () => { setForm(EMPTY_FORM); setEditing('new'); setShowNameChangeForm(false); setNameChangeSent(false); };
+  const openEdit = (p: MediaProfile) => { setForm(profileToForm(p)); setEditing(p); setShowNameChangeForm(false); setNameChangeSent(false); };
+  const closeEditor = () => { setEditing(null); setSaved(false); setShowNameChangeForm(false); setNameChangeSent(false); };
+
+  const openNameChangeForm = () => {
+    if (!editing || editing === 'new') return;
+    setRequestedName(editing.newsletter_name);
+    setNameChangeReason('');
+    setShowNameChangeForm(true);
+  };
+
+  const submitNameChange = async () => {
+    if (!user || !editing || editing === 'new') return;
+    if (!requestedName.trim() || !nameChangeReason.trim()) return;
+    setSubmittingNameChange(true);
+    await supabase.from('name_change_requests').insert({
+      entity_type: 'publisher',
+      entity_id: editing.id,
+      current_name: editing.newsletter_name,
+      requested_name: requestedName.trim(),
+      reason: nameChangeReason.trim(),
+      seller_user_id: user.id,
+      seller_email: user.email ?? '',
+    });
+    setSubmittingNameChange(false);
+    setNameChangeSent(true);
+    setShowNameChangeForm(false);
+  };
 
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       seller_user_id: user.id,
       seller_email: user.email ?? '',
-      newsletter_name: form.newsletter_name,
+      ...(editing === 'new' ? { newsletter_name: form.newsletter_name } : {}),
       tagline: form.tagline,
       category: form.category,
       audience_summary: form.audience_summary,
@@ -191,8 +221,59 @@ export default function MediaProfileEditor({ onProfilesChanged }: Props) {
                   <p className="text-[#1d1d1f] font-semibold">Profile saved!</p>
                   <p className="text-[#6e6e73] text-sm">You can now link this profile to your slot listings.</p>
                 </div>
+              ) : showNameChangeForm ? (
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-3">
+                    <p className="text-[#1d1d1f] font-semibold text-sm">Request name change</p>
+                    <p className="text-[#6e6e73] text-xs">Current name: <span className="font-semibold text-[#1d1d1f]">{editing !== 'new' ? editing.newsletter_name : ''}</span></p>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1.5">Requested name</label>
+                      <input
+                        type="text"
+                        value={requestedName}
+                        onChange={e => setRequestedName(e.target.value)}
+                        className="w-full bg-white border border-blue-200 focus:border-blue-400 rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all"
+                        placeholder="New name..."
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1.5">Reason for change <span className="text-red-400">*</span></label>
+                      <textarea
+                        value={nameChangeReason}
+                        onChange={e => setNameChangeReason(e.target.value)}
+                        rows={3}
+                        className="w-full bg-white border border-blue-200 focus:border-blue-400 rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm outline-none transition-all resize-none"
+                        placeholder="Briefly explain why the name needs to change..."
+                      />
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        onClick={() => setShowNameChangeForm(false)}
+                        className="px-4 py-2 rounded-xl border border-black/[0.08] text-[#6e6e73] text-sm font-medium hover:text-[#1d1d1f] transition-all"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={submitNameChange}
+                        disabled={submittingNameChange || !requestedName.trim() || !nameChangeReason.trim()}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-sm font-semibold transition-all"
+                      >
+                        {submittingNameChange ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                        Submit request
+                      </button>
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <ProfileForm form={form} onChange={setForm} />
+                <>
+                  {nameChangeSent && (
+                    <div className="mb-4 bg-green-50 border border-green-200 rounded-xl px-4 py-3 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+                      <p className="text-green-800 text-sm font-medium">Name change request submitted. An admin will review it shortly.</p>
+                    </div>
+                  )}
+                  <ProfileForm form={form} onChange={setForm} isEditing={editing !== 'new'} onRequestNameChange={openNameChangeForm} />
+                </>
               )}
             </div>
 

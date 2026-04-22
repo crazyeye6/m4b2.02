@@ -10,6 +10,7 @@ import {
 import { parseEmailBody, confidenceLabel, fieldConfidenceColor } from '../lib/emailParser';
 import { sendAdminSlotPublishedEmail } from '../lib/email';
 import AdminPublisherImport from '../components/AdminPublisherImport';
+import { useAuth } from '../context/AuthContext';
 
 interface EmailSubmission {
   id: string;
@@ -99,7 +100,7 @@ interface AdminPageProps {
   onBack: () => void;
 }
 
-type AdminTab = 'bookings' | 'refunds' | 'email_submissions' | 'csv_uploads' | 'publisher_imports' | 'emails' | 'sellers' | 'settings';
+type AdminTab = 'overview' | 'bookings' | 'refunds' | 'email_submissions' | 'csv_uploads' | 'publisher_imports' | 'emails' | 'sellers' | 'name_changes' | 'settings';
 
 interface ManagedSeller {
   id: string;
@@ -126,7 +127,7 @@ const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: strin
 };
 
 export default function AdminPage({ onBack }: AdminPageProps) {
-  const [tab, setTab] = useState<AdminTab>('email_submissions');
+  const [tab, setTab] = useState<AdminTab>('overview');
   const [bookings, setBookings] = useState<DepositBooking[]>([]);
   const [refunds, setRefunds] = useState<RefundRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -358,6 +359,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
 
         <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit flex-wrap">
           {([
+            ['overview', 'Overview'],
             ['email_submissions', 'Email Inbox'],
             ['bookings', 'Bookings'],
             ['refunds', 'Refund Requests'],
@@ -365,6 +367,7 @@ export default function AdminPage({ onBack }: AdminPageProps) {
             ['publisher_imports', 'Publisher Imports'],
             ['emails', 'Resend Emails'],
             ['sellers', 'Managed Sellers'],
+            ['name_changes', 'Name Changes'],
             ['settings', 'Settings'],
           ] as [AdminTab, string][]).map(([key, label]) => (
             <button
@@ -400,6 +403,8 @@ export default function AdminPage({ onBack }: AdminPageProps) {
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-6 h-6 text-[#1d1d1f] animate-spin" />
           </div>
+        ) : tab === 'overview' ? (
+          <AdminOverviewPanel stats={stats} onNavigate={setTab} />
         ) : tab === 'email_submissions' ? (
           <EmailSubmissionsTable slots={emailSlots} onSelect={setSelectedSlot} />
         ) : tab === 'bookings' ? (
@@ -417,6 +422,8 @@ export default function AdminPage({ onBack }: AdminPageProps) {
           <EmailsPanel />
         ) : tab === 'sellers' ? (
           <SellersPanel sellers={managedSellers} onRefresh={fetchData} />
+        ) : tab === 'name_changes' ? (
+          <NameChangeRequestsPanel />
         ) : (
           <SettingsPanel />
         )}
@@ -523,6 +530,12 @@ function EmailSubmissionsTable({ slots, onSelect }: { slots: EmailSubmissionSlot
 
   return (
     <div className="space-y-4">
+      <AdminSectionHeader
+        icon={<Mail className="w-4 h-4" />}
+        title="Email Inbox"
+        desc="Sellers email their slot listings to slots@endingthisweek.media. Each email is parsed automatically into individual slots. Your job: review each slot, fix any errors or missing fields, then publish the good ones to the marketplace."
+        tip="Confidence score shows how well the parser understood the email. Low score = more manual review needed."
+      />
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-2">
         <div className="bg-white border border-black/[0.06] rounded-2xl p-4">
           <p className="text-[#86868b] text-xs mb-1">Total Submissions</p>
@@ -952,6 +965,12 @@ function CsvUploadsTable({ slots, onSelect }: { slots: CsvUploadSlot[]; onSelect
 
   return (
     <div className="space-y-4">
+      <AdminSectionHeader
+        icon={<Upload className="w-4 h-4" />}
+        title="CSV Uploads"
+        desc="Sellers upload a CSV file containing all their available slots for the week. Each row is one ad slot. Review rows grouped by newsletter — approve the clean ones, flag or reject rows with issues, then publish approved slots to the marketplace."
+        tip="Rows marked 'Needs Review' have validation warnings. You can still approve them manually if the data looks correct."
+      />
       {pendingCount > 0 && (
         <div className="bg-[#f5f5f7] border border-black/[0.08] rounded-2xl px-5 py-3.5 flex items-center gap-3">
           <Clock className="w-4 h-4 text-[#6e6e73] shrink-0" />
@@ -1216,14 +1235,29 @@ function CsvSlotDetailPanel({ slot, onStatusChange, onClose, updating }: {
 function BookingsTable({ bookings, onSelect }: { bookings: DepositBooking[]; onSelect: (b: DepositBooking) => void }) {
   if (bookings.length === 0) {
     return (
-      <div className="text-center py-16 text-[#aeaeb2]">
-        <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
-        <p>No bookings yet</p>
+      <div className="space-y-4">
+        <AdminSectionHeader
+          icon={<DollarSign className="w-4 h-4" />}
+          title="Bookings"
+          desc="All buyer bookings in one place. When a buyer secures a slot they pay a deposit at checkout. Track deals from 'Pending Payment' through to 'Completed'. Use the detail panel to update status and add admin notes."
+          tip="Deposits are collected at checkout. The balance is paid directly between buyer and seller off-platform."
+        />
+        <div className="text-center py-16 text-[#aeaeb2]">
+          <FileText className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p>No bookings yet</p>
+        </div>
       </div>
     );
   }
 
   return (
+    <div className="space-y-4">
+      <AdminSectionHeader
+        icon={<DollarSign className="w-4 h-4" />}
+        title="Bookings"
+        desc="All buyer bookings in one place. When a buyer secures a slot they pay a deposit at checkout. Track deals from 'Pending Payment' through to 'Completed'. Use the detail panel to update status and add admin notes."
+        tip="Deposits are collected at checkout. The balance is paid directly between buyer and seller off-platform."
+      />
     <div className="bg-white border border-black/[0.06] rounded-3xl overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -1285,6 +1319,7 @@ function BookingsTable({ bookings, onSelect }: { bookings: DepositBooking[]; onS
         </table>
       </div>
     </div>
+    </div>
   );
 }
 
@@ -1295,9 +1330,17 @@ function RefundsTable({ refunds, bookings, onSelect }: {
 }) {
   if (refunds.length === 0) {
     return (
-      <div className="text-center py-16 text-[#aeaeb2]">
-        <RotateCcw className="w-10 h-10 mx-auto mb-3 opacity-30" />
-        <p>No refund requests</p>
+      <div className="space-y-4">
+        <AdminSectionHeader
+          icon={<RotateCcw className="w-4 h-4" />}
+          title="Refund Requests"
+          desc="Buyers submit refund requests after securing a slot. Review the reason, then approve or decline. Approving a refund automatically updates the booking status to 'Refunded'."
+          tip="Always check if the seller has already been notified before approving. Add a decision reason — it's sent to the buyer."
+        />
+        <div className="text-center py-16 text-[#aeaeb2]">
+          <RotateCcw className="w-10 h-10 mx-auto mb-3 opacity-30" />
+          <p>No refund requests</p>
+        </div>
       </div>
     );
   }
@@ -1309,6 +1352,13 @@ function RefundsTable({ refunds, bookings, onSelect }: {
   };
 
   return (
+    <div className="space-y-4">
+      <AdminSectionHeader
+        icon={<RotateCcw className="w-4 h-4" />}
+        title="Refund Requests"
+        desc="Buyers submit refund requests after securing a slot. Review the reason, then approve or decline. Approving a refund automatically updates the booking status to 'Refunded'."
+        tip="Always check if the seller has already been notified before approving. Add a decision reason — it's sent to the buyer."
+      />
     <div className="bg-white border border-black/[0.06] rounded-3xl overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full">
@@ -1365,6 +1415,7 @@ function RefundsTable({ refunds, bookings, onSelect }: {
           </tbody>
         </table>
       </div>
+    </div>
     </div>
   );
 }
@@ -1701,6 +1752,12 @@ function EmailsPanel() {
 
   return (
     <div className="max-w-2xl space-y-5">
+      <AdminSectionHeader
+        icon={<Send className="w-4 h-4" />}
+        title="Resend Emails"
+        desc="Manually trigger platform emails. Use the digest blast to push new opportunities to all opted-in buyers. Use the welcome email tool to re-onboard a specific user who missed their original email."
+        tip="The digest blast is safe to run at any time — it only sends to buyers who opted in. Run it after publishing a new batch of slots."
+      />
 
       <div className="bg-white border border-black/[0.06] rounded-3xl overflow-hidden shadow-sm">
         <div className="px-6 py-5 border-b border-black/[0.06] flex items-center gap-3">
@@ -1860,6 +1917,12 @@ function SettingsPanel() {
 
   return (
     <div className="max-w-xl">
+      <AdminSectionHeader
+        icon={<Settings className="w-4 h-4" />}
+        title="Settings"
+        desc="Platform configuration — payment keys and integration settings. Only change these when updating payment providers or adding new integrations. Incorrect keys will break checkout."
+        tip="The Stripe publishable key starts with pk_live_ (production) or pk_test_ (test mode). Do not use the secret key here."
+      />
       <div className="bg-white border border-black/[0.06] rounded-3xl overflow-hidden shadow-sm">
         <div className="px-6 py-5 border-b border-black/[0.06] flex items-center gap-3">
           <div className="w-8 h-8 bg-[#f5f5f7] border border-black/[0.08] rounded-xl flex items-center justify-center">
@@ -1939,6 +2002,370 @@ function SettingsPanel() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Shared admin section header ───────────────────────────────────────────────
+
+function AdminSectionHeader({ icon, title, desc, tip }: { icon: React.ReactNode; title: string; desc: string; tip?: string }) {
+  return (
+    <div className="flex items-start gap-3 bg-white border border-black/[0.06] rounded-2xl px-5 py-4 mb-5">
+      <div className="w-8 h-8 bg-[#f5f5f7] border border-black/[0.06] rounded-xl flex items-center justify-center text-[#6e6e73] shrink-0 mt-0.5">
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-[#1d1d1f] font-semibold text-sm">{title}</p>
+        <p className="text-[#6e6e73] text-xs mt-0.5 leading-relaxed">{desc}</p>
+        {tip && (
+          <div className="flex items-center gap-1.5 mt-2">
+            <Info className="w-3 h-3 text-[#aeaeb2] shrink-0" />
+            <p className="text-[#aeaeb2] text-[11px]">{tip}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Admin Overview Panel ──────────────────────────────────────────────────────
+
+interface OverviewStats {
+  total: number;
+  secured: number;
+  totalDeposits: number;
+  pendingRefunds: number;
+  pendingEmailSlots: number;
+  pendingCsvSlots: number;
+}
+
+function AdminOverviewPanel({ stats, onNavigate }: { stats: OverviewStats; onNavigate: (tab: AdminTab) => void }) {
+  const dailyTasks = [
+    { tab: 'email_submissions' as AdminTab, icon: <Mail className="w-4 h-4" />, title: 'Email Inbox', badge: stats.pendingEmailSlots, badgeColor: 'bg-blue-500', desc: 'Sellers email in their slots. We parse them automatically. Review each one, fix errors, then publish the good ones to the marketplace.', urgency: stats.pendingEmailSlots > 0 ? 'action' : 'clear' },
+    { tab: 'csv_uploads' as AdminTab, icon: <Upload className="w-4 h-4" />, title: 'CSV Uploads', badge: stats.pendingCsvSlots, badgeColor: 'bg-[#6e6e73]', desc: 'Sellers upload a CSV of their weekly slots. Review rows grouped by newsletter, approve or reject individual slots, then publish.', urgency: stats.pendingCsvSlots > 0 ? 'action' : 'clear' },
+    { tab: 'refunds' as AdminTab, icon: <RotateCcw className="w-4 h-4" />, title: 'Refund Requests', badge: stats.pendingRefunds, badgeColor: 'bg-orange-500', desc: 'Buyers request refunds after securing a slot. Review the reason, approve or decline, and the booking status updates automatically.', urgency: stats.pendingRefunds > 0 ? 'warn' : 'clear' },
+    { tab: 'name_changes' as AdminTab, icon: <FileText className="w-4 h-4" />, title: 'Name Changes', badge: 0, badgeColor: '', desc: 'Sellers cannot directly rename their newsletters or publisher profiles. Requests come here for you to approve or reject and apply.', urgency: 'clear' },
+  ];
+
+  const weeklyTasks = [
+    { tab: 'publisher_imports' as AdminTab, icon: <List className="w-4 h-4" />, title: 'Publisher Imports', desc: 'The primary tool for bulk-importing publisher slot data. Upload a CSV on behalf of a publisher, review the structured preview, then publish batches live.' },
+    { tab: 'sellers' as AdminTab, icon: <UserPlus className="w-4 h-4" />, title: 'Managed Sellers', desc: 'Add newsletter owners to the platform before they sign up. Create their profile, add newsletters and listings on their behalf, then invite them to claim the account.' },
+    { tab: 'emails' as AdminTab, icon: <Send className="w-4 h-4" />, title: 'Resend Emails', desc: 'Trigger the weekly opportunity digest to all buyers who opted in. Also use this to re-send welcome emails to specific users.' },
+  ];
+
+  const systemTasks = [
+    { tab: 'bookings' as AdminTab, icon: <DollarSign className="w-4 h-4" />, title: 'Bookings', desc: 'All buyer bookings in one place. Deposits are collected at checkout. Update booking status as deals progress through to completion.' },
+    { tab: 'settings' as AdminTab, icon: <Settings className="w-4 h-4" />, title: 'Settings', desc: 'Platform configuration — Stripe publishable key and other integration settings. Change these only when updating payment providers.' },
+  ];
+
+  return (
+    <div className="max-w-4xl space-y-8">
+
+      {/* Hero orientation */}
+      <div className="bg-white border border-black/[0.06] rounded-3xl px-6 py-6">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 bg-[#1d1d1f] rounded-2xl flex items-center justify-center shrink-0">
+            <Shield className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="text-[#1d1d1f] font-semibold text-base mb-1">Welcome to the Admin Dashboard</h2>
+            <p className="text-[#6e6e73] text-sm leading-relaxed max-w-2xl">
+              This dashboard is the operational hub for EndingThisWeek.media. Your job is to keep the marketplace running smoothly — reviewing and publishing seller content, managing bookings, handling refunds, and maintaining seller accounts. Use the tabs above to navigate. Start with the daily queue below.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Daily queue */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#1d1d1f]" />
+          <p className="text-[11px] font-bold text-[#1d1d1f] uppercase tracking-widest">Daily queue — check these every day</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {dailyTasks.map(t => (
+            <button
+              key={t.tab}
+              onClick={() => onNavigate(t.tab)}
+              className={`text-left bg-white border rounded-2xl p-4 hover:shadow-sm transition-all group ${t.urgency === 'action' ? 'border-blue-200 hover:border-blue-300' : t.urgency === 'warn' ? 'border-orange-200 hover:border-orange-300' : 'border-black/[0.06] hover:border-black/[0.12]'}`}
+            >
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex items-center gap-2">
+                  <div className={`w-7 h-7 rounded-xl flex items-center justify-center shrink-0 ${t.urgency === 'action' ? 'bg-blue-50 text-blue-600' : t.urgency === 'warn' ? 'bg-orange-50 text-orange-600' : 'bg-[#f5f5f7] text-[#6e6e73]'}`}>
+                    {t.icon}
+                  </div>
+                  <p className="text-[13px] font-semibold text-[#1d1d1f]">{t.title}</p>
+                </div>
+                {t.badge > 0 && (
+                  <span className={`text-[11px] font-bold text-white px-2 py-0.5 rounded-full shrink-0 ${t.badgeColor}`}>
+                    {t.badge} pending
+                  </span>
+                )}
+              </div>
+              <p className="text-[12px] text-[#6e6e73] leading-relaxed">{t.desc}</p>
+              <p className="text-[11px] font-semibold text-[#aeaeb2] group-hover:text-[#1d1d1f] mt-2 transition-colors">Open →</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Weekly tasks */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#6e6e73]" />
+          <p className="text-[11px] font-bold text-[#6e6e73] uppercase tracking-widest">Weekly tasks</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {weeklyTasks.map(t => (
+            <button
+              key={t.tab}
+              onClick={() => onNavigate(t.tab)}
+              className="text-left bg-white border border-black/[0.06] hover:border-black/[0.12] rounded-2xl p-4 hover:shadow-sm transition-all group"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-7 h-7 bg-[#f5f5f7] rounded-xl flex items-center justify-center text-[#6e6e73] shrink-0">
+                  {t.icon}
+                </div>
+                <p className="text-[13px] font-semibold text-[#1d1d1f]">{t.title}</p>
+              </div>
+              <p className="text-[12px] text-[#6e6e73] leading-relaxed">{t.desc}</p>
+              <p className="text-[11px] font-semibold text-[#aeaeb2] group-hover:text-[#1d1d1f] mt-2 transition-colors">Open →</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* System / reference */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#aeaeb2]" />
+          <p className="text-[11px] font-bold text-[#aeaeb2] uppercase tracking-widest">System &amp; reference</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {systemTasks.map(t => (
+            <button
+              key={t.tab}
+              onClick={() => onNavigate(t.tab)}
+              className="text-left bg-white border border-black/[0.06] hover:border-black/[0.12] rounded-2xl p-4 hover:shadow-sm transition-all group"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-7 h-7 bg-[#f5f5f7] rounded-xl flex items-center justify-center text-[#aeaeb2] shrink-0">
+                  {t.icon}
+                </div>
+                <p className="text-[13px] font-semibold text-[#1d1d1f]">{t.title}</p>
+              </div>
+              <p className="text-[12px] text-[#6e6e73] leading-relaxed">{t.desc}</p>
+              <p className="text-[11px] font-semibold text-[#aeaeb2] group-hover:text-[#1d1d1f] mt-2 transition-colors">Open →</p>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* How the platform works */}
+      <div className="bg-[#1d1d1f] rounded-3xl px-6 py-6">
+        <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">How the platform works</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+          {[
+            { n: '1', title: 'Sellers list their slots', desc: 'Via email submission, CSV upload, or the listing form. All come to you for review before going live.' },
+            { n: '2', title: 'You publish approved slots', desc: 'Once reviewed, slots become live listings on the marketplace — visible to all buyers.' },
+            { n: '3', title: 'Buyers secure slots', desc: 'Buyers pay a deposit at checkout. You get notified and can track progress in the Bookings tab.' },
+            { n: '4', title: 'Deals complete off-platform', desc: 'Buyer and seller finalise the deal directly. You mark the booking as complete.' },
+          ].map(s => (
+            <div key={s.n} className="flex gap-3">
+              <span className="text-[11px] font-mono font-bold text-white/20 shrink-0 pt-0.5">{s.n}</span>
+              <div>
+                <p className="text-[12px] font-semibold text-white mb-0.5">{s.title}</p>
+                <p className="text-[11px] text-white/40 leading-snug">{s.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+interface NameChangeRequest {
+  id: string;
+  entity_type: 'publisher' | 'newsletter';
+  entity_id: string;
+  current_name: string;
+  requested_name: string;
+  reason: string;
+  status: 'pending' | 'approved' | 'rejected';
+  seller_user_id: string;
+  seller_email: string;
+  admin_notes: string | null;
+  created_at: string;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+}
+
+function NameChangeRequestsPanel() {
+  const { user } = useAuth();
+  const [requests, setRequests] = useState<NameChangeRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [reviewing, setReviewing] = useState<string | null>(null);
+  const [adminNotes, setAdminNotes] = useState('');
+
+  const fetchRequests = useCallback(async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from('name_change_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setRequests((data as NameChangeRequest[]) ?? []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchRequests(); }, [fetchRequests]);
+
+  const decide = async (id: string, status: 'approved' | 'rejected') => {
+    setReviewing(id);
+    const req = requests.find(r => r.id === id);
+    if (!req) return;
+
+    await supabase.from('name_change_requests').update({
+      status,
+      admin_notes: adminNotes.trim() || null,
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: user?.email ?? '',
+    }).eq('id', id);
+
+    if (status === 'approved') {
+      if (req.entity_type === 'publisher') {
+        await supabase.from('media_profiles').update({ newsletter_name: req.requested_name }).eq('id', req.entity_id);
+      } else {
+        await supabase.from('newsletters').update({ name: req.requested_name }).eq('id', req.entity_id);
+      }
+    }
+
+    setReviewing(null);
+    setAdminNotes('');
+    await fetchRequests();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="w-6 h-6 text-[#1d1d1f] animate-spin" />
+      </div>
+    );
+  }
+
+  const pending = requests.filter(r => r.status === 'pending');
+  const decided = requests.filter(r => r.status !== 'pending');
+
+  return (
+    <div className="max-w-3xl space-y-6">
+      <div>
+        <h2 className="text-[#1d1d1f] font-semibold text-base mb-0.5">Name Change Requests</h2>
+        <p className="text-[#6e6e73] text-sm">Review and approve or reject seller requests to change publisher or newsletter names.</p>
+      </div>
+
+      {pending.length === 0 && (
+        <div className="bg-white border border-black/[0.06] rounded-3xl px-6 py-12 text-center">
+          <CheckCircle className="w-10 h-10 text-green-400 mx-auto mb-3" />
+          <p className="text-[#1d1d1f] font-semibold text-sm">All caught up</p>
+          <p className="text-[#6e6e73] text-sm mt-1">No pending name change requests.</p>
+        </div>
+      )}
+
+      {pending.length > 0 && (
+        <div className="space-y-3">
+          <p className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider">Pending ({pending.length})</p>
+          {pending.map(req => (
+            <div key={req.id} className="bg-white border border-orange-200 rounded-3xl overflow-hidden shadow-sm">
+              <div className="px-6 py-4 border-b border-black/[0.06] flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-orange-50 border border-orange-200 rounded-xl flex items-center justify-center shrink-0">
+                    <Clock className="w-4 h-4 text-orange-500" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full">
+                        {req.entity_type === 'publisher' ? 'Publisher name' : 'Newsletter name'}
+                      </span>
+                      <span className="text-[#aeaeb2] text-xs">{req.seller_email}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <span className="text-[#6e6e73] text-sm line-through">{req.current_name}</span>
+                      <span className="text-[#aeaeb2] text-xs">→</span>
+                      <span className="text-[#1d1d1f] text-sm font-semibold">{req.requested_name}</span>
+                    </div>
+                  </div>
+                </div>
+                <span className="text-[#aeaeb2] text-xs shrink-0">{new Date(req.created_at).toLocaleDateString()}</span>
+              </div>
+              <div className="px-6 py-4 space-y-3">
+                <div>
+                  <p className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1">Reason</p>
+                  <p className="text-[#1d1d1f] text-sm">{req.reason}</p>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-1.5">Admin notes (optional)</label>
+                  <textarea
+                    value={adminNotes}
+                    onChange={e => setAdminNotes(e.target.value)}
+                    rows={2}
+                    placeholder="Add a note visible to the seller..."
+                    className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all resize-none"
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => decide(req.id, 'approved')}
+                    disabled={reviewing === req.id}
+                    className="flex items-center gap-1.5 bg-green-600 hover:bg-green-700 disabled:opacity-40 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all"
+                  >
+                    {reviewing === req.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <ThumbsUp className="w-4 h-4" />}
+                    Approve &amp; Apply
+                  </button>
+                  <button
+                    onClick={() => decide(req.id, 'rejected')}
+                    disabled={reviewing === req.id}
+                    className="flex items-center gap-1.5 bg-[#f5f5f7] border border-black/[0.08] hover:border-black/[0.18] disabled:opacity-40 text-[#6e6e73] font-semibold text-sm px-5 py-2.5 rounded-xl transition-all"
+                  >
+                    <ThumbsDown className="w-4 h-4" />
+                    Reject
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {decided.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider">History ({decided.length})</p>
+          {decided.map(req => (
+            <div key={req.id} className="bg-white border border-black/[0.06] rounded-2xl px-5 py-3 flex items-center gap-4">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${req.status === 'approved' ? 'bg-green-100' : 'bg-[#f5f5f7]'}`}>
+                {req.status === 'approved'
+                  ? <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+                  : <XCircle className="w-3.5 h-3.5 text-[#aeaeb2]" />
+                }
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#aeaeb2]">
+                    {req.entity_type === 'publisher' ? 'Publisher' : 'Newsletter'}
+                  </span>
+                  <span className="text-[#6e6e73] text-sm line-through truncate">{req.current_name}</span>
+                  <span className="text-[#aeaeb2] text-xs">→</span>
+                  <span className="text-[#1d1d1f] text-sm font-medium truncate">{req.requested_name}</span>
+                </div>
+                <p className="text-[#aeaeb2] text-xs mt-0.5">{req.seller_email} · {new Date(req.created_at).toLocaleDateString()}</p>
+              </div>
+              <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${req.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-[#f5f5f7] text-[#aeaeb2]'}`}>
+                {req.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -2408,6 +2835,12 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
 
   return (
     <div>
+      <AdminSectionHeader
+        icon={<UserPlus className="w-4 h-4" />}
+        title="Managed Sellers"
+        desc="Create seller accounts for newsletter owners before they sign up. Build out their profile — add newsletters and listings on their behalf — then send them an invite link to claim the account. They take over from there."
+        tip="Once a seller claims their account they can log in and manage everything themselves. You still have full admin access."
+      />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-[#1d1d1f] font-semibold text-base">Managed Sellers</h2>

@@ -522,51 +522,17 @@ export default function App() {
 
       <main>
         <Hero onBrowse={handleBrowse} onListSlot={handleListSlot} liveCount={stats.liveCount} />
-        <StatsBar
-          liveCount={stats.liveCount}
-          avgDiscount={stats.avgDiscount}
-          totalSavings={stats.totalSavings}
-        />
-
+        <StatsBar liveCount={stats.liveCount} avgDiscount={stats.avgDiscount} totalSavings={stats.totalSavings} />
         <WhyNewsletterAds onBrowse={handleBrowse} />
 
-        <section className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-[22px] font-semibold text-[#1d1d1f] tracking-[-0.02em]">Live slots</h2>
-              <p className="text-[#6e6e73] text-[13px] mt-0.5">Prices auto-drop as deadlines approach</p>
-            </div>
-            <button
-              onClick={handleBrowse}
-              className="text-[13px] font-medium text-[#1d1d1f] hover:text-[#0f766e] transition-colors underline underline-offset-2"
-            >
-              View all {stats.liveCount}
-            </button>
-          </div>
-          <ListingsGrid
-            listings={listings.slice(0, 2)}
-            loading={loading}
-            onSecure={handleSecure}
-            onDetails={handleViewListing}
-            onViewMediaProfile={handleViewMediaProfile}
-            columns={2}
-            viewMode="grid"
-            sort={filters.sort}
-          />
-        </section>
-
-        <SmartMatchCallout
-          isLoggedIn={!!profile}
-          onSignIn={() => setShowAuthModal(true)}
-          onDashboard={handleDashboard}
-        />
-
+        <SmartMatchCallout isLoggedIn={!!profile} onSignIn={() => setShowAuthModal(true)} onDashboard={handleDashboard} />
         <HowItWorks onListSlot={handleListSlot} />
       </main>
 
       <Footer
         onTerms={() => { setPage('terms'); window.scrollTo(0, 0); }}
         onPrivacy={() => { setPage('privacy'); window.scrollTo(0, 0); }}
+        onContact={() => setShowContactModal(true)}
       />
 
       {showAuthModal && (

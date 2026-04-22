@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save, Bell, BellOff, Sparkles, Tag } from 'lucide-react';
+import { ShoppingBag, Clock, CheckCircle, RotateCcw, XCircle, RefreshCw, ChevronRight, User, Building2, Mail, Phone, Globe, DollarSign, Loader2, X, LogOut, CreditCard as Edit3, Save, Bell, BellOff, Sparkles, Tag, Search, Zap, Info, ArrowRight } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useBuyerPreferences } from '../hooks/useBuyerPreferences';
@@ -118,6 +118,8 @@ export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboard
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <BuyerWelcomeBanner onSetAlerts={() => setTab('alerts')} onBrowse={onBack} hasBookings={bookings.length > 0} hasPrefs={prefs.hasCompletedOnboarding} />
+
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <StatCard icon={<ShoppingBag className="w-4 h-4 text-[#86868b]" />} label="Total Bookings" value={stats.total} />
           <StatCard icon={<CheckCircle className="w-4 h-4 text-green-600" />} label="Active" value={stats.active} green />
@@ -148,67 +150,116 @@ export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboard
               <Loader2 className="w-5 h-5 text-[#1d1d1f] animate-spin" />
             </div>
           ) : bookings.length === 0 ? (
-            <EmptyState
-              icon={<ShoppingBag className="w-8 h-8 text-[#aeaeb2]" />}
-              title="No bookings yet"
-              description="Browse opportunities and secure your first slot."
-            />
+            <div className="space-y-4">
+              <BuyerSectionHeader
+                icon={<ShoppingBag className="w-4 h-4" />}
+                title="My Bookings"
+                desc="When you secure a slot, it appears here. You pay a small deposit at checkout — the balance goes directly to the newsletter owner when the campaign runs."
+                tip="Deposits confirm your intent. The creator's contact details are shared with you immediately after booking."
+              />
+              <EmptyState
+                icon={<ShoppingBag className="w-8 h-8 text-[#aeaeb2]" />}
+                title="No bookings yet"
+                description="Browse opportunities and secure your first slot."
+              />
+            </div>
           ) : (
-            <div className="space-y-3">
-              {bookings.map(b => (
-                <BookingCard
-                  key={b.id}
-                  booking={b}
-                  onClick={() => setSelectedBooking(b)}
-                />
-              ))}
+            <div className="space-y-4">
+              <BuyerSectionHeader
+                icon={<ShoppingBag className="w-4 h-4" />}
+                title="My Bookings"
+                desc="Track all your secured slots here. Click any booking to see the creator's contact details and manage your campaign."
+                tip="Once secured, contact the creator directly to share your ad copy and campaign brief."
+              />
+              <div className="space-y-3">
+                {bookings.map(b => (
+                  <BookingCard
+                    key={b.id}
+                    booking={b}
+                    onClick={() => setSelectedBooking(b)}
+                  />
+                ))}
+              </div>
             </div>
           )
         )}
 
         {tab === 'recommended' && (
           prefs.hasCompletedOnboarding && listings.length > 0 ? (
-            <div className="-mx-4 sm:-mx-6 lg:-mx-8">
-              <RecommendedSection
-                listings={listings}
-                prefs={prefs}
-                onView={(listing) => {
-                  if (onViewListing) {
-                    onViewListing(listing);
-                  } else {
-                    onBack();
-                  }
-                }}
-                onEditPrefs={() => setShowPrefsModal(true)}
+            <div className="space-y-4">
+              <BuyerSectionHeader
+                icon={<Sparkles className="w-4 h-4" />}
+                title="Recommended for you"
+                desc="Slots matched to your preferences — ranked by how well they fit your audience targets, niche, and location. The higher the match score, the more relevant it is for your campaigns."
+                tip="Edit your preferences anytime to retune your recommendations."
+                accent="emerald"
               />
+              <div className="-mx-4 sm:-mx-6 lg:-mx-8">
+                <RecommendedSection
+                  listings={listings}
+                  prefs={prefs}
+                  onView={(listing) => {
+                    if (onViewListing) {
+                      onViewListing(listing);
+                    } else {
+                      onBack();
+                    }
+                  }}
+                  onEditPrefs={() => setShowPrefsModal(true)}
+                />
+              </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-20 gap-4 text-center max-w-sm mx-auto">
-              <div className="w-14 h-14 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center">
-                <Sparkles className="w-7 h-7 text-emerald-500" />
-              </div>
-              <div>
-                <p className="text-[#1d1d1f] font-semibold mb-1">Set up your preferences first</p>
-                <p className="text-[#6e6e73] text-sm">
-                  Configure your matching preferences in Alert Preferences to see personalized slot recommendations here.
+            <div className="space-y-6">
+              <BuyerSectionHeader
+                icon={<Sparkles className="w-4 h-4" />}
+                title="Recommended for you"
+                desc="Once you set your preferences, we rank every live slot by how well it matches your audience, niche, and goals — so you spend less time searching and more time buying."
+                accent="emerald"
+              />
+              <div className="bg-white border border-black/[0.06] rounded-3xl p-8 text-center max-w-md mx-auto">
+                <div className="w-14 h-14 bg-emerald-50 border border-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="w-7 h-7 text-emerald-500" />
+                </div>
+                <p className="text-[#1d1d1f] font-semibold mb-1">Set your preferences first</p>
+                <p className="text-[#6e6e73] text-sm mb-5">
+                  Tell us what you're looking for — niche, location, format — and we'll surface the best-fit slots every week.
                 </p>
+                <button
+                  onClick={() => setTab('alerts')}
+                  className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-5 py-2.5 rounded-2xl text-sm transition-all mx-auto"
+                >
+                  <Bell className="w-4 h-4" />
+                  Set my preferences
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
-              <button
-                onClick={() => setTab('alerts')}
-                className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold px-5 py-2.5 rounded-2xl text-sm transition-all"
-              >
-                Set Alert Preferences
-              </button>
             </div>
           )
         )}
 
         {tab === 'alerts' && (
-          <AlertPreferencesPanel profile={profile} onSaved={refreshProfile} />
+          <div className="space-y-4">
+            <BuyerSectionHeader
+              icon={<Bell className="w-4 h-4" />}
+              title="Alert Preferences"
+              desc="We send you a personalised digest of matching newsletter slots based on these settings. The more specific you are, the better your recommendations and alerts will be."
+              tip="Selecting nothing in a category means 'include all' — you'll still get alerts, just without that filter applied."
+            />
+            <AlertPreferencesPanel profile={profile} onSaved={refreshProfile} />
+          </div>
         )}
 
         {tab === 'profile' && (
-          <ProfilePanel profile={profile} userEmail={user?.email} onSaved={refreshProfile} />
+          <div className="space-y-4">
+            <BuyerSectionHeader
+              icon={<User className="w-4 h-4" />}
+              title="Your Profile"
+              desc="Your name and company are shared with newsletter owners when you secure a booking. Keep these up to date so creators know who they're working with."
+              tip="Your email address cannot be changed here — contact support if you need to update it."
+            />
+            <ProfilePanel profile={profile} userEmail={user?.email} onSaved={refreshProfile} />
+          </div>
         )}
       </div>
 
@@ -234,6 +285,100 @@ export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboard
           onClose={() => setShowPrefsModal(false)}
         />
       )}
+    </div>
+  );
+}
+
+// ── Buyer orientation components ──────────────────────────────────────────────
+
+function BuyerSectionHeader({ icon, title, desc, tip, accent }: {
+  icon: React.ReactNode;
+  title: string;
+  desc: string;
+  tip?: string;
+  accent?: 'emerald';
+}) {
+  const iconBg = accent === 'emerald' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' : 'bg-[#f5f5f7] border-black/[0.06] text-[#6e6e73]';
+  return (
+    <div className="flex items-start gap-3 bg-white border border-black/[0.06] rounded-2xl px-5 py-4">
+      <div className={`w-8 h-8 rounded-xl border flex items-center justify-center shrink-0 mt-0.5 ${iconBg}`}>
+        {icon}
+      </div>
+      <div className="min-w-0">
+        <p className="text-[#1d1d1f] font-semibold text-sm">{title}</p>
+        <p className="text-[#6e6e73] text-xs mt-0.5 leading-relaxed">{desc}</p>
+        {tip && (
+          <div className="flex items-center gap-1.5 mt-1.5">
+            <Info className="w-3 h-3 text-[#aeaeb2] shrink-0" />
+            <p className="text-[#aeaeb2] text-[11px]">{tip}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BuyerWelcomeBanner({ onSetAlerts, onBrowse, hasBookings, hasPrefs }: {
+  onSetAlerts: () => void;
+  onBrowse: () => void;
+  hasBookings: boolean;
+  hasPrefs: boolean;
+}) {
+  if (hasBookings) return null;
+
+  return (
+    <div className="mb-6 space-y-3">
+      {/* How it works */}
+      <div className="bg-white border border-black/[0.06] rounded-3xl px-6 py-5">
+        <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-widest mb-4">How it works</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { icon: <Search className="w-4 h-4" />, step: '01', title: 'Browse live slots', desc: 'Find newsletter sponsorship slots across dozens of publishers', color: 'bg-blue-50 border-blue-100 text-blue-600' },
+            { icon: <Zap className="w-4 h-4" />, step: '02', title: 'Get matched', desc: 'Set your preferences and we surface the best-fit opportunities', color: 'bg-emerald-50 border-emerald-100 text-emerald-600' },
+            { icon: <DollarSign className="w-4 h-4" />, step: '03', title: 'Secure with a deposit', desc: 'Pay a small deposit to lock in the slot — balance goes to the creator', color: 'bg-amber-50 border-amber-100 text-amber-600' },
+            { icon: <CheckCircle className="w-4 h-4" />, step: '04', title: 'Run your campaign', desc: "Contact the creator directly and deliver your ad — it's that simple", color: 'bg-green-50 border-green-100 text-green-600' },
+          ].map((s, i) => (
+            <div key={i} className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <div className={`w-7 h-7 rounded-xl border flex items-center justify-center shrink-0 ${s.color}`}>
+                  {s.icon}
+                </div>
+                <span className="text-[10px] font-bold text-[#aeaeb2] font-mono">{s.step}</span>
+              </div>
+              <div>
+                <p className="text-[12px] font-semibold text-[#1d1d1f] leading-snug mb-0.5">{s.title}</p>
+                <p className="text-[11px] text-[#86868b] leading-snug">{s.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick actions */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <button
+          onClick={onBrowse}
+          className="text-left bg-white border border-black/[0.06] hover:border-black/[0.12] rounded-2xl px-5 py-4 hover:shadow-sm transition-all group"
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <Search className="w-4 h-4 text-[#6e6e73]" />
+            <p className="text-[13px] font-semibold text-[#1d1d1f]">Browse all live slots</p>
+          </div>
+          <p className="text-[12px] text-[#86868b]">See every available newsletter sponsorship slot on the marketplace right now.</p>
+          <p className="text-[11px] font-semibold text-[#aeaeb2] group-hover:text-[#1d1d1f] mt-2 transition-colors">Go to marketplace →</p>
+        </button>
+        <button
+          onClick={onSetAlerts}
+          className={`text-left rounded-2xl px-5 py-4 hover:shadow-sm transition-all group border ${hasPrefs ? 'bg-white border-black/[0.06] hover:border-black/[0.12]' : 'bg-emerald-50 border-emerald-200 hover:border-emerald-300'}`}
+        >
+          <div className="flex items-center gap-2 mb-1.5">
+            <Bell className={`w-4 h-4 ${hasPrefs ? 'text-[#6e6e73]' : 'text-emerald-600'}`} />
+            <p className="text-[13px] font-semibold text-[#1d1d1f]">{hasPrefs ? 'Update your preferences' : 'Set your alert preferences'}</p>
+          </div>
+          <p className="text-[12px] text-[#86868b]">{hasPrefs ? 'Fine-tune your matching criteria to get better recommendations.' : 'Tell us your niche, location, and format — we\'ll match you to the best slots each week.'}</p>
+          <p className={`text-[11px] font-semibold mt-2 transition-colors ${hasPrefs ? 'text-[#aeaeb2] group-hover:text-[#1d1d1f]' : 'text-emerald-600 group-hover:text-emerald-700'}`}>{hasPrefs ? 'Edit preferences →' : 'Set preferences →'}</p>
+        </button>
+      </div>
     </div>
   );
 }
@@ -715,8 +860,6 @@ function Pill({ label, value }: { label: string; value: string }) {
 
 const MEDIA_TYPE_OPTIONS = [
   { value: 'newsletter', label: 'Newsletter', active: 'bg-blue-50 border-blue-200 text-blue-700' },
-  { value: 'podcast', label: 'Podcast', active: 'bg-green-50 border-green-200 text-green-700' },
-  { value: 'influencer', label: 'Influencer', active: 'bg-orange-50 border-orange-200 text-orange-700' },
 ];
 
 const LOCATION_OPTIONS = ['Global', 'US', 'UK', 'EU', 'Canada', 'Australia', 'Asia', 'Latin America'];

@@ -35,12 +35,16 @@ export const EMPTY_FORM: MediaProfileFormData = {
 };
 
 export const CATEGORIES = [
-  'SaaS / Tech', 'Marketing', 'Finance / Investing', 'Business / Entrepreneurship',
-  'E-commerce / DTC', 'Creator Economy', 'AI / Data', 'Health / Wellness',
-  'Climate / Sustainability', 'Real Estate', 'Crypto / Web3', 'General Business', 'Other',
+  'Business', 'Marketing', 'Finance & Investing', 'Entrepreneurship',
+  'Technology', 'AI & Data', 'E-commerce & Retail', 'Creator Economy',
+  'Health & Wellness', 'Fitness & Sport', 'Food & Drink', 'Travel & Lifestyle',
+  'Fashion & Beauty', 'Climate & Sustainability', 'Real Estate', 'Crypto & Web3',
+  'Education', 'Personal Finance', 'HR & Careers', 'Politics & News',
+  'Science & Research', 'Design & UX', 'Dev & Engineering', 'Gaming',
+  'Entertainment & Culture', 'Parenting & Family', 'Religion & Faith', 'Other',
 ];
 
-export const GEOGRAPHIES = ['Global', 'US', 'UK', 'Europe', 'Canada', 'Australia', 'Asia', 'Latin America', 'Other'];
+export const GEOGRAPHIES = ['Global', 'US', 'UK', 'US / UK', 'Europe', 'Canada', 'Australia', 'Asia', 'APAC', 'LATAM', 'Middle East', 'Other'];
 
 export const AUDIENCE_TYPES = ['B2B', 'B2C', 'Founders / Operators', 'Investors', 'Developers', 'Consumers', 'Mixed', 'Other'];
 
@@ -48,5 +52,5 @@ export const FREQUENCIES = ['Daily', 'Weekdays', '3x / week', 'Weekly', 'Bi-week
 
 export const AD_FORMAT_OPTIONS = [
   'Featured sponsor (top)', 'Banner + mention', 'Dedicated send', 'Native ad / sponsored content',
-  'Footer sponsor', 'Solo blast', 'Podcast ad read', 'Social shoutout',
+  'Footer sponsor', 'Solo blast', 'Social shoutout', 'Classified ad',
 ];

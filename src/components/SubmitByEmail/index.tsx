@@ -4,7 +4,7 @@ import { Mail, Copy, Check, Zap, Clock, Layers, ArrowRight, Shield, ChevronDown,
 const SUBMISSION_EMAIL = 'slots@endingthisweek.media';
 
 const NEWSLETTER_FIELDS = [
-  { key: 'Media Type', example: 'Newsletter', required: true, note: 'Newsletter, Podcast, Influencer, Sponsorship' },
+  { key: 'Media Type', example: 'Newsletter', required: true, note: 'Always Newsletter' },
   { key: 'Newsletter Name', example: 'Growth Insider', required: true, note: '' },
   { key: 'Publisher', example: 'Growth Insider Media', required: true, note: '' },
   { key: 'Category', example: 'Marketing / SaaS', required: true, note: 'e.g. Finance, B2B, Creator, Tech, DTC' },
@@ -361,7 +361,7 @@ export default function SubmitByEmail({ variant = 'full' }: SubmitByEmailProps) 
                 <span className="text-[#1d1d1f] font-semibold">Tip:</span> Fields marked <span className="text-red-400 font-semibold">required</span> are needed for fastest approval. Optional fields improve your listing's match score and buyer visibility.
               </p>
               <p className="text-[#86868b] text-xs leading-relaxed">
-                <span className="text-[#1d1d1f] font-semibold">Multiple media types:</span> This format works for newsletters, podcasts, influencers, and sponsorships. Change the Media Type field accordingly.
+                <span className="text-[#1d1d1f] font-semibold">Multiple slots:</span> Use one block per slot separated by <code className="bg-[#f5f5f7] px-1 rounded text-[10px]">--- SLOT ---</code> dividers. Each slot can have a different placement type and send date.
               </p>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { X, MapPin, Users, BarChart2, Shield, Mail, Mic, Instagram, ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe, Linkedin, Twitter, Youtube, Radio, FileText, Tag } from 'lucide-react';
+import { X, MapPin, Users, BarChart2, Shield, Mail, ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe, Linkedin, Twitter, Youtube, Radio, FileText, Tag } from 'lucide-react';
 import { useState } from 'react';
 import type { Listing, MediaProfile } from '../types';
 import CountdownTimer from './CountdownTimer';
@@ -12,8 +12,6 @@ interface DetailModalProps {
 
 const MEDIA_CONFIG = {
   newsletter: { icon: <Mail className="w-4 h-4" />, label: 'Newsletter', color: 'text-green-600', bg: 'bg-green-50 border-green-200' },
-  podcast: { icon: <Mic className="w-4 h-4" />, label: 'Podcast', color: 'text-yellow-600', bg: 'bg-yellow-50 border-yellow-200' },
-  influencer: { icon: <Instagram className="w-4 h-4" />, label: 'Influencer', color: 'text-rose-600', bg: 'bg-rose-50 border-rose-200' },
 };
 
 function fmt(n: number): string {
@@ -101,19 +99,6 @@ export default function DetailModal({ listing, onClose, onSecure, onViewMediaPro
                   <StatCard label="Subscribers" value={fmt(listing.subscribers || 0)} />
                   <StatCard label="Open rate" value={listing.open_rate || '—'} highlight />
                   <StatCard label="CTR" value={listing.ctr || '—'} highlight />
-                </>
-              )}
-              {listing.media_type === 'podcast' && (
-                <>
-                  <StatCard label="Downloads/ep" value={fmt(listing.downloads || 0)} />
-                  <StatCard label="Ad type" value={listing.ad_type || '—'} />
-                </>
-              )}
-              {listing.media_type === 'influencer' && (
-                <>
-                  <StatCard label="Followers" value={fmt(listing.followers || 0)} />
-                  <StatCard label="Engagement" value={listing.engagement_rate || '—'} highlight />
-                  <StatCard label="Deliverable" value={listing.deliverable || '—'} />
                 </>
               )}
             </div>

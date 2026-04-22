@@ -1,5 +1,5 @@
 import {
-  SlidersHorizontal, Mail, Mic, Instagram, MapPin, Tag, DollarSign,
+  SlidersHorizontal, Mail, MapPin, Tag, DollarSign,
   ChevronUp, X, LayoutGrid, Columns2, Columns3, Check, ChevronDown,
   TrendingDown, Clock, Users, Percent,
 } from 'lucide-react';

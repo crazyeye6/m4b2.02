@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Mail, Eye, MousePointerClick, TrendingUp, BarChart3, Users, Star } from 'lucide-react';
+import {
+  ArrowRight, Mail, Users, Clock, Lock, Zap,
+  TrendingUp, BarChart3, MapPin, CheckCircle, Star,
+  MousePointerClick, Eye,
+} from 'lucide-react';
 
 interface HeroProps {
   onBrowse: () => void;
@@ -11,9 +15,62 @@ const TRUST_LOGOS = [
   'SaaS Weekly', 'AI Frontier', 'Founder HQ', 'Marketing Brew', 'Dev Current', 'Fintech Forward',
 ];
 
+const PROOF_AVATARS = [
+  'bg-gradient-to-br from-teal-400 to-emerald-500',
+  'bg-gradient-to-br from-sky-400 to-blue-500',
+  'bg-gradient-to-br from-amber-400 to-orange-500',
+  'bg-gradient-to-br from-slate-500 to-slate-700',
+];
+
+const DEMO_SLOTS = [
+  {
+    newsletter: 'SaaS Founder Weekly',
+    initials: 'SF',
+    gradient: 'from-teal-500 to-emerald-500',
+    niche: 'SaaS / B2B',
+    subscribers: '62.4k',
+    openRate: '47%',
+    sponsorType: 'Dedicated Sponsor',
+    sendDate: 'Tue 12 May',
+    deadline: '3 days',
+    price: '$1,400',
+    slotsLeft: 2,
+    hot: true,
+  },
+  {
+    newsletter: 'AI Frontier Daily',
+    initials: 'AI',
+    gradient: 'from-sky-500 to-blue-600',
+    niche: 'Artificial Intelligence',
+    subscribers: '118k',
+    openRate: '52%',
+    sponsorType: 'Primary Placement',
+    sendDate: 'Mon 19 May',
+    deadline: '9 days',
+    price: '$2,800',
+    slotsLeft: 1,
+    hot: true,
+  },
+  {
+    newsletter: 'Fintech Forward',
+    initials: 'FF',
+    gradient: 'from-amber-500 to-orange-500',
+    niche: 'Fintech / Finance',
+    subscribers: '34.1k',
+    openRate: '41%',
+    sponsorType: 'Classified Ad',
+    sendDate: 'Thu 22 May',
+    deadline: '12 days',
+    price: '$590',
+    slotsLeft: 3,
+    hot: false,
+  },
+];
+
 export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps) {
   const [visible, setVisible] = useState(false);
-  const [statStep, setStatStep] = useState(0);
+  const [activeSlot, setActiveSlot] = useState(0);
+  const [bookingStep, setBookingStep] = useState<'idle' | 'locking' | 'done'>('idle');
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 60);
@@ -21,12 +78,23 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => setStatStep(s => (s + 1) % 3), 2800);
+    if (bookingStep !== 'idle') return;
+    const interval = setInterval(() => setActiveSlot(s => (s + 1) % DEMO_SLOTS.length), 3200);
     return () => clearInterval(interval);
-  }, []);
+  }, [bookingStep]);
+
+  const triggerBookingDemo = () => {
+    if (bookingStep !== 'idle') return;
+    setBookingStep('locking');
+    setTimeout(() => setBookingStep('done'), 1200);
+    setTimeout(() => setBookingStep('idle'), 3000);
+  };
+
+  const slot = DEMO_SLOTS[activeSlot];
 
   return (
     <section className="relative overflow-hidden bg-white">
+      {/* Grid background */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -46,224 +114,225 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
         }}
       />
 
-      <div className="relative max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-14 lg:pt-32 lg:pb-20">
-        <div className="grid lg:grid-cols-[420px_1fr] xl:grid-cols-[460px_1fr] gap-12 xl:gap-16 items-start">
+      <div className="relative max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:pt-36 lg:pb-20">
+        {/* Centered copy block */}
+        <div
+          className="text-center"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'translateY(0)' : 'translateY(22px)',
+            transition: 'opacity 0.5s ease, transform 0.5s ease',
+          }}
+        >
+          <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-semibold px-3.5 py-1.5 rounded-full mb-8 tracking-widest uppercase">
+            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse flex-shrink-0" />
+            Newsletter sponsorship marketplace
+            {liveCount > 0 && (
+              <>
+                <span className="w-px h-3 bg-slate-300" />
+                <span className="text-emerald-600">{liveCount} live</span>
+              </>
+            )}
+          </div>
 
-          {/* LEFT -- Copy */}
-          <div
-            className="lg:sticky lg:top-28"
-            style={{
-              opacity: visible ? 1 : 0,
-              transform: visible ? 'translateY(0)' : 'translateY(22px)',
-              transition: 'opacity 0.5s ease, transform 0.5s ease',
-            }}
+          <h1
+            className="font-bold text-slate-900 tracking-[-0.045em] leading-[1.0] mb-6"
+            style={{ fontSize: 'clamp(38px, 5.5vw, 68px)' }}
           >
-            <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-semibold px-3.5 py-1.5 rounded-full mb-7 tracking-widest uppercase">
-              <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse flex-shrink-0" />
-              Newsletter sponsorship marketplace
-            </div>
+            Book newsletter{' '}
+            <br className="hidden sm:block" />
+            ad slots{' '}
+            <span className="relative inline-block" style={{ color: '#0f766e' }}>
+              directly.
+              <span
+                className="absolute left-0 right-0 h-[3px] rounded-full"
+                style={{ bottom: '-2px', background: 'linear-gradient(90deg, #0f766e, #14b8a6)' }}
+              />
+            </span>
+          </h1>
 
-            <h1
-              className="font-bold text-slate-900 tracking-[-0.045em] leading-[1.0] mb-5"
-              style={{ fontSize: 'clamp(34px, 4.2vw, 56px)' }}
+          <p className="text-[18px] sm:text-[20px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[620px] mx-auto">
+            Browse verified sponsorship slots from top newsletter publishers. Pick your niche, audience, and budget — then reserve with a 5% deposit.
+          </p>
+          <p className="text-[14px] text-slate-400 font-medium mb-10 max-w-[480px] mx-auto">
+            The balance goes direct to the publisher. No middlemen, no markup.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
+            <button
+              onClick={onBrowse}
+              className="group inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-8 py-4 rounded-xl text-[16px] transition-all duration-200 shadow-[0_8px_28px_rgba(15,23,42,0.18)] hover:shadow-[0_12px_36px_rgba(15,23,42,0.24)] hover:-translate-y-px"
             >
-              Book newsletter{' '}
-              <br className="hidden sm:block" />
-              ad slots{' '}
-              <span className="relative inline-block" style={{ color: '#0f766e' }}>
-                directly.
-                <span
-                  className="absolute left-0 right-0 h-[3px] rounded-full"
-                  style={{ bottom: '-2px', background: 'linear-gradient(90deg, #0f766e, #14b8a6)' }}
-                />
-              </span>
-            </h1>
+              Browse {liveCount > 0 ? `${liveCount} Live Slots` : 'Opportunities'}
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-150" />
+            </button>
+            <button
+              onClick={onListSlot}
+              className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-semibold px-8 py-4 rounded-xl text-[16px] border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all duration-200 shadow-[0_2px_8px_rgba(15,23,42,0.06)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.10)] hover:-translate-y-px"
+            >
+              <Mail className="w-4 h-4" />
+              List a Slot Free
+            </button>
+          </div>
 
-            <p className="text-[17px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[440px]">
-              Browse verified sponsorship slots from top newsletter publishers. Pick your niche, audience, and budget — then reserve with a 5% deposit.
-            </p>
-            <p className="text-[14px] text-slate-400 font-medium mb-9 max-w-[400px]">
-              The balance goes direct to the publisher. No middlemen, no markup.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3 mb-10">
-              <button
-                onClick={onBrowse}
-                className="group inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-7 py-3.5 rounded-xl text-[15px] transition-all duration-200 shadow-[0_8px_28px_rgba(15,23,42,0.18)] hover:shadow-[0_12px_36px_rgba(15,23,42,0.24)] hover:-translate-y-px"
-              >
-                Browse {liveCount > 0 ? `${liveCount} Live Slots` : 'Opportunities'}
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-150" />
-              </button>
-              <button
-                onClick={onListSlot}
-                className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-semibold px-7 py-3.5 rounded-xl text-[15px] border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all duration-200 shadow-[0_2px_8px_rgba(15,23,42,0.06)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.10)] hover:-translate-y-px"
-              >
-                <Mail className="w-4 h-4" />
-                List a Slot Free
-              </button>
-            </div>
-
-            <div className="border-t border-slate-100 pt-7">
-              <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-widest mb-4">
-                Featured publishers
-              </p>
-              <div className="flex flex-wrap gap-x-5 gap-y-2">
-                {TRUST_LOGOS.map(name => (
-                  <span key={name} className="text-[13px] font-semibold text-slate-300 hover:text-slate-500 transition-colors duration-200 cursor-default">
-                    {name}
-                  </span>
+          {/* Social proof row */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pb-10 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <div className="flex -space-x-1.5">
+                {PROOF_AVATARS.map((bg, i) => (
+                  <div key={i} className={`w-6 h-6 rounded-full ${bg} border-2 border-white flex items-center justify-center`}>
+                    <span className="text-white text-[8px] font-bold">{['M', 'J', 'K', 'S'][i]}</span>
+                  </div>
                 ))}
               </div>
+              <p className="text-[12px] text-slate-400 font-medium">
+                <span className="text-slate-600 font-semibold">2,400+</span> sponsors have booked
+              </p>
+            </div>
+            <span className="hidden sm:block w-px h-4 bg-slate-200" />
+            <div className="flex items-center gap-1.5">
+              <MousePointerClick className="w-3.5 h-3.5 text-slate-300" />
+              <span className="text-[12px] text-slate-400 font-medium">
+                Avg <span className="text-slate-600 font-semibold">4.8% CTR</span>
+              </span>
+            </div>
+            <span className="hidden sm:block w-px h-4 bg-slate-200" />
+            <div className="flex items-center gap-1.5">
+              <BarChart3 className="w-3.5 h-3.5 text-slate-300" />
+              <span className="text-[12px] text-slate-400 font-medium">
+                <span className="text-emerald-600 font-semibold">340+</span> publishers
+              </span>
             </div>
           </div>
 
-          {/* RIGHT -- Newsletter preview with sponsored ad */}
-          <div
-            className="hidden lg:flex flex-col gap-4"
-            style={{
-              opacity: visible ? 1 : 0,
-              transform: visible ? 'translateY(0)' : 'translateY(30px)',
-              transition: 'opacity 0.65s ease 0.14s, transform 0.65s ease 0.14s',
-            }}
-          >
-            {/* Simulated newsletter email */}
-            <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-[0_8px_40px_rgba(0,0,0,0.08)]">
-              {/* Email chrome bar */}
-              <div className="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex items-center gap-3">
-                <div className="flex gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
-                  <span className="w-2.5 h-2.5 rounded-full bg-slate-200" />
-                </div>
-                <div className="flex-1 flex items-center justify-center">
-                  <span className="text-[10px] text-slate-400 font-medium bg-white border border-slate-200 rounded-md px-3 py-0.5">
-                    mail.google.com/inbox
-                  </span>
-                </div>
-              </div>
-
-              {/* Email header */}
-              <div className="px-5 pt-4 pb-3 border-b border-slate-100">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
-                    <span className="text-white text-[11px] font-bold">SF</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[12px] font-bold text-slate-800">SaaS Founder Weekly</p>
-                      <span className="text-[9px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-medium">62,400 subscribers</span>
-                    </div>
-                    <p className="text-[10px] text-slate-400">to me &middot; Tuesday 9:04 AM</p>
-                  </div>
-                  <Star className="w-4 h-4 text-amber-400 fill-amber-400 flex-shrink-0" />
-                </div>
-                <p className="text-[13px] font-semibold text-slate-700">#247 &mdash; How to scale your GTM motion in 2026</p>
-              </div>
-
-              {/* Newsletter body content */}
-              <div className="px-5 py-4 space-y-3">
-                {/* Fake text lines */}
-                <div className="space-y-1.5">
-                  <div className="h-2.5 bg-slate-100 rounded-full w-full" />
-                  <div className="h-2.5 bg-slate-100 rounded-full w-[92%]" />
-                  <div className="h-2.5 bg-slate-100 rounded-full w-[78%]" />
-                </div>
-
-                {/* Sponsored ad placement -- the hero moment */}
-                <div
-                  className="relative rounded-xl border-2 border-teal-200 bg-gradient-to-br from-teal-50/80 to-emerald-50/50 p-4 my-2"
-                  style={{ animation: 'adGlow 3s ease-in-out infinite' }}
-                >
-                  <div className="absolute -top-2.5 left-4">
-                    <span className="text-[9px] font-bold text-teal-600 bg-teal-100 px-2 py-0.5 rounded-full uppercase tracking-widest border border-teal-200">
-                      Your Ad Here
-                    </span>
-                  </div>
-                  <div className="mt-1.5 flex gap-3">
-                    <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center flex-shrink-0">
-                      <span className="text-white text-[18px] font-bold">A</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-bold text-slate-800 mb-0.5">Acme Analytics — Know your customers better</p>
-                      <p className="text-[10px] text-slate-500 leading-relaxed">Join 4,000+ SaaS teams using Acme to understand user behavior and reduce churn by 35%. Start free today.</p>
-                      <div className="mt-2 inline-flex items-center gap-1.5 bg-slate-800 text-white text-[9px] font-bold px-2.5 py-1 rounded-md">
-                        Try Acme Free <ArrowRight className="w-2.5 h-2.5" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* More fake text */}
-                <div className="space-y-1.5">
-                  <div className="h-2.5 bg-slate-100 rounded-full w-[88%]" />
-                  <div className="h-2.5 bg-slate-100 rounded-full w-full" />
-                  <div className="h-2.5 bg-slate-100 rounded-full w-[65%]" />
-                </div>
-              </div>
-            </div>
-
-            {/* Performance metrics strip */}
-            <div className="grid grid-cols-3 gap-2.5">
-              {[
-                { icon: <Eye className="w-3.5 h-3.5 text-teal-600" />, label: 'Open rate', value: '47.2%', bg: 'bg-teal-50', border: 'border-teal-100' },
-                { icon: <MousePointerClick className="w-3.5 h-3.5 text-sky-600" />, label: 'Click rate', value: '4.8%', bg: 'bg-sky-50', border: 'border-sky-100' },
-                { icon: <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />, label: 'Est. ROI', value: '6.2x', bg: 'bg-emerald-50', border: 'border-emerald-100' },
-              ].map((m, i) => (
-                <div
-                  key={m.label}
-                  className={`rounded-xl border ${m.border} ${m.bg} p-3 transition-all duration-500 ${
-                    statStep === i ? 'scale-[1.03] shadow-md' : 'shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    {m.icon}
-                    <span className="text-[10px] text-slate-500 font-medium">{m.label}</span>
-                  </div>
-                  <p className="text-[20px] font-bold text-slate-800 tracking-tight leading-none">{m.value}</p>
-                </div>
+          {/* Publisher logos */}
+          <div className="pt-7 mb-14">
+            <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-widest mb-4">
+              Featured publishers
+            </p>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
+              {TRUST_LOGOS.map(name => (
+                <span key={name} className="text-[13px] font-semibold text-slate-300 hover:text-slate-500 transition-colors duration-200 cursor-default">
+                  {name}
+                </span>
               ))}
             </div>
+          </div>
+        </div>
 
-            {/* Social proof bar */}
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <div className="flex -space-x-1.5">
-                  {[
-                    'bg-gradient-to-br from-teal-400 to-emerald-500',
-                    'bg-gradient-to-br from-sky-400 to-blue-500',
-                    'bg-gradient-to-br from-amber-400 to-orange-500',
-                    'bg-gradient-to-br from-slate-500 to-slate-700',
-                  ].map((bg, i) => (
-                    <div key={i} className={`w-5 h-5 rounded-full ${bg} border-2 border-white flex items-center justify-center`}>
-                      <span className="text-white text-[7px] font-bold">{['M','J','K','S'][i]}</span>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[10px] text-slate-400 font-medium">
-                  <span className="text-slate-600 font-semibold">2,400+</span> sponsors have booked slots
-                </p>
+        {/* Slot detail card — animated, full-width below copy */}
+        <div
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'translateY(0)' : 'translateY(30px)',
+            transition: 'opacity 0.65s ease 0.2s, transform 0.65s ease 0.2s',
+          }}
+        >
+          <div className="text-center mb-8">
+            <p className="text-[11px] font-bold text-teal-600 uppercase tracking-widest mb-3">The smarter way to buy newsletter ads</p>
+            <h2 className="text-[36px] sm:text-[44px] font-extrabold text-slate-900 leading-[1.08] tracking-[-0.03em] mb-3">
+              Discovery:<br className="sm:hidden" /> <span className="text-teal-600">Organized.</span>
+            </h2>
+            <p className="text-[16px] text-slate-500 max-w-[480px] mx-auto leading-relaxed">
+              Every open ad slot, every deadline, every price — in one place. No cold emails. No spreadsheets. Just find, book, and go.
+            </p>
+          </div>
+          <div className="bg-white rounded-2xl border border-teal-200 shadow-[0_8px_40px_rgba(20,184,166,0.10)] overflow-hidden">
+            {/* Header row: logo + name/badges + stars */}
+            <div className="px-6 pt-5 pb-4 flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${slot.gradient} flex items-center justify-center flex-shrink-0`}>
+                <span className="text-white text-[13px] font-bold">{slot.initials}</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <BarChart3 className="w-3 h-3 text-slate-300" />
-                <span className="text-[10px] text-slate-400 font-medium">
-                  <span className="text-emerald-600 font-semibold">{liveCount > 0 ? liveCount : '200+'}</span> slots live now
-                </span>
-                <Users className="w-3 h-3 text-slate-300 ml-2" />
-                <span className="text-[10px] text-slate-400 font-medium">
-                  <span className="text-slate-600 font-semibold">340+</span> publishers
-                </span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[17px] font-bold text-slate-900 leading-tight">{slot.newsletter}</p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold border border-green-200 bg-green-50 text-green-600 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                    <Mail className="w-2.5 h-2.5" />Newsletter
+                  </span>
+                  <span className="text-[13px] text-slate-400">{slot.niche}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-0.5 flex-shrink-0">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 text-amber-400 fill-amber-400" />
+                ))}
+              </div>
+            </div>
+
+            <div className="px-6 pb-5 space-y-3">
+              {/* Stats grid */}
+              <div className="grid grid-cols-4 gap-3">
+                {[
+                  { label: 'Subscribers', value: slot.subscribers, icon: <Users className="w-4 h-4 text-slate-400" /> },
+                  { label: 'Open Rate', value: slot.openRate, icon: <Eye className="w-4 h-4 text-teal-500" />, accent: true },
+                  { label: 'Send Date', value: slot.sendDate, icon: <Clock className="w-4 h-4 text-slate-400" /> },
+                  { label: 'Slots Left', value: `${slot.slotsLeft} of 3`, icon: <BarChart3 className="w-4 h-4 text-orange-400" /> },
+                ].map(stat => (
+                  <div key={stat.label} className="bg-slate-50 rounded-xl py-3 px-2 text-center">
+                    <div className="flex justify-center mb-1.5">{stat.icon}</div>
+                    <p className={`text-[15px] font-bold leading-tight ${stat.accent ? 'text-teal-600' : 'text-slate-800'}`}>{stat.value}</p>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">{stat.label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Type + deadline row */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-slate-500">
+                  <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="text-[13px] font-medium">{slot.sponsorType}</span>
+                </div>
+                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold ${slot.hot ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600'}`}>
+                  <Clock className="w-3.5 h-3.5" />
+                  Book by {slot.deadline}
+                </div>
+              </div>
+
+              {/* Price + CTA */}
+              <div className="flex items-center justify-between bg-teal-50 border border-teal-100 rounded-2xl px-5 py-4">
+                <div>
+                  <p className="text-[28px] font-bold text-slate-900 tracking-tight leading-none">{slot.price}</p>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    <TrendingUp className="w-3.5 h-3.5 text-teal-600" />
+                    <p className="text-[11px] text-teal-600 font-semibold">5% deposit to reserve</p>
+                  </div>
+                </div>
+                <button
+                  onClick={triggerBookingDemo}
+                  className={`flex items-center gap-2 font-bold text-[15px] px-6 py-3.5 rounded-xl transition-all duration-300 ${
+                    bookingStep === 'done'
+                      ? 'bg-emerald-500 text-white scale-95'
+                      : bookingStep === 'locking'
+                      ? 'bg-teal-700 text-white scale-95 opacity-80'
+                      : 'bg-teal-600 hover:bg-teal-700 text-white shadow-md hover:shadow-lg hover:-translate-y-px'
+                  }`}
+                >
+                  {bookingStep === 'done' ? (
+                    <><CheckCircle className="w-4 h-4" />Slot Reserved!</>
+                  ) : bookingStep === 'locking' ? (
+                    <><Lock className="w-4 h-4 animate-pulse" />Securing…</>
+                  ) : (
+                    <><Lock className="w-4 h-4" />Secure Slot<Zap className="w-4 h-4 fill-white" /></>
+                  )}
+                </button>
+              </div>
+
+              {/* Dot navigation */}
+              <div className="flex items-center justify-center gap-2 pt-1">
+                {DEMO_SLOTS.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { setActiveSlot(i); setBookingStep('idle'); }}
+                    className={`rounded-full transition-all duration-200 ${
+                      activeSlot === i ? 'w-6 h-2.5 bg-teal-500' : 'w-2.5 h-2.5 bg-slate-200 hover:bg-slate-300'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes adGlow {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(20,184,166,0); }
-          50% { box-shadow: 0 0 20px 4px rgba(20,184,166,0.1); }
-        }
-      `}</style>
     </section>
   );
 }

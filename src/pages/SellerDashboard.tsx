@@ -3,13 +3,13 @@ import {
   BarChart2, CheckCircle, DollarSign, Plus, RefreshCw, ChevronRight, User, Building2,
   Mail, Phone, Globe, Loader2, X, LogOut, CreditCard as Edit3, Save, Package, Link,
   Twitter, Instagram, Youtube, Mic, TrendingUp, ShieldCheck, Sparkles, TrendingDown,
-  Info, BookOpen, Copy,
+  Info, BookOpen, Copy, Upload, Zap, Eye, Send, Clock,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import SubmitByEmail from '../components/SubmitByEmail';
-import CsvUpload from '../components/CsvUpload';
 import MediaProfileEditor from '../components/MediaProfileEditor';
+import SellerCsvUpload from '../components/SellerCsvUpload';
 import NewsletterManager from '../components/NewsletterManager';
 import type { Listing, ListingStatus, DepositBooking, BookingStatus, MediaProfile, Newsletter } from '../types';
 import { calcDynamicPrice, TIER_STYLES } from '../lib/dynamicPricing';
@@ -19,7 +19,7 @@ interface SellerDashboardProps {
   onListSlot: (newsletterId?: string) => void;
 }
 
-type DashTab = 'listings' | 'newsletters' | 'bookings' | 'media' | 'profile';
+type DashTab = 'listings' | 'newsletters' | 'bookings' | 'media' | 'csv_upload' | 'profile';
 
 interface MarketInsights {
   avgPrice: number;
@@ -51,7 +51,7 @@ const BOOKING_STATUS_CONFIG: Record<BookingStatus, { label: string; color: strin
 
 export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardProps) {
   const { user, profile, signOut, refreshProfile } = useAuth();
-  const [tab, setTab] = useState<DashTab>('listings');
+  const [tab, setTab] = useState<DashTab>('csv_upload');
   const [listings, setListings] = useState<Listing[]>([]);
   const [bookings, setBookings] = useState<DepositBooking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,6 +144,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
   };
 
   const tabs: [DashTab, string][] = [
+    ['csv_upload', 'Weekly Upload'],
     ['listings', 'My Listings'],
     ['newsletters', 'Newsletters'],
     ['bookings', 'Bookings'],
@@ -283,6 +284,11 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
             <MediaProfileBanner onListSlot={() => onListSlot()} hasProfiles={mediaProfiles.length > 0} />
             <MediaProfileEditor onProfilesChanged={setMediaProfiles} />
           </div>
+        ) : tab === 'csv_upload' ? (
+          <div className="space-y-6">
+            <CsvWorkflowBanner />
+            <SellerCsvUpload />
+          </div>
         ) : (
           <SellerProfilePanel profile={profile} userEmail={user?.email} onSaved={refreshProfile} />
         )}
@@ -322,7 +328,6 @@ function ListingsTab({ listings, duplicating, onSelect, onListSlot, onDuplicate,
           action={{ label: 'New Listing', onClick: onListSlot }}
         />
         <SubmitByEmail variant="compact" />
-        <CsvUpload variant="compact" />
       </div>
     );
   }
@@ -345,9 +350,8 @@ function ListingsTab({ listings, duplicating, onSelect, onListSlot, onDuplicate,
           <ListingsTable listings={expiredListings} duplicating={duplicating} onSelect={onSelect} onDuplicate={onDuplicate} />
         </div>
       )}
-      <div className="pt-2 space-y-3">
+      <div className="pt-2">
         <SubmitByEmail variant="compact" />
-        <CsvUpload variant="compact" />
       </div>
       {insights && <MarketInsightsPanel insights={insights} />}
     </div>
@@ -1133,6 +1137,77 @@ function ProfileField({ label, icon, value, editing, onChange, type = 'text', pl
       <div>
         <p className="text-[10px] text-[#86868b] font-semibold">{label}</p>
         <p className="text-[#1d1d1f] text-sm">{value || '—'}</p>
+      </div>
+    </div>
+  );
+}
+
+function CsvWorkflowBanner() {
+  return (
+    <div className="space-y-4 max-w-4xl">
+      {/* Hero tagline */}
+      <div className="bg-white border border-black/[0.06] rounded-3xl px-6 py-5 flex items-center gap-4">
+        <div className="w-10 h-10 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl flex items-center justify-center shrink-0">
+          <Zap className="w-5 h-5 text-[#1d1d1f]" />
+        </div>
+        <div>
+          <p className="text-[#1d1d1f] font-semibold text-sm">Upload your weekly slots in under 2 minutes</p>
+          <p className="text-[#6e6e73] text-xs mt-0.5">Designed for newsletter publishers who want to manage sponsorship inventory quickly and efficiently.</p>
+        </div>
+      </div>
+
+      {/* 4-step flow */}
+      <div className="bg-white border border-black/[0.06] rounded-3xl px-5 py-5">
+        <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-widest mb-4">How it works</p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { icon: <Upload className="w-4 h-4" />, step: '01', title: 'Upload your weekly slots', desc: 'One CSV file with all your available sponsorship slots', color: 'bg-blue-50 border-blue-100 text-blue-600' },
+            { icon: <Zap className="w-4 h-4" />, step: '02', title: 'We structure your listings', desc: 'Slots are automatically grouped by newsletter', color: 'bg-amber-50 border-amber-100 text-amber-600' },
+            { icon: <Eye className="w-4 h-4" />, step: '03', title: 'Review and confirm', desc: 'Quickly check and edit before submitting', color: 'bg-teal-50 border-teal-100 text-teal-600' },
+            { icon: <Send className="w-4 h-4" />, step: '04', title: 'We publish and promote', desc: 'Slots go live and feature in weekly buyer emails', color: 'bg-green-50 border-green-100 text-green-600' },
+          ].map((s, i) => (
+            <div key={i} className="flex flex-col gap-2.5">
+              <div className="flex items-center gap-2">
+                <div className={`w-7 h-7 rounded-xl border flex items-center justify-center shrink-0 ${s.color}`}>
+                  {s.icon}
+                </div>
+                <span className="text-[10px] font-bold text-[#aeaeb2] font-mono">{s.step}</span>
+              </div>
+              <div>
+                <p className="text-[12px] font-semibold text-[#1d1d1f] leading-snug mb-0.5">{s.title}</p>
+                <p className="text-[11px] text-[#86868b] leading-snug">{s.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+        {/* Arrow connectors for desktop */}
+        <div className="hidden sm:flex items-center justify-between mt-4 px-6">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="flex-1 flex items-center justify-center">
+              <ChevronRight className="w-4 h-4 text-[#d1d1d6]" />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Why this works */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { icon: <Clock className="w-3.5 h-3.5" />, title: 'Save time weekly', desc: 'One file instead of managing listings one by one' },
+          { icon: <RefreshCw className="w-3.5 h-3.5" />, title: 'Keep inventory fresh', desc: 'Update all your slots each week in minutes' },
+          { icon: <CheckCircle className="w-3.5 h-3.5" />, title: 'No duplicate work', desc: 'We structure newsletters and slots automatically' },
+          { icon: <Sparkles className="w-3.5 h-3.5" />, title: 'Focus on selling', desc: 'You send your availability — we handle the rest' },
+        ].map((b, i) => (
+          <div key={i} className="bg-white border border-black/[0.06] rounded-2xl px-4 py-3.5 flex flex-col gap-2">
+            <div className="w-6 h-6 bg-[#f5f5f7] border border-black/[0.06] rounded-lg flex items-center justify-center text-[#6e6e73]">
+              {b.icon}
+            </div>
+            <div>
+              <p className="text-[12px] font-semibold text-[#1d1d1f]">{b.title}</p>
+              <p className="text-[11px] text-[#86868b] mt-0.5 leading-snug">{b.desc}</p>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -1,47 +1,55 @@
+// Shared CSV parsing, validation, and template utilities for the unified
+// newsletter sponsorship CSV format. Used by both seller dashboard uploads
+// and admin publisher imports.
+
 import type { CsvRow, ValidationError, CsvColumnKey } from './types';
 import { CSV_COLUMNS } from './types';
 
+// ── Template example rows ─────────────────────────────────────────────────────
+
 const TEMPLATE_ROWS = [
   {
-    newsletter_name: 'SaaS Growth Weekly',
-    subscriber_count: '48000',
-    niche: 'SaaS / B2B',
-    audience_description: 'SaaS founders, growth marketers, B2B decision-makers',
-    sponsorship_type: 'Featured sponsor',
-    original_price: '1200',
-    discount_price: '840',
-    slots_available: '2',
-    deadline: 'Wednesday 5pm',
-    booking_url: 'https://example.com/advertise',
-    description: 'Featured sponsor slot in our Thursday edition reaching 48k SaaS founders and growth marketers.',
+    publisher_name:   'North Star Media',
+    newsletter_name:  'SaaS Growth Weekly',
+    subscriber_count: '25000',
+    niche:            'SaaS',
+    sponsorship_type: 'Featured Sponsor',
+    price:            '500',
+    slots_available:  '2',
+    send_date:        '2026-05-06',
+    deadline:         '2026-05-04',
+    booking_url:      'https://example.com/book/sgw',
+    description:      'Featured sponsor slot in Tuesday\'s edition reaching 25k SaaS founders.',
   },
   {
-    newsletter_name: 'The Founder Brief',
-    subscriber_count: '32000',
-    niche: 'Startups / Business',
-    audience_description: 'Early-stage founders, startup operators, angel investors',
-    sponsorship_type: 'Dedicated send',
-    original_price: '900',
-    discount_price: '630',
-    slots_available: '1',
-    deadline: 'Sunday 6pm',
-    booking_url: 'https://example.com/founder-brief',
-    description: 'A dedicated send to 32k early-stage founders. Your brand owns the entire edition.',
+    publisher_name:   'North Star Media',
+    newsletter_name:  'Marketing Dispatch',
+    subscriber_count: '42000',
+    niche:            'Marketing',
+    sponsorship_type: 'Dedicated Email',
+    price:            '900',
+    slots_available:  '1',
+    send_date:        '2026-05-08',
+    deadline:         '2026-05-06',
+    booking_url:      'https://example.com/book/md',
+    description:      'One dedicated email opportunity to 42k marketing operators.',
   },
   {
-    newsletter_name: 'Growth Dispatch',
-    subscriber_count: '39000',
-    niche: 'Marketing / Growth',
-    audience_description: 'Performance marketers, growth hackers, DTC brand managers',
-    sponsorship_type: 'Solo blast',
-    original_price: '2200',
-    discount_price: '1540',
-    slots_available: '1',
-    deadline: 'Saturday 12pm',
-    booking_url: 'https://example.com/growth-dispatch',
-    description: 'Solo blast to 39k performance marketers. Entire send is your brand — full creative control.',
+    publisher_name:   'Atlas Publisher Group',
+    newsletter_name:  'Founder Brief',
+    subscriber_count: '18000',
+    niche:            'Startups',
+    sponsorship_type: 'Solo Sponsorship',
+    price:            '750',
+    slots_available:  '1',
+    send_date:        '2026-05-07',
+    deadline:         '2026-05-05',
+    booking_url:      'https://example.com/book/fb',
+    description:      'Solo sponsor placement in this week\'s founder issue.',
   },
 ];
+
+// ── Template download ─────────────────────────────────────────────────────────
 
 export function downloadTemplate() {
   const headers = CSV_COLUMNS.map(c => c.key).join(',');
@@ -58,24 +66,22 @@ export function downloadTemplate() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'newsletter-slots-template.csv';
+  a.download = 'newsletter-sponsorship-template.csv';
   a.click();
   URL.revokeObjectURL(url);
 }
 
-function parseCSVLine(line: string): string[] {
+// ── CSV line parser (RFC 4180 compliant) ──────────────────────────────────────
+
+export function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let current = '';
   let inQuotes = false;
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
     if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        current += '"';
-        i++;
-      } else {
-        inQuotes = !inQuotes;
-      }
+      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
+      else inQuotes = !inQuotes;
     } else if (ch === ',' && !inQuotes) {
       result.push(current.trim());
       current = '';
@@ -87,73 +93,78 @@ function parseCSVLine(line: string): string[] {
   return result;
 }
 
+// ── Field validation helpers ──────────────────────────────────────────────────
+
 function isValidUrl(val: string): boolean {
-  try {
-    new URL(val);
-    return true;
-  } catch {
-    return false;
-  }
+  try { new URL(val); return true; } catch { return false; }
 }
+
+function isValidDate(val: string): boolean {
+  if (!val) return false;
+  return !isNaN(new Date(val).getTime());
+}
+
+// ── Row validation ────────────────────────────────────────────────────────────
 
 export function validateRow(raw: Record<string, string>, rowIndex: number): CsvRow {
   const errors: ValidationError[] = [];
-
   const get = (key: string) => (raw[key] ?? '').trim();
 
-  const newsletter_name = get('newsletter_name');
+  const publisher_name   = get('publisher_name');
+  const newsletter_name  = get('newsletter_name');
   const subscriber_count = get('subscriber_count');
-  const niche = get('niche');
-  const audience_description = get('audience_description');
+  const niche            = get('niche');
   const sponsorship_type = get('sponsorship_type');
-  const original_price = get('original_price');
-  const discount_price = get('discount_price');
-  const slots_available = get('slots_available');
-  const deadline = get('deadline');
-  const booking_url = get('booking_url');
-  const description = get('description');
+  const price            = get('price');
+  const slots_available  = get('slots_available');
+  const send_date        = get('send_date');
+  const deadline         = get('deadline');
+  const booking_url      = get('booking_url');
+  const description      = get('description');
 
-  const required: CsvColumnKey[] = ['newsletter_name', 'subscriber_count', 'niche', 'sponsorship_type', 'original_price', 'discount_price', 'deadline'];
+  // Required field checks
+  const required: CsvColumnKey[] = ['publisher_name', 'newsletter_name', 'subscriber_count', 'niche', 'sponsorship_type', 'price', 'deadline'];
   for (const field of required) {
     if (!get(field)) {
       errors.push({ field, severity: 'error', message: `${field.replace(/_/g, ' ')} is required` });
     }
   }
 
-  if (original_price && isNaN(parseFloat(original_price.replace(/[€$£,]/g, '')))) {
-    errors.push({ field: 'original_price', severity: 'error', message: 'original_price must be a number' });
+  // Numeric validation
+  if (price && isNaN(parseFloat(price.replace(/[€$£,]/g, '')))) {
+    errors.push({ field: 'price', severity: 'error', message: 'price must be a valid number' });
   }
-  if (discount_price && isNaN(parseFloat(discount_price.replace(/[€$£,]/g, '')))) {
-    errors.push({ field: 'discount_price', severity: 'error', message: 'discount_price must be a number' });
+  if (subscriber_count && isNaN(parseInt(subscriber_count.replace(/,/g, '')))) {
+    errors.push({ field: 'subscriber_count', severity: 'warning', message: 'subscriber_count should be a whole number' });
   }
   if (slots_available && isNaN(parseInt(slots_available))) {
     errors.push({ field: 'slots_available', severity: 'warning', message: 'slots_available should be a whole number' });
   }
+
+  // Date validation
+  if (deadline && !isValidDate(deadline)) {
+    errors.push({ field: 'deadline', severity: 'error', message: 'deadline must be a valid date (YYYY-MM-DD recommended)' });
+  }
+  if (send_date && !isValidDate(send_date)) {
+    errors.push({ field: 'send_date', severity: 'warning', message: 'send_date does not look like a valid date' });
+  }
+
+  // URL validation
   if (booking_url && !isValidUrl(booking_url)) {
     errors.push({ field: 'booking_url', severity: 'warning', message: 'booking_url does not look like a valid URL' });
   }
 
-  const hasErrors = errors.some(e => e.severity === 'error');
-  const hasWarnings = errors.some(e => e.severity === 'warning');
-
   return {
-    rowIndex,
-    newsletter_name,
-    subscriber_count,
-    niche,
-    audience_description,
-    sponsorship_type,
-    original_price,
-    discount_price,
-    slots_available,
-    deadline,
-    booking_url,
-    description,
+    rowIndex, publisher_name, newsletter_name, subscriber_count, niche,
+    sponsorship_type, price, slots_available, send_date, deadline,
+    booking_url, description,
     errors,
-    hasErrors,
-    hasWarnings,
+    hasErrors: errors.some(e => e.severity === 'error'),
+    hasWarnings: errors.some(e => e.severity === 'warning'),
   };
 }
+
+// ── Full CSV parser ───────────────────────────────────────────────────────────
 
 export function parseCSV(text: string): { rows: CsvRow[]; headerError: string | null } {
   const lines = text.split(/\r?\n/).filter(l => l.trim());
@@ -161,8 +172,7 @@ export function parseCSV(text: string): { rows: CsvRow[]; headerError: string | 
     return { rows: [], headerError: 'CSV must have a header row and at least one data row.' };
   }
 
-  const headerLine = lines[0];
-  const headers = parseCSVLine(headerLine).map(h => h.toLowerCase().trim());
+  const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase().trim());
   const requiredHeaders = CSV_COLUMNS.filter(c => c.required).map(c => c.key);
   const missing = requiredHeaders.filter(h => !headers.includes(h));
   if (missing.length > 0) {
