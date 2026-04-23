@@ -1,5 +1,5 @@
 import {
-  Mail, MapPin, Users, Lock, Zap, Eye,
+  Mail, Mic2, MapPin, Users, Lock, Zap, Eye, Download,
   CheckCircle, Clock, AlertTriangle, CalendarClock, Flame, TrendingDown,
   Shield, Tag, ChevronRight,
 } from 'lucide-react';
@@ -28,8 +28,9 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
   const tx = useTranslations();
 
   const newsletter = (listing as any).newsletter as Newsletter | null;
-  const newsletterName = newsletter?.name || listing.property_name;
-  const publisherName = newsletter?.publisher_name || listing.media_company_name || listing.media_owner_name;
+  const isPodcast = listing.media_type === 'podcast';
+  const propertyName = newsletter?.name || listing.property_name;
+  const publisherName = listing.host_name || newsletter?.publisher_name || listing.media_company_name || listing.media_owner_name;
   const niche = listing.media_profile?.category || newsletter?.niche || null;
 
   const autoDiscount = listing.auto_discount_enabled !== false;
@@ -80,13 +81,28 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
     tier === 'last_chance' ? 'bg-red-500' :
     tier === 'mid' ? 'bg-orange-500' :
     tier === 'early' ? 'bg-amber-400' :
-    'bg-teal-500';
+    isPodcast ? 'bg-sky-500' : 'bg-teal-500';
 
   const borderClass =
     !isLive ? 'border-black/[0.06]' :
     tier === 'last_chance' ? 'border-red-200' :
     tier === 'mid' ? 'border-orange-200' :
-    'border-teal-200';
+    isPodcast ? 'border-sky-200' : 'border-teal-200';
+
+  const ctaClass = isPodcast
+    ? 'bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white shadow-md hover:shadow-lg hover:-translate-y-px'
+    : 'bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white shadow-md hover:shadow-lg hover:-translate-y-px';
+
+  const priceAreaClass = hasDiscount && isLive
+    ? tier === 'last_chance' ? 'bg-red-50 border border-red-100'
+    : tier === 'mid' ? 'bg-orange-50 border border-orange-100'
+    : 'bg-amber-50 border border-amber-100'
+    : isPodcast ? 'bg-sky-50 border border-sky-100' : 'bg-teal-50 border border-teal-100';
+
+  const priceTextClass = isPodcast ? 'text-sky-600' : 'text-teal-600';
+
+  const dateLabel = isPodcast ? 'Ep. Date' : 'Send Date';
+  const downloads = listing.downloads ?? null;
 
   return (
     <div
@@ -97,31 +113,28 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
           : 'opacity-50 shadow-sm'
         }`}
     >
-      {/* Top accent line */}
       {isLive && <div className={`h-[3px] w-full ${accentLineClass}`} />}
 
       <div className="p-5">
 
-        {/* ── Header row ── */}
+        {/* Header row */}
         <div className="flex items-start gap-4 mb-4">
-          {/* Logo / initials */}
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0 text-white text-[12px] font-bold uppercase">
+          <div className={`w-11 h-11 rounded-xl bg-gradient-to-br flex items-center justify-center flex-shrink-0 text-white text-[12px] font-bold uppercase ${isPodcast ? 'from-sky-500 to-blue-600' : 'from-teal-500 to-emerald-500'}`}>
             {listing.media_profile?.logo_url ? (
               <img
                 src={listing.media_profile.logo_url}
-                alt={newsletterName}
+                alt={propertyName}
                 className="w-full h-full rounded-xl object-cover"
                 onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
               />
             ) : (
-              newsletterName.slice(0, 2)
+              propertyName.slice(0, 2)
             )}
           </div>
 
-          {/* Name + badges */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-              <h3 className="text-[15px] font-bold text-slate-900 leading-tight truncate">{newsletterName}</h3>
+              <h3 className="text-[15px] font-bold text-slate-900 leading-tight truncate">{propertyName}</h3>
               {statusIcon}
               {isLive && urgencyLabel && (
                 <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 ${tierStyle.badge}`}>
@@ -131,15 +144,21 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
               )}
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1 text-[10px] font-bold border border-green-200 bg-green-50 text-green-600 px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
-                <Mail className="w-2.5 h-2.5" />Newsletter
-              </span>
+              {isPodcast ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold border border-sky-200 bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
+                  <Mic2 className="w-2.5 h-2.5" />Podcast
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold border border-green-200 bg-green-50 text-green-600 px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
+                  <Mail className="w-2.5 h-2.5" />Newsletter
+                </span>
+              )}
               {niche && (
                 <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full">
                   <Tag className="w-2.5 h-2.5" />{niche}
                 </span>
               )}
-              {listing.slot_type && listing.slot_type !== newsletterName && (
+              {listing.slot_type && listing.slot_type !== propertyName && (
                 <span className="text-[10px] font-semibold text-slate-500 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full">
                   {listing.slot_type}
                 </span>
@@ -155,7 +174,6 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
             </button>
           </div>
 
-          {/* Stars placeholder / slots indicator top-right */}
           {isLive && (
             <div className="flex flex-col items-end gap-1 flex-shrink-0">
               <div className="flex items-center gap-1">
@@ -165,29 +183,47 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
               </div>
               <div className="flex gap-0.5">
                 {Array.from({ length: Math.min(listing.slots_total || 5, 5) }).map((_, i) => (
-                  <span key={i} className={`block w-2 h-2 rounded-full ${i < listing.slots_remaining ? (isScarce ? 'bg-orange-400' : 'bg-teal-500') : 'bg-slate-200'}`} />
+                  <span key={i} className={`block w-2 h-2 rounded-full ${i < listing.slots_remaining ? (isScarce ? 'bg-orange-400' : isPodcast ? 'bg-sky-500' : 'bg-teal-500') : 'bg-slate-200'}`} />
                 ))}
               </div>
             </div>
           )}
         </div>
 
-        {/* ── Stats grid ── */}
+        {/* Stats grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mb-3">
-          <StatCell
-            icon={<Users className="w-4 h-4 text-slate-400" />}
-            label="Subscribers"
-            value={subscriberCount ? fmt(subscriberCount) : '—'}
-          />
-          <StatCell
-            icon={<Eye className="w-4 h-4 text-teal-500" />}
-            label="Open Rate"
-            value={openRate || '—'}
-            accent
-          />
+          {isPodcast ? (
+            <>
+              <StatCell
+                icon={<Download className="w-4 h-4 text-slate-400" />}
+                label="Downloads/Ep"
+                value={downloads ? fmt(downloads) : '—'}
+              />
+              <StatCell
+                icon={<Mic2 className="w-4 h-4 text-sky-500" />}
+                label="Ad Slot"
+                value={listing.ad_slot_position || listing.slot_type || '—'}
+                accent
+              />
+            </>
+          ) : (
+            <>
+              <StatCell
+                icon={<Users className="w-4 h-4 text-slate-400" />}
+                label="Subscribers"
+                value={subscriberCount ? fmt(subscriberCount) : '—'}
+              />
+              <StatCell
+                icon={<Eye className="w-4 h-4 text-teal-500" />}
+                label="Open Rate"
+                value={openRate || '—'}
+                accent
+              />
+            </>
+          )}
           <StatCell
             icon={<CalendarClock className="w-4 h-4 text-slate-400" />}
-            label="Send Date"
+            label={dateLabel}
             value={weekday || calDate || '—'}
             sub={weekday ? calDate : undefined}
           />
@@ -199,7 +235,7 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
           />
         </div>
 
-        {/* Extra stats row: CTR + geography + audience (shown when data exists) */}
+        {/* Extra stats row */}
         {(ctr || geography || audienceLabel) && (
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mb-3 text-[11px] text-slate-400">
             {ctr && (
@@ -223,14 +259,8 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
           </div>
         )}
 
-        {/* ── Bottom: price + CTA ── */}
-        <div className={`flex items-center justify-between rounded-2xl px-5 py-4 ${
-          hasDiscount && isLive
-            ? tier === 'last_chance' ? 'bg-red-50 border border-red-100'
-            : tier === 'mid' ? 'bg-orange-50 border border-orange-100'
-            : 'bg-amber-50 border border-amber-100'
-            : 'bg-teal-50 border border-teal-100'
-        }`}>
+        {/* Price + CTA */}
+        <div className={`flex items-center justify-between rounded-2xl px-5 py-4 ${priceAreaClass}`}>
           <div>
             <div className="flex items-baseline gap-2 mb-1">
               <span className="text-[26px] font-bold text-slate-900 tracking-tight leading-none">{formatPrice(currentPrice)}</span>
@@ -241,15 +271,15 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
             <div className="flex items-center gap-1.5">
               {hasDiscount ? (
                 <>
-                  <TrendingDown className="w-3.5 h-3.5 text-teal-600" />
-                  <p className="text-[11px] text-teal-600 font-semibold">
+                  <TrendingDown className={`w-3.5 h-3.5 ${priceTextClass}`} />
+                  <p className={`text-[11px] font-semibold ${priceTextClass}`}>
                     Save {formatPrice(savings)} · {tx.card.reserveWithDeposit} {formatPrice(depositAmount)}
                   </p>
                 </>
               ) : (
                 <>
-                  <TrendingDown className="w-3.5 h-3.5 text-teal-600 opacity-50" />
-                  <p className="text-[11px] text-teal-600 font-semibold">
+                  <TrendingDown className={`w-3.5 h-3.5 ${priceTextClass} opacity-50`} />
+                  <p className={`text-[11px] font-semibold ${priceTextClass}`}>
                     {tx.card.reserveWithDeposit} {formatPrice(depositAmount)}
                   </p>
                 </>
@@ -262,9 +292,7 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
               onClick={() => !isSecured && onSecure(listing)}
               disabled={isSecured}
               className={`flex items-center gap-2 font-bold text-[14px] px-5 py-3 rounded-xl transition-all duration-200 ${
-                isSecured
-                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                  : 'bg-teal-600 hover:bg-teal-700 active:bg-teal-800 text-white shadow-md hover:shadow-lg hover:-translate-y-px'
+                isSecured ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : ctaClass
               }`}
             >
               {!isSecured && <Lock className="w-4 h-4" />}
@@ -301,7 +329,6 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
           </div>
         )}
 
-        {/* Countdown */}
         {isLive && (
           <div className="mt-3">
             <CountdownTimer deadline={listing.deadline_at} compact />
@@ -325,7 +352,7 @@ function StatCell({
   return (
     <div className="bg-slate-50 rounded-xl py-3 px-2 text-center">
       <div className="flex justify-center mb-1.5">{icon}</div>
-      <p className={`text-[14px] font-bold leading-tight ${accent ? 'text-teal-600' : hot ? 'text-orange-600' : 'text-slate-800'}`}>
+      <p className={`text-[14px] font-bold leading-tight ${accent ? 'text-sky-600' : hot ? 'text-orange-600' : 'text-slate-800'}`}>
         {value}
       </p>
       {sub && <p className="text-[10px] text-slate-400 leading-tight mt-0.5">{sub}</p>}

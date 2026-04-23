@@ -100,7 +100,7 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: { value: str
 
 export default function ListSlotPage({ onBack, onEditProfile, preselectedNewsletterId }: ListSlotPageProps) {
   const { user, profile } = useAuth();
-  const [contentType, setContentType] = useState<'newsletter' | 'podcast'>('newsletter');
+  const [contentType, setContentType] = useState<'newsletter' | 'podcast'>('podcast');
   const [form, setForm] = useState<FormState>({ ...BLANK, newsletter_id: preselectedNewsletterId ?? null });
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
   const [mediaProfiles, setMediaProfiles] = useState<MediaProfile[]>([]);

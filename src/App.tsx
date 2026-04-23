@@ -220,14 +220,14 @@ export default function App() {
     }
   };
 
-  const [preselectedNewsletterId, setPreselectedNewsletterId] = useState<string | null>(null);
+  const [preselectedMediaId, setPreselectedMediaId] = useState<string | null>(null);
 
-  const handleListSlot = (newsletterId?: string) => {
+  const handleListSlot = (mediaId?: string) => {
     if (!profile && !authLoading) {
       setShowAuthModal(true);
       return;
     }
-    setPreselectedNewsletterId(newsletterId ?? null);
+    setPreselectedMediaId(mediaId ?? null);
     navigateUrl(null);
     setPage('list-slot');
     window.scrollTo(0, 0);
@@ -330,7 +330,7 @@ export default function App() {
           <ListSlotPage
             onBack={() => { goHome(); refetch(); }}
             onEditProfile={() => { setPage('dashboard'); window.scrollTo(0, 0); }}
-            preselectedNewsletterId={preselectedNewsletterId}
+            preselectedNewsletterId={preselectedMediaId}
           />
         </Suspense>
       </div>
@@ -360,7 +360,7 @@ export default function App() {
         <Suspense fallback={<PageFallback />}>
           <SellerDashboard
             onBack={() => { goHome(); window.scrollTo(0, 0); }}
-            onListSlot={(newsletterId) => { handleListSlot(newsletterId); }}
+            onListSlot={(mediaId) => { handleListSlot(mediaId); }}
           />
         </Suspense>
       );
@@ -552,11 +552,10 @@ export default function App() {
       <Header {...sharedHeaderProps} onHome={() => setPage('home')} />
 
       <main>
-        <Hero onBrowse={handleBrowse} onListSlot={handleListSlot} liveCount={stats.liveCount} />
+        <Hero onBrowse={handlePodcasts} onListSlot={handleListSlot} liveCount={stats.liveCount} />
         <StatsBar liveCount={stats.liveCount} avgDiscount={stats.avgDiscount} totalSavings={stats.totalSavings} />
-        <WhyNewsletterAds onBrowse={handleBrowse} />
         <PodcastsSection onBrowsePodcasts={handlePodcasts} onSecure={handleSecure} onDetails={handleViewListing} />
-
+        <WhyNewsletterAds onBrowse={handlePodcasts} />
         <SmartMatchCallout isLoggedIn={!!profile} onSignIn={() => setShowAuthModal(true)} onDashboard={handleDashboard} />
         <HowItWorks onListSlot={handleListSlot} />
       </main>

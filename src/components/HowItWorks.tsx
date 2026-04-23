@@ -5,8 +5,8 @@ const STEPS = [
     icon: <Search className="w-4 h-4 text-sky-600" />,
     iconBg: 'bg-sky-50',
     number: '01',
-    title: 'Browse live sponsorship slots',
-    description: 'Filter by niche, audience size, geography, and budget. Each listing shows verified audience data, the send date, and a live countdown to the booking deadline.',
+    title: 'Browse live podcast ad slots',
+    description: 'Filter by niche, audience size, geography, and budget. Each listing shows verified download data, the episode date, and a live countdown to the booking deadline.',
     note: null,
   },
   {
@@ -14,7 +14,7 @@ const STEPS = [
     iconBg: 'bg-orange-50',
     number: '02',
     title: 'Find the right match for your brand',
-    description: 'Smart match scoring surfaces newsletters that fit your niche and audience. Some publishers also offer discounted rates as the send date approaches — entirely their choice.',
+    description: 'Smart match scoring surfaces podcasts that fit your niche and audience. Some hosts also offer discounted rates as the episode date approaches — entirely their choice.',
     note: null,
   },
   {
@@ -22,15 +22,15 @@ const STEPS = [
     iconBg: 'bg-green-50',
     number: '03',
     title: 'Pay 5% to reserve',
-    description: 'Pay a 5% deposit to lock in your sponsorship immediately. Your details and a booking reference are sent to the newsletter publisher straight away.',
-    note: '95% paid direct to publisher',
+    description: 'Pay a 5% deposit to lock in your sponsorship immediately. Your details and a booking reference are sent to the podcast host straight away.',
+    note: '95% paid direct to host',
   },
   {
     icon: <FileText className="w-4 h-4 text-rose-500" />,
     iconBg: 'bg-rose-50',
     number: '04',
     title: 'Send your ad copy',
-    description: "The publisher's contact details are released after your deposit. You settle the balance directly and hand over your ad copy before the send date.",
+    description: "The host's contact details are released after your deposit. You settle the balance directly and send over your ad copy — script, audio file, or brief — before the episode records.",
     note: null,
   },
 ];
@@ -46,10 +46,10 @@ export default function HowItWorks({ onListSlot }: HowItWorksProps) {
         <div className="max-w-2xl mb-14">
           <p className="text-[12px] font-semibold uppercase tracking-widest text-[#86868b] mb-4">How it works</p>
           <h2 className="text-4xl font-semibold text-[#1d1d1f] mb-4 leading-tight tracking-[-0.02em]">
-            Find the right newsletter slot,<br />book it in minutes.
+            Find the right podcast slot,<br />book it in minutes.
           </h2>
           <p className="text-[#6e6e73] text-[17px] leading-relaxed font-light">
-            A curated marketplace of verified newsletter sponsorship slots. Filter, match, reserve — then settle directly with the publisher. Fast, flexible, and transparent.
+            A curated marketplace of verified podcast ad slots. Filter, match, reserve — then settle directly with the host. Fast, flexible, and transparent.
           </p>
         </div>
 
@@ -84,8 +84,8 @@ export default function HowItWorks({ onListSlot }: HowItWorksProps) {
         <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
           {[
             { label: 'Deposit only', value: '5%', sub: 'Charged by platform to reserve', color: 'text-green-600' },
-            { label: 'Balance paid', value: 'Direct', sub: 'Publisher invoices you separately', color: 'text-sky-600' },
-            { label: 'Publisher contact', value: 'Instant', sub: 'Released after deposit confirmed', color: 'text-orange-500' },
+            { label: 'Balance paid', value: 'Direct', sub: 'Host invoices you separately', color: 'text-sky-600' },
+            { label: 'Host contact', value: 'Instant', sub: 'Released after deposit confirmed', color: 'text-orange-500' },
           ].map((item, i) => (
             <div key={i} className="bg-[#f5f5f7] rounded-3xl p-5 text-center">
               <p className={`font-bold text-[22px] tracking-[-0.02em] mb-0.5 ${item.color}`}>{item.value}</p>
@@ -97,10 +97,10 @@ export default function HowItWorks({ onListSlot }: HowItWorksProps) {
 
         <div className="mt-12 bg-[#1d1d1f] rounded-3xl p-7 flex flex-col sm:flex-row items-center justify-between gap-5">
           <div>
-            <h3 className="text-white font-semibold text-[17px] mb-1 tracking-[-0.01em]">Got sponsorship slots to fill across your newsletters?</h3>
-            <p className="text-white/55 text-[14px]">Add your newsletters once, then create listings in seconds. Set a price and deadline, optionally enable automatic discounting, and let buyers come to you.</p>
+            <h3 className="text-white font-semibold text-[17px] mb-1 tracking-[-0.01em]">Got ad slots to fill across your podcast?</h3>
+            <p className="text-white/55 text-[14px]">Add your show once, then create listings in seconds. Set a price and deadline, optionally enable automatic discounting, and let buyers come to you.</p>
           </div>
-          <button onClick={onListSlot} className="flex-shrink-0 bg-green-500 hover:bg-green-400 active:bg-green-600 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap shadow-lg shadow-green-500/25">
+          <button onClick={onListSlot} className="flex-shrink-0 bg-sky-500 hover:bg-sky-400 active:bg-sky-600 text-white font-semibold px-6 py-2.5 rounded-full text-[14px] transition-all whitespace-nowrap shadow-lg shadow-sky-500/25">
             List a Slot Free
           </button>
         </div>

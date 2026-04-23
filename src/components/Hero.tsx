@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
-  ArrowRight, Mail, Users, Clock, Lock, Zap,
-  TrendingUp, BarChart3, MapPin, CheckCircle, Star,
-  MousePointerClick, Eye,
+  ArrowRight, Mic2, Users, Clock, Lock, Zap,
+  TrendingUp, BarChart3, CheckCircle, Star,
+  MousePointerClick, Download,
 } from 'lucide-react';
 
 interface HeroProps {
@@ -12,60 +12,66 @@ interface HeroProps {
 }
 
 const TRUST_LOGOS = [
-  'SaaS Weekly', 'AI Frontier', 'Founder HQ', 'Marketing Brew', 'Dev Current', 'Fintech Forward',
+  'The SaaS Operator', 'AI Frontier Pod', 'Founder Talks', 'Growth Daily', 'Dev Unlocked', 'FinTech Insider',
 ];
 
 const PROOF_AVATARS = [
-  'bg-gradient-to-br from-teal-400 to-emerald-500',
   'bg-gradient-to-br from-sky-400 to-blue-500',
+  'bg-gradient-to-br from-teal-400 to-emerald-500',
   'bg-gradient-to-br from-amber-400 to-orange-500',
   'bg-gradient-to-br from-slate-500 to-slate-700',
 ];
 
 const DEMO_SLOTS = [
   {
-    newsletter: 'SaaS Founder Weekly',
-    initials: 'SF',
-    gradient: 'from-teal-500 to-emerald-500',
+    podcast: 'The SaaS Operator',
+    initials: 'SO',
+    gradient: 'from-sky-500 to-blue-600',
     niche: 'SaaS / B2B',
-    subscribers: '62.4k',
-    openRate: '47%',
-    sponsorType: 'Dedicated Sponsor',
-    sendDate: 'Tue 12 May',
+    downloads: '58.2k',
+    position: 'Mid-roll',
+    sponsorType: 'Host-read 60s',
+    episodeDate: 'Tue 12 May',
     deadline: '3 days',
-    price: '$1,400',
+    price: '$1,200',
     slotsLeft: 2,
     hot: true,
   },
   {
-    newsletter: 'AI Frontier Daily',
-    initials: 'AI',
-    gradient: 'from-sky-500 to-blue-600',
+    podcast: 'AI Frontier Pod',
+    initials: 'AF',
+    gradient: 'from-teal-500 to-emerald-500',
     niche: 'Artificial Intelligence',
-    subscribers: '118k',
-    openRate: '52%',
-    sponsorType: 'Primary Placement',
-    sendDate: 'Mon 19 May',
+    downloads: '104k',
+    position: 'Pre-roll',
+    sponsorType: 'Pre-roll 30s',
+    episodeDate: 'Mon 19 May',
     deadline: '9 days',
-    price: '$2,800',
+    price: '$2,400',
     slotsLeft: 1,
     hot: true,
   },
   {
-    newsletter: 'Fintech Forward',
-    initials: 'FF',
+    podcast: 'FinTech Insider',
+    initials: 'FI',
     gradient: 'from-amber-500 to-orange-500',
     niche: 'Fintech / Finance',
-    subscribers: '34.1k',
-    openRate: '41%',
-    sponsorType: 'Classified Ad',
-    sendDate: 'Thu 22 May',
+    downloads: '31.4k',
+    position: 'Post-roll',
+    sponsorType: 'Produced 45s',
+    episodeDate: 'Thu 22 May',
     deadline: '12 days',
-    price: '$590',
+    price: '$490',
     slotsLeft: 3,
     hot: false,
   },
 ];
+
+const POSITION_COLORS: Record<string, string> = {
+  'Pre-roll': 'bg-amber-50 text-amber-700 border-amber-200',
+  'Mid-roll': 'bg-sky-50 text-sky-700 border-sky-200',
+  'Post-roll': 'bg-slate-100 text-slate-600 border-slate-200',
+};
 
 export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps) {
   const [visible, setVisible] = useState(false);
@@ -91,10 +97,10 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
   };
 
   const slot = DEMO_SLOTS[activeSlot];
+  const positionClass = POSITION_COLORS[slot.position] || 'bg-slate-100 text-slate-600 border-slate-200';
 
   return (
     <section className="relative overflow-hidden bg-white">
-      {/* Grid background */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -110,12 +116,11 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(160deg, rgba(236,253,245,0.35) 0%, rgba(255,255,255,0) 40%, rgba(240,249,255,0.12) 100%)',
+          background: 'linear-gradient(160deg, rgba(224,242,254,0.30) 0%, rgba(255,255,255,0) 40%, rgba(204,251,241,0.10) 100%)',
         }}
       />
 
       <div className="relative max-w-[900px] mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-16 lg:pt-36 lg:pb-20">
-        {/* Centered copy block */}
         <div
           className="text-center"
           style={{
@@ -125,12 +130,12 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
           }}
         >
           <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-semibold px-3.5 py-1.5 rounded-full mb-8 tracking-widest uppercase">
-            <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse flex-shrink-0" />
-            Newsletter sponsorship marketplace
+            <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-pulse flex-shrink-0" />
+            Podcast sponsorship marketplace
             {liveCount > 0 && (
               <>
                 <span className="w-px h-3 bg-slate-300" />
-                <span className="text-emerald-600">{liveCount} live</span>
+                <span className="text-sky-600">{liveCount} live</span>
               </>
             )}
           </div>
@@ -139,23 +144,23 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
             className="font-bold text-slate-900 tracking-[-0.045em] leading-[1.0] mb-6"
             style={{ fontSize: 'clamp(38px, 5.5vw, 68px)' }}
           >
-            Book newsletter{' '}
+            Book podcast{' '}
             <br className="hidden sm:block" />
             ad slots{' '}
-            <span className="relative inline-block" style={{ color: '#0f766e' }}>
+            <span className="relative inline-block" style={{ color: '#0284c7' }}>
               directly.
               <span
                 className="absolute left-0 right-0 h-[3px] rounded-full"
-                style={{ bottom: '-2px', background: 'linear-gradient(90deg, #0f766e, #14b8a6)' }}
+                style={{ bottom: '-2px', background: 'linear-gradient(90deg, #0284c7, #38bdf8)' }}
               />
             </span>
           </h1>
 
           <p className="text-[18px] sm:text-[20px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[620px] mx-auto">
-            Browse verified sponsorship slots from top newsletter publishers. Pick your niche, audience, and budget — then reserve with a 5% deposit.
+            Browse pre-roll, mid-roll, and post-roll slots from independent podcast hosts. Pick your niche, audience, and budget — then reserve with a 5% deposit.
           </p>
           <p className="text-[14px] text-slate-400 font-medium mb-10 max-w-[480px] mx-auto">
-            The balance goes direct to the publisher. No middlemen, no markup.
+            The balance goes direct to the host. No middlemen, no markup.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
@@ -170,7 +175,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
               onClick={onListSlot}
               className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-semibold px-8 py-4 rounded-xl text-[16px] border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all duration-200 shadow-[0_2px_8px_rgba(15,23,42,0.06)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.10)] hover:-translate-y-px"
             >
-              <Mail className="w-4 h-4" />
+              <Mic2 className="w-4 h-4" />
               List a Slot Free
             </button>
           </div>
@@ -200,15 +205,15 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
             <div className="flex items-center gap-1.5">
               <BarChart3 className="w-3.5 h-3.5 text-slate-300" />
               <span className="text-[12px] text-slate-400 font-medium">
-                <span className="text-emerald-600 font-semibold">340+</span> publishers
+                <span className="text-sky-600 font-semibold">340+</span> podcasters
               </span>
             </div>
           </div>
 
-          {/* Publisher logos */}
+          {/* Podcast logos */}
           <div className="pt-7 mb-14">
             <p className="text-[11px] text-slate-400 font-semibold uppercase tracking-widest mb-4">
-              Featured publishers
+              Featured podcasts
             </p>
             <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center">
               {TRUST_LOGOS.map(name => (
@@ -220,7 +225,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
           </div>
         </div>
 
-        {/* Slot detail card — animated, full-width below copy */}
+        {/* Slot detail card */}
         <div
           style={{
             opacity: visible ? 1 : 0,
@@ -229,15 +234,15 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
           }}
         >
           <div className="text-center mb-8">
-            <p className="text-[11px] font-bold text-teal-600 uppercase tracking-widest mb-3">The smarter way to buy newsletter ads</p>
+            <p className="text-[11px] font-bold text-sky-600 uppercase tracking-widest mb-3">The smarter way to buy podcast ads</p>
             <h2 className="text-[36px] sm:text-[44px] font-extrabold text-slate-900 leading-[1.08] tracking-[-0.03em] mb-3">
-              Discovery:<br className="sm:hidden" /> <span className="text-teal-600">Organized.</span>
+              Discovery:<br className="sm:hidden" /> <span className="text-sky-600">Organized.</span>
             </h2>
             <p className="text-[16px] text-slate-500 max-w-[480px] mx-auto leading-relaxed">
               Every open ad slot, every deadline, every price — in one place. No cold emails. No spreadsheets. Just find, book, and go.
             </p>
           </div>
-          <div className="bg-white rounded-2xl border border-teal-200 shadow-[0_8px_40px_rgba(20,184,166,0.10)] overflow-hidden">
+          <div className="bg-white rounded-2xl border border-sky-200 shadow-[0_8px_40px_rgba(14,165,233,0.10)] overflow-hidden">
             {/* Header row */}
             <div className="px-5 pt-5 pb-4 flex items-start gap-3.5">
               <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${slot.gradient} flex items-center justify-center flex-shrink-0`}>
@@ -245,7 +250,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-[16px] font-bold text-slate-900 leading-tight">{slot.newsletter}</p>
+                  <p className="text-[16px] font-bold text-slate-900 leading-tight">{slot.podcast}</p>
                   {slot.hot && (
                     <span className="inline-flex items-center gap-1 text-[9px] font-bold bg-red-50 border border-red-200 text-red-600 px-1.5 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
                       <Zap className="w-2.5 h-2.5 fill-red-500" />Hot
@@ -253,8 +258,8 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-1 flex-wrap">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold border border-green-200 bg-green-50 text-green-600 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    <Mail className="w-2.5 h-2.5" />Newsletter
+                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold border px-2 py-0.5 rounded-full uppercase tracking-wider ${positionClass}`}>
+                    <Mic2 className="w-2.5 h-2.5" />{slot.position}
                   </span>
                   <span className="text-[12px] text-slate-400 font-medium">{slot.niche}</span>
                 </div>
@@ -267,17 +272,17 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
             </div>
 
             <div className="px-5 pb-5 space-y-3">
-              {/* Stats grid — 2 cols on mobile, 4 on sm+ */}
+              {/* Stats grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {[
-                  { label: 'Subscribers', value: slot.subscribers, icon: <Users className="w-3.5 h-3.5 text-slate-400" /> },
-                  { label: 'Open Rate', value: slot.openRate, icon: <Eye className="w-3.5 h-3.5 text-teal-500" />, accent: true },
-                  { label: 'Send Date', value: slot.sendDate, icon: <Clock className="w-3.5 h-3.5 text-slate-400" /> },
+                  { label: 'Downloads/Ep', value: slot.downloads, icon: <Download className="w-3.5 h-3.5 text-slate-400" /> },
+                  { label: 'Ad Position', value: slot.position, icon: <Mic2 className="w-3.5 h-3.5 text-sky-500" />, accent: true },
+                  { label: 'Episode Date', value: slot.episodeDate, icon: <Clock className="w-3.5 h-3.5 text-slate-400" /> },
                   { label: 'Slots Left', value: `${slot.slotsLeft} of 3`, icon: <BarChart3 className="w-3.5 h-3.5 text-orange-400" /> },
                 ].map(stat => (
                   <div key={stat.label} className="bg-slate-50 rounded-xl py-3 px-2 text-center">
                     <div className="flex justify-center mb-1.5">{stat.icon}</div>
-                    <p className={`text-[14px] font-bold leading-tight ${stat.accent ? 'text-teal-600' : 'text-slate-800'}`}>{stat.value}</p>
+                    <p className={`text-[14px] font-bold leading-tight ${stat.accent ? 'text-sky-600' : 'text-slate-800'}`}>{stat.value}</p>
                     <p className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5">{stat.label}</p>
                   </div>
                 ))}
@@ -286,7 +291,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
               {/* Sponsor type + deadline */}
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-1.5 text-slate-500">
-                  <MapPin className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                  <Users className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                   <span className="text-[12px] font-semibold text-slate-600">{slot.sponsorType}</span>
                 </div>
                 <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold flex-shrink-0 ${slot.hot ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-orange-50 text-orange-600 border border-orange-100'}`}>
@@ -296,13 +301,13 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
               </div>
 
               {/* Price + CTA */}
-              <div className="bg-teal-50 border border-teal-100 rounded-2xl px-4 py-4">
+              <div className="bg-sky-50 border border-sky-100 rounded-2xl px-4 py-4">
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div>
                     <p className="text-[26px] sm:text-[28px] font-bold text-slate-900 tracking-tight leading-none">{slot.price}</p>
                     <div className="flex items-center gap-1.5 mt-1.5">
-                      <TrendingUp className="w-3.5 h-3.5 text-teal-600" />
-                      <p className="text-[11px] text-teal-600 font-semibold">5% deposit to reserve · balance direct to publisher</p>
+                      <TrendingUp className="w-3.5 h-3.5 text-sky-600" />
+                      <p className="text-[11px] text-sky-600 font-semibold">5% deposit to reserve · balance direct to host</p>
                     </div>
                   </div>
                   <button
@@ -311,8 +316,8 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
                       bookingStep === 'done'
                         ? 'bg-emerald-500 text-white scale-95'
                         : bookingStep === 'locking'
-                        ? 'bg-teal-700 text-white scale-95 opacity-80'
-                        : 'bg-teal-600 hover:bg-teal-700 text-white shadow-md hover:shadow-lg hover:-translate-y-px'
+                        ? 'bg-sky-700 text-white scale-95 opacity-80'
+                        : 'bg-sky-600 hover:bg-sky-700 text-white shadow-md hover:shadow-lg hover:-translate-y-px'
                     }`}
                   >
                     {bookingStep === 'done' ? (
@@ -333,7 +338,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
                     key={i}
                     onClick={() => { setActiveSlot(i); setBookingStep('idle'); }}
                     className={`rounded-full transition-all duration-200 ${
-                      activeSlot === i ? 'w-6 h-2.5 bg-teal-500' : 'w-2.5 h-2.5 bg-slate-200 hover:bg-slate-300'
+                      activeSlot === i ? 'w-6 h-2.5 bg-sky-500' : 'w-2.5 h-2.5 bg-slate-200 hover:bg-slate-300'
                     }`}
                   />
                 ))}
