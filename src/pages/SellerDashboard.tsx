@@ -696,7 +696,7 @@ function ListingDetailModal({ listing, onClose, onRefetch, onDuplicate, duplicat
               <p className="text-sky-700 text-xs">
                 Linked to podcast: <span className="font-semibold">{newsletter.name}</span>
                 {newsletter.subscriber_count && ` · ${newsletter.subscriber_count.toLocaleString()} downloads/ep`}
-                {newsletter.avg_open_rate && ` · ${newsletter.avg_open_rate} CTR`}
+                {newsletter.avg_open_rate && ` · ${newsletter.avg_open_rate} audience`}
               </p>
             </div>
           )}

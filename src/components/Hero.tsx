@@ -198,7 +198,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
             <div className="flex items-center gap-1.5">
               <MousePointerClick className="w-3.5 h-3.5 text-slate-300" />
               <span className="text-[12px] text-slate-400 font-medium">
-                Avg <span className="text-slate-600 font-semibold">4.8% CTR</span>
+                Avg <span className="text-slate-600 font-semibold">58k listeners/ep</span>
               </span>
             </div>
             <span className="hidden sm:block w-px h-4 bg-slate-200" />

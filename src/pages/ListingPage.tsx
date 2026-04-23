@@ -457,7 +457,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                   <StatTile label="Downloads / Ep" value={fmt(listing.subscribers)} />
                 )}
                 {listing.ctr && (
-                  <StatTile label="Click-Through Rate" value={listing.ctr} highlight />
+                  <StatTile label="Audience" value={listing.ctr} highlight />
                 )}
                 {(listing.media_profile?.primary_geography || listing.location) && (
                   <StatTile label="Geography" value={listing.media_profile?.primary_geography || listing.location} icon={<MapPin className="w-3 h-3" />} />

@@ -144,7 +144,7 @@ export default function ProfileForm({ form, onChange, isEditing, onRequestNameCh
         <Field label="Downloads per Episode" icon={<Users className="w-3 h-3" />}>
           <Input value={form.subscriber_count} onChange={set('subscriber_count')} placeholder="e.g. 50000" type="number" />
         </Field>
-        <Field label="Avg CTR / Engagement" icon={<BarChart2 className="w-3 h-3" />}>
+        <Field label="Audience / Engagement" icon={<BarChart2 className="w-3 h-3" />}>
           <Input value={form.open_rate} onChange={set('open_rate')} placeholder="e.g. 3.2%" />
         </Field>
         <Field label="Publishing Frequency" icon={<Radio className="w-3 h-3" />}>

@@ -701,7 +701,7 @@ function EmailSlotDetailPanel({ slot, onStatusChange, onPublish, onClose, updati
     { label: 'Media Type', value: slot.media_type, key: 'media_type' },
     { label: 'Category', value: slot.category, key: 'category' },
     { label: 'Audience Size', value: slot.audience_size, key: 'audience_size' },
-    { label: 'Avg CTR', value: slot.open_rate || '', key: 'open_rate' },
+    { label: 'Audience', value: slot.open_rate || '', key: 'open_rate' },
     { label: 'Geography', value: slot.geography || '', key: 'geography' },
     { label: 'Placement Type', value: slot.placement_type || slot.opportunity_type, key: 'placement_type' },
     { label: 'Air Date', value: slot.send_date || '', key: 'send_date' },
@@ -2701,7 +2701,7 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
                 <input type="number" value={newsletterForm.subscriber_count} onChange={e => setNewsletterForm(p => ({ ...p, subscriber_count: e.target.value }))} placeholder="e.g. 45000" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Avg CTR</label>
+                <label className={labelCls}>Audience</label>
                 <input type="text" value={newsletterForm.avg_open_rate} onChange={e => setNewsletterForm(p => ({ ...p, avg_open_rate: e.target.value }))} placeholder="e.g. 3.2%" className={inputCls} />
               </div>
               <div>
@@ -2806,7 +2806,7 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
                 <input type="number" value={listingForm.subscribers} onChange={e => setListingForm(p => ({ ...p, subscribers: e.target.value }))} placeholder="e.g. 45000" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Avg CTR</label>
+                <label className={labelCls}>Audience</label>
                 <input type="text" value={listingForm.open_rate} onChange={e => setListingForm(p => ({ ...p, open_rate: e.target.value }))} placeholder="e.g. 3.2%" className={inputCls} />
               </div>
             </div>

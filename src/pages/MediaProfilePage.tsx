@@ -227,7 +227,7 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
             {profile.ctr && (
               <div className="bg-white px-4 py-3 text-center">
                 <p className="text-sky-600 text-lg font-bold">{profile.ctr}</p>
-                <p className="text-slate-400 text-[10px] uppercase tracking-widest font-semibold mt-0.5">CTR</p>
+                <p className="text-slate-400 text-[10px] uppercase tracking-widest font-semibold mt-0.5">Audience</p>
               </div>
             )}
             <div className="bg-white px-4 py-3 text-center">
@@ -283,7 +283,7 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
                     <StatBlock label="Avg. Open Rate" value={profile.open_rate} accent="teal" />
                   )}
                   {profile.ctr && (
-                    <StatBlock label="Click-Through Rate" value={profile.ctr} accent="sky" />
+                    <StatBlock label="Audience" value={profile.ctr} accent="sky" />
                   )}
                   {profile.primary_geography && (
                     <StatBlock label="Primary Geography" value={profile.primary_geography} />
@@ -421,7 +421,7 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
                       <PerfRow label="Open rate" value={profile.open_rate} highlight />
                     )}
                     {profile.ctr && (
-                      <PerfRow label="CTR" value={profile.ctr} highlight />
+                      <PerfRow label="Audience" value={profile.ctr} highlight />
                     )}
                   </div>
                 </div>

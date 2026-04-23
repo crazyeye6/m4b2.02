@@ -221,7 +221,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
         </div>
 
         <div>
-          <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Avg CTR / engagement</label>
+          <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Audience size / engagement</label>
           <input
             type="text"
             value={form.avg_open_rate}

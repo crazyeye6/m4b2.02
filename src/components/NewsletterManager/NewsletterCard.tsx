@@ -44,7 +44,7 @@ export default function NewsletterCard({ newsletter, onEdit, onDelete, onCreateL
               <Stat icon={<Download className="w-3 h-3" />} value={`${newsletter.subscriber_count.toLocaleString()} downloads/ep`} />
             )}
             {newsletter.avg_open_rate && (
-              <Stat icon={<Zap className="w-3 h-3" />} value={`${newsletter.avg_open_rate} avg CTR`} />
+              <Stat icon={<Zap className="w-3 h-3" />} value={`${newsletter.avg_open_rate} audience`} />
             )}
             {newsletter.niche && (
               <Stat icon={<Mic2 className="w-3 h-3" />} value={newsletter.niche} />

@@ -96,7 +96,7 @@ export default function DetailModal({ listing, onClose, onSecure, onViewMediaPro
           <Section title="Audience breakdown" icon={<Users className="w-4 h-4 text-[#6e6e73]" />}>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <StatCard label="Downloads/Ep" value={fmt(listing.subscribers || 0)} />
-              <StatCard label="Avg CTR" value={listing.ctr || '—'} highlight />
+              <StatCard label="Audience" value={listing.ctr || '—'} highlight />
               <StatCard label="Slot type" value={listing.slot_type || '—'} />
             </div>
             <div className="flex items-start gap-3 mt-3 pt-3 border-t border-black/[0.06]">
@@ -458,7 +458,7 @@ function MediaProfileSection({ profile, onViewProfile }: { profile: MediaProfile
             </div>
             <div className="bg-[#f5f5f7] rounded-xl px-3 py-2.5 text-center">
               <p className="text-sky-600 font-bold text-lg">{profile.open_rate || '—'}</p>
-              <p className="text-[9px] font-semibold text-[#aeaeb2] uppercase tracking-wider mt-0.5">Avg CTR</p>
+              <p className="text-[9px] font-semibold text-[#aeaeb2] uppercase tracking-wider mt-0.5">Audience</p>
             </div>
             <div className="bg-[#f5f5f7] rounded-xl px-3 py-2.5 text-center">
               <p className="text-[#1d1d1f] font-bold text-sm leading-tight">{profile.audience_type || '—'}</p>

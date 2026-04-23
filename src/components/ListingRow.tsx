@@ -241,7 +241,7 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
             {ctr && (
               <span className="flex items-center gap-1 font-medium">
                 <Eye className="w-3 h-3 text-slate-300" />
-                CTR <span className="text-slate-600 font-semibold ml-0.5">{ctr}</span>
+                Audience <span className="text-slate-600 font-semibold ml-0.5">{ctr}</span>
               </span>
             )}
             {geography && (
