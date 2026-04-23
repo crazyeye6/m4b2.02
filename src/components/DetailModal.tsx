@@ -350,23 +350,27 @@ function StatCard({ label, value, highlight }: { label: string; value: string; h
 const FAQ_ITEMS = [
   {
     q: 'What does the deposit do?',
-    a: 'The 5% deposit reserves your slot and prevents it being taken by another buyer. It confirms your intent to the creator and activates the booking process.',
+    a: 'The 5% deposit reserves your podcast ad slot and prevents it being taken by another advertiser. It confirms your intent to the podcast host and activates the booking process.',
   },
   {
     q: 'Who gets the deposit?',
-    a: 'The deposit is collected by EndingThisWeek.media. It is not paid directly to the creator at this stage.',
+    a: 'The deposit is collected by EndingThisWeek.media. It is not paid directly to the podcast host at this stage.',
   },
   {
-    q: 'When do I pay the creator?',
-    a: 'After your deposit is confirmed, the creator or seller will contact you directly to arrange the remaining 95% balance using normal commercial practice for their niche.',
+    q: 'When do I pay the podcast host?',
+    a: 'After your deposit is confirmed, the podcast host will contact you directly to arrange the remaining 95% balance and confirm your ad copy, read style, and any campaign specifics.',
+  },
+  {
+    q: 'What ad formats do podcast hosts offer?',
+    a: 'Most hosts offer pre-roll, mid-roll, and post-roll placements. Some also offer host-read endorsements, dedicated episodes, or show notes mentions. Check the listing details or ask the host directly.',
   },
   {
     q: 'How do refunds work?',
-    a: 'Deposit refunds are assessed case by case. You may be eligible if the seller cannot fulfil, changes key terms, or if the booking cannot proceed. Refunds are not available if you change your mind or fail to complete the booking.',
+    a: 'Deposit refunds are assessed case by case. You may be eligible if the host cannot fulfil, changes key terms, or if the booking cannot proceed. Refunds are not available if you change your mind or fail to complete the booking.',
   },
   {
     q: 'What happens after I secure the slot?',
-    a: 'You receive a booking confirmation with the creator\'s contact details. You then contact the creator directly, finalise campaign details, and arrange the remaining balance.',
+    a: "You receive a booking confirmation with the podcast host's contact details. You then contact the host directly, submit your ad copy or brief, and arrange the remaining balance before the air date.",
   },
 ];
 

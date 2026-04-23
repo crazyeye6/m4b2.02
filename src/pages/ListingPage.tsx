@@ -273,7 +273,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16">
 
-        {/* Breadcrumb: Publisher → Newsletter → Slot */}
+        {/* Breadcrumb: Publisher → Podcast → Slot */}
         <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium mb-4 flex-wrap">
           <span
             className={listing.media_profile_id && onViewMediaProfile ? 'text-sky-600 hover:text-sky-700 cursor-pointer transition-colors' : ''}
@@ -290,17 +290,10 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-2.5 mb-3 flex-wrap">
-            {isPodcast ? (
-              <span className="inline-flex items-center gap-1.5 border border-sky-100 bg-sky-50 text-sky-700 text-[11px] font-semibold px-2.5 py-1.5 rounded-full uppercase tracking-wide">
+            <span className="inline-flex items-center gap-1.5 border border-sky-100 bg-sky-50 text-sky-700 text-[11px] font-semibold px-2.5 py-1.5 rounded-full uppercase tracking-wide">
                 <Mic2 className="w-3.5 h-3.5" />
                 Podcast Sponsorship
               </span>
-            ) : (
-              <span className="inline-flex items-center gap-1.5 border border-teal-100 bg-teal-50 text-teal-700 text-[11px] font-semibold px-2.5 py-1.5 rounded-full uppercase tracking-wide">
-                <Mail className="w-3.5 h-3.5" />
-                Newsletter Sponsorship
-              </span>
-            )}
             {urgencyLabel && (
               <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-full ${tierStyle.badge}`}>
                 {tier === 'last_chance' && <Flame className="w-3 h-3" />}
@@ -318,7 +311,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
             {listing.slot_type || listing.property_name}
           </h1>
 
-          {/* Newsletter + Publisher identity */}
+          {/* Podcast + Publisher identity */}
           <div className="flex items-center gap-3 flex-wrap">
             {listing.media_profile?.logo_url && (
               <img
@@ -414,7 +407,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                   <CountdownTimer deadline={listing.deadline_at} />
                 </div>
                 <div className="space-y-2">
-                  <DetailRow label={isPodcast ? 'Podcast' : 'Newsletter'} value={newsletterName} />
+                  <DetailRow label="Podcast" value={newsletterName} />
                   <DetailRow label="Publisher" value={publisherName} />
                   <DetailRow label="Ad runs" value={listing.date_label} highlight />
                   <DetailRow label="Slots left" value={`${listing.slots_remaining} available`} urgent={listing.slots_remaining <= 2} />
@@ -431,7 +424,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
             )}
 
             {/* Media details */}
-            <PageSection title={isPodcast ? 'About this Podcast' : 'About this Newsletter'} icon={isPodcast ? <Mic2 className="w-4 h-4 text-sky-600" /> : <Mail className="w-4 h-4 text-teal-600" />}>
+            <PageSection title="About this Podcast" icon={<Mic2 className="w-4 h-4 text-sky-600" />}>
               <div className="flex items-start gap-4 mb-4">
                 {listing.media_profile?.logo_url && (
                   <img
@@ -445,7 +438,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                   <p className="text-slate-900 font-bold text-base mb-0.5">{newsletterName}</p>
                   <p className="text-slate-400 text-sm">{publisherName}</p>
                   {newsletter?.niche && (
-                    <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-teal-700 bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-full">
+                    <span className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-sky-700 bg-sky-50 border border-sky-100 px-2 py-0.5 rounded-full">
                       <Tag className="w-3 h-3" />
                       {newsletter.niche}
                     </span>
@@ -460,17 +453,8 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
               )}
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {isPodcast ? (
-                  listing.subscribers != null && (
-                    <StatTile label="Downloads / Ep" value={fmt(listing.subscribers)} />
-                  )
-                ) : (
-                  (listing.media_profile?.subscriber_count ?? listing.subscribers) != null && (
-                    <StatTile label="Subscribers" value={fmt(listing.media_profile?.subscriber_count ?? listing.subscribers ?? 0)} />
-                  )
-                )}
-                {!isPodcast && (listing.media_profile?.open_rate || listing.open_rate) && (
-                  <StatTile label="Open Rate" value={listing.media_profile?.open_rate || listing.open_rate || '—'} highlight />
+                {listing.subscribers != null && (
+                  <StatTile label="Downloads / Ep" value={fmt(listing.subscribers)} />
                 )}
                 {listing.ctr && (
                   <StatTile label="Click-Through Rate" value={listing.ctr} highlight />
@@ -689,7 +673,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <BarChart2 className="w-4 h-4 text-slate-400" />
-                  <h3 className="text-slate-900 font-semibold text-sm">Similar {isPodcast ? 'podcast' : 'newsletter'} opportunities</h3>
+                  <h3 className="text-slate-900 font-semibold text-sm">Similar podcast opportunities</h3>
                 </div>
                 <div className="space-y-3">
                   {otherSlots.map(s => <RelatedSlotCard key={s.id} listing={s} formatPrice={formatPrice} onView={() => { window.scrollTo({ top: 0 }); }} />)}
@@ -783,7 +767,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                     )}
                     <div className="min-w-0">
                       <p className="text-slate-900 text-[13px] font-semibold leading-tight truncate">{publisherName}</p>
-                      <p className="text-teal-600 text-[11px] font-medium truncate">{newsletterName}</p>
+                      <p className="text-sky-600 text-[11px] font-medium truncate">{newsletterName}</p>
                       {listing.media_profile.category && (
                         <span className="text-[10px] text-slate-400">{listing.media_profile.category}</span>
                       )}
@@ -791,14 +775,8 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                   </div>
                   {listing.media_profile.subscriber_count && (
                     <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
-                      {isPodcast ? <Download className="w-3 h-3" /> : <Users className="w-3 h-3" />}
-                      <span>{fmt(listing.media_profile.subscriber_count)} {isPodcast ? 'downloads/ep' : 'subscribers'}</span>
-                      {!isPodcast && listing.media_profile.open_rate && (
-                        <>
-                          <span className="text-slate-200">·</span>
-                          <span className="text-teal-600 font-semibold">{listing.media_profile.open_rate} open</span>
-                        </>
-                      )}
+                      <Download className="w-3 h-3" />
+                      <span>{fmt(listing.media_profile.subscriber_count)} downloads/ep</span>
                     </div>
                   )}
                   {listing.media_profile_id && onViewMediaProfile && (
@@ -837,7 +815,7 @@ function RelatedSlotCard({ listing, formatPrice, onView }: { listing: Listing; f
   const { currentPrice, discountPct } = pricing;
   const nl = (listing as any).newsletter as { name?: string } | null;
   const nlName = nl?.name || listing.property_name;
-  const pubName = listing.media_profile?.newsletter_name || listing.media_company_name;
+  const pubName = listing.media_profile?.newsletter_name || listing.media_profile?.tagline || listing.media_company_name;
 
   return (
     <button onClick={onView} className="w-full bg-white rounded-2xl border border-black/[0.06] hover:border-black/[0.12] shadow-sm hover:shadow-md transition-all p-4 flex items-center gap-3 text-left group">
@@ -952,11 +930,12 @@ function FaqItem({ q, a, open, onToggle }: { q: string; a: string; open: boolean
 }
 
 const FAQ_ITEMS = [
-  { q: 'What does the deposit do?', a: 'The 5% deposit reserves your slot and prevents it being taken by another buyer. It confirms your intent to the publisher and activates the booking process.' },
-  { q: 'Who gets the deposit?', a: 'The deposit is collected by EndingThisWeek.media. It is not paid directly to the publisher at this stage.' },
-  { q: 'When do I pay the publisher?', a: 'After your deposit is confirmed, the publisher will contact you directly to arrange the remaining 95% balance using normal commercial practice.' },
-  { q: 'How do refunds work?', a: 'Deposit refunds are assessed case by case. You may be eligible if the publisher cannot fulfil, changes key terms, or if the booking cannot proceed. Refunds are not available if you change your mind or fail to complete the booking.' },
-  { q: 'What happens after I secure the slot?', a: "You receive a booking confirmation with the publisher's contact details. You then contact the publisher directly, finalise campaign details, and arrange the remaining balance." },
-  { q: 'Can I inquire before committing?', a: 'Yes. Use the "Contact / Inquire" button to send a message with questions about the slot. We will connect you with the publisher.' },
-  { q: 'What is the difference between the show and the publisher?', a: 'A publisher may own and run multiple podcasts or newsletters. This page shows a specific sponsorship slot within one show. The publisher profile page shows all shows and slots from that publisher.' },
+  { q: 'What does the deposit do?', a: 'The 5% deposit reserves your podcast ad slot and prevents it being taken by another advertiser. It confirms your intent to the podcast host and activates the booking process.' },
+  { q: 'Who gets the deposit?', a: 'The deposit is collected by EndingThisWeek.media. It is not paid directly to the podcast host at this stage.' },
+  { q: 'When do I pay the podcast host?', a: 'After your deposit is confirmed, the host will contact you directly to arrange the remaining 95% balance and confirm your ad copy, read style, and any campaign specifics.' },
+  { q: 'What ad formats do podcast hosts typically offer?', a: 'Most hosts offer pre-roll, mid-roll, and post-roll placements. Some also offer host-read endorsements, dedicated episodes, or show notes mentions. Check the slot details or ask the host directly.' },
+  { q: 'How do refunds work?', a: 'Deposit refunds are assessed case by case. You may be eligible if the host cannot fulfil, changes key terms, or if the booking cannot proceed. Refunds are not available if you change your mind or fail to complete the booking.' },
+  { q: 'What happens after I secure the slot?', a: "You receive a booking confirmation with the podcast host's contact details. You then contact the host directly, submit your ad copy or brief, and arrange the remaining balance before the air date." },
+  { q: 'Can I inquire before committing?', a: 'Yes. Use the "Contact / Inquire" button to send a message with questions about the slot. We will connect you with the podcast host.' },
+  { q: 'What is the difference between the podcast and the publisher?', a: 'A publisher may own and produce multiple podcasts. This page shows a specific sponsorship slot within one podcast episode. The publisher profile page shows all shows and available slots from that publisher.' },
 ];
