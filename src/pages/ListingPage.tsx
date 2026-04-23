@@ -798,7 +798,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                   onClick={handleCopyLink}
                   className="w-full flex items-center justify-center gap-2 bg-[#f5f5f7] hover:bg-[#e5e5ea] border border-black/[0.06] text-slate-900 text-[13px] font-medium px-4 py-2.5 rounded-2xl transition-all"
                 >
-                  {copied ? <Check className="w-4 h-4 text-teal-600" /> : <Share2 className="w-4 h-4" />}
+                  {copied ? <Check className="w-4 h-4 text-sky-600" /> : <Share2 className="w-4 h-4" />}
                   {copied ? 'Link copied!' : 'Copy shareable link'}
                 </button>
               </div>

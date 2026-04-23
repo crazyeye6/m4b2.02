@@ -54,7 +54,7 @@ export default function TermsPage({ onBack }: TermsPageProps) {
 
         <Section title="1. About EndingThisWeek.media">
           <p>
-            EndingThisWeek.media ("the Platform", "we", "us", or "our") is an online marketplace that connects media property owners — including newsletter publishers, podcast producers, and social media influencers ("Sellers") — with brands and advertisers ("Buyers") seeking last-minute, discounted advertising inventory. The Platform facilitates discovery, slot reservation, and deposit collection. It does not deliver advertising campaigns or guarantee media performance.
+            EndingThisWeek.media ("the Platform", "we", "us", or "our") is an online marketplace that connects podcast hosts and producers ("Sellers") with brands and advertisers ("Buyers") seeking last-minute, time-sensitive podcast sponsorship slots. The Platform facilitates discovery, slot reservation, and deposit collection. It does not deliver advertising campaigns or guarantee media performance.
           </p>
           <p>
             EndingThisWeek.media acts solely as an intermediary. We are not a party to any advertising agreement between a Buyer and a Seller, and we have no editorial control over content published by Sellers.

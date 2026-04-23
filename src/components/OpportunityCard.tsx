@@ -1,4 +1,4 @@
-import { Users, MapPin, Mail, Shield, Clock, Lock, Zap, CalendarClock, Flame, TrendingDown, Tag, ChevronRight, Mic2 } from 'lucide-react';
+import { Users, MapPin, Shield, Clock, Lock, Zap, CalendarClock, Flame, TrendingDown, Tag, ChevronRight, Mic2 } from 'lucide-react';
 import type { Listing, Newsletter } from '../types';
 import CountdownTimer from './CountdownTimer';
 import { resolvePublishDate, formatDeadlineDate } from '../lib/dateUtils';
@@ -109,9 +109,9 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
                 Podcast
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 border border-teal-100 bg-teal-50 text-teal-700 text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide flex-shrink-0">
-                <Mail className="w-3.5 h-3.5" />
-                Newsletter
+              <span className="inline-flex items-center gap-1.5 border border-sky-100 bg-sky-50 text-sky-700 text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide flex-shrink-0">
+                <Mic2 className="w-3.5 h-3.5" />
+                Podcast
               </span>
             )}
             {niche && (

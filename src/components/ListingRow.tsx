@@ -1,5 +1,5 @@
 import {
-  Mail, Mic2, MapPin, Users, Lock, Zap, Eye, Download,
+  Mic2, MapPin, Users, Lock, Zap, Eye, Download,
   CheckCircle, Clock, AlertTriangle, CalendarClock, Flame, TrendingDown,
   Shield, Tag, ChevronRight,
 } from 'lucide-react';
@@ -149,8 +149,8 @@ export default function ListingRow({ listing, onSecure, onDetails, onViewMediaPr
                   <Mic2 className="w-2.5 h-2.5" />Podcast
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] font-bold border border-green-200 bg-green-50 text-green-600 px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
-                  <Mail className="w-2.5 h-2.5" />Newsletter
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold border border-sky-200 bg-sky-50 text-sky-700 px-2 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
+                  <Mic2 className="w-2.5 h-2.5" />Podcast
                 </span>
               )}
               {niche && (

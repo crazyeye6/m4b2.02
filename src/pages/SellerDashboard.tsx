@@ -1006,7 +1006,7 @@ function SellerProfilePanel({ profile, userEmail, onSaved }: {
                   value={form.seller_bio}
                   onChange={e => setForm(p => ({ ...p, seller_bio: e.target.value }))}
                   rows={3}
-                  placeholder="Describe your newsletter, podcast, or audience in 1–2 sentences..."
+                  placeholder="Describe your podcast and audience in 1–2 sentences..."
                   className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all resize-none"
                 />
               </div>
@@ -1152,7 +1152,7 @@ function CsvWorkflowBanner() {
         </div>
         <div>
           <p className="text-[#1d1d1f] font-semibold text-sm">Upload your weekly slots in under 2 minutes</p>
-          <p className="text-[#6e6e73] text-xs mt-0.5">Designed for podcast and newsletter publishers who want to manage sponsorship inventory quickly and efficiently.</p>
+          <p className="text-[#6e6e73] text-xs mt-0.5">Designed for podcast hosts who want to manage their sponsorship inventory quickly and efficiently.</p>
         </div>
       </div>
 

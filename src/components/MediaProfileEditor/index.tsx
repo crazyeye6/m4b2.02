@@ -156,8 +156,8 @@ export default function MediaProfileEditor({ onProfilesChanged }: Props) {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-[#1d1d1f] font-semibold text-base">Media / Newsletter Profiles</h3>
-          <p className="text-[#6e6e73] text-xs mt-0.5">Create one profile per newsletter. Link each slot to a profile so buyers get full context automatically.</p>
+          <h3 className="text-[#1d1d1f] font-semibold text-base">Podcast Profiles</h3>
+          <p className="text-[#6e6e73] text-xs mt-0.5">Create one profile per podcast. Link each slot to a profile so buyers get full context automatically.</p>
         </div>
         <button
           onClick={openNew}
@@ -175,7 +175,7 @@ export default function MediaProfileEditor({ onProfilesChanged }: Props) {
           </div>
           <p className="text-[#1d1d1f] font-semibold text-sm mb-1">No media profiles yet</p>
           <p className="text-[#6e6e73] text-xs mb-4 max-w-xs mx-auto">
-            Create a profile for each newsletter or media property. Link it to your slots so buyers see full context without you repeating yourself.
+            Create a profile for each podcast. Link it to your slots so buyers see full context without you repeating yourself.
           </p>
           <button
             onClick={openNew}
