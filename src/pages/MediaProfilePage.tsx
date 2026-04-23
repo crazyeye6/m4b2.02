@@ -146,7 +146,7 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
 
             <div className="flex-1 min-w-0 pt-1">
               {/* Publisher breadcrumb */}
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Newsletter Publisher</p>
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">Media Publisher</p>
               <h1 className="text-slate-900 text-2xl sm:text-3xl font-bold tracking-tight mb-1.5">{profile.newsletter_name}</h1>
               {profile.tagline && (
                 <p className="text-slate-500 text-base leading-snug mb-3">{profile.tagline}</p>
@@ -268,7 +268,7 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
 
               {/* About */}
               {profile.audience_summary && (
-                <Section title="About this Newsletter" icon={<BookOpen className="w-4 h-4 text-teal-600" />}>
+                <Section title="About this Publisher" icon={<BookOpen className="w-4 h-4 text-teal-600" />}>
                   <p className="text-slate-600 text-sm leading-relaxed">{profile.audience_summary}</p>
                 </Section>
               )}
@@ -314,7 +314,7 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
               {/* Past advertisers */}
               {profile.past_advertisers.length > 0 && (
                 <Section title="Past Advertisers" icon={<Shield className="w-4 h-4 text-emerald-600" />}>
-                  <p className="text-slate-500 text-xs mb-3">Brands that have previously run campaigns in this newsletter.</p>
+                  <p className="text-slate-500 text-xs mb-3">Brands that have previously run campaigns with this publisher.</p>
                   <div className="flex flex-wrap gap-2">
                     {profile.past_advertisers.map(a => (
                       <span key={a} className="bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full">
@@ -327,8 +327,8 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
 
               {/* Newsletters / hierarchy note */}
               {newsletterNames.length > 0 && (
-                <Section title="Newsletters" icon={<Layers className="w-4 h-4 text-slate-500" />}>
-                  <p className="text-slate-500 text-xs mb-4">This publisher runs the following newsletters with active sponsorship slots.</p>
+                <Section title="Shows & Properties" icon={<Layers className="w-4 h-4 text-slate-500" />}>
+                  <p className="text-slate-500 text-xs mb-4">This publisher has the following shows and properties with active sponsorship slots.</p>
                   <div className="space-y-3">
                     {newsletterNames.map(name => {
                       const nlListings = byNewsletter[name];

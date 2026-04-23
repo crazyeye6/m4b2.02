@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import {
-  ArrowLeft, MapPin, Users, BarChart2, Shield, Mail,
+  ArrowLeft, MapPin, Users, BarChart2, Shield, Mail, Mic2,
   ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe,
   Linkedin, Twitter, Youtube, Share2, Copy, Check, Loader2, Flame,
   TrendingDown, AlertTriangle, MessageCircle, FileText, Zap,
-  BookOpen, Phone, Calendar, ChevronRight, Layers, Tag, DollarSign,
+  BookOpen, Phone, Calendar, ChevronRight, Layers, Tag, DollarSign, Download,
 } from 'lucide-react';
 import type { Listing } from '../types';
 import CountdownTimer from '../components/CountdownTimer';
@@ -240,8 +240,9 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
   const isSecured = listing.status === 'secured' || listing.status === 'expired' || listing.status === 'cancelled';
 
   const newsletter = (listing as any).newsletter as { name: string; publisher_name: string; subscriber_count?: number; avg_open_rate?: string; niche?: string; send_frequency?: string; description?: string } | null;
+  const isPodcast = listing.media_type === 'podcast';
   const newsletterName = newsletter?.name || listing.property_name;
-  const publisherName = newsletter?.publisher_name || listing.media_company_name || listing.media_owner_name;
+  const publisherName = listing.host_name || newsletter?.publisher_name || listing.media_company_name || listing.media_owner_name;
 
   const hasMediaKit = listing.media_profile?.media_kit_url || listing.media_profile?.sample_issue_url || listing.media_profile?.website_url;
   const hasSocialLinks = listing.seller_website_url || listing.seller_company_url || listing.seller_linkedin_url || listing.seller_twitter_url || listing.seller_instagram_url || listing.seller_youtube_url || listing.seller_tiktok_url || listing.seller_podcast_url;
@@ -289,10 +290,17 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center gap-2.5 mb-3 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 border border-teal-100 bg-teal-50 text-teal-700 text-[11px] font-semibold px-2.5 py-1.5 rounded-full uppercase tracking-wide">
-              <Mail className="w-3.5 h-3.5" />
-              Newsletter Sponsorship
-            </span>
+            {isPodcast ? (
+              <span className="inline-flex items-center gap-1.5 border border-sky-100 bg-sky-50 text-sky-700 text-[11px] font-semibold px-2.5 py-1.5 rounded-full uppercase tracking-wide">
+                <Mic2 className="w-3.5 h-3.5" />
+                Podcast Sponsorship
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 border border-teal-100 bg-teal-50 text-teal-700 text-[11px] font-semibold px-2.5 py-1.5 rounded-full uppercase tracking-wide">
+                <Mail className="w-3.5 h-3.5" />
+                Newsletter Sponsorship
+              </span>
+            )}
             {urgencyLabel && (
               <span className={`inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1.5 rounded-full ${tierStyle.badge}`}>
                 {tier === 'last_chance' && <Flame className="w-3 h-3" />}
@@ -406,7 +414,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                   <CountdownTimer deadline={listing.deadline_at} />
                 </div>
                 <div className="space-y-2">
-                  <DetailRow label="Newsletter" value={newsletterName} />
+                  <DetailRow label={isPodcast ? 'Podcast' : 'Newsletter'} value={newsletterName} />
                   <DetailRow label="Publisher" value={publisherName} />
                   <DetailRow label="Ad runs" value={listing.date_label} highlight />
                   <DetailRow label="Slots left" value={`${listing.slots_remaining} available`} urgent={listing.slots_remaining <= 2} />
@@ -422,8 +430,8 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
               </PageSection>
             )}
 
-            {/* Newsletter details */}
-            <PageSection title="About this Newsletter" icon={<Mail className="w-4 h-4 text-teal-600" />}>
+            {/* Media details */}
+            <PageSection title={isPodcast ? 'About this Podcast' : 'About this Newsletter'} icon={isPodcast ? <Mic2 className="w-4 h-4 text-sky-600" /> : <Mail className="w-4 h-4 text-teal-600" />}>
               <div className="flex items-start gap-4 mb-4">
                 {listing.media_profile?.logo_url && (
                   <img
@@ -452,10 +460,16 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
               )}
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {(listing.media_profile?.subscriber_count ?? listing.subscribers) != null && (
-                  <StatTile label="Subscribers" value={fmt(listing.media_profile?.subscriber_count ?? listing.subscribers ?? 0)} />
+                {isPodcast ? (
+                  listing.subscribers != null && (
+                    <StatTile label="Downloads / Ep" value={fmt(listing.subscribers)} />
+                  )
+                ) : (
+                  (listing.media_profile?.subscriber_count ?? listing.subscribers) != null && (
+                    <StatTile label="Subscribers" value={fmt(listing.media_profile?.subscriber_count ?? listing.subscribers ?? 0)} />
+                  )
                 )}
-                {(listing.media_profile?.open_rate || listing.open_rate) && (
+                {!isPodcast && (listing.media_profile?.open_rate || listing.open_rate) && (
                   <StatTile label="Open Rate" value={listing.media_profile?.open_rate || listing.open_rate || '—'} highlight />
                 )}
                 {listing.ctr && (
@@ -583,7 +597,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
             {/* Past advertisers */}
             {(listing.media_profile?.past_advertisers?.length ?? listing.past_advertisers.length) > 0 && (
               <PageSection title="Past Advertisers" icon={<Shield className="w-4 h-4 text-emerald-600" />}>
-                <p className="text-slate-400 text-[12px] mb-3">Brands that have previously run campaigns in this newsletter.</p>
+                <p className="text-slate-400 text-[12px] mb-3">Brands that have previously run campaigns with this publisher.</p>
                 <div className="flex flex-wrap gap-2">
                   {(listing.media_profile?.past_advertisers ?? listing.past_advertisers).map(a => (
                     <span key={a} className="text-[13px] text-slate-600 font-medium bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-full">
@@ -675,7 +689,7 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <BarChart2 className="w-4 h-4 text-slate-400" />
-                  <h3 className="text-slate-900 font-semibold text-sm">Similar newsletter opportunities</h3>
+                  <h3 className="text-slate-900 font-semibold text-sm">Similar {isPodcast ? 'podcast' : 'newsletter'} opportunities</h3>
                 </div>
                 <div className="space-y-3">
                   {otherSlots.map(s => <RelatedSlotCard key={s.id} listing={s} formatPrice={formatPrice} onView={() => { window.scrollTo({ top: 0 }); }} />)}
@@ -777,9 +791,9 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                   </div>
                   {listing.media_profile.subscriber_count && (
                     <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
-                      <Users className="w-3 h-3" />
-                      <span>{fmt(listing.media_profile.subscriber_count)} subscribers</span>
-                      {listing.media_profile.open_rate && (
+                      {isPodcast ? <Download className="w-3 h-3" /> : <Users className="w-3 h-3" />}
+                      <span>{fmt(listing.media_profile.subscriber_count)} {isPodcast ? 'downloads/ep' : 'subscribers'}</span>
+                      {!isPodcast && listing.media_profile.open_rate && (
                         <>
                           <span className="text-slate-200">·</span>
                           <span className="text-teal-600 font-semibold">{listing.media_profile.open_rate} open</span>
@@ -944,5 +958,5 @@ const FAQ_ITEMS = [
   { q: 'How do refunds work?', a: 'Deposit refunds are assessed case by case. You may be eligible if the publisher cannot fulfil, changes key terms, or if the booking cannot proceed. Refunds are not available if you change your mind or fail to complete the booking.' },
   { q: 'What happens after I secure the slot?', a: "You receive a booking confirmation with the publisher's contact details. You then contact the publisher directly, finalise campaign details, and arrange the remaining balance." },
   { q: 'Can I inquire before committing?', a: 'Yes. Use the "Contact / Inquire" button to send a message with questions about the slot. We will connect you with the publisher.' },
-  { q: 'What is the difference between the newsletter and the publisher?', a: 'A publisher may own and run multiple newsletters. This page shows a specific sponsorship slot within one newsletter. The publisher profile page shows all newsletters and slots from that publisher.' },
+  { q: 'What is the difference between the show and the publisher?', a: 'A publisher may own and run multiple podcasts or newsletters. This page shows a specific sponsorship slot within one show. The publisher profile page shows all shows and slots from that publisher.' },
 ];

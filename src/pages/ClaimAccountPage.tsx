@@ -240,7 +240,7 @@ export default function ClaimAccountPage({ token, onClaimed }: Props) {
               </div>
 
               <p className="text-[#aeaeb2] text-[11px] text-center mt-4 leading-relaxed">
-                By claiming this account you agree to our terms of service. Your listings and newsletters are already set up and ready.
+                By claiming this account you agree to our terms of service. Your listings and media properties are already set up and ready.
               </p>
             </div>
           )}

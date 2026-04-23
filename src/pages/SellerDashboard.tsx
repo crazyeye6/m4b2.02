@@ -194,7 +194,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-amber-900 font-semibold text-sm">Add your media profile to build buyer trust</p>
-              <p className="text-amber-700 text-xs mt-0.5 leading-snug">Buyers convert faster when they can see your full newsletter stats, audience, and past advertisers.</p>
+              <p className="text-amber-700 text-xs mt-0.5 leading-snug">Buyers convert faster when they can see your full media profile: audience size, engagement stats, and past advertisers.</p>
             </div>
             <button onClick={() => setTab('media')} className="flex-shrink-0 text-xs font-semibold text-amber-700 hover:text-amber-900 bg-white border border-amber-200 hover:border-amber-400 px-3 py-1.5 rounded-xl transition-all">
               Set up now
@@ -484,7 +484,7 @@ function MediaProfileBanner({ onListSlot, hasProfiles }: { onListSlot: () => voi
         <div className="flex-1">
           <p className="text-emerald-900 font-semibold text-sm mb-1">Set up your media profile once — use it on every listing</p>
           <p className="text-emerald-700 text-xs leading-relaxed">
-            Buyers make faster decisions when they can see your full newsletter profile: subscriber count, open rate, audience, past advertisers, and a sample issue.
+            Buyers make faster decisions when they can see your full media profile: audience size, engagement stats, past advertisers, and a sample episode or issue.
           </p>
         </div>
       </div>
@@ -1152,7 +1152,7 @@ function CsvWorkflowBanner() {
         </div>
         <div>
           <p className="text-[#1d1d1f] font-semibold text-sm">Upload your weekly slots in under 2 minutes</p>
-          <p className="text-[#6e6e73] text-xs mt-0.5">Designed for newsletter publishers who want to manage sponsorship inventory quickly and efficiently.</p>
+          <p className="text-[#6e6e73] text-xs mt-0.5">Designed for podcast and newsletter publishers who want to manage sponsorship inventory quickly and efficiently.</p>
         </div>
       </div>
 
@@ -1162,7 +1162,7 @@ function CsvWorkflowBanner() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { icon: <Upload className="w-4 h-4" />, step: '01', title: 'Upload your weekly slots', desc: 'One CSV file with all your available sponsorship slots', color: 'bg-blue-50 border-blue-100 text-blue-600' },
-            { icon: <Zap className="w-4 h-4" />, step: '02', title: 'We structure your listings', desc: 'Slots are automatically grouped by newsletter', color: 'bg-amber-50 border-amber-100 text-amber-600' },
+            { icon: <Zap className="w-4 h-4" />, step: '02', title: 'We structure your listings', desc: 'Slots are automatically grouped by show or publication', color: 'bg-amber-50 border-amber-100 text-amber-600' },
             { icon: <Eye className="w-4 h-4" />, step: '03', title: 'Review and confirm', desc: 'Quickly check and edit before submitting', color: 'bg-teal-50 border-teal-100 text-teal-600' },
             { icon: <Send className="w-4 h-4" />, step: '04', title: 'We publish and promote', desc: 'Slots go live and feature in weekly buyer emails', color: 'bg-green-50 border-green-100 text-green-600' },
           ].map((s, i) => (
@@ -1195,7 +1195,7 @@ function CsvWorkflowBanner() {
         {[
           { icon: <Clock className="w-3.5 h-3.5" />, title: 'Save time weekly', desc: 'One file instead of managing listings one by one' },
           { icon: <RefreshCw className="w-3.5 h-3.5" />, title: 'Keep inventory fresh', desc: 'Update all your slots each week in minutes' },
-          { icon: <CheckCircle className="w-3.5 h-3.5" />, title: 'No duplicate work', desc: 'We structure newsletters and slots automatically' },
+          { icon: <CheckCircle className="w-3.5 h-3.5" />, title: 'No duplicate work', desc: 'We structure shows and slots automatically' },
           { icon: <Sparkles className="w-3.5 h-3.5" />, title: 'Focus on selling', desc: 'You send your availability — we handle the rest' },
         ].map((b, i) => (
           <div key={i} className="bg-white border border-black/[0.06] rounded-2xl px-4 py-3.5 flex flex-col gap-2">
