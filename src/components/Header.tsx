@@ -74,19 +74,11 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
 
           <nav className="hidden md:flex items-center gap-0">
             <button
-              onClick={handleOpportunities}
+              onClick={onPodcasts ?? handleOpportunities}
               className="text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
             >
-              Browse
+              Podcasts
             </button>
-            {onPodcasts && (
-              <button
-                onClick={onPodcasts}
-                className="flex items-center gap-1.5 text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
-              >
-                Podcasts
-              </button>
-            )}
             <a
               href="#how-it-works"
               onClick={handleHowItWorks}
@@ -260,12 +252,7 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
 
       {mobileOpen && (
         <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-4 py-3 space-y-0.5">
-          <button onClick={() => { handleOpportunities(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">Browse</button>
-          {onPodcasts && (
-            <button onClick={() => { onPodcasts(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">
-              Podcasts
-            </button>
-          )}
+          <button onClick={() => { (onPodcasts ?? handleOpportunities)(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">Podcasts</button>
           <a
             href="#how-it-works"
             onClick={(e) => {

@@ -210,7 +210,7 @@ export interface Translations {
 
 const en: Translations = {
   nav: {
-    opportunities: 'Newsletter Slots',
+    opportunities: 'Podcast Slots',
     howItWorks: 'How it works',
     forSellers: 'List a slot',
     signIn: 'Sign in',
@@ -409,7 +409,7 @@ const en: Translations = {
     stepDone: 'Done',
   },
   footer: {
-    tagline: 'Last-minute podcast & newsletter sponsorships. Priced to move.',
+    tagline: 'Last-minute podcast sponsorships. Priced to move.',
     privacy: 'Privacy',
     terms: 'Terms',
     contact: 'Contact',
