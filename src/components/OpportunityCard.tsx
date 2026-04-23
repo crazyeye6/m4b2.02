@@ -1,4 +1,4 @@
-import { MapPin, Shield, Clock, Lock, Zap, CalendarClock, Flame, TrendingDown, ChevronRight, Mic2, Download, BarChart3, Users, Star } from 'lucide-react';
+import { MapPin, Shield, Clock, Lock, Zap, CalendarClock, Flame, TrendingDown, ChevronRight, Mic2, Download, BarChart3, Users } from 'lucide-react';
 import type { Listing, Newsletter } from '../types';
 import CountdownTimer from './CountdownTimer';
 import { resolvePublishDate, formatDeadlineDate } from '../lib/dateUtils';
@@ -36,14 +36,14 @@ function avatarGradient(name: string): string {
     'from-amber-500 to-orange-500',
     'from-slate-500 to-slate-700',
     'from-rose-500 to-pink-600',
-    'from-violet-500 to-purple-600',
+    'from-cyan-500 to-sky-600',
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
   return gradients[Math.abs(hash) % gradients.length];
 }
 
-function initials(name: string): string {
+function makeInitials(name: string): string {
   return name
     .split(/[\s\-_]+/)
     .slice(0, 2)
@@ -59,7 +59,9 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
 
   const podcastName = newsletter?.name || listing.property_name;
   const publisherName = listing.host_name || newsletter?.publisher_name || listing.media_company_name || listing.media_owner_name;
-  const niche = listing.media_profile?.category || newsletter?.niche || null;
+
+  // Niche: prefer media_profile category, then newsletter niche, then listing audience
+  const niche = listing.media_profile?.category || newsletter?.niche || listing.audience || null;
 
   const autoDiscount = listing.auto_discount_enabled !== false;
   const pricing = calcDynamicPrice(listing.original_price, listing.deadline_at, autoDiscount);
@@ -76,6 +78,12 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
 
   const { weekday, calDate } = resolvePublishDate(listing, browserLocale);
   const deadlineFormatted = formatDeadlineDate(listing.deadline_at, browserLocale);
+
+  // Episode date display: prefer weekday + calDate, fall back to date_label (which may have episode info)
+  const episodeDateLabel = weekday
+    ? weekday
+    : calDate || listing.date_label || '—';
+  const episodeDateSub = weekday ? calDate : null;
 
   const statusLabel = (() => {
     if (isSecured && deadlinePassed && listing.status !== 'secured' && listing.status !== 'cancelled') return tx.card.closed;
@@ -95,15 +103,15 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
   const adPosition = listing.ad_slot_position || listing.slot_type;
   const positionClass = adPosition ? (POSITION_COLORS[adPosition] || 'bg-slate-100 text-slate-600 border-slate-200') : null;
 
-  const downloadsValue = listing.downloads
-    ? fmtCompact(listing.downloads, browserLocale)
-    : listing.media_profile?.subscriber_count
-    ? fmtCompact(listing.media_profile.subscriber_count, browserLocale)
-    : listing.subscribers
-    ? fmtCompact(listing.subscribers, browserLocale)
-    : '—';
+  // Downloads: prefer explicit downloads field, then media_profile subscriber_count, then subscribers
+  const rawDownloads = listing.downloads ?? listing.media_profile?.subscriber_count ?? listing.subscribers;
+  const downloadsValue = rawDownloads ? fmtCompact(rawDownloads, browserLocale) : '—';
 
-  const episodeDateLabel = weekday ? `${weekday}` : calDate || '—';
+  // Audience description: prefer media_profile audience_type, then listing audience
+  const audienceDesc = listing.media_profile?.audience_type || listing.audience || null;
+
+  // Slot format label (e.g. "Host-read 60s", "Pre-roll 30s", or slot_type)
+  const slotFormat = listing.deliverable || listing.slot_type || adPosition || '—';
 
   const cardOpacity = (() => {
     if (listing.status === 'secured') return 'opacity-50';
@@ -114,7 +122,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
 
   const logoUrl = listing.media_profile?.logo_url;
   const gradient = avatarGradient(podcastName || 'P');
-  const initStr = initials(podcastName || 'P');
+  const initStr = makeInitials(podcastName || 'P');
 
   return (
     <div
@@ -124,10 +132,19 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
           : tier === 'mid' ? 'border-orange-200 shadow-[0_4px_24px_rgba(249,115,22,0.08)]'
           : 'border-sky-200 shadow-[0_4px_24px_rgba(14,165,233,0.10)]'
           : 'border-black/[0.06] shadow-sm'}
-        ${isLive ? 'hover:shadow-lg hover:-translate-y-px' : ''}
+        ${isLive ? 'hover:shadow-xl hover:-translate-y-px' : ''}
         ${cardOpacity}
       `}
     >
+      {/* Urgency accent stripe */}
+      {isLive && (
+        <div className={`h-[3px] w-full ${
+          tier === 'last_chance' ? 'bg-gradient-to-r from-red-500 to-orange-400'
+          : tier === 'mid' ? 'bg-gradient-to-r from-orange-400 to-amber-400'
+          : 'bg-gradient-to-r from-sky-400 to-blue-500'
+        }`} />
+      )}
+
       {/* Header */}
       <div className="px-5 pt-5 pb-4 flex items-start gap-3.5">
         {/* Avatar */}
@@ -140,7 +157,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
               onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           ) : (
-            <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+            <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-sm`}>
               <span className="text-white text-[13px] font-bold">{initStr}</span>
             </div>
           )}
@@ -152,7 +169,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
             <h3 className="text-[15px] font-bold text-slate-900 leading-tight line-clamp-1">{podcastName}</h3>
             {isHot && isLive && (
               <span className="inline-flex items-center gap-1 text-[9px] font-bold bg-red-50 border border-red-200 text-red-600 px-1.5 py-0.5 rounded-full uppercase tracking-wider flex-shrink-0">
-                <Zap className="w-2.5 h-2.5 fill-red-500" />Hot
+                <Flame className="w-2.5 h-2.5" />Hot
               </span>
             )}
           </div>
@@ -182,7 +199,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
         {isLive && (
           <div className="flex flex-col items-end gap-1 flex-shrink-0">
             <div className="flex gap-0.5">
-              {Array.from({ length: Math.min(listing.slots_total || 5, 5) }).map((_, i) => (
+              {Array.from({ length: Math.min(listing.slots_total || 3, 5) }).map((_, i) => (
                 <span key={i} className={`block w-2 h-2 rounded-full ${i < listing.slots_remaining ? (isScarce ? 'bg-orange-400' : 'bg-sky-400') : 'bg-[#e5e5ea]'}`} />
               ))}
             </div>
@@ -194,7 +211,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
       </div>
 
       <div className="px-5 pb-5 space-y-3">
-        {/* Stats grid */}
+        {/* Stats grid — 4 tiles with icons */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <StatTile
             icon={<Download className="w-3.5 h-3.5 text-slate-400" />}
@@ -203,30 +220,29 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
           />
           <StatTile
             icon={<Mic2 className="w-3.5 h-3.5 text-sky-500" />}
-            label="Ad Position"
-            value={adPosition || '—'}
+            label="Format"
+            value={slotFormat}
             accent
           />
           <StatTile
-            icon={<CalendarClock className="w-3.5 h-3.5 text-slate-400" />}
+            icon={<CalendarClock className="w-3.5 h-3.5 text-teal-500" />}
             label="Episode Date"
             value={episodeDateLabel}
+            sub={episodeDateSub ?? undefined}
           />
           <StatTile
             icon={<BarChart3 className="w-3.5 h-3.5 text-orange-400" />}
             label="Slots Left"
-            value={isLive ? `${listing.slots_remaining} of ${listing.slots_total || 5}` : '—'}
+            value={isLive ? `${listing.slots_remaining} of ${listing.slots_total || 3}` : '—'}
           />
         </div>
 
-        {/* Sponsor type + deadline */}
+        {/* Audience + deadline row */}
         <div className="flex items-center justify-between gap-2 flex-wrap">
-          {(listing.audience || listing.media_profile?.audience_type) && (
-            <div className="flex items-center gap-1.5 text-slate-500">
-              <Users className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
-              <span className="text-[12px] font-semibold text-slate-600 truncate max-w-[160px]">
-                {listing.audience || listing.media_profile?.audience_type}
-              </span>
+          {audienceDesc && (
+            <div className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-slate-300 flex-shrink-0" />
+              <span className="text-[12px] font-medium text-slate-500 truncate max-w-[180px]">{audienceDesc}</span>
             </div>
           )}
           {isLive && (
@@ -238,6 +254,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
           )}
         </div>
 
+        {/* Geography */}
         {geography && (
           <div className="flex items-center gap-1 text-[11px] text-slate-400">
             <MapPin className="w-3 h-3 text-slate-300 flex-shrink-0" />
@@ -261,19 +278,17 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
 
         {/* Past advertisers */}
         {pastAdvertisers.length > 0 && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <Shield className="w-3 h-3 text-slate-300 flex-shrink-0" />
             <p className="text-slate-400 text-[11px] flex-shrink-0">{tx.card.usedBy}</p>
-            <div className="flex items-center gap-1 flex-wrap">
-              {pastAdvertisers.slice(0, 3).map(a => (
-                <span key={a} className="text-[10px] text-slate-500 font-medium bg-[#f5f5f7] px-2 py-0.5 rounded-full">
-                  {a}
-                </span>
-              ))}
-              {pastAdvertisers.length > 3 && (
-                <span className="text-[10px] text-slate-300 font-medium">+{pastAdvertisers.length - 3}</span>
-              )}
-            </div>
+            {pastAdvertisers.slice(0, 3).map(a => (
+              <span key={a} className="text-[10px] text-slate-500 font-medium bg-[#f5f5f7] px-2 py-0.5 rounded-full">
+                {a}
+              </span>
+            ))}
+            {pastAdvertisers.length > 3 && (
+              <span className="text-[10px] text-slate-300 font-medium">+{pastAdvertisers.length - 3}</span>
+            )}
           </div>
         )}
 
@@ -289,10 +304,10 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
               </div>
               <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
                 <span className="text-[11px] text-sky-600 font-semibold">5% deposit · {formatPrice(depositAmount)} now</span>
-                {hasDiscount && (
+                {hasDiscount && savings > 0 && (
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md leading-none ${
                     tier === 'last_chance' ? 'bg-red-100 text-red-700' : tier === 'mid' ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700'
-                  }`}>{discountPct}% off</span>
+                  }`}>Save {formatPrice(savings)}</span>
                 )}
               </div>
             </div>
@@ -331,11 +346,12 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
   );
 }
 
-function StatTile({ icon, label, value, accent }: { icon: React.ReactNode; label: string; value: string; accent?: boolean }) {
+function StatTile({ icon, label, value, accent, sub }: { icon: React.ReactNode; label: string; value: string; accent?: boolean; sub?: string }) {
   return (
     <div className="bg-slate-50 rounded-xl py-3 px-2 text-center">
       <div className="flex justify-center mb-1.5">{icon}</div>
-      <p className={`text-[13px] font-bold leading-tight ${accent ? 'text-sky-600' : 'text-slate-800'}`}>{value}</p>
+      <p className={`text-[13px] font-bold leading-tight truncate ${accent ? 'text-sky-600' : 'text-slate-800'}`}>{value}</p>
+      {sub && <p className="text-[9px] text-slate-400 font-medium leading-tight truncate">{sub}</p>}
       <p className="text-[9px] text-slate-400 uppercase tracking-wider font-semibold mt-0.5 leading-tight">{label}</p>
     </div>
   );
