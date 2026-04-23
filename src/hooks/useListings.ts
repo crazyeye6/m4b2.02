@@ -50,9 +50,9 @@ export function useListings(filters: FilterState) {
     ];
     const hasTagFilter = allTagSlugs.length > 0;
 
-    let query = supabase.from('listings').select('*, media_profile:media_profiles(*), newsletter:newsletters(*)').eq('status', 'live');
+    let query = supabase.from('listings').select('*, media_profile:media_profiles(*), newsletter:newsletters(*)').eq('status', 'live').eq('media_type', 'podcast');
 
-    if (filters.category !== 'all') {
+    if (filters.category !== 'all' && filters.category !== 'podcast') {
       query = query.eq('media_type', filters.category);
     }
 
