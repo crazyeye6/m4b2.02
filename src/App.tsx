@@ -12,6 +12,7 @@ import PreferencesOnboarding from './components/PreferencesOnboarding';
 import PreferencesModal from './components/PreferencesModal';
 import SmartMatchCallout from './components/SmartMatchCallout';
 import WhyNewsletterAds from './components/WhyNewsletterAds';
+import PodcastsSection from './components/PodcastsSection';
 import { useBuyerPreferences } from './hooks/useBuyerPreferences';
 
 const ListSlotPage = lazy(() => import('./pages/ListSlotPage'));
@@ -25,6 +26,7 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 const MediaProfilePage = lazy(() => import('./pages/MediaProfilePage'));
 const ClaimAccountPage = lazy(() => import('./pages/ClaimAccountPage'));
+const PodcastsPage = lazy(() => import('./pages/PodcastsPage'));
 
 function PageFallback() {
   return (
@@ -45,7 +47,7 @@ import type { FilterState, Listing, ViewMode } from './types';
 import type { GridColumns } from './components/ListingsGrid';
 import { encodeFiltersToUrl, decodeFiltersFromUrl, DEFAULT_FILTERS } from './lib/urlState';
 
-type Page = 'home' | 'opportunities' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout' | 'media-profile' | 'claim-account';
+type Page = 'home' | 'opportunities' | 'podcasts' | 'list-slot' | 'admin' | 'terms' | 'privacy' | 'dashboard' | 'not-found' | 'listing' | 'checkout' | 'media-profile' | 'claim-account';
 
 function getParam(key: string): string | null {
   return new URLSearchParams(window.location.search).get(key);
@@ -196,6 +198,14 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
+  const handlePodcasts = () => {
+    navigateUrl(null);
+    setListingId(null);
+    setCheckoutListingId(null);
+    setPage('podcasts');
+    window.scrollTo(0, 0);
+  };
+
   const handleHowItWorks = () => {
     if (page !== 'home') {
       navigateUrl(null);
@@ -266,6 +276,7 @@ export default function App() {
     onDashboard: handleDashboard,
     onSignIn: () => setShowAuthModal(true),
     onOpportunities: handleOpportunities,
+    onPodcasts: handlePodcasts,
     onHowItWorks: handleHowItWorks,
   };
 
@@ -453,6 +464,26 @@ export default function App() {
     );
   }
 
+  if (page === 'podcasts') {
+    return (
+      <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
+        <Header {...sharedHeaderProps} onHome={goHome} />
+        <Suspense fallback={<PageFallback />}>
+          <PodcastsPage
+            onBack={goHome}
+            onSecure={handleSecure}
+            onViewListing={handleViewListing}
+            onViewMediaProfile={handleViewMediaProfile}
+            onSignIn={() => setShowAuthModal(true)}
+            onDashboard={handleDashboard}
+            onListSlot={handleListSlot}
+          />
+        </Suspense>
+        {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      </div>
+    );
+  }
+
   if (page === 'opportunities') {
     return (
       <div className="min-h-screen bg-[#f5f5f7] text-[#1d1d1f]">
@@ -524,6 +555,7 @@ export default function App() {
         <Hero onBrowse={handleBrowse} onListSlot={handleListSlot} liveCount={stats.liveCount} />
         <StatsBar liveCount={stats.liveCount} avgDiscount={stats.avgDiscount} totalSavings={stats.totalSavings} />
         <WhyNewsletterAds onBrowse={handleBrowse} />
+        <PodcastsSection onBrowsePodcasts={handlePodcasts} onSecure={handleSecure} onDetails={handleViewListing} />
 
         <SmartMatchCallout isLoggedIn={!!profile} onSignIn={() => setShowAuthModal(true)} onDashboard={handleDashboard} />
         <HowItWorks onListSlot={handleListSlot} />

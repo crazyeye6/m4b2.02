@@ -1,4 +1,4 @@
-import { Users, MapPin, Mail, Shield, Clock, Lock, Zap, CalendarClock, Flame, TrendingDown, Tag, ChevronRight } from 'lucide-react';
+import { Users, MapPin, Mail, Shield, Clock, Lock, Zap, CalendarClock, Flame, TrendingDown, Tag, ChevronRight, Mic2 } from 'lucide-react';
 import type { Listing, Newsletter } from '../types';
 import CountdownTimer from './CountdownTimer';
 import { resolvePublishDate, formatDeadlineDate } from '../lib/dateUtils';
@@ -28,10 +28,10 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
   const tx = useTranslations();
 
   const newsletter = (listing as any).newsletter as Newsletter | null;
+  const isPodcast = listing.media_type === 'podcast';
 
-  // Publisher → Newsletter → Slot identity
   const newsletterName = newsletter?.name || listing.property_name;
-  const publisherName = newsletter?.publisher_name || listing.media_company_name || listing.media_owner_name;
+  const publisherName = listing.host_name || newsletter?.publisher_name || listing.media_company_name || listing.media_owner_name;
   const niche = listing.media_profile?.category || newsletter?.niche || null;
 
   const autoDiscount = listing.auto_discount_enabled !== false;
@@ -103,10 +103,17 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
         {/* Row 1: Format badge + urgency + slots indicator */}
         <div className="flex items-start justify-between mb-3 gap-2">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="inline-flex items-center gap-1.5 border border-teal-100 bg-teal-50 text-teal-700 text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide flex-shrink-0">
-              <Mail className="w-3.5 h-3.5" />
-              Newsletter
-            </span>
+            {isPodcast ? (
+              <span className="inline-flex items-center gap-1.5 border border-sky-100 bg-sky-50 text-sky-700 text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide flex-shrink-0">
+                <Mic2 className="w-3.5 h-3.5" />
+                Podcast
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 border border-teal-100 bg-teal-50 text-teal-700 text-[11px] font-semibold px-2.5 py-1 rounded-full uppercase tracking-wide flex-shrink-0">
+                <Mail className="w-3.5 h-3.5" />
+                Newsletter
+              </span>
+            )}
             {niche && (
               <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500 bg-[#f5f5f7] border border-black/[0.06] px-2 py-0.5 rounded-full">
                 <Tag className="w-2.5 h-2.5" />
@@ -135,7 +142,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
           )}
         </div>
 
-        {/* Row 2: Newsletter identity — the primary identity */}
+        {/* Row 2: Newsletter/Podcast identity */}
         <div className="mb-2">
           <div className="flex items-center gap-2 mb-0.5">
             {listing.media_profile?.logo_url && (
@@ -148,7 +155,6 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
             )}
             <h3 className="text-slate-900 text-[15px] font-bold leading-tight line-clamp-1">{newsletterName}</h3>
           </div>
-          {/* Publisher line — secondary, clickable */}
           <button
             onClick={canViewProfile ? (e) => { e.stopPropagation(); onViewMediaProfile!(listing.media_profile_id!); } : undefined}
             disabled={!canViewProfile}
@@ -159,7 +165,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
           </button>
         </div>
 
-        {/* Row 3: Slot type — the slot's identity */}
+        {/* Row 3: Slot type */}
         {listing.slot_type && listing.slot_type !== newsletterName && (
           <div className="mb-3 inline-flex items-center gap-1.5">
             <span className="text-[11px] font-semibold text-slate-500 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full">
@@ -171,7 +177,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
         {/* Row 4: Publish date + deadline */}
         <div className="grid grid-cols-2 gap-2 mb-3">
           <div className="bg-teal-50 border border-teal-100 rounded-2xl p-3">
-            <p className="text-teal-500 text-[8px] font-bold uppercase tracking-widest leading-none mb-1.5">Issue Date</p>
+            <p className="text-teal-500 text-[8px] font-bold uppercase tracking-widest leading-none mb-1.5">{isPodcast ? 'Episode Date' : 'Issue Date'}</p>
             {weekday ? (
               <>
                 <p className="text-teal-900 text-[13px] font-bold leading-tight truncate mb-0.5">{weekday}</p>
@@ -256,15 +262,17 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
 
         {/* Row 7: Audience stats */}
         <div className="grid grid-cols-3 gap-1.5 mb-3">
-          <StatPill
-            label={tx.card.subscribers}
-            value={subscriberCount ? fmtCompact(subscriberCount, browserLocale) : '—'}
-          />
-          <StatPill
-            label={tx.card.openRate}
-            value={openRate || '—'}
-            accent
-          />
+          {isPodcast ? (
+            <>
+              <StatPill label="Downloads/Ep" value={listing.downloads ? fmtCompact(listing.downloads, browserLocale) : '—'} />
+              <StatPill label="Ad Slot" value={listing.ad_slot_position || listing.slot_type || '—'} accent />
+            </>
+          ) : (
+            <>
+              <StatPill label={tx.card.subscribers} value={subscriberCount ? fmtCompact(subscriberCount, browserLocale) : '—'} />
+              <StatPill label={tx.card.openRate} value={openRate || '—'} accent />
+            </>
+          )}
           <StatPill label={tx.card.ctr} value={listing.media_profile?.ctr || listing.ctr || '—'} />
         </div>
 

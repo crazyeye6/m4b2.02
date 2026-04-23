@@ -13,10 +13,11 @@ interface HeaderProps {
   onDashboard: () => void;
   onSignIn: () => void;
   onOpportunities?: () => void;
+  onPodcasts?: () => void;
   onHowItWorks?: () => void;
 }
 
-export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSignIn, onOpportunities, onHowItWorks }: HeaderProps) {
+export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSignIn, onOpportunities, onPodcasts, onHowItWorks }: HeaderProps) {
   const handleOpportunities = () => {
     if (onOpportunities) {
       onOpportunities();
@@ -78,6 +79,15 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
             >
               {tx.nav.opportunities}
             </button>
+            {onPodcasts && (
+              <button
+                onClick={onPodcasts}
+                className="flex items-center gap-1.5 text-[#1d1d1f] hover:text-[#6e6e73] text-[13px] font-medium px-4 py-2 transition-colors"
+              >
+                <span className="w-1.5 h-1.5 bg-sky-400 rounded-full" />
+                Podcasts
+              </button>
+            )}
             <a
               href="#how-it-works"
               onClick={handleHowItWorks}
@@ -252,6 +262,12 @@ export default function Header({ onListSlot, onHome, onAdmin, onDashboard, onSig
       {mobileOpen && (
         <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-black/[0.06] px-4 py-3 space-y-0.5">
           <button onClick={() => { handleOpportunities(); setMobileOpen(false); }} className="block w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">{tx.nav.opportunities}</button>
+          {onPodcasts && (
+            <button onClick={() => { onPodcasts(); setMobileOpen(false); }} className="flex items-center gap-2 w-full text-left text-[#1d1d1f] text-[14px] px-3 py-2.5 rounded-xl hover:bg-[#f5f5f7] transition-all">
+              <span className="w-1.5 h-1.5 bg-sky-400 rounded-full flex-shrink-0" />
+              Podcasts
+            </button>
+          )}
           <a
             href="#how-it-works"
             onClick={(e) => {

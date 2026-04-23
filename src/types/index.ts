@@ -1,4 +1,4 @@
-export type MediaType = 'newsletter';
+export type MediaType = 'newsletter' | 'podcast';
 
 export type ListingStatus =
   | 'live'
@@ -76,6 +76,8 @@ export interface Listing {
   seller_tiktok_url?: string | null;
   seller_podcast_url?: string | null;
   portfolio_links?: string[] | null;
+  host_name?: string | null;
+  ad_slot_position?: string | null;
   auto_discount_enabled: boolean;
   newsletter_id?: string | null;
   newsletter?: Newsletter | null;

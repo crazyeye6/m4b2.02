@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Check, ChevronRight, Loader2, BookOpen, Users, BarChart2, Globe } from 'lucide-react';
+import { ArrowLeft, Check, ChevronRight, Loader2, BookOpen, Users, BarChart2, Globe, Mail, Mic2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { sendSlotListedEmail } from '../lib/email';
@@ -17,10 +17,13 @@ interface FormState {
   property_name: string;
   media_company_name: string;
   media_owner_name: string;
+  host_name: string;
   audience: string;
   location: string;
   subscribers: string;
   open_rate: string;
+  downloads: string;
+  ad_slot_position: string;
   slot_type: string;
   date_label: string;
   posting_date_start: string;
@@ -40,10 +43,13 @@ const BLANK: FormState = {
   property_name: '',
   media_company_name: '',
   media_owner_name: '',
+  host_name: '',
   audience: '',
   location: '',
   subscribers: '',
   open_rate: '',
+  downloads: '',
+  ad_slot_position: 'Mid-roll',
   slot_type: 'Sponsored post',
   date_label: '',
   posting_date_start: '',
@@ -58,6 +64,7 @@ const BLANK: FormState = {
   media_profile_id: null,
 };
 
+const AD_SLOT_POSITIONS = ['Pre-roll', 'Mid-roll', 'Post-roll'] as const;
 
 function SectionHeader({ number, title, subtitle }: { number: string; title: string; subtitle?: string }) {
   return (
@@ -93,6 +100,7 @@ function TextInput({ value, onChange, placeholder, type = 'text' }: { value: str
 
 export default function ListSlotPage({ onBack, onEditProfile, preselectedNewsletterId }: ListSlotPageProps) {
   const { user, profile } = useAuth();
+  const [contentType, setContentType] = useState<'newsletter' | 'podcast'>('newsletter');
   const [form, setForm] = useState<FormState>({ ...BLANK, newsletter_id: preselectedNewsletterId ?? null });
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
   const [mediaProfiles, setMediaProfiles] = useState<MediaProfile[]>([]);
@@ -116,9 +124,6 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
     });
   }, [user]);
 
-  const selectedNewsletter = newsletters.find(n => n.id === form.newsletter_id) ?? null;
-  void selectedNewsletter;
-
   useEffect(() => {
     const nl = newsletters.find(n => n.id === form.newsletter_id);
     if (!nl) return;
@@ -135,9 +140,12 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
 
   const validate = () => {
     const e: typeof errors = {};
-    if (!form.property_name.trim()) e.property_name = 'Newsletter name is required';
-    if (!form.slot_type) e.slot_type = 'Slot type is required';
-    if (!form.date_label.trim()) e.date_label = 'Issue date / label is required';
+    if (!form.property_name.trim()) {
+      e.property_name = contentType === 'podcast' ? 'Podcast name is required' : 'Newsletter name is required';
+    }
+    if (!form.date_label.trim()) {
+      e.date_label = contentType === 'podcast' ? 'Episode date / label is required' : 'Issue date / label is required';
+    }
     if (!form.deadline_at) e.deadline_at = 'Booking deadline is required';
     if (!form.original_price || isNaN(Number(form.original_price)) || Number(form.original_price) <= 0) {
       e.original_price = 'Valid price is required';
@@ -157,8 +165,10 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
       .map(s => s.trim())
       .filter(Boolean);
 
+    const isPodcast = contentType === 'podcast';
+
     const payload: Record<string, any> = {
-      media_type: 'newsletter',
+      media_type: contentType,
       seller_user_id: user.id,
       seller_email: user.email,
       media_owner_name: form.media_owner_name.trim() || profile?.display_name || user.email || '',
@@ -166,9 +176,7 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
       property_name: form.property_name.trim(),
       audience: form.audience || 'General',
       location: form.location || 'Global',
-      subscribers: form.subscribers ? parseInt(form.subscribers, 10) : null,
-      open_rate: form.open_rate.trim() || null,
-      slot_type: form.slot_type,
+      slot_type: isPodcast ? form.ad_slot_position : form.slot_type,
       date_label: form.date_label.trim(),
       posting_date_start: form.posting_date_start || null,
       posting_date_end: form.posting_date_end || null,
@@ -182,9 +190,23 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
       deliverables_detail: form.deliverables_detail.trim() || null,
       status: 'live',
       auto_discount_enabled: form.auto_discount_enabled,
-      newsletter_id: form.newsletter_id || null,
+      newsletter_id: isPodcast ? null : (form.newsletter_id || null),
       media_profile_id: form.media_profile_id || null,
     };
+
+    if (isPodcast) {
+      payload.host_name = form.host_name.trim() || null;
+      payload.ad_slot_position = form.ad_slot_position;
+      payload.downloads = form.downloads ? parseInt(form.downloads, 10) : null;
+      payload.subscribers = null;
+      payload.open_rate = null;
+    } else {
+      payload.subscribers = form.subscribers ? parseInt(form.subscribers, 10) : null;
+      payload.open_rate = form.open_rate.trim() || null;
+      payload.host_name = null;
+      payload.ad_slot_position = null;
+      payload.downloads = null;
+    }
 
     const { error } = await supabase.from('listings').insert(payload);
     if (error) {
@@ -256,110 +278,194 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
 
         <div className="space-y-6">
 
+          {/* Step 1: Content type selector */}
           <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
-            <SectionHeader
-              number="1"
-              title="Select a newsletter"
-              subtitle={newsletters.length === 0 ? 'No newsletters yet — fill in details manually below.' : 'Pick one to auto-fill your newsletter data.'}
-            />
-
-            {newsletters.length > 0 ? (
-              <div className="space-y-2">
-                {newsletters.map(nl => (
-                  <button
-                    key={nl.id}
-                    onClick={() => set('newsletter_id', nl.id === form.newsletter_id ? null : nl.id)}
-                    className={`w-full text-left rounded-2xl border p-3.5 transition-all ${
-                      form.newsletter_id === nl.id
-                        ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white'
-                        : 'bg-[#f5f5f7] border-black/[0.06] hover:border-black/[0.12]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${form.newsletter_id === nl.id ? 'bg-white/10' : 'bg-white border border-black/[0.06]'}`}>
-                        <span className={`font-bold text-sm ${form.newsletter_id === nl.id ? 'text-white' : 'text-[#1d1d1f]'}`}>{nl.name.charAt(0).toUpperCase()}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className={`font-semibold text-sm truncate ${form.newsletter_id === nl.id ? 'text-white' : 'text-[#1d1d1f]'}`}>{nl.name}</p>
-                        <div className={`flex items-center gap-3 mt-0.5 flex-wrap ${form.newsletter_id === nl.id ? 'text-white/60' : 'text-[#6e6e73]'}`}>
-                          {nl.subscriber_count && (
-                            <span className="flex items-center gap-1 text-[10px]">
-                              <Users className="w-2.5 h-2.5" />
-                              {nl.subscriber_count.toLocaleString()}
-                            </span>
-                          )}
-                          {nl.avg_open_rate && (
-                            <span className="flex items-center gap-1 text-[10px]">
-                              <BarChart2 className="w-2.5 h-2.5" />
-                              {nl.avg_open_rate} open
-                            </span>
-                          )}
-                          {nl.niche && (
-                            <span className="text-[10px]">{nl.niche}</span>
-                          )}
-                          {nl.primary_geography && (
-                            <span className="flex items-center gap-1 text-[10px]">
-                              <Globe className="w-2.5 h-2.5" />
-                              {nl.primary_geography}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      {form.newsletter_id === nl.id && (
-                        <Check className="w-4 h-4 text-white flex-shrink-0" />
-                      )}
-                    </div>
-                  </button>
-                ))}
-                <button
-                  onClick={() => set('newsletter_id', null)}
-                  className="w-full text-center text-xs text-[#6e6e73] hover:text-[#1d1d1f] py-1 transition-colors"
-                >
-                  or fill in details manually
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-3 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
-                <BookOpen className="w-5 h-5 text-[#aeaeb2] flex-shrink-0" />
-                <div>
-                  <p className="text-[#1d1d1f] text-sm font-medium">No newsletters saved yet</p>
-                  <p className="text-[#6e6e73] text-xs mt-0.5">
-                    Add newsletters in your{' '}
-                    <button onClick={onEditProfile} className="text-[#1d1d1f] font-semibold hover:underline">Seller Dashboard</button>
-                    {' '}to speed up future listings.
-                  </p>
+            <SectionHeader number="1" title="What type of opportunity?" subtitle="Choose the format for this ad slot." />
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setContentType('newsletter')}
+                className={`rounded-2xl border p-4 text-left transition-all ${
+                  contentType === 'newsletter'
+                    ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white'
+                    : 'bg-[#f5f5f7] border-black/[0.06] hover:border-black/[0.12]'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${contentType === 'newsletter' ? 'bg-white/10' : 'bg-teal-50'}`}>
+                    <Mail className={`w-4 h-4 ${contentType === 'newsletter' ? 'text-white' : 'text-teal-600'}`} />
+                  </div>
+                  {contentType === 'newsletter' && <Check className="w-4 h-4 text-white" />}
                 </div>
-              </div>
-            )}
+                <p className={`font-semibold text-sm mb-0.5 ${contentType === 'newsletter' ? 'text-white' : 'text-[#1d1d1f]'}`}>Newsletter</p>
+                <p className={`text-xs leading-relaxed ${contentType === 'newsletter' ? 'text-white/60' : 'text-[#6e6e73]'}`}>
+                  Email newsletter sponsorship or dedicated send
+                </p>
+              </button>
+
+              <button
+                onClick={() => setContentType('podcast')}
+                className={`rounded-2xl border p-4 text-left transition-all ${
+                  contentType === 'podcast'
+                    ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white'
+                    : 'bg-[#f5f5f7] border-black/[0.06] hover:border-black/[0.12]'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${contentType === 'podcast' ? 'bg-white/10' : 'bg-sky-50'}`}>
+                    <Mic2 className={`w-4 h-4 ${contentType === 'podcast' ? 'text-white' : 'text-sky-600'}`} />
+                  </div>
+                  {contentType === 'podcast' && <Check className="w-4 h-4 text-white" />}
+                </div>
+                <p className={`font-semibold text-sm mb-0.5 ${contentType === 'podcast' ? 'text-white' : 'text-[#1d1d1f]'}`}>Podcast</p>
+                <p className={`text-xs leading-relaxed ${contentType === 'podcast' ? 'text-white/60' : 'text-[#6e6e73]'}`}>
+                  Pre-roll, mid-roll or post-roll podcast ad slot
+                </p>
+              </button>
+            </div>
           </div>
 
+          {/* Newsletter selector (newsletter only) */}
+          {contentType === 'newsletter' && (
+            <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
+              <SectionHeader
+                number="2"
+                title="Select a newsletter"
+                subtitle={newsletters.length === 0 ? 'No newsletters yet — fill in details manually below.' : 'Pick one to auto-fill your newsletter data.'}
+              />
+
+              {newsletters.length > 0 ? (
+                <div className="space-y-2">
+                  {newsletters.map(nl => (
+                    <button
+                      key={nl.id}
+                      onClick={() => set('newsletter_id', nl.id === form.newsletter_id ? null : nl.id)}
+                      className={`w-full text-left rounded-2xl border p-3.5 transition-all ${
+                        form.newsletter_id === nl.id
+                          ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white'
+                          : 'bg-[#f5f5f7] border-black/[0.06] hover:border-black/[0.12]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${form.newsletter_id === nl.id ? 'bg-white/10' : 'bg-white border border-black/[0.06]'}`}>
+                          <span className={`font-bold text-sm ${form.newsletter_id === nl.id ? 'text-white' : 'text-[#1d1d1f]'}`}>{nl.name.charAt(0).toUpperCase()}</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`font-semibold text-sm truncate ${form.newsletter_id === nl.id ? 'text-white' : 'text-[#1d1d1f]'}`}>{nl.name}</p>
+                          <div className={`flex items-center gap-3 mt-0.5 flex-wrap ${form.newsletter_id === nl.id ? 'text-white/60' : 'text-[#6e6e73]'}`}>
+                            {nl.subscriber_count && (
+                              <span className="flex items-center gap-1 text-[10px]">
+                                <Users className="w-2.5 h-2.5" />
+                                {nl.subscriber_count.toLocaleString()}
+                              </span>
+                            )}
+                            {nl.avg_open_rate && (
+                              <span className="flex items-center gap-1 text-[10px]">
+                                <BarChart2 className="w-2.5 h-2.5" />
+                                {nl.avg_open_rate} open
+                              </span>
+                            )}
+                            {nl.niche && <span className="text-[10px]">{nl.niche}</span>}
+                            {nl.primary_geography && (
+                              <span className="flex items-center gap-1 text-[10px]">
+                                <Globe className="w-2.5 h-2.5" />
+                                {nl.primary_geography}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {form.newsletter_id === nl.id && <Check className="w-4 h-4 text-white flex-shrink-0" />}
+                      </div>
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => set('newsletter_id', null)}
+                    className="w-full text-center text-xs text-[#6e6e73] hover:text-[#1d1d1f] py-1 transition-colors"
+                  >
+                    or fill in details manually
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-3 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
+                  <BookOpen className="w-5 h-5 text-[#aeaeb2] flex-shrink-0" />
+                  <div>
+                    <p className="text-[#1d1d1f] text-sm font-medium">No newsletters saved yet</p>
+                    <p className="text-[#6e6e73] text-xs mt-0.5">
+                      Add newsletters in your{' '}
+                      <button onClick={onEditProfile} className="text-[#1d1d1f] font-semibold hover:underline">Seller Dashboard</button>
+                      {' '}to speed up future listings.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Slot details */}
           <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
-            <SectionHeader number="2" title="About the slot" />
+            <SectionHeader number={contentType === 'podcast' ? '2' : '3'} title="About the slot" />
 
             <div className="space-y-4">
               <div>
-                <FieldLabel required>Newsletter name</FieldLabel>
-                <TextInput value={form.property_name} onChange={v => set('property_name', v)} placeholder="e.g. SaaS Insider" />
+                <FieldLabel required>{contentType === 'podcast' ? 'Podcast name' : 'Newsletter name'}</FieldLabel>
+                <TextInput
+                  value={form.property_name}
+                  onChange={v => set('property_name', v)}
+                  placeholder={contentType === 'podcast' ? 'e.g. The SaaS Operator' : 'e.g. SaaS Insider'}
+                />
                 {errors.property_name && <p className="text-red-500 text-[10px] mt-1">{errors.property_name}</p>}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <FieldLabel>Publisher / Company</FieldLabel>
-                  <TextInput value={form.media_company_name} onChange={v => set('media_company_name', v)} placeholder="e.g. B2B Growth Co." />
+              {contentType === 'podcast' ? (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <FieldLabel>Host name</FieldLabel>
+                      <TextInput value={form.host_name} onChange={v => set('host_name', v)} placeholder="e.g. Jane Smith" />
+                    </div>
+                    <div>
+                      <FieldLabel>Downloads per episode</FieldLabel>
+                      <TextInput type="number" value={form.downloads} onChange={v => set('downloads', v)} placeholder="e.g. 18000" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <FieldLabel required>Ad slot position</FieldLabel>
+                    <div className="grid grid-cols-3 gap-2">
+                      {AD_SLOT_POSITIONS.map(pos => (
+                        <button
+                          key={pos}
+                          onClick={() => set('ad_slot_position', pos)}
+                          className={`rounded-xl border py-2.5 text-[13px] font-semibold transition-all ${
+                            form.ad_slot_position === pos
+                              ? 'bg-[#1d1d1f] border-[#1d1d1f] text-white'
+                              : 'bg-[#f5f5f7] border-black/[0.06] text-[#6e6e73] hover:border-black/[0.12] hover:text-[#1d1d1f]'
+                          }`}
+                        >
+                          {pos}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <FieldLabel>Publisher / Company</FieldLabel>
+                    <TextInput value={form.media_company_name} onChange={v => set('media_company_name', v)} placeholder="e.g. B2B Growth Co." />
+                  </div>
+                  <div>
+                    <FieldLabel required>Slot type</FieldLabel>
+                    <TagComboInput
+                      value={form.slot_type}
+                      onChange={v => set('slot_type', v)}
+                      tagType="format"
+                      placeholder="e.g. Sponsored post, Banner ad…"
+                      allowFreeText
+                    />
+                    {errors.slot_type && <p className="text-red-500 text-[10px] mt-1">{errors.slot_type}</p>}
+                  </div>
                 </div>
-                <div>
-                  <FieldLabel required>Slot type</FieldLabel>
-                  <TagComboInput
-                    value={form.slot_type}
-                    onChange={v => set('slot_type', v)}
-                    tagType="format"
-                    placeholder="e.g. Sponsored post, Banner ad…"
-                    allowFreeText
-                  />
-                  {errors.slot_type && <p className="text-red-500 text-[10px] mt-1">{errors.slot_type}</p>}
-                </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -384,30 +490,36 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <FieldLabel>Subscriber count</FieldLabel>
-                  <TextInput type="number" value={form.subscribers} onChange={v => set('subscribers', v)} placeholder="e.g. 45000" />
+              {contentType === 'newsletter' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <FieldLabel>Subscriber count</FieldLabel>
+                    <TextInput type="number" value={form.subscribers} onChange={v => set('subscribers', v)} placeholder="e.g. 45000" />
+                  </div>
+                  <div>
+                    <FieldLabel>Avg open rate</FieldLabel>
+                    <TextInput value={form.open_rate} onChange={v => set('open_rate', v)} placeholder="e.g. 42%" />
+                  </div>
                 </div>
-                <div>
-                  <FieldLabel>Avg open rate</FieldLabel>
-                  <TextInput value={form.open_rate} onChange={v => set('open_rate', v)} placeholder="e.g. 42%" />
-                </div>
-              </div>
+              )}
 
               <div>
-                <FieldLabel required>Issue date / label</FieldLabel>
-                <TextInput value={form.date_label} onChange={v => set('date_label', v)} placeholder="e.g. May 12, 2026 issue" />
+                <FieldLabel required>{contentType === 'podcast' ? 'Episode date / label' : 'Issue date / label'}</FieldLabel>
+                <TextInput
+                  value={form.date_label}
+                  onChange={v => set('date_label', v)}
+                  placeholder={contentType === 'podcast' ? 'e.g. Episode 142 — May 15' : 'e.g. May 12, 2026 issue'}
+                />
                 {errors.date_label && <p className="text-red-500 text-[10px] mt-1">{errors.date_label}</p>}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <FieldLabel>Issue start date</FieldLabel>
+                  <FieldLabel>{contentType === 'podcast' ? 'Episode publish start' : 'Issue start date'}</FieldLabel>
                   <TextInput type="date" value={form.posting_date_start} onChange={v => set('posting_date_start', v)} />
                 </div>
                 <div>
-                  <FieldLabel>Issue end date</FieldLabel>
+                  <FieldLabel>{contentType === 'podcast' ? 'Episode publish end' : 'Issue end date'}</FieldLabel>
                   <TextInput type="date" value={form.posting_date_end} onChange={v => set('posting_date_end', v)} />
                 </div>
               </div>
@@ -441,7 +553,11 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
                   value={form.deliverables_detail}
                   onChange={e => set('deliverables_detail', e.target.value)}
                   rows={3}
-                  placeholder="Describe what is included: word count, placement, format, any restrictions…"
+                  placeholder={
+                    contentType === 'podcast'
+                      ? 'Describe the ad: length (e.g. 30s/60s), host-read or produced, any restrictions…'
+                      : 'Describe what is included: word count, placement, format, any restrictions…'
+                  }
                   className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-2xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all resize-none"
                 />
               </div>
@@ -470,7 +586,7 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
           </div>
 
           <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
-            <SectionHeader number="3" title="Pricing mode" subtitle="Control how your price changes as the deadline approaches." />
+            <SectionHeader number={contentType === 'podcast' ? '3' : '4'} title="Pricing mode" subtitle="Control how your price changes as the deadline approaches." />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
@@ -510,7 +626,7 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
           </div>
 
           <div className="bg-white border border-black/[0.06] rounded-3xl p-6">
-            <SectionHeader number="4" title="Publish" />
+            <SectionHeader number={contentType === 'podcast' ? '4' : '5'} title="Publish" />
 
             {errors.general && (
               <div className="mb-4 bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-red-700 text-sm">
@@ -519,9 +635,18 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
             )}
 
             <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4 mb-5 space-y-2">
-              <p className="text-[#1d1d1f] font-semibold text-sm">
-                {form.property_name || 'Your newsletter'} — {form.slot_type}
-              </p>
+              <div className="flex items-center gap-2">
+                {contentType === 'podcast' ? (
+                  <Mic2 className="w-4 h-4 text-sky-500 flex-shrink-0" />
+                ) : (
+                  <Mail className="w-4 h-4 text-teal-500 flex-shrink-0" />
+                )}
+                <p className="text-[#1d1d1f] font-semibold text-sm">
+                  {form.property_name || (contentType === 'podcast' ? 'Your podcast' : 'Your newsletter')}
+                  {' — '}
+                  {contentType === 'podcast' ? form.ad_slot_position : form.slot_type}
+                </p>
+              </div>
               <div className="flex flex-wrap gap-3 text-xs text-[#6e6e73]">
                 {form.original_price && <span>${Number(form.original_price).toLocaleString()}</span>}
                 {form.date_label && <span>{form.date_label}</span>}

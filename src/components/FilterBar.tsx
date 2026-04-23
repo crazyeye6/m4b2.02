@@ -1,7 +1,7 @@
 import {
   SlidersHorizontal, Mail, MapPin, Tag, DollarSign,
   ChevronUp, X, LayoutGrid, Columns2, Columns3, Check, ChevronDown,
-  TrendingDown, Clock, Users, Percent,
+  TrendingDown, Clock, Users, Percent, Mic2,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
@@ -20,6 +20,7 @@ interface FilterBarProps {
 const CATEGORIES = [
   { value: 'all', label: 'All', icon: <LayoutGrid className="w-3.5 h-3.5" />, activeClass: 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.08]' },
   { value: 'newsletter', label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" />, activeClass: 'bg-green-50 text-green-600 border border-green-100 shadow-sm' },
+  { value: 'podcast', label: 'Podcast', icon: <Mic2 className="w-3.5 h-3.5" />, activeClass: 'bg-sky-50 text-sky-600 border border-sky-100 shadow-sm' },
 ];
 
 const DISCOUNT_OPTIONS = [0, 20, 30, 40, 50];
