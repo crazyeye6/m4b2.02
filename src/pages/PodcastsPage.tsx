@@ -35,7 +35,10 @@ export default function PodcastsPage({
 
   const [filters, setFilters] = useState<FilterState>(PODCAST_DEFAULT_FILTERS);
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
-  const [columns, setColumns] = useState<GridColumns>(2);
+  const [columns, setColumns] = useState<GridColumns>(() => {
+    const saved = localStorage.getItem('etw_podcast_columns');
+    return (saved === '1' || saved === '2' || saved === '3') ? (Number(saved) as GridColumns) : 2;
+  });
 
   const updateFilters = useCallback((partial: Partial<FilterState>) => {
     setFilters(prev => ({ ...prev, ...partial, category: 'podcast' }));
@@ -45,7 +48,7 @@ export default function PodcastsPage({
 
   const handleColumnsChange = (c: GridColumns) => {
     setColumns(c);
-    localStorage.setItem('etw_grid_columns', String(c));
+    localStorage.setItem('etw_podcast_columns', String(c));
   };
 
   const { listings, loading } = useListings(filters);
