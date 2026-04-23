@@ -26,17 +26,17 @@ interface Props {
 type ViewMode = 'grouped' | 'table';
 type SlotFilter = 'all' | 'pending_review' | 'needs_review' | 'approved' | 'published' | 'rejected';
 
-interface NewsletterGroup {
+interface PodcastGroup {
   name: string;
   slots: ImportSlot[];
   subscriberCount: string;
   niche: string;
 }
 
-function buildNewsletterGroups(slots: ImportSlot[]): NewsletterGroup[] {
+function buildNewsletterGroups(slots: ImportSlot[]): PodcastGroup[] {
   const map = new Map<string, ImportSlot[]>();
   for (const slot of slots) {
-    const key = slot.media_name || '(unnamed newsletter)';
+    const key = slot.media_name || '(unnamed podcast)';
     if (!map.has(key)) map.set(key, []);
     map.get(key)!.push(slot);
   }
@@ -341,7 +341,7 @@ export default function BatchDetail({
           <div className="flex items-center gap-3 flex-wrap">
             <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
               <BookOpen className="w-3 h-3 text-slate-300" />
-              <span className="font-medium">{nlGroups.length} newsletter{nlGroups.length !== 1 ? 's' : ''}</span>
+              <span className="font-medium">{nlGroups.length} podcast{nlGroups.length !== 1 ? 's' : ''}</span>
               <span className="text-slate-300">·</span>
               <span className="font-medium">{slots.length} slot{slots.length !== 1 ? 's' : ''}</span>
             </div>
@@ -484,7 +484,7 @@ export default function BatchDetail({
 
               return (
                 <div key={group.name}>
-                  {/* Newsletter group header */}
+                  {/* Podcast group header */}
                   <div
                     className="flex items-center gap-3 px-4 py-3 bg-slate-50/60 hover:bg-slate-50 cursor-pointer select-none"
                     onClick={() => toggleGroup(group.name)}

@@ -95,7 +95,7 @@ export default function ProfileForm({ form, onChange, isEditing, onRequestNameCh
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Field label="Newsletter / Media Name" icon={<FileText className="w-3 h-3" />}>
+        <Field label="Podcast / Show Name" icon={<FileText className="w-3 h-3" />}>
           {isEditing ? (
             <div className="flex items-center gap-2">
               <div className="flex-1 flex items-center gap-2 bg-[#f5f5f7] border border-black/[0.08] rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm">
@@ -111,7 +111,7 @@ export default function ProfileForm({ form, onChange, isEditing, onRequestNameCh
               </button>
             </div>
           ) : (
-            <Input value={form.newsletter_name} onChange={set('newsletter_name')} placeholder="e.g. The Rundown AI" />
+            <Input value={form.newsletter_name} onChange={set('newsletter_name')} placeholder="e.g. The SaaS Operator" />
           )}
         </Field>
         <Field label="Tagline" icon={<Tag className="w-3 h-3" />} hint="Short one-liner shown on cards">
@@ -135,17 +135,17 @@ export default function ProfileForm({ form, onChange, isEditing, onRequestNameCh
         <Textarea
           value={form.audience_summary}
           onChange={set('audience_summary')}
-          placeholder="e.g. 85,000+ tech operators, founders, and AI practitioners — mostly US/UK based, decision-makers in SaaS and B2B"
+          placeholder="e.g. 50,000+ tech founders and operators — mostly US/UK based, tuning in weekly for SaaS and B2B insights"
           rows={3}
         />
       </Field>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Field label="Subscriber Count" icon={<Users className="w-3 h-3" />}>
-          <Input value={form.subscriber_count} onChange={set('subscriber_count')} placeholder="e.g. 85000" type="number" />
+        <Field label="Downloads per Episode" icon={<Users className="w-3 h-3" />}>
+          <Input value={form.subscriber_count} onChange={set('subscriber_count')} placeholder="e.g. 50000" type="number" />
         </Field>
-        <Field label="Open Rate" icon={<BarChart2 className="w-3 h-3" />}>
-          <Input value={form.open_rate} onChange={set('open_rate')} placeholder="e.g. 42%" />
+        <Field label="Avg CTR / Engagement" icon={<BarChart2 className="w-3 h-3" />}>
+          <Input value={form.open_rate} onChange={set('open_rate')} placeholder="e.g. 3.2%" />
         </Field>
         <Field label="Publishing Frequency" icon={<Radio className="w-3 h-3" />}>
           <Select value={form.publishing_frequency} onChange={set('publishing_frequency')} options={FREQUENCIES} placeholder="Select frequency..." />
@@ -163,8 +163,8 @@ export default function ProfileForm({ form, onChange, isEditing, onRequestNameCh
       <div className="pt-2 border-t border-black/[0.06]">
         <p className="text-[11px] font-bold text-[#86868b] uppercase tracking-wider mb-4">Links &amp; Media</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Field label="Newsletter Website" icon={<Globe className="w-3 h-3" />}>
-            <Input value={form.website_url} onChange={set('website_url')} placeholder="https://yoursite.com" type="url" />
+          <Field label="Podcast Website / Listen Link" icon={<Globe className="w-3 h-3" />}>
+            <Input value={form.website_url} onChange={set('website_url')} placeholder="https://yourpodcast.com" type="url" />
           </Field>
           <Field label="Logo URL" icon={<Image className="w-3 h-3" />} hint="Direct link to your logo image">
             <Input value={form.logo_url} onChange={set('logo_url')} placeholder="https://..." type="url" />
@@ -172,7 +172,7 @@ export default function ProfileForm({ form, onChange, isEditing, onRequestNameCh
           <Field label="Media Kit URL" icon={<Link className="w-3 h-3" />}>
             <Input value={form.media_kit_url} onChange={set('media_kit_url')} placeholder="https://..." type="url" />
           </Field>
-          <Field label="Sample Issue URL" icon={<FileText className="w-3 h-3" />}>
+          <Field label="Sample Episode URL" icon={<FileText className="w-3 h-3" />}>
             <Input value={form.sample_issue_url} onChange={set('sample_issue_url')} placeholder="https://..." type="url" />
           </Field>
         </div>

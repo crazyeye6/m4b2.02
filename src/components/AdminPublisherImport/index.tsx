@@ -145,7 +145,7 @@ export default function AdminPublisherImport({ onRefreshStats }: Props) {
       else if (s.status === 'needs_review') st.needs_review++;
       else if (s.status === 'rejected') st.rejected++;
     }
-    // Count unique newsletter names per batch
+    // Count unique podcast names per batch
     const nlMap = new Map<string, Set<string>>();
     for (const s of slots) {
       if (!nlMap.has(s.batch_id)) nlMap.set(s.batch_id, new Set());
@@ -410,13 +410,13 @@ export default function AdminPublisherImport({ onRefreshStats }: Props) {
                   {pub.logo_url
                     ? <img src={pub.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
                     : (
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center flex-shrink-0">
                         <span className="text-white text-[11px] font-bold">{pub.newsletter_name.charAt(0)}</span>
                       </div>
                     )}
                   <div className="flex-1 min-w-0">
                     <p className="text-[13px] font-semibold text-slate-900 truncate">{pub.newsletter_name}</p>
-                    <p className="text-[11px] text-slate-400">{pub.category} · {pub.subscriber_count?.toLocaleString() ?? '—'} subs</p>
+                    <p className="text-[11px] text-slate-400">{pub.category} · {pub.subscriber_count?.toLocaleString() ?? '—'} downloads/ep</p>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 text-[11px] text-slate-400">
                     {lastBatch && (

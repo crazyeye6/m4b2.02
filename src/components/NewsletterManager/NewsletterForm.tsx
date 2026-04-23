@@ -74,7 +74,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
 
   const validate = () => {
     const e: typeof errors = {};
-    if (!form.name.trim()) e.name = 'Newsletter name is required';
+    if (!form.name.trim()) e.name = 'Podcast name is required';
     if (!form.publisher_name.trim()) e.publisher_name = 'Publisher name is required';
     return e;
   };
@@ -90,7 +90,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
   return (
     <div className="bg-white border border-black/[0.08] rounded-2xl p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-[#1d1d1f] font-semibold text-sm">{existing ? 'Edit newsletter' : 'Add newsletter'}</h3>
+        <h3 className="text-[#1d1d1f] font-semibold text-sm">{existing ? 'Edit podcast' : 'Add podcast'}</h3>
         <button onClick={onCancel} className="w-7 h-7 flex items-center justify-center rounded-xl text-[#aeaeb2] hover:text-[#1d1d1f] hover:bg-[#f5f5f7] transition-all">
           <X className="w-3.5 h-3.5" />
         </button>
@@ -106,7 +106,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
       {nameChangeTarget && (
         <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-3">
           <p className="text-[#1d1d1f] font-semibold text-sm">
-            Request {nameChangeTarget === 'name' ? 'newsletter' : 'publisher'} name change
+            Request {nameChangeTarget === 'name' ? 'podcast' : 'publisher'} name change
           </p>
           <p className="text-[#6e6e73] text-xs">
             Current: <span className="font-semibold text-[#1d1d1f]">{nameChangeTarget === 'name' ? existing?.name : existing?.publisher_name}</span>
@@ -150,7 +150,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">
-            Newsletter name <span className="text-red-400">*</span>
+            Podcast name <span className="text-red-400">*</span>
           </label>
           {existing ? (
             <div className="flex items-center gap-2">
@@ -171,7 +171,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
               type="text"
               value={form.name}
               onChange={e => set('name', e.target.value)}
-              placeholder="e.g. SaaS Insider"
+              placeholder="e.g. The SaaS Operator"
               className={`w-full bg-[#f5f5f7] border ${errors.name ? 'border-red-400' : 'border-black/[0.08]'} focus:border-black/[0.2] focus:bg-white rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all`}
             />
           )}
@@ -180,7 +180,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
 
         <div>
           <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">
-            Publisher / Company <span className="text-red-400">*</span>
+            Host / Company <span className="text-red-400">*</span>
           </label>
           {existing ? (
             <div className="flex items-center gap-2">
@@ -201,7 +201,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
               type="text"
               value={form.publisher_name}
               onChange={e => set('publisher_name', e.target.value)}
-              placeholder="e.g. B2B Growth Co."
+              placeholder="e.g. Meridian Audio"
               className={`w-full bg-[#f5f5f7] border ${errors.publisher_name ? 'border-red-400' : 'border-black/[0.08]'} focus:border-black/[0.2] focus:bg-white rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all`}
             />
           )}
@@ -209,24 +209,24 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
         </div>
 
         <div>
-          <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Subscriber count</label>
+          <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Downloads per episode</label>
           <input
             type="number"
             value={form.subscriber_count}
             onChange={e => set('subscriber_count', e.target.value)}
-            placeholder="e.g. 45000"
+            placeholder="e.g. 25000"
             min="0"
             className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all"
           />
         </div>
 
         <div>
-          <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Avg open rate</label>
+          <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Avg CTR / engagement</label>
           <input
             type="text"
             value={form.avg_open_rate}
             onChange={e => set('avg_open_rate', e.target.value)}
-            placeholder="e.g. 42%"
+            placeholder="e.g. 3.5%"
             className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all"
           />
         </div>
@@ -237,7 +237,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
             value={form.niche}
             onChange={v => set('niche', v)}
             tagType="niche"
-            placeholder="e.g. Marketing, Health…"
+            placeholder="e.g. B2B SaaS, Tech…"
             allowFreeText
           />
         </div>
@@ -254,7 +254,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
         </div>
 
         <div>
-          <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Send frequency</label>
+          <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Release frequency</label>
           <select
             value={form.send_frequency}
             onChange={e => set('send_frequency', e.target.value)}
@@ -266,12 +266,12 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
         </div>
 
         <div>
-          <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Website URL</label>
+          <label className="block text-[11px] text-[#86868b] font-semibold uppercase tracking-wider mb-1.5">Website / Listen link</label>
           <input
             type="url"
             value={form.website_url}
             onChange={e => set('website_url', e.target.value)}
-            placeholder="https://yournewsletter.com"
+            placeholder="https://yourpodcast.com"
             className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all"
           />
         </div>
@@ -283,7 +283,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
           value={form.description}
           onChange={e => set('description', e.target.value)}
           rows={3}
-          placeholder="Brief description of your newsletter, audience, and what makes it unique…"
+          placeholder="Brief description of your podcast, audience, and what makes it unique…"
           className="w-full bg-[#f5f5f7] border border-black/[0.08] focus:border-black/[0.2] focus:bg-white rounded-xl px-3 py-2.5 text-[#1d1d1f] text-sm placeholder-[#aeaeb2] outline-none transition-all resize-none"
         />
       </div>
@@ -295,7 +295,7 @@ export default function NewsletterForm({ existing, onSave, onCancel }: Props) {
           className="flex items-center gap-1.5 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-all"
         >
           {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-          {existing ? 'Save changes' : 'Add newsletter'}
+          {existing ? 'Save changes' : 'Add podcast'}
         </button>
         <button
           onClick={onCancel}

@@ -146,7 +146,7 @@ export default function SellerDashboard({ onBack, onListSlot }: SellerDashboardP
   const tabs: [DashTab, string][] = [
     ['csv_upload', 'Weekly Upload'],
     ['listings', 'My Listings'],
-    ['newsletters', 'Newsletters'],
+    ['newsletters', 'Podcasts'],
     ['bookings', 'Bookings'],
     ['media', 'Media Profiles'],
     ['profile', 'Profile'],
@@ -367,8 +367,8 @@ function ListingsTable({ listings, duplicating, onSelect, onDuplicate }: {
   return (
     <div className="bg-white border border-black/[0.06] rounded-2xl overflow-hidden">
       <div className="hidden sm:grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-3 px-4 py-2.5 border-b border-black/[0.06] bg-[#f5f5f7]">
-        <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Newsletter / Slot</span>
-        <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Issue date</span>
+        <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Podcast / Slot</span>
+        <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Air date</span>
         <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Price</span>
         <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Status</span>
         <span className="text-[10px] font-semibold text-[#86868b] uppercase tracking-wider">Pricing</span>
@@ -691,12 +691,12 @@ function ListingDetailModal({ listing, onClose, onRefetch, onDuplicate, duplicat
           </div>
 
           {newsletter && (
-            <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 flex items-center gap-2">
-              <BookOpen className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
-              <p className="text-blue-700 text-xs">
-                Linked to newsletter: <span className="font-semibold">{newsletter.name}</span>
-                {newsletter.subscriber_count && ` · ${newsletter.subscriber_count.toLocaleString()} subscribers`}
-                {newsletter.avg_open_rate && ` · ${newsletter.avg_open_rate} open rate`}
+            <div className="bg-sky-50 border border-sky-100 rounded-xl px-3 py-2.5 flex items-center gap-2">
+              <BookOpen className="w-3.5 h-3.5 text-sky-500 flex-shrink-0" />
+              <p className="text-sky-700 text-xs">
+                Linked to podcast: <span className="font-semibold">{newsletter.name}</span>
+                {newsletter.subscriber_count && ` · ${newsletter.subscriber_count.toLocaleString()} downloads/ep`}
+                {newsletter.avg_open_rate && ` · ${newsletter.avg_open_rate} CTR`}
               </p>
             </div>
           )}

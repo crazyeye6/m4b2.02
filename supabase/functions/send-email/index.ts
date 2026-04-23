@@ -182,7 +182,7 @@ function buildWelcomeSeller(data: Record<string, unknown>) {
     ${p("Your seller account is ready. List your unsold advertising slots and fill your inventory before the deadline &mdash; at a price that works for buyers and still works for you.")}
     ${labelText("Getting listed is free and takes less than 5 minutes:")}
     <ol style="color:#6e6e73;font-size:14px;line-height:1.9;padding-left:22px;margin:0 0 24px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">
-      <li>Fill in your media details (newsletter, podcast, or influencer slot)</li>
+      <li>Fill in your podcast details (name, host, downloads per episode)</li>
       <li>Set your original rate and discounted price</li>
       <li>Add real audience data &mdash; this is what buyers look for</li>
       <li>Set a deadline and publish &mdash; buyers can book instantly</li>
@@ -512,12 +512,12 @@ function buildAccountInvite(data: Record<string, unknown>) {
   const claimUrl = String(data.claim_url || SITE_URL);
   const content = `
     ${h1(`Your seller account is ready, ${name}!`)}
-    ${p("An account has been created for you on EndingThisWeek.media. Your newsletter listings are live and ready for buyers to discover.")}
+    ${p("An account has been created for you on EndingThisWeek.media. Your podcast ad slots are live and ready for buyers to discover.")}
     ${company ? dataTable(dataRow("Publisher", company)) : ""}
     ${infoBox(`<p style="color:#15803d;font-size:13px;font-weight:600;margin:0 0 6px 0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Claim your account</p><p style="color:#6e6e73;font-size:13px;margin:0;line-height:1.6;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;">Click the button below to set your password and gain full access to your seller dashboard — where you can edit, manage, and add new listings anytime.</p>`, "green")}
     ${ctaButton("Claim Your Account &rarr;", claimUrl)}
     ${divider()}
-    ${p("Once claimed, you can edit listings, add new newsletters, manage bookings, and update your publisher profile.", "color:#aeaeb2;font-size:12px;")}
+    ${p("Once claimed, you can edit listings, add new podcasts, manage bookings, and update your publisher profile.", "color:#aeaeb2;font-size:12px;")}
     ${p("This link expires in 24 hours. If you did not expect this email, you can safely ignore it.", "color:#aeaeb2;font-size:12px;")}
   `;
   return {

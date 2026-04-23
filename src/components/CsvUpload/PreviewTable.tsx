@@ -11,13 +11,13 @@ interface PreviewTableProps {
 
 const EDITABLE_COLS: CsvColumnKey[] = [
   'publisher_name',
-  'newsletter_name',
-  'subscriber_count',
+  'podcast_name',
+  'downloads_per_episode',
   'niche',
   'sponsorship_type',
   'price',
   'slots_available',
-  'send_date',
+  'air_date',
   'deadline',
   'booking_url',
   'description',
@@ -25,26 +25,26 @@ const EDITABLE_COLS: CsvColumnKey[] = [
 
 const VISIBLE_COLS: CsvColumnKey[] = [
   'publisher_name',
-  'newsletter_name',
-  'subscriber_count',
+  'podcast_name',
+  'downloads_per_episode',
   'sponsorship_type',
   'price',
-  'send_date',
+  'air_date',
   'deadline',
 ];
 
 const COL_LABELS: Record<CsvColumnKey, string> = {
-  publisher_name:   'Publisher',
-  newsletter_name:  'Newsletter',
-  subscriber_count: 'Subscribers',
-  niche:            'Niche',
-  sponsorship_type: 'Sponsorship Type',
-  price:            'Price',
-  slots_available:  'Slots',
-  send_date:        'Send Date',
-  deadline:         'Deadline',
-  booking_url:      'Booking URL',
-  description:      'Description',
+  publisher_name:        'Publisher',
+  podcast_name:          'Podcast',
+  downloads_per_episode: 'Downloads/Ep',
+  niche:                 'Niche',
+  sponsorship_type:      'Sponsorship Type',
+  price:                 'Price',
+  slots_available:       'Slots',
+  air_date:              'Air Date',
+  deadline:              'Deadline',
+  booking_url:           'Booking URL',
+  description:           'Description',
 };
 
 interface EditingCell {

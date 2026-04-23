@@ -222,7 +222,7 @@ export default function AuthModal({ onClose, defaultTab = 'sign-in' }: AuthModal
               <p className="text-[11px] text-[#aeaeb2] mt-2">
                 {form.role === 'buyer'
                   ? 'Browse and secure media slots for your campaigns.'
-                  : 'List your newsletter ad slots and reach buyers actively looking.'}
+                  : 'List your podcast ad slots and reach buyers actively looking.'}
               </p>
             </div>
 

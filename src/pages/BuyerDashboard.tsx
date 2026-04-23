@@ -154,7 +154,7 @@ export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboard
               <BuyerSectionHeader
                 icon={<ShoppingBag className="w-4 h-4" />}
                 title="My Bookings"
-                desc="When you secure a slot, it appears here. You pay a small deposit at checkout — the balance goes directly to the newsletter owner when the campaign runs."
+                desc="When you secure a slot, it appears here. You pay a small deposit at checkout — the balance goes directly to the podcast host when the episode airs."
                 tip="Deposits confirm your intent. The creator's contact details are shared with you immediately after booking."
               />
               <EmptyState
@@ -243,7 +243,7 @@ export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboard
             <BuyerSectionHeader
               icon={<Bell className="w-4 h-4" />}
               title="Alert Preferences"
-              desc="We send you a personalised digest of matching newsletter slots based on these settings. The more specific you are, the better your recommendations and alerts will be."
+              desc="We send you a personalised digest of matching podcast ad slots based on these settings. The more specific you are, the better your recommendations and alerts will be."
               tip="Selecting nothing in a category means 'include all' — you'll still get alerts, just without that filter applied."
             />
             <AlertPreferencesPanel profile={profile} onSaved={refreshProfile} />
@@ -333,7 +333,7 @@ function BuyerWelcomeBanner({ onSetAlerts, onBrowse, hasBookings, hasPrefs }: {
         <p className="text-[10px] font-bold text-[#aeaeb2] uppercase tracking-widest mb-4">How it works</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { icon: <Search className="w-4 h-4" />, step: '01', title: 'Browse live slots', desc: 'Find newsletter sponsorship slots across dozens of publishers', color: 'bg-blue-50 border-blue-100 text-blue-600' },
+            { icon: <Search className="w-4 h-4" />, step: '01', title: 'Browse live slots', desc: 'Find podcast ad slots across dozens of shows', color: 'bg-blue-50 border-blue-100 text-blue-600' },
             { icon: <Zap className="w-4 h-4" />, step: '02', title: 'Get matched', desc: 'Set your preferences and we surface the best-fit opportunities', color: 'bg-emerald-50 border-emerald-100 text-emerald-600' },
             { icon: <DollarSign className="w-4 h-4" />, step: '03', title: 'Secure with a deposit', desc: 'Pay a small deposit to lock in the slot — balance goes to the creator', color: 'bg-amber-50 border-amber-100 text-amber-600' },
             { icon: <CheckCircle className="w-4 h-4" />, step: '04', title: 'Run your campaign', desc: "Contact the creator directly and deliver your ad — it's that simple", color: 'bg-green-50 border-green-100 text-green-600' },
@@ -364,7 +364,7 @@ function BuyerWelcomeBanner({ onSetAlerts, onBrowse, hasBookings, hasPrefs }: {
             <Search className="w-4 h-4 text-[#6e6e73]" />
             <p className="text-[13px] font-semibold text-[#1d1d1f]">Browse all live slots</p>
           </div>
-          <p className="text-[12px] text-[#86868b]">See every available newsletter sponsorship slot on the marketplace right now.</p>
+          <p className="text-[12px] text-[#86868b]">See every available podcast ad slot on the marketplace right now.</p>
           <p className="text-[11px] font-semibold text-[#aeaeb2] group-hover:text-[#1d1d1f] mt-2 transition-colors">Go to marketplace →</p>
         </button>
         <button
@@ -859,7 +859,7 @@ function Pill({ label, value }: { label: string; value: string }) {
 }
 
 const MEDIA_TYPE_OPTIONS = [
-  { value: 'newsletter', label: 'Newsletter', active: 'bg-blue-50 border-blue-200 text-blue-700' },
+  { value: 'podcast', label: 'Podcast', active: 'bg-sky-50 border-sky-200 text-sky-700' },
 ];
 
 const LOCATION_OPTIONS = ['Global', 'US', 'UK', 'EU', 'Canada', 'Australia', 'Asia', 'Latin America'];

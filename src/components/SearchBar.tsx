@@ -165,7 +165,7 @@ export default function SearchBar({ searchQuery, selectedTags, onSearchChange, o
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => { if (inputValue) updateSuggestions(inputValue); }}
-          placeholder={hasContent ? '' : 'Search by keyword or tag — e.g. SaaS, newsletter, US audience…'}
+          placeholder={hasContent ? '' : 'Search by keyword or tag — e.g. SaaS, mid-roll, US audience…'}
           className="flex-1 min-w-[160px] bg-transparent outline-none text-[14px] text-[#1d1d1f] placeholder:text-[#aeaeb2] py-0.5"
         />
 

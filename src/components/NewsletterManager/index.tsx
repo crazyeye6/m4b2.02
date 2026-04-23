@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Plus, Loader2, BookOpen } from 'lucide-react';
+import { Plus, Loader2, Mic2 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../context/AuthContext';
 import type { Newsletter } from '../../types';
@@ -70,7 +70,7 @@ export default function NewsletterManager({ onCreateListingForNewsletter, onNews
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this newsletter? Existing listings will not be affected.')) return;
+    if (!confirm('Delete this podcast? Existing listings will not be affected.')) return;
     await supabase.from('newsletters').update({ is_active: false }).eq('id', id);
     await fetchNewsletters();
   };
@@ -89,8 +89,8 @@ export default function NewsletterManager({ onCreateListingForNewsletter, onNews
         <div>
           <p className="text-[#6e6e73] text-xs mt-0.5">
             {newsletters.length === 0
-              ? 'Create your first newsletter to speed up listing creation.'
-              : `${newsletters.length} newsletter${newsletters.length > 1 ? 's' : ''}`}
+              ? 'Add your first podcast to speed up listing creation.'
+              : `${newsletters.length} podcast${newsletters.length > 1 ? 's' : ''}`}
           </p>
         </div>
         {!showForm && (
@@ -99,7 +99,7 @@ export default function NewsletterManager({ onCreateListingForNewsletter, onNews
             className="flex items-center gap-1.5 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold text-sm px-4 py-2 rounded-xl transition-all"
           >
             <Plus className="w-3.5 h-3.5" />
-            New newsletter
+            New podcast
           </button>
         )}
       </div>
@@ -114,18 +114,18 @@ export default function NewsletterManager({ onCreateListingForNewsletter, onNews
       {newsletters.length === 0 && !showForm && (
         <div className="flex flex-col items-center justify-center py-10 gap-3 bg-white border border-black/[0.06] rounded-3xl">
           <div className="w-12 h-12 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl flex items-center justify-center">
-            <BookOpen className="w-6 h-6 text-[#aeaeb2]" />
+            <Mic2 className="w-6 h-6 text-[#aeaeb2]" />
           </div>
           <div className="text-center">
-            <p className="text-[#1d1d1f] font-semibold text-sm mb-1">No newsletters yet</p>
+            <p className="text-[#1d1d1f] font-semibold text-sm mb-1">No podcasts yet</p>
             <p className="text-[#6e6e73] text-sm mb-4 max-w-xs leading-relaxed">
-              Add your newsletters here. When creating a listing, you pick a newsletter and all its data is filled in automatically.
+              Add your podcasts here. When creating a listing, pick a podcast and all its data is filled in automatically.
             </p>
             <button
               onClick={() => setShowForm(true)}
               className="bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold text-sm px-5 py-2.5 rounded-2xl transition-all"
             >
-              Add first newsletter
+              Add first podcast
             </button>
           </div>
         </div>

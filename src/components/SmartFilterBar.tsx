@@ -1,5 +1,5 @@
 import {
-  Search, X, Hash, Mail, LayoutGrid,
+  Search, X, Hash, Mic2, LayoutGrid,
   ChevronDown, ChevronUp, Check, MapPin, Users, DollarSign,
   Zap, ArrowUpDown, Tag as TagIcon, Columns2, Columns3, TrendingUp, Calendar, Clock, Sparkles, Settings,
 } from 'lucide-react';
@@ -433,7 +433,7 @@ export default function SmartFilterBar({
         {/* Row 0: Media type toggles + quick filters — hidden when compact */}
         <div className={`flex items-center gap-1.5 transition-all duration-200 ${isCompact ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-12 opacity-100 overflow-x-auto'}`} style={{ scrollbarWidth: 'none' }}>
           {([
-            { value: 'newsletter' as const, label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" /> },
+            { value: 'podcast' as const, label: 'Podcast', icon: <Mic2 className="w-3.5 h-3.5" /> },
           ]).map(c => {
             const active = filters.category === c.value;
             return (

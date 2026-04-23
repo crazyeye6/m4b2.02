@@ -10,7 +10,7 @@ interface BuyerPreferencesStepProps {
 }
 
 const MEDIA_TYPE_OPTIONS = [
-  { value: 'newsletter', label: 'Newsletter', color: 'bg-blue-50 border-blue-200 text-blue-700' },
+  { value: 'podcast', label: 'Podcast', color: 'bg-sky-50 border-sky-200 text-sky-700' },
 ];
 
 const LOCATION_OPTIONS = [

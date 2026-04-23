@@ -21,16 +21,16 @@ interface Props {
 
 type ViewMode = 'grouped' | 'table';
 
-// Group rows by publisher_name → newsletter_name
+// Group rows by publisher_name → podcast_name
 function groupRows(rows: ImportRow[]): Map<string, Map<string, ImportRow[]>> {
   const pub = new Map<string, Map<string, ImportRow[]>>();
   for (const row of rows) {
     const pKey = row.publisher_name || '(no publisher)';
-    const nKey = row.newsletter_name || '(no newsletter)';
+    const nKey = row.podcast_name || '(no podcast)';
     if (!pub.has(pKey)) pub.set(pKey, new Map());
-    const newsletters = pub.get(pKey)!;
-    if (!newsletters.has(nKey)) newsletters.set(nKey, []);
-    newsletters.get(nKey)!.push(row);
+    const podcasts = pub.get(pKey)!;
+    if (!podcasts.has(nKey)) podcasts.set(nKey, []);
+    podcasts.get(nKey)!.push(row);
   }
   return pub;
 }
@@ -74,17 +74,17 @@ function validatePublisherMatch(
 // ── Field help reference ──────────────────────────────────────────────────────
 
 const FIELD_HELP = [
-  { field: 'publisher_name',   required: true,  example: 'North Star Media',         note: 'Company/publisher name. Must match what you selected above.' },
-  { field: 'newsletter_name',  required: true,  example: 'SaaS Growth Weekly',       note: 'Name of the specific newsletter.' },
-  { field: 'subscriber_count', required: true,  example: '25000',                    note: 'Total active subscribers. Numbers only.' },
-  { field: 'niche',            required: true,  example: 'SaaS, Marketing, Fintech', note: 'Primary topic or niche of the newsletter.' },
-  { field: 'sponsorship_type', required: true,  example: 'Featured Sponsor',         note: 'e.g. Featured Sponsor, Dedicated Email, Text Ad, Classified' },
-  { field: 'price',            required: true,  example: '500',                      note: 'Price in USD. Numbers only (no currency symbol).' },
-  { field: 'slots_available',  required: false, example: '2',                        note: 'How many slots are available. Defaults to 1.' },
-  { field: 'send_date',        required: false, example: '2026-05-06',               note: 'Scheduled send date (YYYY-MM-DD).' },
-  { field: 'deadline',         required: true,  example: '2026-05-04',               note: 'Booking deadline (YYYY-MM-DD). Must be before send_date.' },
-  { field: 'booking_url',      required: false, example: 'https://…',               note: 'Direct URL for buyers to book.' },
-  { field: 'description',      required: false, example: 'Featured ad in Tuesday…', note: 'Short description of the slot shown to buyers.' },
+  { field: 'publisher_name',        required: true,  example: 'Meridian Audio',           note: 'Company/host name. Must match what you selected above.' },
+  { field: 'podcast_name',          required: true,  example: 'The SaaS Operator',        note: 'Name of the specific podcast.' },
+  { field: 'downloads_per_episode', required: false, example: '25000',                    note: 'Average downloads per episode. Numbers only.' },
+  { field: 'niche',                 required: true,  example: 'B2B SaaS, Tech, AI',       note: 'Primary topic or niche of the podcast.' },
+  { field: 'sponsorship_type',      required: true,  example: 'Mid-roll',                 note: 'e.g. Pre-roll, Mid-roll, Post-roll, Host-read ad' },
+  { field: 'price',                 required: true,  example: '1200',                     note: 'Price in USD. Numbers only (no currency symbol).' },
+  { field: 'slots_available',       required: false, example: '2',                        note: 'How many slots are available. Defaults to 1.' },
+  { field: 'air_date',              required: false, example: '2026-05-06',               note: 'Scheduled episode air date (YYYY-MM-DD).' },
+  { field: 'deadline',              required: true,  example: '2026-05-04',               note: 'Booking deadline (YYYY-MM-DD). Must be before air_date.' },
+  { field: 'booking_url',           required: false, example: 'https://…',               note: 'Direct URL for buyers to book.' },
+  { field: 'description',           required: false, example: 'Mid-roll in episode 142…', note: 'Short description of the slot shown to buyers.' },
 ];
 
 export default function ImportWizard({ publishers, batches, onFetchPreviousSlots, onDone, onCancel, onPublisherCreated }: Props) {
@@ -227,11 +227,11 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
       await supabase.from('csv_upload_slots').insert(rows.map(row => ({
         batch_id: batch.id, row_index: row.rowIndex,
         status: row.hasErrors ? 'needs_review' : (row.importTag === 'unchanged' ? 'approved' : 'pending_review'),
-        media_name: row.newsletter_name || publisher.newsletter_name,
-        media_type: 'newsletter', audience_size: row.subscriber_count,
+        media_name: row.podcast_name || publisher.newsletter_name,
+        media_type: 'podcast', audience_size: row.downloads_per_episode,
         opportunity_type: row.sponsorship_type,
         original_price: row.price, discount_price: row.price, price: row.price,
-        slots_available: row.slots_available || '1', send_date: row.send_date,
+        slots_available: row.slots_available || '1', send_date: row.air_date,
         deadline: row.deadline, category: row.niche || publisher.category,
         booking_url: row.booking_url, description: row.description,
         validation_errors: row.errors, media_profile_id: publisher.id,
@@ -370,13 +370,13 @@ export default function ImportWizard({ publishers, batches, onFetchPreviousSlots
                             {pub.logo_url
                               ? <img src={pub.logo_url} alt="" className="w-8 h-8 rounded-lg object-cover flex-shrink-0" />
                               : (
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center flex-shrink-0">
                                   <span className="text-white text-[11px] font-bold">{pub.newsletter_name.charAt(0)}</span>
                                 </div>
                               )}
                             <div className="flex-1 min-w-0">
                               <p className="text-[13px] font-semibold text-slate-900 truncate">{pub.newsletter_name}</p>
-                              <p className="text-[11px] text-slate-400">{pub.category}{pub.subscriber_count ? ` · ${pub.subscriber_count.toLocaleString()} subs` : ''}</p>
+                              <p className="text-[11px] text-slate-400">{pub.category}{pub.subscriber_count ? ` · ${pub.subscriber_count.toLocaleString()} downloads/ep` : ''}</p>
                             </div>
                             {pubBatch && (
                               <span className="text-[9px] text-slate-400 border border-slate-200 bg-slate-50 px-2 py-0.5 rounded-full flex-shrink-0">

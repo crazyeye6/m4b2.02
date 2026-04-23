@@ -1,5 +1,5 @@
 // Shared CSV parsing, validation, and template utilities for the unified
-// newsletter sponsorship CSV format. Used by both seller dashboard uploads
+// podcast sponsorship CSV format. Used by both seller dashboard uploads
 // and admin publisher imports.
 
 import type { CsvRow, ValidationError, CsvColumnKey } from './types';
@@ -9,43 +9,43 @@ import { CSV_COLUMNS } from './types';
 
 const TEMPLATE_ROWS = [
   {
-    publisher_name:   'North Star Media',
-    newsletter_name:  'SaaS Growth Weekly',
-    subscriber_count: '25000',
-    niche:            'SaaS',
-    sponsorship_type: 'Featured Sponsor',
-    price:            '500',
-    slots_available:  '2',
-    send_date:        '2026-05-06',
-    deadline:         '2026-05-04',
-    booking_url:      'https://example.com/book/sgw',
-    description:      'Featured sponsor slot in Tuesday\'s edition reaching 25k SaaS founders.',
+    publisher_name:        'Meridian Audio',
+    podcast_name:          'The SaaS Operator',
+    downloads_per_episode: '28000',
+    niche:                 'B2B SaaS',
+    sponsorship_type:      'Mid-roll',
+    price:                 '1200',
+    slots_available:       '2',
+    air_date:              '2026-05-06',
+    deadline:              '2026-05-04',
+    booking_url:           'https://example.com/book/tso',
+    description:           'Mid-roll sponsorship in a weekly B2B SaaS podcast reaching 28k operators.',
   },
   {
-    publisher_name:   'North Star Media',
-    newsletter_name:  'Marketing Dispatch',
-    subscriber_count: '42000',
-    niche:            'Marketing',
-    sponsorship_type: 'Dedicated Email',
-    price:            '900',
-    slots_available:  '1',
-    send_date:        '2026-05-08',
-    deadline:         '2026-05-06',
-    booking_url:      'https://example.com/book/md',
-    description:      'One dedicated email opportunity to 42k marketing operators.',
+    publisher_name:        'Meridian Audio',
+    podcast_name:          'Dev Unlocked',
+    downloads_per_episode: '45000',
+    niche:                 'Dev & Engineering',
+    sponsorship_type:      'Pre-roll',
+    price:                 '800',
+    slots_available:       '1',
+    air_date:              '2026-05-08',
+    deadline:              '2026-05-06',
+    booking_url:           'https://example.com/book/du',
+    description:           'Pre-roll slot in a weekly developer podcast with 45k downloads per episode.',
   },
   {
-    publisher_name:   'Atlas Publisher Group',
-    newsletter_name:  'Founder Brief',
-    subscriber_count: '18000',
-    niche:            'Startups',
-    sponsorship_type: 'Solo Sponsorship',
-    price:            '750',
-    slots_available:  '1',
-    send_date:        '2026-05-07',
-    deadline:         '2026-05-05',
-    booking_url:      'https://example.com/book/fb',
-    description:      'Solo sponsor placement in this week\'s founder issue.',
+    publisher_name:        'Atlas Podcast Group',
+    podcast_name:          'AI Frontier Pod',
+    downloads_per_episode: '19000',
+    niche:                 'AI',
+    sponsorship_type:      'Host-read ad',
+    price:                 '950',
+    slots_available:       '1',
+    air_date:              '2026-05-07',
+    deadline:              '2026-05-05',
+    booking_url:           'https://example.com/book/afp',
+    description:           'Host-read sponsor mention in this week\'s AI-focused episode.',
   },
 ];
 
@@ -66,7 +66,7 @@ export function downloadTemplate() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'newsletter-sponsorship-template.csv';
+  a.download = 'podcast-sponsorship-template.csv';
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -110,20 +110,20 @@ export function validateRow(raw: Record<string, string>, rowIndex: number): CsvR
   const errors: ValidationError[] = [];
   const get = (key: string) => (raw[key] ?? '').trim();
 
-  const publisher_name   = get('publisher_name');
-  const newsletter_name  = get('newsletter_name');
-  const subscriber_count = get('subscriber_count');
-  const niche            = get('niche');
-  const sponsorship_type = get('sponsorship_type');
-  const price            = get('price');
-  const slots_available  = get('slots_available');
-  const send_date        = get('send_date');
-  const deadline         = get('deadline');
-  const booking_url      = get('booking_url');
-  const description      = get('description');
+  const publisher_name        = get('publisher_name');
+  const podcast_name          = get('podcast_name');
+  const downloads_per_episode = get('downloads_per_episode');
+  const niche                 = get('niche');
+  const sponsorship_type      = get('sponsorship_type');
+  const price                 = get('price');
+  const slots_available       = get('slots_available');
+  const air_date              = get('air_date');
+  const deadline              = get('deadline');
+  const booking_url           = get('booking_url');
+  const description           = get('description');
 
   // Required field checks
-  const required: CsvColumnKey[] = ['publisher_name', 'newsletter_name', 'subscriber_count', 'niche', 'sponsorship_type', 'price', 'deadline'];
+  const required: CsvColumnKey[] = ['publisher_name', 'podcast_name', 'niche', 'sponsorship_type', 'price', 'deadline'];
   for (const field of required) {
     if (!get(field)) {
       errors.push({ field, severity: 'error', message: `${field.replace(/_/g, ' ')} is required` });
@@ -134,8 +134,8 @@ export function validateRow(raw: Record<string, string>, rowIndex: number): CsvR
   if (price && isNaN(parseFloat(price.replace(/[€$£,]/g, '')))) {
     errors.push({ field: 'price', severity: 'error', message: 'price must be a valid number' });
   }
-  if (subscriber_count && isNaN(parseInt(subscriber_count.replace(/,/g, '')))) {
-    errors.push({ field: 'subscriber_count', severity: 'warning', message: 'subscriber_count should be a whole number' });
+  if (downloads_per_episode && isNaN(parseInt(downloads_per_episode.replace(/,/g, '')))) {
+    errors.push({ field: 'downloads_per_episode', severity: 'warning', message: 'downloads_per_episode should be a whole number' });
   }
   if (slots_available && isNaN(parseInt(slots_available))) {
     errors.push({ field: 'slots_available', severity: 'warning', message: 'slots_available should be a whole number' });
@@ -145,8 +145,8 @@ export function validateRow(raw: Record<string, string>, rowIndex: number): CsvR
   if (deadline && !isValidDate(deadline)) {
     errors.push({ field: 'deadline', severity: 'error', message: 'deadline must be a valid date (YYYY-MM-DD recommended)' });
   }
-  if (send_date && !isValidDate(send_date)) {
-    errors.push({ field: 'send_date', severity: 'warning', message: 'send_date does not look like a valid date' });
+  if (air_date && !isValidDate(air_date)) {
+    errors.push({ field: 'air_date', severity: 'warning', message: 'air_date does not look like a valid date' });
   }
 
   // URL validation
@@ -155,8 +155,8 @@ export function validateRow(raw: Record<string, string>, rowIndex: number): CsvR
   }
 
   return {
-    rowIndex, publisher_name, newsletter_name, subscriber_count, niche,
-    sponsorship_type, price, slots_available, send_date, deadline,
+    rowIndex, publisher_name, podcast_name, downloads_per_episode, niche,
+    sponsorship_type, price, slots_available, air_date, deadline,
     booking_url, description,
     errors,
     hasErrors: errors.some(e => e.severity === 'error'),

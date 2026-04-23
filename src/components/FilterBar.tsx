@@ -19,7 +19,6 @@ interface FilterBarProps {
 
 const CATEGORIES = [
   { value: 'all', label: 'All', icon: <LayoutGrid className="w-3.5 h-3.5" />, activeClass: 'bg-white text-[#1d1d1f] shadow-sm shadow-black/[0.08]' },
-  { value: 'newsletter', label: 'Newsletter', icon: <Mail className="w-3.5 h-3.5" />, activeClass: 'bg-green-50 text-green-600 border border-green-100 shadow-sm' },
   { value: 'podcast', label: 'Podcast', icon: <Mic2 className="w-3.5 h-3.5" />, activeClass: 'bg-sky-50 text-sky-600 border border-sky-100 shadow-sm' },
 ];
 

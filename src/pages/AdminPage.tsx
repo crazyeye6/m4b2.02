@@ -613,7 +613,7 @@ function EmailSubmissionsTable({ slots, onSelect }: { slots: EmailSubmissionSlot
                       {slot.category && <p className="text-[#aeaeb2] text-xs">{slot.category}</p>}
                     </td>
                     <td className="px-4 py-3.5">
-                      <p className="text-[#6e6e73] text-xs capitalize">{slot.media_type || 'newsletter'}</p>
+                      <p className="text-[#6e6e73] text-xs capitalize">{slot.media_type || 'podcast'}</p>
                       <p className="text-[#aeaeb2] text-xs">{slot.opportunity_type || (slot as any).placement_type || '—'}</p>
                     </td>
                     <td className="px-4 py-3.5">
@@ -696,15 +696,15 @@ function EmailSlotDetailPanel({ slot, onStatusChange, onPublish, onClose, updati
   );
 
   const displayFields = [
-    { label: 'Newsletter Name', value: slot.media_name, key: 'media_name' },
+    { label: 'Podcast Name', value: slot.media_name, key: 'media_name' },
     { label: 'Publisher', value: slot.publisher_name || '', key: 'publisher_name' },
     { label: 'Media Type', value: slot.media_type, key: 'media_type' },
     { label: 'Category', value: slot.category, key: 'category' },
     { label: 'Audience Size', value: slot.audience_size, key: 'audience_size' },
-    { label: 'Open Rate', value: slot.open_rate || '', key: 'open_rate' },
+    { label: 'Avg CTR', value: slot.open_rate || '', key: 'open_rate' },
     { label: 'Geography', value: slot.geography || '', key: 'geography' },
     { label: 'Placement Type', value: slot.placement_type || slot.opportunity_type, key: 'placement_type' },
-    { label: 'Send Date', value: slot.send_date || '', key: 'send_date' },
+    { label: 'Air Date', value: slot.send_date || '', key: 'send_date' },
     { label: 'Deadline', value: slot.deadline_date || slot.deadline, key: 'deadline_date' },
     { label: 'Rate Card Price', value: slot.original_price, key: 'original_price' },
     { label: 'This Week Price', value: slot.discount_price, key: 'discount_price' },
@@ -968,7 +968,7 @@ function CsvUploadsTable({ slots, onSelect }: { slots: CsvUploadSlot[]; onSelect
       <AdminSectionHeader
         icon={<Upload className="w-4 h-4" />}
         title="CSV Uploads"
-        desc="Sellers upload a CSV file containing all their available slots for the week. Each row is one ad slot. Review rows grouped by newsletter — approve the clean ones, flag or reject rows with issues, then publish approved slots to the marketplace."
+        desc="Sellers upload a CSV file containing all their available slots for the week. Each row is one ad slot. Review rows grouped by podcast — approve the clean ones, flag or reject rows with issues, then publish approved slots to the marketplace."
         tip="Rows marked 'Needs Review' have validation warnings. You can still approve them manually if the data looks correct."
       />
       {pendingCount > 0 && (
@@ -2042,14 +2042,14 @@ interface OverviewStats {
 function AdminOverviewPanel({ stats, onNavigate }: { stats: OverviewStats; onNavigate: (tab: AdminTab) => void }) {
   const dailyTasks = [
     { tab: 'email_submissions' as AdminTab, icon: <Mail className="w-4 h-4" />, title: 'Email Inbox', badge: stats.pendingEmailSlots, badgeColor: 'bg-blue-500', desc: 'Sellers email in their slots. We parse them automatically. Review each one, fix errors, then publish the good ones to the marketplace.', urgency: stats.pendingEmailSlots > 0 ? 'action' : 'clear' },
-    { tab: 'csv_uploads' as AdminTab, icon: <Upload className="w-4 h-4" />, title: 'CSV Uploads', badge: stats.pendingCsvSlots, badgeColor: 'bg-[#6e6e73]', desc: 'Sellers upload a CSV of their weekly slots. Review rows grouped by newsletter, approve or reject individual slots, then publish.', urgency: stats.pendingCsvSlots > 0 ? 'action' : 'clear' },
+    { tab: 'csv_uploads' as AdminTab, icon: <Upload className="w-4 h-4" />, title: 'CSV Uploads', badge: stats.pendingCsvSlots, badgeColor: 'bg-[#6e6e73]', desc: 'Sellers upload a CSV of their weekly slots. Review rows grouped by podcast, approve or reject individual slots, then publish.', urgency: stats.pendingCsvSlots > 0 ? 'action' : 'clear' },
     { tab: 'refunds' as AdminTab, icon: <RotateCcw className="w-4 h-4" />, title: 'Refund Requests', badge: stats.pendingRefunds, badgeColor: 'bg-orange-500', desc: 'Buyers request refunds after securing a slot. Review the reason, approve or decline, and the booking status updates automatically.', urgency: stats.pendingRefunds > 0 ? 'warn' : 'clear' },
-    { tab: 'name_changes' as AdminTab, icon: <FileText className="w-4 h-4" />, title: 'Name Changes', badge: 0, badgeColor: '', desc: 'Sellers cannot directly rename their newsletters or publisher profiles. Requests come here for you to approve or reject and apply.', urgency: 'clear' },
+    { tab: 'name_changes' as AdminTab, icon: <FileText className="w-4 h-4" />, title: 'Name Changes', badge: 0, badgeColor: '', desc: 'Sellers cannot directly rename their podcasts or publisher profiles. Requests come here for you to approve or reject and apply.', urgency: 'clear' },
   ];
 
   const weeklyTasks = [
     { tab: 'publisher_imports' as AdminTab, icon: <List className="w-4 h-4" />, title: 'Publisher Imports', desc: 'The primary tool for bulk-importing publisher slot data. Upload a CSV on behalf of a publisher, review the structured preview, then publish batches live.' },
-    { tab: 'sellers' as AdminTab, icon: <UserPlus className="w-4 h-4" />, title: 'Managed Sellers', desc: 'Add newsletter owners to the platform before they sign up. Create their profile, add newsletters and listings on their behalf, then invite them to claim the account.' },
+    { tab: 'sellers' as AdminTab, icon: <UserPlus className="w-4 h-4" />, title: 'Managed Sellers', desc: 'Add podcast hosts to the platform before they sign up. Create their profile, add podcasts and listings on their behalf, then invite them to claim the account.' },
     { tab: 'emails' as AdminTab, icon: <Send className="w-4 h-4" />, title: 'Resend Emails', desc: 'Trigger the weekly opportunity digest to all buyers who opted in. Also use this to re-send welcome emails to specific users.' },
   ];
 
@@ -2261,7 +2261,7 @@ function NameChangeRequestsPanel() {
     <div className="max-w-3xl space-y-6">
       <div>
         <h2 className="text-[#1d1d1f] font-semibold text-base mb-0.5">Name Change Requests</h2>
-        <p className="text-[#6e6e73] text-sm">Review and approve or reject seller requests to change publisher or newsletter names.</p>
+        <p className="text-[#6e6e73] text-sm">Review and approve or reject seller requests to change publisher or podcast names.</p>
       </div>
 
       {pending.length === 0 && (
@@ -2285,7 +2285,7 @@ function NameChangeRequestsPanel() {
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-[10px] font-bold uppercase tracking-wider bg-orange-100 text-orange-700 border border-orange-200 px-2 py-0.5 rounded-full">
-                        {req.entity_type === 'publisher' ? 'Publisher name' : 'Newsletter name'}
+                        {req.entity_type === 'publisher' ? 'Publisher name' : 'Podcast name'}
                       </span>
                       <span className="text-[#aeaeb2] text-xs">{req.seller_email}</span>
                     </div>
@@ -2351,7 +2351,7 @@ function NameChangeRequestsPanel() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#aeaeb2]">
-                    {req.entity_type === 'publisher' ? 'Publisher' : 'Newsletter'}
+                    {req.entity_type === 'publisher' ? 'Publisher' : 'Podcast'}
                   </span>
                   <span className="text-[#6e6e73] text-sm line-through truncate">{req.current_name}</span>
                   <span className="text-[#aeaeb2] text-xs">→</span>
@@ -2524,7 +2524,7 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
     setSaving(true);
     const price = Math.round(Number(listingForm.original_price));
     const { error } = await supabase.from('listings').insert({
-      media_type: 'newsletter',
+      media_type: 'podcast',
       seller_user_id: null,
       seller_email: selectedSeller.email,
       media_owner_name: selectedSeller.display_name,
@@ -2564,7 +2564,7 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
           ← Back to sellers
         </button>
         <h2 className="text-[#1d1d1f] font-semibold text-lg mb-1">Create seller account</h2>
-        <p className="text-[#6e6e73] text-sm mb-6">Add a newsletter owner. You can then create newsletters and listings on their behalf, and invite them to claim the account.</p>
+        <p className="text-[#6e6e73] text-sm mb-6">Add a podcast host. You can then create podcasts and listings on their behalf, and invite them to claim the account.</p>
         <div className="bg-white border border-black/[0.06] rounded-3xl p-6 space-y-4">
           <div>
             <label className={labelCls}>Email address <span className="text-red-400">*</span></label>
@@ -2632,7 +2632,7 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
         )}
 
         <div className="flex items-center gap-1 mb-6 bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-1 w-fit">
-          {([['overview', 'Overview'], ['add_newsletter', 'Add Newsletter'], ['add_listing', 'Add Listing']] as const).map(([key, label]) => (
+          {([['overview', 'Overview'], ['add_newsletter', 'Add Podcast'], ['add_listing', 'Add Listing']] as const).map(([key, label]) => (
             <button key={key} onClick={() => setSubView(key)} className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${subView === key ? 'bg-white text-[#1d1d1f] shadow-sm' : 'text-[#6e6e73] hover:text-[#1d1d1f]'}`}>{label}</button>
           ))}
         </div>
@@ -2641,18 +2641,18 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
           <div className="space-y-6">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-[#1d1d1f] font-semibold text-sm flex items-center gap-2"><BookOpen className="w-4 h-4" /> Newsletters ({sellerNewsletters.length})</h3>
+                <h3 className="text-[#1d1d1f] font-semibold text-sm flex items-center gap-2"><BookOpen className="w-4 h-4" /> Podcasts ({sellerNewsletters.length})</h3>
                 <button onClick={() => setSubView('add_newsletter')} className="text-xs text-[#6e6e73] hover:text-[#1d1d1f] border border-black/[0.08] px-2.5 py-1 rounded-lg transition-all">+ Add</button>
               </div>
               {sellerNewsletters.length === 0 ? (
-                <p className="text-[#aeaeb2] text-sm">No newsletters yet.</p>
+                <p className="text-[#aeaeb2] text-sm">No podcasts yet.</p>
               ) : (
                 <div className="space-y-2">
                   {sellerNewsletters.map(nl => (
                     <div key={nl.id} className="bg-white border border-black/[0.06] rounded-2xl px-4 py-3 flex items-center justify-between gap-3">
                       <div>
                         <p className="text-[#1d1d1f] font-semibold text-sm">{nl.name}</p>
-                        <p className="text-[#6e6e73] text-xs">{[nl.niche, nl.primary_geography, nl.subscriber_count ? `${Number(nl.subscriber_count).toLocaleString()} subs` : null].filter(Boolean).join(' · ')}</p>
+                        <p className="text-[#6e6e73] text-xs">{[nl.niche, nl.primary_geography, nl.subscriber_count ? `${Number(nl.subscriber_count).toLocaleString()} downloads/ep` : null].filter(Boolean).join(' · ')}</p>
                       </div>
                     </div>
                   ))}
@@ -2686,10 +2686,10 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
 
         {subView === 'add_newsletter' && (
           <div className="max-w-lg bg-white border border-black/[0.06] rounded-3xl p-6 space-y-4">
-            <h3 className="text-[#1d1d1f] font-semibold text-sm">Add newsletter for {selectedSeller.display_name}</h3>
+            <h3 className="text-[#1d1d1f] font-semibold text-sm">Add podcast for {selectedSeller.display_name}</h3>
             <div>
-              <label className={labelCls}>Newsletter name <span className="text-red-400">*</span></label>
-              <input type="text" value={newsletterForm.name} onChange={e => setNewsletterForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. SaaS Insider" className={inputCls} />
+              <label className={labelCls}>Podcast name <span className="text-red-400">*</span></label>
+              <input type="text" value={newsletterForm.name} onChange={e => setNewsletterForm(p => ({ ...p, name: e.target.value }))} placeholder="e.g. The SaaS Operator" className={inputCls} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -2697,12 +2697,12 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
                 <input type="text" value={newsletterForm.publisher_name} onChange={e => setNewsletterForm(p => ({ ...p, publisher_name: e.target.value }))} placeholder={selectedSeller.company} className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Subscribers</label>
+                <label className={labelCls}>Downloads per episode</label>
                 <input type="number" value={newsletterForm.subscriber_count} onChange={e => setNewsletterForm(p => ({ ...p, subscriber_count: e.target.value }))} placeholder="e.g. 45000" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Avg open rate</label>
-                <input type="text" value={newsletterForm.avg_open_rate} onChange={e => setNewsletterForm(p => ({ ...p, avg_open_rate: e.target.value }))} placeholder="e.g. 42%" className={inputCls} />
+                <label className={labelCls}>Avg CTR</label>
+                <input type="text" value={newsletterForm.avg_open_rate} onChange={e => setNewsletterForm(p => ({ ...p, avg_open_rate: e.target.value }))} placeholder="e.g. 3.2%" className={inputCls} />
               </div>
               <div>
                 <label className={labelCls}>Niche</label>
@@ -2719,7 +2719,7 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Send frequency</label>
+                <label className={labelCls}>Release frequency</label>
                 <select value={newsletterForm.send_frequency} onChange={e => setNewsletterForm(p => ({ ...p, send_frequency: e.target.value }))} className={selectCls}>
                   <option value="">Select…</option>
                   {SEND_FREQUENCIES.map(f => <option key={f} value={f}>{f}</option>)}
@@ -2728,7 +2728,7 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
             </div>
             <div>
               <label className={labelCls}>Website URL</label>
-              <input type="url" value={newsletterForm.website_url} onChange={e => setNewsletterForm(p => ({ ...p, website_url: e.target.value }))} placeholder="https://yournewsletter.com" className={inputCls} />
+              <input type="url" value={newsletterForm.website_url} onChange={e => setNewsletterForm(p => ({ ...p, website_url: e.target.value }))} placeholder="https://yourpodcast.com" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Description</label>
@@ -2737,7 +2737,7 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
             <div className="flex gap-2">
               <button onClick={createNewsletter} disabled={saving || !newsletterForm.name.trim()} className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-all">
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <BookOpen className="w-4 h-4" />}
-                Save newsletter
+                Save podcast
               </button>
               <button onClick={() => setSubView('overview')} className="text-[#6e6e73] hover:text-[#1d1d1f] text-sm px-4 py-2.5 rounded-xl border border-black/[0.08] transition-all">Cancel</button>
             </div>
@@ -2748,7 +2748,7 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
           <div className="max-w-lg bg-white border border-black/[0.06] rounded-3xl p-6 space-y-4">
             <h3 className="text-[#1d1d1f] font-semibold text-sm">Add listing for {selectedSeller.display_name}</h3>
             <div>
-              <label className={labelCls}>Newsletter / Property name <span className="text-red-400">*</span></label>
+              <label className={labelCls}>Podcast / Property name <span className="text-red-400">*</span></label>
               {sellerNewsletters.length > 0 ? (
                 <select value={listingForm.property_name} onChange={e => {
                   const nl = sellerNewsletters.find(n => n.name === e.target.value);
@@ -2761,11 +2761,11 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
                     open_rate: nl?.avg_open_rate ?? p.open_rate,
                   }));
                 }} className={selectCls}>
-                  <option value="">Select newsletter…</option>
+                  <option value="">Select podcast…</option>
                   {sellerNewsletters.map(nl => <option key={nl.id} value={nl.name}>{nl.name}</option>)}
                 </select>
               ) : (
-                <input type="text" value={listingForm.property_name} onChange={e => setListingForm(p => ({ ...p, property_name: e.target.value }))} placeholder="e.g. SaaS Insider" className={inputCls} />
+                <input type="text" value={listingForm.property_name} onChange={e => setListingForm(p => ({ ...p, property_name: e.target.value }))} placeholder="e.g. The SaaS Operator" className={inputCls} />
               )}
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -2780,8 +2780,8 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
                 <input type="number" value={listingForm.original_price} onChange={e => setListingForm(p => ({ ...p, original_price: e.target.value }))} placeholder="e.g. 1500" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Issue date label <span className="text-red-400">*</span></label>
-                <input type="text" value={listingForm.date_label} onChange={e => setListingForm(p => ({ ...p, date_label: e.target.value }))} placeholder="e.g. May 12 issue" className={inputCls} />
+                <label className={labelCls}>Air date label <span className="text-red-400">*</span></label>
+                <input type="text" value={listingForm.date_label} onChange={e => setListingForm(p => ({ ...p, date_label: e.target.value }))} placeholder="e.g. May 12 episode" className={inputCls} />
               </div>
               <div>
                 <label className={labelCls}>Booking deadline <span className="text-red-400">*</span></label>
@@ -2802,12 +2802,12 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
                 </select>
               </div>
               <div>
-                <label className={labelCls}>Subscriber count</label>
+                <label className={labelCls}>Downloads per episode</label>
                 <input type="number" value={listingForm.subscribers} onChange={e => setListingForm(p => ({ ...p, subscribers: e.target.value }))} placeholder="e.g. 45000" className={inputCls} />
               </div>
               <div>
-                <label className={labelCls}>Avg open rate</label>
-                <input type="text" value={listingForm.open_rate} onChange={e => setListingForm(p => ({ ...p, open_rate: e.target.value }))} placeholder="e.g. 42%" className={inputCls} />
+                <label className={labelCls}>Avg CTR</label>
+                <input type="text" value={listingForm.open_rate} onChange={e => setListingForm(p => ({ ...p, open_rate: e.target.value }))} placeholder="e.g. 3.2%" className={inputCls} />
               </div>
             </div>
             <div>
@@ -2838,13 +2838,13 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
       <AdminSectionHeader
         icon={<UserPlus className="w-4 h-4" />}
         title="Managed Sellers"
-        desc="Create seller accounts for newsletter owners before they sign up. Build out their profile — add newsletters and listings on their behalf — then send them an invite link to claim the account. They take over from there."
+        desc="Create seller accounts for podcast hosts before they sign up. Build out their profile — add podcasts and listings on their behalf — then send them an invite link to claim the account. They take over from there."
         tip="Once a seller claims their account they can log in and manage everything themselves. You still have full admin access."
       />
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-[#1d1d1f] font-semibold text-base">Managed Sellers</h2>
-          <p className="text-[#6e6e73] text-sm mt-0.5">Create and manage seller accounts on behalf of newsletter owners.</p>
+          <p className="text-[#6e6e73] text-sm mt-0.5">Create and manage seller accounts on behalf of podcast hosts.</p>
         </div>
         <button onClick={() => setView('create_seller')} className="flex items-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] text-white font-semibold text-sm px-4 py-2.5 rounded-xl transition-all">
           <UserPlus className="w-4 h-4" />
@@ -2856,7 +2856,7 @@ function SellersPanel({ sellers, onRefresh }: SellersPanelProps) {
         <div className="text-center py-16 text-[#aeaeb2]">
           <Users className="w-10 h-10 mx-auto mb-3 opacity-30" />
           <p className="font-medium mb-1">No managed sellers yet</p>
-          <p className="text-xs">Create a seller account to manage newsletters and listings on their behalf.</p>
+          <p className="text-xs">Create a seller account to manage podcasts and listings on their behalf.</p>
         </div>
       ) : (
         <div className="space-y-3">

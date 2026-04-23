@@ -14,7 +14,8 @@ export const NEWSLETTER_NICHES = [
   'B2B SaaS', 'Marketing', 'Finance', 'Fintech', 'Startup', 'Tech', 'AI',
   'eCommerce', 'Health & Wellness', 'Fitness', 'Food', 'Travel', 'Fashion & Beauty',
   'Education', 'Crypto', 'Investing', 'Real Estate', 'Climate', 'Sports', 'Entertainment',
-  'Creator Economy', 'HR & People', 'Product', 'Design', 'Dev & Engineering', 'Other',
+  'Creator Economy', 'HR & People', 'Product', 'Design', 'Dev & Engineering', 'True Crime',
+  'Comedy', 'Business', 'News', 'Science', 'History', 'Other',
 ];
 
 export const SEND_FREQUENCIES = [
