@@ -4,7 +4,7 @@ import {
   ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe,
   Linkedin, Twitter, Youtube, Share2, Copy, Check, Loader2, Flame,
   TrendingDown, AlertTriangle, MessageCircle, FileText, Zap,
-  BookOpen, Phone, Calendar, ChevronRight, Layers, Tag, DollarSign, Download,
+  BookOpen, Phone, Calendar, ChevronRight, Layers, Tag, DollarSign, Download, Sparkles,
 } from 'lucide-react';
 import type { Listing } from '../types';
 import CountdownTimer from '../components/CountdownTimer';
@@ -352,6 +352,17 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
             <p className="text-slate-400 text-[13px] mt-2 italic">"{listing.media_profile.tagline}"</p>
           )}
         </div>
+
+        {/* Opportunity pitch — hero */}
+        {listing.opportunity_description && (
+          <div className="mb-6 rounded-3xl bg-gradient-to-br from-sky-50 via-white to-slate-50 border border-sky-100 p-6 shadow-sm">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4 text-sky-500 flex-shrink-0" />
+              <h2 className="text-sky-700 text-[11px] font-bold uppercase tracking-widest">Why this sponsorship slot</h2>
+            </div>
+            <p className="text-slate-700 text-[15px] leading-[1.75]">{listing.opportunity_description}</p>
+          </div>
+        )}
 
         {/* Main 2-col grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
