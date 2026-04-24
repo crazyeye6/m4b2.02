@@ -502,13 +502,13 @@ function CuratedPlatformBanner({ onListSlot }: { onListSlot: () => void }) {
           <div className="w-8 h-8 bg-white/10 rounded-xl flex items-center justify-center">
             <ShieldCheck className="w-4 h-4 text-white" />
           </div>
-          <span className="text-white/60 text-xs font-semibold uppercase tracking-wider">Live Open Slot Feed</span>
+          <span className="text-white/60 text-xs font-semibold uppercase tracking-wider">Curated Marketplace</span>
         </div>
         <h2 className="text-white text-xl sm:text-2xl font-semibold tracking-[-0.02em] mb-3 max-w-lg">
-          Fill open ad slots before they default to programmatic.
+          We match your opportunities with the right buyers.
         </h2>
         <p className="text-white/60 text-sm leading-relaxed max-w-xl mb-6">
-          Submit your unsold inventory and we'll promote it to active buyers this week — before it falls back to low-value programmatic fills.
+          Simply list your slots and we handle discovery, matching, and introductions on your behalf.
         </p>
         <div className="flex flex-wrap gap-3">
           <button
@@ -516,7 +516,7 @@ function CuratedPlatformBanner({ onListSlot }: { onListSlot: () => void }) {
             className="flex items-center gap-2 bg-white text-slate-900 hover:bg-white/90 font-semibold text-sm px-5 py-2.5 rounded-xl transition-all"
           >
             <Plus className="w-4 h-4" />
-            Submit Open Slot
+            New Listing
           </button>
           <div className="flex items-center gap-4">
             <Feature icon={<Sparkles className="w-3.5 h-3.5" />} label="AI-powered matching" />
@@ -550,9 +550,9 @@ function MarketInsightsPanel({ insights }: { insights: MarketInsights }) {
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-        <InsightCard label="Avg. slot price" value={`$${insights.avgPrice.toLocaleString()}`} sub="across open slots this week" />
+        <InsightCard label="Avg. listing price" value={`$${insights.avgPrice.toLocaleString()}`} sub="across live opportunities" />
         <InsightCard label="Typical discount" value={`${insights.avgDiscount}%`} sub="off original rate card" />
-        <InsightCard label="Open slots live" value={`${insights.totalActiveListings}`} sub="in the feed right now" />
+        <InsightCard label="Active opportunities" value={`${insights.totalActiveListings}`} sub="live on the platform now" />
       </div>
       {insights.topCategories.length > 0 && (
         <div>

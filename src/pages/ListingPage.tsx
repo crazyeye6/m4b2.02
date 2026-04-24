@@ -4,7 +4,7 @@ import {
   ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe,
   Linkedin, Twitter, Youtube, Share2, Copy, Check, Loader2, Flame,
   TrendingDown, AlertTriangle, MessageCircle, FileText, Zap,
-  BookOpen, Phone, Calendar, ChevronRight, Layers, Tag, DollarSign, Download, Sparkles,
+  BookOpen, Phone, Calendar, ChevronRight, Layers, Tag, DollarSign, Download,
 } from 'lucide-react';
 import type { Listing } from '../types';
 import CountdownTimer from '../components/CountdownTimer';
@@ -353,26 +353,6 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
           )}
         </div>
 
-        {/* Open slot status bar */}
-        <div className="mb-5 flex items-center gap-3 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-green-700 bg-green-50 border border-green-200 px-3 py-1.5 rounded-full uppercase tracking-widest">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
-            Open Slot
-          </span>
-          <span className="text-[12px] text-slate-500 font-medium">Will default to programmatic advertising if not filled before deadline</span>
-        </div>
-
-        {/* Opportunity pitch — hero */}
-        {listing.opportunity_description && (
-          <div className="mb-6 rounded-3xl bg-gradient-to-br from-sky-50 via-white to-slate-50 border border-sky-100 p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-3">
-              <Sparkles className="w-4 h-4 text-sky-500 flex-shrink-0" />
-              <h2 className="text-sky-700 text-[11px] font-bold uppercase tracking-widest">Why this sponsorship slot</h2>
-            </div>
-            <p className="text-slate-700 text-[15px] leading-[1.75]">{listing.opportunity_description}</p>
-          </div>
-        )}
-
         {/* Main 2-col grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: content */}
@@ -527,20 +507,6 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
                 </p>
               </div>
             </PageSection>
-
-            {/* Why this slot is available + why act now */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <PageSection title="Why This Slot Is Available" icon={<Info className="w-4 h-4 text-slate-500" />}>
-                <p className="text-slate-600 text-[13px] leading-relaxed">
-                  This is an unsold host-read placement. The creator has made it available for direct booking before the episode records. If not filled, it will be replaced with lower-value programmatic advertising — and the opportunity to reach this audience at this price will be gone.
-                </p>
-              </PageSection>
-              <PageSection title="Why Act Now" icon={<AlertTriangle className="w-4 h-4 text-orange-500" />}>
-                <p className="text-slate-600 text-[13px] leading-relaxed">
-                  This slot is time-sensitive and will expire before the episode release date. Once the deadline passes, the slot closes and the inventory defaults automatically. A 5% deposit secures your position immediately — no further action needed until the host contacts you.
-                </p>
-              </PageSection>
-            </div>
 
             {/* Media kit */}
             {hasMediaKit && (
@@ -707,14 +673,14 @@ export default function ListingPage({ listingId, onBack, onSecure, onViewMediaPr
               <div>
                 <div className="flex items-center gap-2 mb-4">
                   <BarChart2 className="w-4 h-4 text-slate-400" />
-                  <h3 className="text-slate-900 font-semibold text-sm">Similar open slots</h3>
+                  <h3 className="text-slate-900 font-semibold text-sm">Similar podcast opportunities</h3>
                 </div>
                 <div className="space-y-3">
                   {otherSlots.map(s => <RelatedSlotCard key={s.id} listing={s} formatPrice={formatPrice} onView={() => { window.scrollTo({ top: 0 }); }} />)}
                 </div>
                 <div className="mt-4 text-center">
                   <button onClick={onBack} className="text-sky-600 hover:text-sky-700 text-sm font-medium transition-colors">
-                    Browse all open slots →
+                    Browse all opportunities →
                   </button>
                 </div>
               </div>

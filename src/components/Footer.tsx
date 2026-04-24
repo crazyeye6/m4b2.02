@@ -28,7 +28,7 @@ export default function Footer({ onTerms, onPrivacy, onContact }: FooterProps) {
               <span className="text-[15px] font-bold text-[#1d1d1f] bg-white px-1.5 py-0.5 rounded-[4px] tracking-[-0.03em]">.media</span>
             </div>
             <p className="text-white/40 text-[13px] leading-relaxed max-w-[220px]">
-              A live feed of open podcast ad slots. Secure before they default to programmatic.
+              The podcast sponsorship marketplace for time-sensitive ad slots. Book directly with hosts.
             </p>
             <div className="mt-5 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse flex-shrink-0" />
@@ -36,15 +36,15 @@ export default function Footer({ onTerms, onPrivacy, onContact }: FooterProps) {
             </div>
           </div>
 
-          {/* For Buyers */}
+          {/* For Advertisers */}
           <div>
-            <p className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-4">For Buyers</p>
+            <p className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-4">For Advertisers</p>
             <ul className="space-y-2.5">
               {[
-                'Browse open slots',
-                'Host-read placements',
-                'Pre-roll & mid-roll inventory',
-                'Slots closing this week',
+                'Browse podcast slots',
+                'Pre-roll & mid-roll placements',
+                'Host-read sponsorships',
+                'Last-minute deals',
                 'Niche audience targeting',
               ].map(item => (
                 <li key={item} className="text-white/50 text-[13px] hover:text-white/80 transition-colors cursor-default">{item}</li>
@@ -57,9 +57,9 @@ export default function Footer({ onTerms, onPrivacy, onContact }: FooterProps) {
             <p className="text-[11px] font-bold text-white/30 uppercase tracking-widest mb-4">For Podcast Hosts</p>
             <ul className="space-y-2.5">
               {[
-                'Submit open slots via email',
-                'Fill inventory before it defaults',
-                'Reach active buyers this week',
+                'List your ad slots free',
+                'Set your own price',
+                'Reach verified advertisers',
                 'No commission on the deal',
                 'Keep 95% direct from brands',
               ].map(item => (

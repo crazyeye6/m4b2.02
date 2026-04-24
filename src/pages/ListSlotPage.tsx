@@ -270,9 +270,9 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
           <span className="text-[#1d1d1f] font-semibold text-sm">List a slot</span>
         </div>
 
-        <h1 className="text-[#1d1d1f] text-2xl font-semibold tracking-[-0.02em] mb-1">Submit an Open Ad Slot</h1>
+        <h1 className="text-[#1d1d1f] text-2xl font-semibold tracking-[-0.02em] mb-1">List an ad slot</h1>
         <p className="text-[#6e6e73] text-[15px] mb-8 leading-relaxed">
-          Fill in your slot details below. We'll list it in the live open slot feed immediately so active buyers can secure it before it defaults to programmatic.
+          Add your slot details below. Buyers will see this listing and can reserve it with a 5% deposit.
         </p>
 
         <div className="space-y-6">
@@ -565,7 +565,7 @@ export default function ListSlotPage({ onBack, onEditProfile, preselectedNewslet
               className="w-full flex items-center justify-center gap-2 bg-[#1d1d1f] hover:bg-[#3a3a3c] disabled:opacity-40 text-white font-semibold py-3.5 rounded-2xl text-sm transition-all"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-              {submitting ? 'Submitting…' : 'Submit Open Slot'}
+              {submitting ? 'Publishing…' : 'Publish listing'}
             </button>
             <p className="text-[#aeaeb2] text-[11px] text-center mt-3">
               Your listing will be visible immediately. Buyers pay a 5% deposit to reserve.

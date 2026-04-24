@@ -41,15 +41,15 @@ const VALUE_CARDS = [
 ];
 
 const PROBLEMS = [
-  { icon: <Search className="w-3.5 h-3.5" />, text: 'Open slots buried in DMs and spreadsheets' },
-  { icon: <X className="w-3.5 h-3.5" />, text: 'No visibility into what\'s actually unsold' },
-  { icon: <AlertTriangle className="w-3.5 h-3.5" />, text: 'Inventory defaults to programmatic before you see it' },
+  { icon: <Search className="w-3.5 h-3.5" />, text: 'Hard to find podcast opportunities' },
+  { icon: <X className="w-3.5 h-3.5" />, text: 'Scattered across DMs and emails' },
+  { icon: <AlertTriangle className="w-3.5 h-3.5" />, text: 'Slots gone before you see them' },
 ];
 
 const SOLUTIONS = [
-  { icon: <CheckCircle className="w-3.5 h-3.5" />, text: 'Live feed of open, unsold host-read slots' },
-  { icon: <Clock className="w-3.5 h-3.5" />, text: 'Closing this week — with live countdowns' },
-  { icon: <ArrowRight className="w-3.5 h-3.5" />, text: 'Secure before the slot defaults to programmatic' },
+  { icon: <CheckCircle className="w-3.5 h-3.5" />, text: 'Curated podcast opportunities' },
+  { icon: <Clock className="w-3.5 h-3.5" />, text: 'Ending this week' },
+  { icon: <ArrowRight className="w-3.5 h-3.5" />, text: 'Ready to book now' },
 ];
 
 function useInView(threshold = 0.15) {
@@ -93,16 +93,16 @@ export default function WhyNewsletterAds({ onBrowse }: WhyNewsletterAdsProps) {
             }}
           >
             <p className="text-[12px] font-semibold uppercase tracking-widest text-[#86868b] mb-4">
-              Why host-read slots
+              Why podcast ads
             </p>
             <h2 className="text-[36px] sm:text-[42px] font-semibold text-[#1d1d1f] leading-[1.1] tracking-[-0.03em] mb-5">
-              Premium inventory
+              Reach the right audience
               <span className="block text-sky-600">
-                — before it goes programmatic.
+                — while they're listening.
               </span>
             </h2>
             <p className="text-[17px] text-[#6e6e73] leading-relaxed font-light max-w-[460px]">
-              Host-read slots are the most valuable inventory in podcast advertising. When they go unsold, they default to low-CPM programmatic fills. This feed catches them first.
+              Podcast sponsorships put your brand inside an episode your audience chose to play. No scrolling past, no banner blindness — just your message, delivered by a trusted voice.
             </p>
 
             {/* Stats ribbon */}
@@ -210,17 +210,17 @@ export default function WhyNewsletterAds({ onBrowse }: WhyNewsletterAdsProps) {
                 <p className="text-[11px] font-bold text-amber-400 uppercase tracking-widest">Time-sensitive</p>
               </div>
               <p className="text-white text-[20px] sm:text-[22px] font-semibold tracking-[-0.02em] leading-snug mb-2">
-                Once the episode records, that open slot is filled — or lost to programmatic.
+                Once an episode drops, that ad slot is gone.
               </p>
               <p className="text-white/50 text-[14px] leading-relaxed">
-                Open slots with approaching deadlines often come with better pricing. But act too late and the slot defaults — and you lose the placement entirely.
+                The best opportunities are last-minute. Slots with approaching deadlines often come with better pricing — but they won't wait.
               </p>
             </div>
             <button
               onClick={onBrowse}
               className="group flex-shrink-0 inline-flex items-center gap-2 bg-white hover:bg-sky-50 text-slate-900 font-semibold px-7 py-3.5 rounded-xl text-[15px] transition-all duration-200 shadow-[0_4px_20px_rgba(0,0,0,0.15)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.2)] hover:-translate-y-px whitespace-nowrap"
             >
-              Browse Open Slots
+              Browse Slots Ending This Week
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-150" />
             </button>
           </div>

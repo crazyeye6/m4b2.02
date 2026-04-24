@@ -131,11 +131,11 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
         >
           <div className="inline-flex items-center gap-2 bg-slate-50 border border-slate-200 text-slate-500 text-[11px] font-semibold px-3.5 py-1.5 rounded-full mb-8 tracking-widest uppercase">
             <span className="w-1.5 h-1.5 bg-sky-400 rounded-full animate-pulse flex-shrink-0" />
-            Live feed of open ad slots
+            Podcast sponsorship marketplace
             {liveCount > 0 && (
               <>
                 <span className="w-px h-3 bg-slate-300" />
-                <span className="text-sky-600">{liveCount} open now</span>
+                <span className="text-sky-600">{liveCount} live</span>
               </>
             )}
           </div>
@@ -144,10 +144,11 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
             className="font-bold text-slate-900 tracking-[-0.045em] leading-[1.0] mb-6"
             style={{ fontSize: 'clamp(38px, 5.5vw, 68px)' }}
           >
-            Open Podcast Ad Slots —{' '}
+            Book podcast{' '}
             <br className="hidden sm:block" />
+            ad slots{' '}
             <span className="relative inline-block" style={{ color: '#0284c7' }}>
-              Before They Go Programmatic
+              directly.
               <span
                 className="absolute left-0 right-0 h-[3px] rounded-full"
                 style={{ bottom: '-2px', background: 'linear-gradient(90deg, #0284c7, #38bdf8)' }}
@@ -156,10 +157,10 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
           </h1>
 
           <p className="text-[18px] sm:text-[20px] text-slate-500 leading-relaxed tracking-[-0.01em] mb-2 max-w-[620px] mx-auto">
-            Browse premium host-read ad slots that are still available this week. Once unsold, they fall back to lower-value programmatic ads.
+            Browse pre-roll, mid-roll, and post-roll slots from independent podcast hosts. Pick your niche, audience, and budget — then reserve with a 5% deposit.
           </p>
           <p className="text-[14px] text-slate-400 font-medium mb-10 max-w-[480px] mx-auto">
-            Direct deals. No middlemen. 5% deposit reserves your slot instantly.
+            The balance goes direct to the host. No middlemen, no markup.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
@@ -167,7 +168,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
               onClick={onBrowse}
               className="group inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold px-8 py-4 rounded-xl text-[16px] transition-all duration-200 shadow-[0_8px_28px_rgba(15,23,42,0.18)] hover:shadow-[0_12px_36px_rgba(15,23,42,0.24)] hover:-translate-y-px"
             >
-              Browse Open Slots {liveCount > 0 ? `(${liveCount} Live)` : ''}
+              Browse {liveCount > 0 ? `${liveCount} Live Slots` : 'Opportunities'}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-150" />
             </button>
             <button
@@ -175,7 +176,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
               className="inline-flex items-center justify-center gap-2 text-slate-700 hover:text-slate-900 font-semibold px-8 py-4 rounded-xl text-[16px] border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition-all duration-200 shadow-[0_2px_8px_rgba(15,23,42,0.06)] hover:shadow-[0_6px_18px_rgba(15,23,42,0.10)] hover:-translate-y-px"
             >
               <Mic2 className="w-4 h-4" />
-              Submit Open Slot
+              List a Slot Free
             </button>
           </div>
 
@@ -190,7 +191,7 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
                 ))}
               </div>
               <p className="text-[12px] text-slate-400 font-medium">
-                <span className="text-slate-600 font-semibold">2,400+</span> buyers have secured slots
+                <span className="text-slate-600 font-semibold">2,400+</span> sponsors have booked
               </p>
             </div>
             <span className="hidden sm:block w-px h-4 bg-slate-200" />
@@ -233,12 +234,12 @@ export default function Hero({ onBrowse, onListSlot, liveCount = 0 }: HeroProps)
           }}
         >
           <div className="text-center mb-8">
-            <p className="text-[11px] font-bold text-sky-600 uppercase tracking-widest mb-3">Live clearing feed</p>
+            <p className="text-[11px] font-bold text-sky-600 uppercase tracking-widest mb-3">The smarter way to buy podcast ads</p>
             <h2 className="text-[36px] sm:text-[44px] font-extrabold text-slate-900 leading-[1.08] tracking-[-0.03em] mb-3">
-              Every open slot.<br className="sm:hidden" /> <span className="text-sky-600">One live feed.</span>
+              Discovery:<br className="sm:hidden" /> <span className="text-sky-600">Organized.</span>
             </h2>
             <p className="text-[16px] text-slate-500 max-w-[480px] mx-auto leading-relaxed">
-              Every unsold host-read slot, every deadline, every price — in real time. No cold emails. No spreadsheets. Secure before it defaults to programmatic.
+              Every open ad slot, every deadline, every price — in one place. No cold emails. No spreadsheets. Just find, book, and go.
             </p>
           </div>
           <div className="bg-white rounded-2xl border border-sky-200 shadow-[0_8px_40px_rgba(14,165,233,0.10)] overflow-hidden">

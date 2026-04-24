@@ -145,19 +145,8 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
         }`} />
       )}
 
-      {/* Open slot badge */}
-      {isLive && (
-        <div className="px-5 pt-4 pb-0 flex items-center justify-between gap-2">
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full uppercase tracking-widest">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
-            Open Slot
-          </span>
-          <span className="text-[10px] text-slate-400 font-medium">Defaults to programmatic if unfilled</span>
-        </div>
-      )}
-
       {/* Header */}
-      <div className="px-5 pt-4 pb-4 flex items-start gap-3.5">
+      <div className="px-5 pt-5 pb-4 flex items-start gap-3.5">
         {/* Avatar */}
         <div className="flex-shrink-0">
           {logoUrl ? (
@@ -222,14 +211,6 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
       </div>
 
       <div className="px-5 pb-5 space-y-3">
-        {/* Opportunity pitch */}
-        {listing.opportunity_description && (
-          <div className="rounded-xl bg-slate-50 border border-slate-100 px-3.5 py-3">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Why this slot</p>
-            <p className="text-[12.5px] text-slate-600 leading-[1.6] line-clamp-4">{listing.opportunity_description}</p>
-          </div>
-        )}
-
         {/* Stats grid — 4 tiles with icons */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <StatTile
@@ -340,7 +321,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
                 }`}
             >
               {!isSecured && <Lock className="w-4 h-4" />}
-              {isSecured ? statusLabel || tx.card.closed : 'Request to Secure'}
+              {isSecured ? statusLabel || tx.card.closed : tx.card.secureSlot}
               {!isSecured && <Zap className="w-4 h-4 fill-white" />}
             </button>
           </div>
