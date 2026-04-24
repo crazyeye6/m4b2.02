@@ -78,6 +78,7 @@ export interface Listing {
   portfolio_links?: string[] | null;
   host_name?: string | null;
   ad_slot_position?: string | null;
+  opportunity_description?: string | null;
   auto_discount_enabled: boolean;
   newsletter_id?: string | null;
   newsletter?: Newsletter | null;

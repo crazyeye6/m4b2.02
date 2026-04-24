@@ -211,6 +211,14 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
       </div>
 
       <div className="px-5 pb-5 space-y-3">
+        {/* Opportunity pitch */}
+        {listing.opportunity_description && (
+          <div className="rounded-xl bg-slate-50 border border-slate-100 px-3.5 py-3">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Why this slot</p>
+            <p className="text-[12.5px] text-slate-600 leading-[1.6] line-clamp-4">{listing.opportunity_description}</p>
+          </div>
+        )}
+
         {/* Stats grid — 4 tiles with icons */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <StatTile
