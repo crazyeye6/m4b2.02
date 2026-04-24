@@ -145,8 +145,19 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
         }`} />
       )}
 
+      {/* Open slot badge */}
+      {isLive && (
+        <div className="px-5 pt-4 pb-0 flex items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full uppercase tracking-widest">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
+            Open Slot
+          </span>
+          <span className="text-[10px] text-slate-400 font-medium">Defaults to programmatic if unfilled</span>
+        </div>
+      )}
+
       {/* Header */}
-      <div className="px-5 pt-5 pb-4 flex items-start gap-3.5">
+      <div className="px-5 pt-4 pb-4 flex items-start gap-3.5">
         {/* Avatar */}
         <div className="flex-shrink-0">
           {logoUrl ? (
@@ -329,7 +340,7 @@ export default function OpportunityCard({ listing, onSecure, onDetails, onViewMe
                 }`}
             >
               {!isSecured && <Lock className="w-4 h-4" />}
-              {isSecured ? statusLabel || tx.card.closed : tx.card.secureSlot}
+              {isSecured ? statusLabel || tx.card.closed : 'Request to Secure'}
               {!isSecured && <Zap className="w-4 h-4 fill-white" />}
             </button>
           </div>

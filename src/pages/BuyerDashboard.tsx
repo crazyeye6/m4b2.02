@@ -160,7 +160,7 @@ export default function BuyerDashboard({ onBack, onViewListing }: BuyerDashboard
               <EmptyState
                 icon={<ShoppingBag className="w-8 h-8 text-[#aeaeb2]" />}
                 title="No bookings yet"
-                description="Browse opportunities and secure your first slot."
+                description="Browse open slots in the live feed and secure your first placement."
               />
             </div>
           ) : (
@@ -334,7 +334,7 @@ function BuyerWelcomeBanner({ onSetAlerts, onBrowse, hasBookings, hasPrefs }: {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
             { icon: <Search className="w-4 h-4" />, step: '01', title: 'Browse live slots', desc: 'Find podcast ad slots across dozens of shows', color: 'bg-blue-50 border-blue-100 text-blue-600' },
-            { icon: <Zap className="w-4 h-4" />, step: '02', title: 'Get matched', desc: 'Set your preferences and we surface the best-fit opportunities', color: 'bg-emerald-50 border-emerald-100 text-emerald-600' },
+            { icon: <Zap className="w-4 h-4" />, step: '02', title: 'Get matched', desc: 'Set your preferences and we surface the best-fit open slots from the live feed', color: 'bg-emerald-50 border-emerald-100 text-emerald-600' },
             { icon: <DollarSign className="w-4 h-4" />, step: '03', title: 'Secure with a deposit', desc: 'Pay a small deposit to lock in the slot — balance goes to the creator', color: 'bg-amber-50 border-amber-100 text-amber-600' },
             { icon: <CheckCircle className="w-4 h-4" />, step: '04', title: 'Run your campaign', desc: "Contact the creator directly and deliver your ad — it's that simple", color: 'bg-green-50 border-green-100 text-green-600' },
           ].map((s, i) => (
@@ -364,8 +364,8 @@ function BuyerWelcomeBanner({ onSetAlerts, onBrowse, hasBookings, hasPrefs }: {
             <Search className="w-4 h-4 text-[#6e6e73]" />
             <p className="text-[13px] font-semibold text-[#1d1d1f]">Browse all live slots</p>
           </div>
-          <p className="text-[12px] text-[#86868b]">See every available podcast ad slot on the marketplace right now.</p>
-          <p className="text-[11px] font-semibold text-[#aeaeb2] group-hover:text-[#1d1d1f] mt-2 transition-colors">Go to marketplace →</p>
+          <p className="text-[12px] text-[#86868b]">See every open podcast ad slot in the live feed — closing this week.</p>
+          <p className="text-[11px] font-semibold text-[#aeaeb2] group-hover:text-[#1d1d1f] mt-2 transition-colors">Browse open slots →</p>
         </button>
         <button
           onClick={onSetAlerts}
@@ -936,9 +936,9 @@ function AlertPreferencesPanel({ profile, onSaved }: {
             <Bell className="w-5 h-5 text-green-600" />
           </div>
           <div>
-            <h3 className="text-[#1d1d1f] font-semibold text-sm">Opportunity Alert Preferences</h3>
+            <h3 className="text-[#1d1d1f] font-semibold text-sm">Open Slot Alert Preferences</h3>
             <p className="text-[#6e6e73] text-xs mt-0.5">
-              We send you a personalised digest of matching slots based on these preferences.
+              We send you a personalised digest of matching open slots based on these preferences.
             </p>
           </div>
         </div>
@@ -953,7 +953,7 @@ function AlertPreferencesPanel({ profile, onSaved }: {
               <p className="text-[#1d1d1f] text-sm font-semibold">
                 {form.digest_enabled ? 'Alerts enabled' : 'Alerts disabled'}
               </p>
-              <p className="text-[#aeaeb2] text-xs">Receive digest emails with matching opportunities</p>
+              <p className="text-[#aeaeb2] text-xs">Receive digest emails with matching open slots</p>
             </div>
           </div>
           <button

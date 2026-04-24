@@ -440,7 +440,7 @@ export default function MediaProfilePage({ profileId, onBack, onViewListing }: M
                 <p className="text-slate-900 font-semibold mb-1">No open slots right now</p>
                 <p className="text-slate-400 text-sm">Check back soon or browse other publishers.</p>
                 <button onClick={onBack} className="mt-4 text-sky-600 hover:text-sky-700 text-sm font-medium transition-colors">
-                  ← Browse all opportunities
+                  ← Browse open slots
                 </button>
               </div>
             ) : (

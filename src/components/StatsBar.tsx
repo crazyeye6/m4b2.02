@@ -1,34 +1,43 @@
-import { Activity, Tag, DollarSign } from 'lucide-react';
+import { Activity, Clock, Users } from 'lucide-react';
 import { useLocale } from '../context/LocaleContext';
 
 interface StatsBarProps {
   liveCount: number;
   avgDiscount: number;
   totalSavings: number;
+  closingSoon?: number;
+  totalReach?: number;
 }
 
-export default function StatsBar({ liveCount, avgDiscount, totalSavings }: StatsBarProps) {
-  const { formatPrice } = useLocale();
+export default function StatsBar({ liveCount, closingSoon = 0, totalReach = 0 }: StatsBarProps) {
+  const { formatPrice: _fp } = useLocale();
+  void _fp;
+  const reachLabel = totalReach >= 1000000
+    ? `${(totalReach / 1000000).toFixed(1)}M`
+    : totalReach >= 1000
+    ? `${Math.round(totalReach / 1000)}k`
+    : totalReach > 0 ? totalReach.toString() : '—';
+
   const stats = [
     {
       icon: <Activity className="w-4 h-4 text-green-600" />,
       iconBg: 'bg-green-50',
       value: liveCount.toString(),
-      label: 'Ad slots live now',
+      label: 'Open slots this week',
       pulse: true,
     },
     {
-      icon: <Tag className="w-4 h-4 text-sky-600" />,
-      iconBg: 'bg-sky-50',
-      value: avgDiscount > 0 ? `${avgDiscount}%` : '—',
-      label: 'Avg discount on discounted slots',
+      icon: <Clock className="w-4 h-4 text-red-500" />,
+      iconBg: 'bg-red-50',
+      value: closingSoon > 0 ? closingSoon.toString() : '—',
+      label: 'Slots closing in 48 hours',
       pulse: false,
     },
     {
-      icon: <DollarSign className="w-4 h-4 text-teal-600" />,
-      iconBg: 'bg-teal-50',
-      value: formatPrice(totalSavings),
-      label: 'Total saved by buyers',
+      icon: <Users className="w-4 h-4 text-sky-600" />,
+      iconBg: 'bg-sky-50',
+      value: reachLabel,
+      label: 'Total audience reach available',
       pulse: false,
     },
   ];

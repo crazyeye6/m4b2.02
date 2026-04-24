@@ -32,7 +32,7 @@ export default function SmartMatchCallout({ onSignIn, onDashboard, isLoggedIn }:
                 { icon: <SlidersHorizontal className="w-4 h-4 text-sky-600" />, text: 'Set your preferences once — niche, audience, location, budget' },
                 { icon: <Sparkles className="w-4 h-4 text-sky-600" />, text: 'Every listing gets a personal match score based on your criteria' },
                 { icon: <Bell className="w-4 h-4 text-sky-600" />, text: 'Configure daily or weekly alert emails with your top-matched slots' },
-                { icon: <Mic2 className="w-4 h-4 text-sky-600" />, text: 'Digest emails link directly back to live podcast opportunities' },
+                { icon: <Mic2 className="w-4 h-4 text-sky-600" />, text: 'Digest emails link directly back to open slots in the live feed' },
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <div className="w-7 h-7 bg-sky-50 border border-sky-100 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -124,7 +124,7 @@ export default function SmartMatchCallout({ onSignIn, onDashboard, isLoggedIn }:
                   <p className="text-[11px] text-sky-600 mt-0.5">3 new matches this week · 1 slot ending in 6 hours</p>
                   <div className="flex items-center gap-1 mt-1.5">
                     <CheckCircle className="w-3 h-3 text-sky-500" />
-                    <span className="text-[10px] text-sky-600 font-medium">Links directly to live listings</span>
+                    <span className="text-[10px] text-sky-600 font-medium">Links directly to open slots in the live feed</span>
                   </div>
                 </div>
               </div>

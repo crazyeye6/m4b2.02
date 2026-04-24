@@ -114,6 +114,11 @@ export default function App() {
   const { profile, loading: authLoading } = useAuth();
   const { listings, loading, stats, updateListingStatus, refetch } = useListings(filters);
 
+  const now = Date.now();
+  const in48h = now + 48 * 60 * 60 * 1000;
+  const closingSoon = listings.filter(l => l.status === 'live' && new Date(l.deadline_at).getTime() < in48h && new Date(l.deadline_at).getTime() > now).length;
+  const totalReach = listings.filter(l => l.status === 'live').reduce((sum, l) => sum + (l.downloads ?? l.subscribers ?? 0), 0);
+
   // Onboarding popup disabled for now
 
   const syncUrl = useCallback((f: FilterState, v: ViewMode, c: GridColumns) => {
@@ -553,7 +558,7 @@ export default function App() {
 
       <main>
         <Hero onBrowse={handlePodcasts} onListSlot={handleListSlot} liveCount={stats.liveCount} />
-        <StatsBar liveCount={stats.liveCount} avgDiscount={stats.avgDiscount} totalSavings={stats.totalSavings} />
+        <StatsBar liveCount={stats.liveCount} avgDiscount={stats.avgDiscount} totalSavings={stats.totalSavings} closingSoon={closingSoon} totalReach={totalReach} />
         <PodcastsSection onBrowsePodcasts={handlePodcasts} onSecure={handleSecure} onDetails={handleViewListing} />
         <WhyNewsletterAds onBrowse={handlePodcasts} />
         <SmartMatchCallout isLoggedIn={!!profile} onSignIn={() => setShowAuthModal(true)} onDashboard={handleDashboard} />

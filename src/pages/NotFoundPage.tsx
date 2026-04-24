@@ -18,7 +18,7 @@ export default function NotFoundPage({ onHome, onBrowse }: NotFoundPageProps) {
         <p className="text-[#aeaeb2] font-semibold text-[13px] uppercase tracking-widest mb-3">404</p>
         <h1 className="text-[#1d1d1f] font-semibold text-3xl mb-3 tracking-[-0.02em]">Page not found</h1>
         <p className="text-[#6e6e73] text-[15px] leading-relaxed mb-10">
-          This slot has either expired, been secured, or never existed. The opportunity you're looking for is no longer available.
+          This slot has either expired, been secured, or never existed. Open slots close fast — check the live feed for what's still available.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
