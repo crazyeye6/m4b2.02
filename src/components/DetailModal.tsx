@@ -1,4 +1,4 @@
-import { X, MapPin, Users, BarChart2, Shield, Mic2, ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe, Linkedin, Twitter, Youtube, Radio, FileText, Tag } from 'lucide-react';
+import { X, MapPin, Users, BarChart2, Shield, Mic2, ExternalLink, Clock, Lock, Info, ChevronDown, ChevronUp, Globe, Linkedin, Twitter, Youtube, Radio, FileText, Tag, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import type { Listing, MediaProfile } from '../types';
 import CountdownTimer from './CountdownTimer';
@@ -61,6 +61,17 @@ export default function DetailModal({ listing, onClose, onSecure, onViewMediaPro
         </div>
 
         <div className="p-6 space-y-6">
+          {/* Opportunity pitch — hero section */}
+          {listing.opportunity_description && (
+            <div className="rounded-2xl bg-gradient-to-br from-sky-50 to-slate-50 border border-sky-100 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles className="w-4 h-4 text-sky-500 flex-shrink-0" />
+                <h3 className="text-sky-700 text-xs font-bold uppercase tracking-widest">Why this sponsorship slot</h3>
+              </div>
+              <p className="text-slate-700 text-[14px] leading-[1.7]">{listing.opportunity_description}</p>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-[#f5f5f7] border border-black/[0.06] rounded-2xl p-4">
               <p className="text-[#86868b] text-xs uppercase tracking-wide font-semibold mb-2">Price per slot</p>
